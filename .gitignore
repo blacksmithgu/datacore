@@ -5,5 +5,8 @@ node_modules/
 # Build artifacts.
 build/
 
+# Various editor preferences.
+.vscode
+
 # Random crap.
 .DS_Store
