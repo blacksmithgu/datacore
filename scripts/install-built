@@ -2,10 +2,10 @@
 # Builds the plugin and allows you to provide a path to the vault that it should be installed in.
 # Useful for when you want to dry-run the plugin in a vault other than the test vault.
 
-PLUGIN_NAME="dataview"
+PLUGIN_NAME="datacore"
 VAULT="$1"
 TARGET="$VAULT/.obsidian/plugins/$PLUGIN_NAME/"
 mkdir -p "$TARGET"
-cp -f build/main.js styles.css "$TARGET"
+cp -f build/plugin/main.js build/plugin/styles.css "$TARGET"
 cp -f manifest-beta.json "$TARGET/manifest.json"
 echo Installed plugin files to "$TARGET"
