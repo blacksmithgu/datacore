@@ -21,10 +21,7 @@ echo -e "\n---\n" >> CHANGELOG.md
 cat CHANGELOG-TEMP.md >> CHANGELOG.md
 rm -f CHANGELOG-TEMP.md
 
-# Overwrite the documentation changelog.
-cp -f CHANGELOG.md docs/docs/changelog.md
-
-# Delete old files if they exist
+# Delete old files if they exist.
 rm -f package.tmp.json
 rm -f manifest-beta.tmp.json
 rm -f versions.tmp.json
@@ -39,10 +36,7 @@ git commit -a -m "Auto-release beta ${NEW_VERSION}"
 git push
 
 # Rebuild the project to prepare for a release.
-npm run build
-
-# release api
-npm publish --access public
+yarn run build
 
 # And do a github release.
 gh release create "${NEW_VERSION}" build/main.js styles.css manifest.json --title "${NEW_VERSION}" --notes-file release-notes.md

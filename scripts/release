@@ -19,19 +19,14 @@ echo -e "\n---\n" >> CHANGELOG.md
 cat CHANGELOG-TEMP.md >> CHANGELOG.md
 rm -f CHANGELOG-TEMP.md
 
-# Overwrite the documentation changelog.
-cp -f CHANGELOG.md docs/docs/changelog.md
-
 # Delete old files if they exist
 rm -f package.tmp.json
 rm -f manifest.tmp.json
-rm -f manifest-beta.tmp.json
 rm -f versions.tmp.json
 
 # Rewrite versions in relevant files.
 jq ".version=\"${NEW_VERSION}\"" package.json > package.tmp.json && mv package.tmp.json package.json
 jq ".version=\"${NEW_VERSION}\"" manifest.json > manifest.tmp.json && mv manifest.tmp.json manifest.json
-jq ".version=\"${NEW_VERSION}\"" manifest-beta.json > manifest-beta.tmp.json && mv manifest-beta.tmp.json manifest-beta.json
 jq ". + {\"${NEW_VERSION}\": \"0.12.0\"}" versions.json > versions.tmp.json && mv versions.tmp.json versions.json
 
 # Overwrite the beta manifest as well.
@@ -42,10 +37,7 @@ git commit -a -m "Auto-release ${NEW_VERSION}"
 git push
 
 # Rebuild the project to prepare for a release.
-npm run build
-
-# release api
-npm publish --access public
+yarn run build
 
 # And do a github release.
 gh release create "${NEW_VERSION}" build/main.js styles.css manifest.json --title "${NEW_VERSION}" --notes-file release-notes.md

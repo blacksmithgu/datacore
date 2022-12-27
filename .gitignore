@@ -1,0 +1,9 @@
+# Package artifacts.
+package-lock.json
+node_modules/
+
+# Build artifacts.
+build/
+
+# Random crap.
+.DS_Store

@@ -8,39 +8,32 @@
     "lib/**/*"
   ],
   "scripts": {
-    "build": "npx rollup --config rollup.config.js --environment BUILD:production",
-    "build-library": "npx rollup --config rollup.config.js --environment BUILD:lib",
-
-    "test": "npx jest",
-    "test-watch": "npx jest -i --watch --no-cache",
-
-    "check-format": "npx prettier --check src",
-    "format": "npx prettier --write src"
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "test": "yarn run jest",
+    "test-watch": "yarn run jest -i --watch --no-cache",
+    "check-format": "yarn run prettier --check src",
+    "format": "yarn run prettier --write src"
   },
-  "keywords": ["obsidian", "datacore", "pkm"],
+  "keywords": [
+    "obsidian",
+    "datacore",
+    "pkm"
+  ],
   "author": "Michael Brenan",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.0.0",
-    "@rollup/plugin-node-resolve": "^13.1.3",
-    "@rollup/plugin-typescript": "^8.3.0",
     "@types/jest": "^27.0.1",
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
     "@types/parsimmon": "^1.10.6",
-    "@zerollup/ts-transform-paths": "^1.7.18",
-    "compare-versions": "^4.1.1",
+    "esbuild": "^0.16.11",
+    "builtin-modules": "3.3.0",
     "jest": "^27.1.0",
     "obsidian": "^1.1.0",
     "prettier": "2.3.2",
-    "rollup": "^2.67.2",
-    "rollup-jest": "^1.1.3",
-    "rollup-plugin-copy": "^3.4.0",
-    "rollup-plugin-typescript2": "^0.31.0",
-    "rollup-plugin-web-worker-loader": "^1.6.1",
     "ts-jest": "^27.0.5",
     "tslib": "^2.3.1",
-    "ttypescript": "^1.5.12",
     "typescript": "^4.4.2"
   },
   "dependencies": {
