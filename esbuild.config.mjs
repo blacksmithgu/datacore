@@ -3,6 +3,8 @@ import process from "process";
 import builtins from "builtin-modules";
 import fs from "fs";
 
+import inlineWorkerPlugin from "esbuild-plugin-inline-worker";
+
 // Build the primary javascript file.
 async function build(prod) {
 	fs.mkdirSync("build/plugin", { recursive: true });
@@ -13,6 +15,7 @@ async function build(prod) {
 		},
 		entryPoints: ['src/main.ts'],
 		bundle: true,
+		plugins: [inlineWorkerPlugin()],
 		external: [
 			'obsidian',
 			'electron',

@@ -27,8 +27,9 @@
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
     "@types/parsimmon": "^1.10.6",
-    "esbuild": "^0.16.11",
     "builtin-modules": "3.3.0",
+    "esbuild": "^0.16.11",
+    "esbuild-plugin-inline-worker": "^0.1.1",
     "jest": "^27.1.0",
     "obsidian": "^1.1.0",
     "prettier": "2.3.2",
@@ -42,6 +43,7 @@
     "@codemirror/view": "^6.0.1",
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
-    "preact": "^10.6.5"
+    "preact": "^10.6.5",
+    "sorted-btree": "^1.8.1"
   }
 }
