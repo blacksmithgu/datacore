@@ -2,7 +2,11 @@
 
 Datacore is a work-in-progress re-imagining of [Dataview](https://github.com/blacksmithgu/obsidian-dataview.git) with a
 focus on 2-10x better query and rendering performance, as well as fully interactible views. First working builds are
-expected to be published by the end of January 2023.
+expected to be published by the end of February 2023.
+
+## Roadmap
+
+Datacore is a work in progress. For more details, check out the [roadmap](ROADMAP.md).
 
 ### Differences from Dataview
 
@@ -24,5 +28,4 @@ extra functionality.
 
 ### Current Progress
 
-The repo has just been created and some initial framework setup; expect to see early releases available in Obsidian in
-late January 2023!
+The repo has just been created and some initial framework setup; expect to see early releases available in Obsidian this winter!

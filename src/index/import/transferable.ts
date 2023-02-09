@@ -1,7 +1,7 @@
 import { Link, Literals } from "expression/literal";
 import { DateTime, Duration, SystemZone } from "luxon";
 
-/** Simplifies passing dataview values across the JS web worker barrier. */
+/** Simplifies passing complex values across the JS web worker barrier. */
 export namespace Transferable {
     /** Convert a literal value to a serializer-friendly transferable value. */
     export function transferable(value: any): any {
