@@ -6,12 +6,16 @@ import { Component, MetadataCache, TFile, Vault } from "obsidian";
 
 /** Settings for throttling import. */
 export interface ImportThrottle {
+    /** The number of workers to use for imports. */
     workers: number;
+    /** A number between 0.1 and 1 which indicates total cpu utilization target; 0.1 means spend 10% of time  */
+    utilization: number;
 }
 
 /** Default throttle configuration. */
-export const DEFAULT_THROTTLE = {
-    workers: 2
+export const DEFAULT_THROTTLE: ImportThrottle = {
+    workers: 2,
+    utilization: 0.75
 }
 
 /** Multi-threaded file parser which debounces rapid file requests automatically. */
@@ -20,6 +24,8 @@ export class FileImporter extends Component {
     workers: Map<number, PoolWorker>;
     /** The next worker ID to hand out. */
     nextWorkerId: number;
+    /** Is the importer active? */
+    shutdown: boolean;
 
     /** List of files which have been queued for a reload. */
     queue: [TFile, (success: any) => void, (failure: any) => void][];
@@ -31,6 +37,7 @@ export class FileImporter extends Component {
     public constructor(public vault: Vault, public metadataCache: MetadataCache, throttle?: () => ImportThrottle) {
         super();
         this.workers = new Map();
+        this.shutdown = false;
         this.nextWorkerId = 0;
         this.throttle = throttle ?? (() => DEFAULT_THROTTLE);
 
@@ -56,16 +63,23 @@ export class FileImporter extends Component {
         return promise;
     }
 
+    /** Reset any active throttles on the importer (such as if the utilization changes). */
+    public unthrottle() {
+        for (let worker of this.workers.values()) {
+            worker.availableAt = Date.now();
+        }
+    }
+
     /** Poll from the queue and execute if there is an available worker. */
     private schedule() {
-        if (this.queue.length == 0) return;
+        if (this.queue.length == 0 || this.shutdown) return;
 
         const worker = this.availableWorker();
         if (!worker) return;
 
         const [file, resolve, reject] = this.queue.shift()!;
 
-        worker.active = [file, resolve, reject];
+        worker.active = [file, resolve, reject, Date.now()];
         this.vault.cachedRead(file).then(c =>
             worker!.worker.postMessage({
                 path: file.path,
@@ -93,15 +107,32 @@ export class FileImporter extends Component {
             this.workers.delete(worker.id);
             terminate(worker);
         } else {
+            const now = Date.now();
+            const start = worker.active![3];
+            const throttle = Math.max(0.1, this.throttle().utilization) - 1.0;
+            const delay = (now - start) * throttle;
+
             worker.active = undefined;
-            this.schedule();
+
+            if (delay <= 1e-10) {
+                worker.availableAt = now;
+                this.schedule();
+            } else {
+                worker.availableAt = now + delay;
+
+                // Note: I'm pretty sure this will garauntee that this executes AFTER delay milliseconds,
+                // so this should be fine; if it's not, we'll have to swap to an external timeout loop
+                // which infinitely reschedules itself to the next available execution time.
+                setTimeout(this.schedule.bind(this), delay);
+            }
         }
     }
 
     /** Obtain an available worker, returning undefined if one does not exist. */
     private availableWorker(): PoolWorker | undefined {
+        const now = Date.now();
         for (let worker of this.workers.values()) {
-            if (!worker.active) {
+            if (!worker.active && worker.availableAt <= now) {
                 return worker;
             }
         }
@@ -118,8 +149,9 @@ export class FileImporter extends Component {
 
     /** Create a new worker bound to this importer. */
     private newWorker(): PoolWorker {
-        let worker = {
+        let worker: PoolWorker = {
             id: this.nextWorkerId++,
+            availableAt: Date.now(),
             worker: new ImportWorker(),
         };
 
@@ -136,6 +168,8 @@ export class FileImporter extends Component {
         for (let [_file, _success, reject] of this.queue) {
             reject("Terminated");
         }
+
+        this.shutdown = true;
     }
 }
 
@@ -145,8 +179,10 @@ interface PoolWorker {
     id: number;
     /** The raw underlying worker. */
     worker: Worker;
+    /** UNIX time indicating the next time this worker is available for execution according to target utilization. */
+    availableAt: number;
     /** The active promise this worker is working on, if any. */
-    active?: [TFile, (success: any) => void, (failure: any) => void];
+    active?: [TFile, (success: any) => void, (failure: any) => void, number];
 }
 
 /** Terminate a pool worker. */

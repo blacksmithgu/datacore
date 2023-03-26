@@ -1,13 +1,13 @@
 import { Literals } from "expression/literal";
 import { DatastoreQuery } from "index/types/index-query";
-import { BimapIndex, Indexable } from "index/types/indexable";
+import { Indexable } from "index/types/indexable";
 import BTree from "sorted-btree";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
 
     /** The current store revision. */
-    private revision: number;
+    public revision: number;
     /** The master collection of ALL indexed objects. */
     private objects: BTree<string, Indexable>;
     /** Global map of object type -> list of all objects of that type. */
@@ -35,12 +35,20 @@ export class Datastore {
 
     }
 
+    /** Completely clear the datastore of all values. */
+    public clear() {
+        this.objects.clear();
+        this.types.clear();
+        this.children.clear();
+        this.revision++;
+    }
+
     /**
      * Search the datastore using the given query, returning an iterator over results.
      * 
      * Datastore queries return (ordered) lists of results which match the given query.
      */
-    public search(query: DatastoreQuery): Iterator<Indexable> {
-        return [];
+    public* search(query: DatastoreQuery): Iterable<Indexable> {
+        yield { $id: "1", $types: ["yes"] };
     }
 }

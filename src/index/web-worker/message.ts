@@ -1,5 +1,7 @@
+import { MarkdownFile } from "index/types/markdown";
 import { CachedMetadata, FileStats } from "obsidian";
 
+/** A command to import a markdown file. */
 export interface MarkdownImport {
     type: "markdown";
 
@@ -13,6 +15,7 @@ export interface MarkdownImport {
     metadata: CachedMetadata;
 } 
 
+/** A command to import a canvas file. */
 export interface CanvasImport {
     type: "canvas";
 
@@ -26,3 +29,18 @@ export interface CanvasImport {
 
 /** Available import commands to be sent to an import web worker. */
 export type ImportCommand = MarkdownImport | CanvasImport;
+
+/** The result of importing a file of some variety. */
+export interface MarkdownImportResult {
+    /** The type of import. */
+    type: "markdown";
+    /** The result of importing. */
+    result: MarkdownFile;
+}
+
+export interface ImportFailure {
+    /** The error that the worker indicated on failure. */
+    $error: string;
+}
+
+export type ImportResult = MarkdownImportResult | ImportFailure;

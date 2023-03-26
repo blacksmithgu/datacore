@@ -15,7 +15,7 @@ async function build(prod) {
 		},
 		entryPoints: ['src/main.ts'],
 		bundle: true,
-		plugins: [inlineWorkerPlugin({ name: "Datacore Indexer" })],
+		plugins: [inlineWorkerPlugin()],
 		external: [
 			'obsidian',
 			'electron',

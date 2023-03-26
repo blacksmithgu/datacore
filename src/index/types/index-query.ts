@@ -18,7 +18,7 @@ export interface DatastoreNot {
     element: DatastoreQuery;
 }
 
-/** Primitive operation which compares a value against */
+/** Primitive operation which compares a value against a field. */
 export interface DatastoreCompare {
     type: "compare";
 
