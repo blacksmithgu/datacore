@@ -1,6 +1,6 @@
 import { DateTime, Duration } from "luxon";
 import { Link } from "expression/link";
-import { renderMinimalDate, renderMinimalDuration } from "util/normalize";
+import { renderMinimalDate, renderMinimalDuration } from "expression/normalize";
 
 // Re-exports of useful generic types.
 export { Link };
