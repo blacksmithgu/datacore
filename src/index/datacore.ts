@@ -1,4 +1,5 @@
 import { Datastore } from "index/datastore";
+import { LocalStorageCache } from "index/persister";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
 import { App, Component, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
@@ -10,15 +11,21 @@ export class Datacore extends Component {
     vault: Vault;
     /** Provides access to per-(markdown)-file metadata. */
     metadataCache: MetadataCache;
+
     /** In-memory index over all stored metadata. */
     datastore: Datastore;
     /** Asynchronous multi-threaded file importer with throttling. */
     importer: FileImporter;
+    /** Local-storage backed cache of metadata objects. */
+    persister: LocalStorageCache;
+    /** If true, datacore is fully hydrated and all files have been indexed. */
+    initialized: boolean;
 
     constructor(public app: App, public version: string, public settings: Settings) {
         super();
 
         this.datastore = new Datastore();
+        this.initialized = false;
 
         this.addChild(this.importer = new FileImporter(app.vault, app.metadataCache, () => {
             return {
@@ -34,7 +41,7 @@ export class Datacore extends Component {
     }
 
     /** Initialize datacore by scanning persisted caches and all available files, and queueing parses as needed. */
-    public initialize() {
+    initialize() {
         // The metadata cache is updated on initial file index and file loads.
         this.registerEvent(this.metadataCache.on("resolve", file => this.reload(file)));
 
@@ -46,13 +53,13 @@ export class Datacore extends Component {
             // TODO: Update index.
         }));
 
-        // Asynchronously initialize actual content in the background.
-        this._initialize(this.vault.getMarkdownFiles());
-    }
+        // Asynchronously initialize actual content in the background using a lifecycle-respecting object.
+        const init = new DatacoreInitializer(this, this.vault.getMarkdownFiles(), () => {
+            this.initialized = true;
+            this.removeChild(init);
+        });
 
-    /** Scans all available files and either loads them from persisted cache, or freshly parses them. */
-    private async _initialize(files: TFile[]) {
-        const initializeStart = Date.now();
+        this.addChild(init);
     }
 
     private rename(file: TAbstractFile, oldPath: string) {
@@ -69,5 +76,39 @@ export class Datacore extends Component {
         return this.importer.import<ImportResult>(file).then(result => {
             // TODO: Add to index.
         });
+    }
+}
+
+/** Lifecycle-respecting file queue which will import files, reading them from the file cache if needed. */
+export class DatacoreInitializer extends Component {
+    /** Number of concurrent operations the initializer will perform. */
+    static BATCH_SIZE: number = 8;
+
+    /** Whether the initializer should continue to run. */
+    private active: boolean;
+    /** Queue of files to still import. */
+    private queue: TFile[];
+    /** The files actively being imported. */
+    private current: TFile[];
+
+    constructor(public core: Datacore, files: TFile[], public finish: () => void) {
+        super();
+
+        this.active = true;
+        this.queue = ([] as TFile[]).concat(files);
+    }
+
+    async onload() {
+        // On load, start loading files one by one and importing them into datacore.
+        // Start by queueing BATCH_SIZE elements.
+    }
+
+    /** Handle a specific file. */
+    async handle(file: TFile) {
+
+    }
+
+    onunload() {
+        this.active = false;
     }
 }

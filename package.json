@@ -31,6 +31,7 @@
     "esbuild": "^0.16.11",
     "esbuild-plugin-inline-worker": "^0.1.1",
     "jest": "^27.1.0",
+    "localforage": "1.10.0",
     "obsidian": "^1.1.0",
     "prettier": "2.3.2",
     "ts-jest": "^27.0.5",

@@ -7,7 +7,7 @@ onmessage = (event) => {
     const message = Transferable.value(event.data) as ImportCommand;
 
     if (message.type === "markdown") {
-        const markdown = markdownImport(message.contents, message.metadata);
+        const markdown = markdownImport(message.path, message.contents, message.metadata, message.stat);
         postMessage(Transferable.transferable({
             type: "markdown",
             result: markdown
