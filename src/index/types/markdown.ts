@@ -117,7 +117,7 @@ export interface MarkdownInlineField {
     /** The character position of just the value of the inline field. */
     valuePosition: CharacterSpan;
     /** How the inline field is delimited. */
-    wrapping: '[' | '(' | 'line';
+    wrapping: "[" | "(" | "line";
 }
 
 /** A union type over all possible markdown fields, including inline objects, frontmatter, and inline fields. */

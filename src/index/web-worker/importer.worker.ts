@@ -8,11 +8,13 @@ onmessage = (event) => {
 
     if (message.type === "markdown") {
         const markdown = markdownImport(message.path, message.contents, message.metadata, message.stat);
-        postMessage(Transferable.transferable({
-            type: "markdown",
-            result: markdown
-        } as MarkdownImportResult));
+        postMessage(
+            Transferable.transferable({
+                type: "markdown",
+                result: markdown,
+            } as MarkdownImportResult)
+        );
     } else if (message.type === "canvas") {
-        postMessage({ "$error": "Unsupported import method." });
+        postMessage({ $error: "Unsupported import method." });
     }
 };

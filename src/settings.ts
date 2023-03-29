@@ -9,5 +9,5 @@ export interface Settings {
 /** Default settings for the plugin. */
 export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
     importerNumThreads: 2,
-    importerUtilization: 0.75
+    importerUtilization: 0.75,
 });

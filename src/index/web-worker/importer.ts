@@ -15,8 +15,8 @@ export interface ImportThrottle {
 /** Default throttle configuration. */
 export const DEFAULT_THROTTLE: ImportThrottle = {
     workers: 2,
-    utilization: 0.75
-}
+    utilization: 0.75,
+};
 
 /** Multi-threaded file parser which debounces rapid file requests automatically. */
 export class FileImporter extends Component {
@@ -80,7 +80,7 @@ export class FileImporter extends Component {
         const [file, resolve, reject] = this.queue.shift()!;
 
         worker.active = [file, resolve, reject, Date.now()];
-        this.vault.cachedRead(file).then(c =>
+        this.vault.cachedRead(file).then((c) =>
             worker!.worker.postMessage({
                 path: file.path,
                 contents: c,
@@ -155,7 +155,7 @@ export class FileImporter extends Component {
             worker: new ImportWorker(),
         };
 
-        worker.worker.onmessage = evt => this.finish(worker, Transferable.value(evt.data));
+        worker.worker.onmessage = (evt) => this.finish(worker, Transferable.value(evt.data));
         return worker;
     }
 

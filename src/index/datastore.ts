@@ -5,7 +5,6 @@ import BTree from "sorted-btree";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
-
     /** The current store revision. */
     public revision: number;
     /** The master collection of ALL indexed objects. */
@@ -32,7 +31,6 @@ export class Datastore {
 
             return;
         }
-
     }
 
     /** Completely clear the datastore of all values. */
@@ -45,10 +43,10 @@ export class Datastore {
 
     /**
      * Search the datastore using the given query, returning an iterator over results.
-     * 
+     *
      * Datastore queries return (ordered) lists of results which match the given query.
      */
-    public* search(query: DatastoreQuery): Iterable<Indexable> {
+    public *search(query: DatastoreQuery): Iterable<Indexable> {
         yield { $id: "1", $types: ["yes"] };
     }
 }

@@ -100,7 +100,7 @@ export namespace Literals {
 
     /** Sane, English-based defaults for date formats. */
     export const DEFAULT_TO_STRING: ToStringSettings = {
-        nullRepresentation: "\-",
+        nullRepresentation: "-",
 
         dateFormat: "MMMM dd, yyyy",
         dateTimeFormat: "h:mm a - MMMM dd, yyyy",
@@ -134,14 +134,14 @@ export namespace Literals {
             case "array":
                 let result = "";
                 if (recursive) result += "[";
-                result += wrapped.value.map(f => toString(f, setting, true)).join(", ");
+                result += wrapped.value.map((f) => toString(f, setting, true)).join(", ");
                 if (recursive) result += "]";
                 return result;
             case "object":
                 return (
                     "{ " +
                     Object.entries(wrapped.value)
-                        .map(e => e[0] + ": " + toString(e[1], setting, true))
+                        .map((e) => e[0] + ": " + toString(e[1], setting, true))
                         .join(", ") +
                     " }"
                 );
@@ -322,7 +322,7 @@ export namespace Literals {
         if (field === null || field === undefined) return field;
 
         if (Literals.isArray(field)) {
-            return ([] as Literal[]).concat(field.map(v => deepCopy(v))) as T;
+            return ([] as Literal[]).concat(field.map((v) => deepCopy(v))) as T;
         } else if (Literals.isObject(field)) {
             let result: Record<string, Literal> = {};
             for (let [key, value] of Object.entries(field)) result[key] = deepCopy(value);
@@ -406,7 +406,6 @@ export namespace Literals {
         return typeof val == "function";
     }
 }
-
 
 /**
  * A trivial base class which just defines the '$widget' identifier type. Subtypes of

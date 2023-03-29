@@ -1,4 +1,4 @@
-import { type Literal, Literals, Widget } from "./literal";
+import { Literal, Literals, Widget } from "./literal";
 
 /** A trivial widget which renders a (key, value) pair, and allows accessing the key and value. */
 export class ListPairWidget extends Widget {

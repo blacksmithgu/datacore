@@ -108,7 +108,13 @@ export class Link {
 
     /** Convert this link to a raw object which is serialization-friendly. */
     public toObject(): Record<string, any> {
-        return { path: this.path, type: this.type, subpath: this.subpath, display: this.display, embed: this.embed };
+        return {
+            path: this.path,
+            type: this.type,
+            subpath: this.subpath,
+            display: this.display,
+            embed: this.embed,
+        };
     }
 
     /** Convert any link into a link to its file. */

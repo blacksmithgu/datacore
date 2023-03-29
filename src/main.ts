@@ -17,14 +17,17 @@ export default class DatacorePlugin extends Plugin {
         this.settings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
         this.addSettingTab(new GeneralSettingsTab(this.app, this));
 
-        this.addChild(this.core = new Datacore(this.app, this.manifest.version, this.settings));
-        this.api = new DatacoreApi();
+        this.addChild((this.core = new Datacore(this.app, this.manifest.version, this.settings)));
+        this.api = new DatacoreApi(this.core);
 
         if (!this.app.workspace.layoutReady) {
             this.app.workspace.onLayoutReady(async () => this.core.initialize());
         } else {
             this.core.initialize();
         }
+
+        // Make the API globally accessible from any context.
+        window.datacore = this.api;
 
         console.log(`Datacore: version ${this.manifest.version} (requires obsidian ${this.manifest.minAppVersion})`);
     }
@@ -52,21 +55,21 @@ class GeneralSettingsTab extends PluginSettingTab {
         new Setting(this.containerEl)
             .setName("Importer Threads")
             .setDesc("The number of importer threads to use for parsing metadata.")
-            .addSlider(slider => {
+            .addSlider((slider) => {
                 slider
                     .setLimits(1, 8, 1)
                     .setValue(this.plugin.settings.importerNumThreads)
-                    .onChange(async value => await this.plugin.updateSettings({ importerNumThreads: value }));
+                    .onChange(async (value) => await this.plugin.updateSettings({ importerNumThreads: value }));
             });
 
         new Setting(this.containerEl)
             .setName("Importer Utilization")
             .setDesc("How much CPU time each importer thread should use (10% - 100%).")
-            .addSlider(slider => {
+            .addSlider((slider) => {
                 slider
                     .setLimits(0.1, 1.0, 0.1)
                     .setValue(this.plugin.settings.importerUtilization)
-                    .onChange(async value => await this.plugin.updateSettings({ importerUtilization: value }));
+                    .onChange(async (value) => await this.plugin.updateSettings({ importerUtilization: value }));
             });
     }
 }

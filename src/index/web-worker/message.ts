@@ -13,7 +13,7 @@ export interface MarkdownImport {
     stat: FileStats;
     /** Metadata for the file. */
     metadata: CachedMetadata;
-} 
+}
 
 /** A command to import a canvas file. */
 export interface CanvasImport {

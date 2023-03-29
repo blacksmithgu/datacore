@@ -34,11 +34,17 @@ export namespace Transferable {
                     },
                 };
             case "duration":
-                return { "$transfer-type": "duration", value: transferable(wrapped.value.toObject()) };
+                return {
+                    "$transfer-type": "duration",
+                    value: transferable(wrapped.value.toObject()),
+                };
             case "array":
-                return wrapped.value.map(v => transferable(v));
+                return wrapped.value.map((v) => transferable(v));
             case "link":
-                return { "$transfer-type": "link", value: transferable(wrapped.value.toObject()) };
+                return {
+                    "$transfer-type": "link",
+                    value: transferable(wrapped.value.toObject()),
+                };
             case "object":
                 let result: Record<string, any> = {};
                 for (let [key, value] of Object.entries(wrapped.value)) result[key] = transferable(value);
@@ -61,7 +67,7 @@ export namespace Transferable {
             for (let val of transferable) real.add(value(val));
             return real;
         } else if (Array.isArray(transferable)) {
-            return transferable.map(v => value(v));
+            return transferable.map((v) => value(v));
         } else if (typeof transferable === "object") {
             if ("$transfer-type" in transferable) {
                 switch (transferable["$transfer-type"]) {
