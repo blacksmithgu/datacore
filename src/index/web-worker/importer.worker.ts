@@ -14,7 +14,7 @@ onmessage = (event) => {
                 result: markdown,
             } as MarkdownImportResult)
         );
-    } else if (message.type === "canvas") {
+    } else {
         postMessage({ $error: "Unsupported import method." });
     }
 };

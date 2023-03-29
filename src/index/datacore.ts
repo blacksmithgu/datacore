@@ -1,4 +1,4 @@
-import { Deferred } from "expression/deferred";
+import { deferred, Deferred } from "expression/deferred";
 import { Datastore } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
@@ -26,6 +26,9 @@ export class Datacore extends Component {
 
     constructor(public app: App, public version: string, public settings: Settings) {
         super();
+
+        this.vault = app.vault;
+        this.metadataCache = app.metadataCache;
 
         this.datastore = new Datastore();
         this.initialized = false;
@@ -70,7 +73,7 @@ export class Datacore extends Component {
             const durationSecs = (stats.durationMs / 1000.0).toFixed(3);
             console.log(
                 `Datacore: Imported all files in the vault in ${durationSecs}s ` +
-                    `(${stats.imported} imported, ${stats.skipped} skipped)`
+                    `(${stats.imported} imported, ${stats.skipped} skipped).`
             );
         });
 
@@ -129,6 +132,7 @@ export class DatacoreInitializer extends Component {
         this.files = this.queue.length;
         this.start = Date.now();
         this.current = [];
+        this.done = deferred();
 
         this.initialized = this.imported = this.skipped = 0;
     }

@@ -29,7 +29,7 @@
     "@types/parsimmon": "^1.10.6",
     "builtin-modules": "3.3.0",
     "esbuild": "^0.16.11",
-    "esbuild-plugin-inline-worker": "^0.1.1",
+    "esbuild-plugin-inline-worker": "https://github.com/mitschabaude/esbuild-plugin-inline-worker",
     "jest": "^27.1.0",
     "localforage": "1.10.0",
     "obsidian": "^1.1.0",

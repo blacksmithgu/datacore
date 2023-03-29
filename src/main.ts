@@ -14,7 +14,7 @@ export default class DatacorePlugin extends Plugin {
     public api: DatacoreApi;
 
     async onload() {
-        this.settings = Object.assign(DEFAULT_SETTINGS, (await this.loadData()) ?? {});
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) ?? {});
         this.addSettingTab(new GeneralSettingsTab(this.app, this));
 
         this.addChild((this.core = new Datacore(this.app, this.manifest.version, this.settings)));
@@ -55,21 +55,26 @@ class GeneralSettingsTab extends PluginSettingTab {
         new Setting(this.containerEl)
             .setName("Importer Threads")
             .setDesc("The number of importer threads to use for parsing metadata.")
-            .addSlider((slider) => {
-                slider
-                    .setLimits(1, 8, 1)
-                    .setValue(this.plugin.settings.importerNumThreads)
-                    .onChange(async (value) => await this.plugin.updateSettings({ importerNumThreads: value }));
+            .addText((text) => {
+                text.setValue("" + this.plugin.settings.importerNumThreads).onChange(async (value) => {
+                    const parsed = parseInt(value);
+                    if (isNaN(parsed)) return;
+
+                    this.plugin.updateSettings({ importerNumThreads: parsed });
+                });
             });
 
         new Setting(this.containerEl)
             .setName("Importer Utilization")
-            .setDesc("How much CPU time each importer thread should use (10% - 100%).")
-            .addSlider((slider) => {
-                slider
-                    .setLimits(0.1, 1.0, 0.1)
-                    .setValue(this.plugin.settings.importerUtilization)
-                    .onChange(async (value) => await this.plugin.updateSettings({ importerUtilization: value }));
+            .setDesc("How much CPU time each importer thread should use, as a fraction (0.1 - 1.0).")
+            .addText((text) => {
+                text.setValue(this.plugin.settings.importerUtilization.toFixed(2)).onChange(async (value) => {
+                    const parsed = parseFloat(value);
+                    if (isNaN(parsed)) return;
+
+                    const limited = Math.max(0.1, Math.min(1.0, parsed));
+                    this.plugin.updateSettings({ importerUtilization: limited });
+                });
             });
     }
 }
