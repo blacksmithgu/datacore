@@ -39,15 +39,15 @@ export class Datastore {
      * added to the object.
      */
     public store<T extends Indexable>(object: T | T[], subindexer?: Subindexer<T>) {
-        this._recursiveStore(object, subindexer, undefined, this.revision++);
+        this._recursiveStore(object, this.revision++, subindexer, undefined);
     }
 
     /** Recursively store objects using a potential subindexer. */
     private _recursiveStore<T extends Indexable>(
         object: T | T[],
+        revision: number,
         subindexer?: Subindexer<T>,
         parent?: string,
-        revision: number
     ) {
         // Handle array inputs.
         if (Literals.isArray(object)) {
@@ -85,10 +85,10 @@ export class Datastore {
             subindexer(object, (incoming, subindex) => {
                 if (Literals.isArray(incoming)) {
                     for (let element of incoming) {
-                        this._recursiveStore(element, subindex, object.$id, revision);
+                        this._recursiveStore(element, revision, subindex, object.$id);
                     }
                 } else {
-                    this._recursiveStore(incoming, subindex, object.$id, revision);
+                    this._recursiveStore(incoming, revision, subindex, object.$id);
                 }
             });
         }

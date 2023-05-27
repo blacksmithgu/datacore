@@ -1,4 +1,3 @@
-import { Link } from "expression/link";
 import { splitMarkdownHeader } from "expression/normalize";
 import { MarkdownFile, MarkdownSection } from "index/types/markdown";
 import { DateTime } from "luxon";

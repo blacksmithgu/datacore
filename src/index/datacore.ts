@@ -7,7 +7,6 @@ import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
 import { App, Component, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
 import { Settings } from "settings";
-import { json } from "stream/consumers";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -98,9 +97,8 @@ export class Datacore extends Component {
     }
 
     /** Queue a file for reloading; this is done asynchronously in the background and may take a few seconds. */
-    private async reload(file: TFile): Promise<Indexable> {
+    public async reload(file: TFile): Promise<Indexable> {
         const result = await this.importer.import<ImportResult>(file);
-        console.log(`Imported: ${file.path}: ${JSON.stringify(result)}`);
 
         if (result.type === "error") {
             throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
@@ -224,7 +222,7 @@ export class DatacoreInitializer extends Component {
             const metadata = this.core.metadataCache.getFileCache(file);
             if (!metadata) return { status: "skipped" };
 
-            await this.core.importer.import(file);
+            await this.core.reload(file);
             return { status: "imported" };
         } catch (ex) {
             console.log("Datacore: Failed to import file: ", ex);

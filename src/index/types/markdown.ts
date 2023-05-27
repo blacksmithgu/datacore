@@ -47,12 +47,12 @@ export class MarkdownFile implements File, Indexable {
      * All child markdown sections of this markdown file. The initial section before any content is special and is
      * named with the title of the file.
      */
-    sections: MarkdownSection[];
+    sections: MarkdownSection[] = [];
 
     /** Create a markdown file from the given raw values. */
     static from(raw: Partial<MarkdownFile>): MarkdownFile {
         const file = new MarkdownFile(raw);
-        file.sections = file.sections.map((sect) => MarkdownSection.from(sect));
+        file.sections = (file.sections ?? []).map((sect) => MarkdownSection.from(sect));
 
         return file;
     }
