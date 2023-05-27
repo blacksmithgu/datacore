@@ -39,6 +39,9 @@ export interface MarkdownImportResult {
 }
 
 export interface ImportFailure {
+    /** Failed to import. */
+    type: "error";
+
     /** The error that the worker indicated on failure. */
     $error: string;
 }

@@ -1,10 +1,13 @@
 import { deferred, Deferred } from "expression/deferred";
 import { Datastore } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
+import { Indexable } from "index/types/indexable";
+import { MarkdownFile } from "index/types/markdown";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
 import { App, Component, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
 import { Settings } from "settings";
+import { json } from "stream/consumers";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -58,8 +61,10 @@ export class Datacore extends Component {
 
         // File creation does cause a metadata change, but deletes do not. Clear the caches for this.
         this.registerEvent(
-            this.vault.on("delete", (af) => {
-                // TODO: Update index.
+            this.vault.on("delete", (file) => {
+                if (file instanceof TFile) {
+                    this.datastore.delete(file.path);
+                }
             })
         );
 
@@ -81,20 +86,35 @@ export class Datacore extends Component {
     }
 
     private rename(file: TAbstractFile, oldPath: string) {
-        // Do nothing right now.
+        if (!(file instanceof TFile)) {
+            return;
+        }
+
+        // Delete the file at the old path, then request a reload at the new path.
+        // This is less optimal than what can probably be done, but paths are used in a bunch of places
+        // (for sections, tasks, etc to refer to their parent file) and it requires some finesse to fix.
+        this.datastore.delete(oldPath);
+        this.reload(file);
     }
 
     /** Queue a file for reloading; this is done asynchronously in the background and may take a few seconds. */
-    private async reload(file: TFile): Promise<{}> {
-        await this.import(file);
-        return {};
-    }
+    private async reload(file: TFile): Promise<Indexable> {
+        const result = await this.importer.import<ImportResult>(file);
+        console.log(`Imported: ${file.path}: ${JSON.stringify(result)}`);
 
-    /** Perform an asynchronous data import of the given file, adding it to the index when finished. */
-    private async import(file: TFile): Promise<void> {
-        return this.importer.import<ImportResult>(file).then((result) => {
-            console.log(`Imported: ${file.path}: ${JSON.stringify(result)}`);
-        });
+        if (result.type === "error") {
+            throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
+        } else if (result.type === "markdown") {
+            const parsed = MarkdownFile.from(result.result);
+
+            this.datastore.store(parsed, (object, store) => {
+                store(object.sections);
+            });
+
+            return parsed;
+        }
+
+        throw new Error("Encountered unrecognized import result type: " + (result as any).type);
     }
 }
 
