@@ -1,4 +1,3 @@
-import { splitMarkdownHeader } from "expression/normalize";
 import { MarkdownFile, MarkdownSection } from "index/types/markdown";
 import { DateTime } from "luxon";
 import { CachedMetadata, FileStats } from "obsidian";
@@ -24,28 +23,31 @@ export function markdownImport(
     // All sections.
     const sections = [];
     let sectionOrdinal = 0;
-    for (let section of metadata.sections || []) {
-        let [level, title] = splitMarkdownHeader(lines[section.position.start.line]);
+    if (metadata.headings) {
+        for (let index = 0; index < metadata.headings.length; index++) {
+            const section = metadata.headings[index];
+            const end = index == metadata.headings.length - 1 ? lines.length : metadata.headings[index + 1].position.start.line;
 
-        sections.push(
-            new MarkdownSection(path, {
-                ordinal: sectionOrdinal,
-                title,
-                level,
-                position: {
-                    start: section.position.start.line,
-                    end: section.position.end.line,
-                },
-                blockId: section.id,
-            })
-        );
+            sections.push(
+                new MarkdownSection(path, {
+                    ordinal: sectionOrdinal,
+                    title: section.heading,
+                    level: section.level,
+                    position: {
+                        start: section.position.start.line,
+                        end
+                    },
+                })
+            );
 
-        sectionOrdinal += 1;
+            sectionOrdinal += 1;
+        }
     }
 
     return new MarkdownFile({
         path,
         etags,
+        sections,
         ctime: DateTime.fromMillis(stats.ctime),
         mtime: DateTime.fromMillis(stats.mtime),
         frontmatter: metadata.frontmatter,

@@ -111,15 +111,6 @@ export function extractSubtags(tag: string): string[] {
 
 // String escaping and canonicalization.
 
-/** Strip markdown header lines starting with '#', returning the number stripped. */
-export function splitMarkdownHeader(header: string): [number, string] {
-    header = header.trimStart();
-    let index = 0;
-    while (index < header.length && header.charAt(index) == "#") index++;
-
-    return [Math.max(1, index), header.substring(index).trim()];
-}
-
 /**
  * Escape regex characters in a string.
  * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions.
