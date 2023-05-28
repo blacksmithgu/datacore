@@ -20,6 +20,11 @@ export class Datastore {
         this.children = new Map();
     }
 
+    /** Update the revision of the datastore due to an external update. */
+    public touch() {
+        this.revision += 1;
+    }
+
     /** Load an object by ID. */
     public load(id: string): Indexable;
     /** Load a list of objects by ID. */
@@ -47,7 +52,7 @@ export class Datastore {
         object: T | T[],
         revision: number,
         subindexer?: Subindexer<T>,
-        parent?: string,
+        parent?: string
     ) {
         // Handle array inputs.
         if (Literals.isArray(object)) {

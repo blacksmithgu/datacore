@@ -5,7 +5,7 @@ import { Indexable } from "index/types/indexable";
 import { MarkdownFile } from "index/types/markdown";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
-import { App, Component, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
+import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
 import { Settings } from "settings";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
@@ -14,6 +14,8 @@ export class Datacore extends Component {
     vault: Vault;
     /** Provides access to per-(markdown)-file metadata. */
     metadataCache: MetadataCache;
+    /** Datacore events, mainly used to update downstream views. This object is shadowed by the Datacore object itself. */
+    events: Events;
 
     /** In-memory index over all stored metadata. */
     datastore: Datastore;
@@ -31,6 +33,7 @@ export class Datacore extends Component {
 
         this.vault = app.vault;
         this.metadataCache = app.metadataCache;
+        this.events = new Events();
 
         this.datastore = new Datastore();
         this.initialized = false;
@@ -79,6 +82,9 @@ export class Datacore extends Component {
                 `Datacore: Imported all files in the vault in ${durationSecs}s ` +
                     `(${stats.imported} imported, ${stats.skipped} skipped).`
             );
+
+            this.datastore.touch();
+            this.trigger("update", this.revision);
         });
 
         this.addChild(init);
@@ -109,10 +115,38 @@ export class Datacore extends Component {
                 store(object.sections);
             });
 
+            this.trigger("update", this.revision);
             return parsed;
         }
 
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);
+    }
+
+    // Event propogation.
+
+    /** Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
+    public on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
+
+    on(evt: string, callback: (...data: any) => any, context?: any): EventRef {
+        return this.events.on(evt, callback, context);
+    }
+
+    /** Unsubscribe from an event using the event and original callback. */
+    off(evt: string, callback: (...data: any) => any) {
+        this.events.off(evt, callback);
+    }
+
+    /** Unsubscribe from an event using the event reference.  */
+    offref(ref: EventRef) {
+        this.events.offref(ref);
+    }
+
+    /** Trigger an update event. */
+    private trigger(evt: "update", revision: number): void;
+
+    /** Trigger an event. */
+    private trigger(evt: string, ...args: any[]): void {
+        this.events.trigger(evt, args);
     }
 }
 

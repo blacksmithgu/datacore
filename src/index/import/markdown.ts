@@ -26,7 +26,8 @@ export function markdownImport(
     if (metadata.headings) {
         for (let index = 0; index < metadata.headings.length; index++) {
             const section = metadata.headings[index];
-            const end = index == metadata.headings.length - 1 ? lines.length : metadata.headings[index + 1].position.start.line;
+            const end =
+                index == metadata.headings.length - 1 ? lines.length : metadata.headings[index + 1].position.start.line;
 
             sections.push(
                 new MarkdownSection(path, {
@@ -35,7 +36,7 @@ export function markdownImport(
                     level: section.level,
                     position: {
                         start: section.position.start.line,
-                        end
+                        end,
                     },
                 })
             );
