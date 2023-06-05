@@ -1,6 +1,10 @@
 // Primitive, fast operations.
 
 import { Link } from "expression/link";
+import { Literal } from "expression/literal";
+
+/** Valid index-value comparisons. */
+export type IndexComparison = "=" | "!=" | ">" | "<" | ">=" | "<=";
 
 /** Fetch documents with the given type. */
 export interface IndexTyped {
@@ -44,7 +48,49 @@ export interface IndexConnected {
     distance?: number;
 }
 
-export type IndexPrimitive = IndexTyped | IndexTagged | IndexFolder | IndexConnected;
+/**
+ * Fetch documents which have the given field defined (even if it's value is null).
+ */
+export interface IndexField {
+    type: "field";
+    /** The name of the field that must exist. This is case sensitive. */
+    value: string;
+}
+
+/**
+ * Fetch documents whose field value is equal to the given value. This will only work for specially indexed fields
+ * which can be compared against, such as task 'completed', and the 'date' field of date-labelled pages.
+ */
+export interface IndexValueEquals {
+    type: "equal-value";
+    /** The field whose value we are checking. */
+    field: String;
+    /** The value that we expect it to be equal to. */
+    value: Literal;
+}
+
+/**
+ * Fetch documents whose field value is in the given bounds. This will only work for specially indexed fields which can
+ * be compared against, such as task 'completed' or task 'status', and the 'date' field of date-labelled pages.
+ */
+export interface IndexValueBounded {
+    type: "bounded-value";
+    /** The field whose value we are checking. */
+    field: string;
+    /** The (lower bound, is-inclusive). */
+    lower?: [Literal, boolean];
+    /** The (upper bound, is-inclusive). */
+    upper?: [Literal, boolean];
+}
+
+export type IndexPrimitive =
+    | IndexTyped
+    | IndexTagged
+    | IndexFolder
+    | IndexConnected
+    | IndexField
+    | IndexValueEquals
+    | IndexValueBounded;
 
 // Logical combinators.
 
