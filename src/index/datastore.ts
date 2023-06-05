@@ -1,5 +1,6 @@
 import { Literals } from "expression/literal";
-import { DatastoreQuery } from "index/types/index-query";
+import { intersect } from "index/storage/sets";
+import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 
 /** Central, index storage for datacore values. */
@@ -36,6 +37,11 @@ export class Datastore {
         }
 
         return this.objects.get(id);
+    }
+
+    /** Returns the current set of all indexed types. */
+    public availableTypes(): Set<string> {
+        return new Set(this.types.keys());
     }
 
     /**
@@ -140,22 +146,78 @@ export class Datastore {
         this.objects.clear();
         this.types.clear();
         this.children.clear();
+
         this.revision++;
     }
 
     /**
-     * Search the datastore using the given query, returning an iterator over results.
-     *
-     * Datastore queries return (ordered) lists of results which match the given query.
+     * Search the datastore for all documents matching the given query, returning them
+     * as a list of indexed objects along with performance metadata.
      */
-    public *search(query: DatastoreQuery): Iterable<Indexable> {
-        yield { $id: "1", $types: ["yes"] };
+    public search(query: IndexQuery): SearchResult<Indexable> {
+        const start = Date.now();
+
+        return {
+            query: query,
+            results: [],
+            duration: (Date.now() - start) / 1000.0,
+            revision: 0,
+        };
     }
+
+    /** Recursively execute a subquery, returning a set of all matching document IDs. */
+    private _searchRecursive(query: IndexQuery): Set<string> {
+        switch (query.type) {
+            case "and":
+                const subsets: Set<string>[] = [];
+                for (let child of query.elements) {
+                    const results = this._searchRecursive(child);
+                    if (results.size == 0) return Datastore.EMPTY_SET;
+                }
+
+                return intersect(subsets);
+            case "constant":
+            case "not":
+            case "or":
+                // TODO.
+                return Datastore.EMPTY_SET;
+            case "connected":
+            case "folder":
+            case "tagged":
+            case "typed":
+                return this._searchPrimitive(query);
+        }
+    }
+
+    /** Execute a primitive index query, i.e., a query that directly produces results. */
+    private _searchPrimitive(query: IndexPrimitive): Set<string> {
+        switch (query.type) {
+            case "connected":
+            case "folder":
+            case "tagged":
+            case "typed":
+                return Datastore.EMPTY_SET;
+        }
+    }
+
+    /** Static empty set used for efficiently returning empty sets. */
+    private static EMPTY_SET: Set<string> = Object.freeze(new Set()) as Set<string>;
 }
 
 /** A general function for indexing sub-objects in a given object. */
-// what the fuck is this type
 export type Subindexer<T extends Indexable> = (
     object: T,
     add: <U extends Indexable>(object: U | U[], subindex?: Subindexer<U>) => void
 ) => void;
+
+/** The result of searching given an index query. */
+export interface SearchResult<O> {
+    /** The query used to search. */
+    query: IndexQuery;
+    /** All of the returned results. */
+    results: O[];
+    /** The amount of time in seconds that the search took. */
+    duration: number;
+    /** The maximum revision of any document in the result, which is useful for diffing. */
+    revision: number;
+}

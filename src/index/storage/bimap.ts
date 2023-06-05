@@ -1,32 +1,29 @@
-import { newSortedSet } from "expression/set";
-import BTree, { EmptyBTree, ISortedSet, asSet } from "sorted-btree";
-
 /** Maps key -> set<value>, and value -> set<key>. Sets and values are sorted into BTrees. */
 export class BimapIndex {
     /** Maps key -> values for that key. */
-    private map: BTree<string, ISortedSet<string>>;
+    private map: Map<string, Set<string>>;
     /** Cached inverse map; maps values -> keys that reference that value. */
-    private inverse: BTree<string, ISortedSet<string>>;
+    private inverse: Map<string, Set<string>>;
 
     /** Create a new, empty index map. */
     public constructor() {
-        this.map = new BTree(undefined, (a, b) => a.localeCompare(b));
-        this.inverse = new BTree(undefined, (a, b) => a.localeCompare(b));
+        this.map = new Map();
+        this.inverse = new Map();
     }
 
     /** Returns all values for the given key. */
-    public get(key: string): Readonly<ISortedSet<string>> {
-        return this.map.get(key, BimapIndex.EMPTY)!;
+    public get(key: string): Readonly<Set<string>> {
+        return this.map.get(key) ?? BimapIndex.EMPTY;
     }
 
     /** Returns all keys for the given value. */
-    public invert(value: string): Readonly<ISortedSet<string>> {
-        return this.inverse.get(value, BimapIndex.EMPTY)!;
+    public invert(value: string): Readonly<Set<string>> {
+        return this.inverse.get(value) ?? BimapIndex.EMPTY;
     }
 
     /** Sets the key to the given values; this will delete the old mapping for the key if one was present. */
     public set(key: string, values: Iterable<string>): this {
-        const sorted = newSortedSet(values);
+        const sorted = new Set(values);
         if (!sorted.size) {
             // No need to store if no values.
             this.delete(key);
@@ -43,7 +40,7 @@ export class BimapIndex {
 
         this.map.set(key, sorted);
         for (let value of values) {
-            if (!this.inverse.has(value)) this.inverse.set(value, newSortedSet([key]));
+            if (!this.inverse.has(value)) this.inverse.set(value, new Set([key]));
             else this.inverse.get(value)?.add(key);
         }
 
@@ -79,5 +76,5 @@ export class BimapIndex {
         this.inverse.clear();
     }
 
-    static EMPTY: ISortedSet<string> = asSet(EmptyBTree);
+    static EMPTY: Readonly<Set<string>> = Object.freeze(new Set<string>());
 }

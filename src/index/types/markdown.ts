@@ -71,7 +71,7 @@ export class MarkdownFile implements File, Indexable {
 
 export class MarkdownSection implements Indexable {
     /** All of the types that a markdown section is. */
-    static TYPES = ["section"];
+    static TYPES = ["markdown", "section"];
 
     /** Path of the file that this section is in. */
     private $file: string;
