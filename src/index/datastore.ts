@@ -1,5 +1,5 @@
 import { Literals } from "expression/literal";
-import { intersect } from "index/storage/sets";
+import { Filter, Filters } from "index/storage/filters";
 import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 
@@ -7,6 +7,11 @@ import { Indexable } from "index/types/indexable";
 export class Datastore {
     /** The current store revision. */
     public revision: number;
+    /**
+     * Master collection of all object IDs. This is technically redundant with objects.keys() but this is a fast set
+     * compared to an iterator.
+     */
+    private ids: Set<string>;
     /** The master collection of ALL indexed objects, mapping ID -> the object. */
     private objects: Map<string, Indexable>;
     /** Global map of object type -> list of all objects of that type. */
@@ -16,6 +21,7 @@ export class Datastore {
 
     public constructor() {
         this.revision = 0;
+        this.ids = new Set();
         this.objects = new Map();
         this.types = new Map();
         this.children = new Map();
@@ -49,15 +55,15 @@ export class Datastore {
      * takes ownership over it, and index-specific variables (prefixed via '$') may be
      * added to the object.
      */
-    public store<T extends Indexable>(object: T | T[], subindexer?: Subindexer<T>) {
-        this._recursiveStore(object, this.revision++, subindexer, undefined);
+    public store<T extends Indexable>(object: T | T[], substorer?: Substorer<T>) {
+        this._recursiveStore(object, this.revision++, substorer, undefined);
     }
 
     /** Recursively store objects using a potential subindexer. */
     private _recursiveStore<T extends Indexable>(
         object: T | T[],
         revision: number,
-        subindexer?: Subindexer<T>,
+        substorer?: Substorer<T>,
         parent?: string
     ) {
         // Handle array inputs.
@@ -78,6 +84,7 @@ export class Datastore {
         object.$parent = parent;
 
         // Add the object to the appropriate object maps.
+        this.ids.add(object.$id);
         this.objects.set(object.$id, object);
         for (let type of object.$types) {
             if (!this.types.has(type)) this.types.set(type, new Set());
@@ -92,8 +99,8 @@ export class Datastore {
         }
 
         // Index any subordinate objects in this object.
-        if (subindexer) {
-            subindexer(object, (incoming, subindex) => {
+        if (substorer) {
+            substorer(object, (incoming, subindex) => {
                 if (Literals.isArray(incoming)) {
                     for (let element of incoming) {
                         this._recursiveStore(element, revision, subindex, object.$id);
@@ -137,12 +144,14 @@ export class Datastore {
             this.types.get(type)?.delete(id);
         }
 
+        this.ids.delete(id);
         this.objects.delete(id);
         return true;
     }
 
     /** Completely clear the datastore of all values. */
     public clear() {
+        this.ids.clear();
         this.objects.clear();
         this.types.clear();
         this.children.clear();
@@ -157,57 +166,135 @@ export class Datastore {
     public search(query: IndexQuery): SearchResult<Indexable> {
         const start = Date.now();
 
+        const filter = this._searchRecursive(this._optimize(query));
+        const result = Filters.resolve(filter, this.ids);
+
+        const objects: Indexable[] = [];
+        let maxRevision = 0;
+        for (let id of result) {
+            const object = this.objects.get(id);
+            if (object) {
+                objects.push(object);
+                maxRevision = Math.max(maxRevision, object.$revision ?? 0);
+            }
+        }
+
         return {
             query: query,
-            results: [],
+            results: objects,
             duration: (Date.now() - start) / 1000.0,
-            revision: 0,
+            revision: maxRevision,
         };
     }
 
-    /** Recursively execute a subquery, returning a set of all matching document IDs. */
-    private _searchRecursive(query: IndexQuery): Set<string> {
+    /** Perform simple recursive optimizations over an index query, such as constant folding and de-nesting. */
+    private _optimize(query: IndexQuery): IndexQuery {
+        query = this._denest(query);
+        query = this._constantfold(query);
+
+        return query;
+    }
+
+    /** De-nest recursively nested AND and OR queries into a single top-level and/or. */
+    private _denest(query: IndexQuery): IndexQuery {
         switch (query.type) {
             case "and":
-                const subsets: Set<string>[] = [];
+                const ands = query.elements.flatMap((element) => {
+                    const fixed = this._denest(element);
+                    if (fixed.type === "and") return fixed.elements;
+                    else return [fixed];
+                });
+                return { type: "and", elements: ands };
+            case "or":
+                const ors = query.elements.flatMap((element) => {
+                    const fixed = this._denest(element);
+                    if (fixed.type === "or") return fixed.elements;
+                    else return [fixed];
+                });
+                return { type: "or", elements: ors };
+            default:
+                return query;
+        }
+    }
+
+    /** Perform constant folding by eliminating dead 'true' and 'false' terms. */
+    private _constantfold(query: IndexQuery): IndexQuery {
+        switch (query.type) {
+            case "and":
+                const achildren = [] as IndexQuery[];
                 for (let child of query.elements) {
-                    const results = this._searchRecursive(child);
-                    if (results.size == 0) return Datastore.EMPTY_SET;
+                    // Eliminate 'true' constants and eliminate the entire and on a 'false' constant.
+                    if (child.type === "constant") {
+                        if (child.constant) continue;
+                        else return { type: "constant", constant: false };
+                    }
+
+                    achildren.push(child);
                 }
 
-                return intersect(subsets);
-            case "constant":
-            case "not":
+                return { type: "and", elements: achildren };
             case "or":
-                // TODO.
-                return Datastore.EMPTY_SET;
-            case "connected":
-            case "folder":
-            case "tagged":
-            case "typed":
+                const ochildren = [] as IndexQuery[];
+                for (let child of query.elements) {
+                    // Eliminate 'false' constants and short circuit on a 'true' constant.
+                    if (child.type === "constant") {
+                        if (!child.constant) continue;
+                        else return { type: "constant", constant: true };
+                    }
+
+                    ochildren.push(child);
+                }
+
+                return { type: "or", elements: ochildren };
+            case "not":
+                if (query.element.type === "constant") {
+                    return { type: "constant", constant: !query.element.constant };
+                }
+
+                return query;
+            default:
+                return query;
+        }
+    }
+
+    /** Recursively execute a subquery, returning a set of all matching document IDs. */
+    private _searchRecursive(query: IndexQuery): Filter<string> {
+        switch (query.type) {
+            case "and":
+                // TODO: For efficiency, can order queries by probability of being empty.
+                return Filters.lazyIntersect(query.elements, (elem) => this._searchRecursive(elem));
+            case "or":
+                // TODO: For efficiency, can order queries by probability of being EVERYTHING.
+                return Filters.lazyUnion(query.elements, (elem) => this._searchRecursive(elem));
+            case "not":
+                return Filters.negate(this._searchRecursive(query.element));
+            default:
                 return this._searchPrimitive(query);
         }
     }
 
     /** Execute a primitive index query, i.e., a query that directly produces results. */
-    private _searchPrimitive(query: IndexPrimitive): Set<string> {
+    private _searchPrimitive(query: IndexPrimitive): Filter<string> {
         switch (query.type) {
+            case "constant":
+                return Filters.constant(query.constant);
+            case "typed":
+                return Filters.nullableAtom(this.types.get(query.value));
             case "connected":
             case "folder":
             case "tagged":
-            case "typed":
-                return Datastore.EMPTY_SET;
+            case "bounded-value":
+            case "equal-value":
+            case "field":
+                return Filters.NOTHING;
         }
     }
-
-    /** Static empty set used for efficiently returning empty sets. */
-    private static EMPTY_SET: Set<string> = Object.freeze(new Set()) as Set<string>;
 }
 
-/** A general function for indexing sub-objects in a given object. */
-export type Subindexer<T extends Indexable> = (
+/** A general function for storing sub-objects in a given object. */
+export type Substorer<T extends Indexable> = (
     object: T,
-    add: <U extends Indexable>(object: U | U[], subindex?: Subindexer<U>) => void
+    add: <U extends Indexable>(object: U | U[], subindex?: Substorer<U>) => void
 ) => void;
 
 /** The result of searching given an index query. */

@@ -84,6 +84,7 @@ export interface IndexValueBounded {
 }
 
 export type IndexPrimitive =
+    | IndexConstant
     | IndexTyped
     | IndexTagged
     | IndexFolder
@@ -118,4 +119,4 @@ export interface IndexNot {
     element: IndexQuery;
 }
 
-export type IndexQuery = IndexConstant | IndexAnd | IndexOr | IndexNot | IndexPrimitive;
+export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive;
