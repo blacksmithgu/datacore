@@ -60,7 +60,7 @@ export class MarkdownFile implements File, Indexable {
     public constructor(init: Partial<MarkdownFile>) {
         Object.assign(this, init);
 
-        if (!this.tags) this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
+        this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
     }
 
     /** Return the number of lines in the document. */
@@ -87,6 +87,10 @@ export class MarkdownSection implements Indexable {
     level: number;
     /** The span of lines indicating the position of the section. */
     position: LineSpan;
+    /** The exact set of tags in the file. */
+    etags: Set<string>;
+    /** All tags (both direct and indirectly) on the file. */
+    tags: Set<string>;
     /** If present, the block ID of this section. */
     blockId?: string;
 
@@ -100,6 +104,8 @@ export class MarkdownSection implements Indexable {
 
         this.$file = file;
         this.$id = MarkdownSection.readableId(file, this.title, this.ordinal);
+
+        this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
     }
 
     /** Obtain the number of lines in the section. */
