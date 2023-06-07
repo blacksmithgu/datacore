@@ -1,3 +1,5 @@
+// TODO: Implement just the 'inverse' part of this index as it's own type for some simple peformance gains.
+
 /** Maps key -> set<value>, and value -> set<key>. Sets and values are sorted into BTrees. */
 export class BimapIndex {
     /** Maps key -> values for that key. */

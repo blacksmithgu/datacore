@@ -1,4 +1,5 @@
 import { Literals } from "expression/literal";
+import { BimapIndex } from "index/storage/bimap";
 import { Filter, Filters } from "index/storage/filters";
 import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
@@ -14,17 +15,26 @@ export class Datastore {
     private ids: Set<string>;
     /** The master collection of ALL indexed objects, mapping ID -> the object. */
     private objects: Map<string, Indexable>;
-    /** Global map of object type -> list of all objects of that type. */
-    private types: Map<string, Set<string>>;
     /** Map parent object to it's direct child objects. */
     private children: Map<string, Set<string>>;
+
+    // Indices for the various accepted query types. These will probably be moved to a different type later.
+    /** Global map of object type -> list of all objects of that type. */
+    private types: BimapIndex;
+    /** Tracks exact tag occurence in objects. */
+    private etags: BimapIndex;
+    /** Tracks tag occurence in objects. */
+    private tags: BimapIndex;
 
     public constructor() {
         this.revision = 0;
         this.ids = new Set();
         this.objects = new Map();
-        this.types = new Map();
         this.children = new Map();
+
+        this.types = new BimapIndex();
+        this.etags = new BimapIndex();
+        this.tags = new BimapIndex();
     }
 
     /** Update the revision of the datastore due to an external update. */
@@ -43,11 +53,6 @@ export class Datastore {
         }
 
         return this.objects.get(id);
-    }
-
-    /** Returns the current set of all indexed types. */
-    public availableTypes(): Set<string> {
-        return new Set(this.types.keys());
     }
 
     /**
@@ -86,17 +91,14 @@ export class Datastore {
         // Add the object to the appropriate object maps.
         this.ids.add(object.$id);
         this.objects.set(object.$id, object);
-        for (let type of object.$types) {
-            if (!this.types.has(type)) this.types.set(type, new Set());
-
-            this.types.get(type)?.add(object.$id);
-        }
 
         // Add the object to the parent children map.
         if (parent) {
             if (!this.children.has(parent)) this.children.set(parent, new Set());
             this.children.get(parent)?.add(object.$id);
         }
+
+        this._index(object);
 
         // Index any subordinate objects in this object.
         if (substorer) {
@@ -140,21 +142,41 @@ export class Datastore {
         }
 
         // Drop this object from the appropriate maps.
-        for (let type of object.$types) {
-            this.types.get(type)?.delete(id);
-        }
-
+        this._unindex(id);
         this.ids.delete(id);
         this.objects.delete(id);
         return true;
+    }
+
+    /** Add the given indexable to the appropriate indices. */
+    private _index(object: Indexable) {
+        this.types.set(object.$id, object.$types);
+
+        if ("etags" in object && object.etags != undefined && Symbol.iterator in (object.etags as any)) {
+            this.etags.set(object.$id, object.etags as Iterable<string>);
+        }
+
+        if ("tags" in object && object.tags != undefined && Symbol.iterator in (object.tags as any)) {
+            this.tags.set(object.$id, object.tags as Iterable<string>);
+        }
+    }
+
+    /** Remove the given indexable from all indices. */
+    private _unindex(id: string) {
+        this.types.delete(id);
+        this.etags.delete(id);
+        this.tags.delete(id);
     }
 
     /** Completely clear the datastore of all values. */
     public clear() {
         this.ids.clear();
         this.objects.clear();
-        this.types.clear();
         this.children.clear();
+
+        this.types.clear();
+        this.tags.clear();
+        this.etags.clear();
 
         this.revision++;
     }
@@ -279,10 +301,15 @@ export class Datastore {
             case "constant":
                 return Filters.constant(query.constant);
             case "typed":
-                return Filters.nullableAtom(this.types.get(query.value));
+                return Filters.nullableAtom(this.types.invert(query.value));
+            case "tagged":
+                if (query.exact) {
+                    return Filters.nullableAtom(this.etags.invert(query.value));
+                } else {
+                    return Filters.nullableAtom(this.tags.invert(query.value));
+                }
             case "connected":
             case "folder":
-            case "tagged":
             case "bounded-value":
             case "equal-value":
             case "field":
