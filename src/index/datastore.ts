@@ -1,8 +1,10 @@
 import { Literals } from "expression/literal";
-import { BimapIndex } from "index/storage/bimap";
 import { Filter, Filters } from "index/storage/filters";
+import { FolderIndex } from "index/storage/folder";
+import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
+import { Vault } from "obsidian";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -20,21 +22,27 @@ export class Datastore {
 
     // Indices for the various accepted query types. These will probably be moved to a different type later.
     /** Global map of object type -> list of all objects of that type. */
-    private types: BimapIndex;
+    private types: InvertedIndex<string>;
     /** Tracks exact tag occurence in objects. */
-    private etags: BimapIndex;
+    private etags: InvertedIndex<string>;
     /** Tracks tag occurence in objects. */
-    private tags: BimapIndex;
+    private tags: InvertedIndex<string>;
+    /**
+     * Quick searches for objects in folders. This index only tracks top-level objects - it is expanded recursively to
+     * find child objects.
+     */
+    private folder: FolderIndex;
 
-    public constructor() {
+    public constructor(vault: Vault) {
         this.revision = 0;
         this.ids = new Set();
         this.objects = new Map();
         this.children = new Map();
 
-        this.types = new BimapIndex();
-        this.etags = new BimapIndex();
-        this.tags = new BimapIndex();
+        this.types = new InvertedIndex();
+        this.etags = new InvertedIndex();
+        this.tags = new InvertedIndex();
+        this.folder = new FolderIndex(vault);
     }
 
     /** Update the revision of the datastore due to an external update. */
@@ -142,7 +150,7 @@ export class Datastore {
         }
 
         // Drop this object from the appropriate maps.
-        this._unindex(id);
+        this._unindex(object);
         this.ids.delete(id);
         this.objects.delete(id);
         return true;
@@ -162,10 +170,16 @@ export class Datastore {
     }
 
     /** Remove the given indexable from all indices. */
-    private _unindex(id: string) {
-        this.types.delete(id);
-        this.etags.delete(id);
-        this.tags.delete(id);
+    private _unindex(object: Indexable) {
+        this.types.delete(object.$id, object.$types);
+
+        if ("etags" in object && object.etags != undefined && Symbol.iterator in (object.etags as any)) {
+            this.etags.delete(object.$id, object.etags as Iterable<string>);
+        }
+
+        if ("tags" in object && object.tags != undefined && Symbol.iterator in (object.tags as any)) {
+            this.tags.delete(object.$id, object.tags as Iterable<string>);
+        }
     }
 
     /** Completely clear the datastore of all values. */
@@ -301,19 +315,49 @@ export class Datastore {
             case "constant":
                 return Filters.constant(query.constant);
             case "typed":
-                return Filters.nullableAtom(this.types.invert(query.value));
+                return Filters.nullableAtom(this.types.get(query.value));
             case "tagged":
                 if (query.exact) {
-                    return Filters.nullableAtom(this.etags.invert(query.value));
+                    return Filters.nullableAtom(this.etags.get(query.value));
                 } else {
-                    return Filters.nullableAtom(this.tags.invert(query.value));
+                    return Filters.nullableAtom(this.tags.get(query.value));
                 }
-            case "connected":
             case "folder":
+                let toplevel;
+                if (query.exact) {
+                    toplevel = this.folder.getExact(query.value);
+                } else {
+                    if (query.value == "" || query.value == "/") return Filters.EVERYTHING;
+
+                    toplevel = this.folder.get(query.value);
+                }
+
+                if (toplevel.size == 0) return Filters.NOTHING;
+
+                // Expand all children.
+                const result = new Set(toplevel);
+                for (let top of toplevel) {
+                    for (let child of this._iterateChildren(top)) {
+                        result.add(child);
+                    }
+                }
+
+                return Filters.atom(result);
             case "bounded-value":
+            case "connected":
             case "equal-value":
             case "field":
                 return Filters.NOTHING;
+        }
+    }
+
+    private *_iterateChildren(parent: string): Generator<string> {
+        const children = this.children.get(parent);
+        if (children && children.size > 0) {
+            for (let child of children) {
+                yield child;
+                yield* this._iterateChildren(child);
+            }
         }
     }
 }
