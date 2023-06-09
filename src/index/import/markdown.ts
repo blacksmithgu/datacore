@@ -82,6 +82,7 @@ export function markdownImport(
         ctime: DateTime.fromMillis(stats.ctime),
         mtime: DateTime.fromMillis(stats.mtime),
         frontmatter: metadata.frontmatter,
+        extension: "md",
         size: stats.size,
         position: { start: 0, end: lines.length },
     });

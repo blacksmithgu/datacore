@@ -1,19 +1,8 @@
 import { Link } from "expression/literal";
 import { extractSubtags } from "expression/normalize";
+import { File } from "index/types/file";
 import { Indexable } from "index/types/indexable";
 import { DateTime } from "luxon";
-
-/** General metadata for any file. */
-export interface File {
-    /** The path this file exists at. */
-    path: string;
-    /** Obsidian-provided date this page was created. */
-    ctime: DateTime;
-    /** Obsidian-provided date this page was modified. */
-    mtime: DateTime;
-    /** Obsidian-provided size of this page in bytes. */
-    size: number;
-}
 
 /** A markdown file in the vault; the source of most metadata. */
 export class MarkdownFile implements File, Indexable {
@@ -35,6 +24,8 @@ export class MarkdownFile implements File, Indexable {
     ctime: DateTime;
     /** Obsidian-provided date this page was modified. */
     mtime: DateTime;
+    /** The extension; for markdown files, almost always '.md'. */
+    extension: string;
     /** Obsidian-provided size of this page in bytes. */
     size: number = 0;
     /** The full extent of the file (start 0, end the number of lines in the file.) */
@@ -91,8 +82,6 @@ export class MarkdownSection implements Indexable {
     etags: Set<string>;
     /** All tags (both direct and indirectly) on the file. */
     tags: Set<string>;
-    /** If present, the block ID of this section. */
-    blockId?: string;
 
     /** Convert raw markdown section data to the appropriate class. */
     static from(raw: Partial<MarkdownSection>): MarkdownSection {
