@@ -1,7 +1,14 @@
 import { getFileTitle } from "expression/normalize";
-import { MarkdownFile, MarkdownSection } from "index/types/markdown";
+import {
+    MarkdownBlock,
+    MarkdownFile,
+    MarkdownListBlock,
+    MarkdownListItem,
+    MarkdownSection,
+    MarkdownTaskItem,
+} from "index/types/markdown";
 import { DateTime } from "luxon";
-import { CachedMetadata, FileStats } from "obsidian";
+import { CachedMetadata, FileStats, ListItemCache } from "obsidian";
 import BTree from "sorted-btree";
 
 /**
@@ -18,36 +25,37 @@ export function markdownImport(
     const lines = markdown.split("\n");
     const empty = !lines.some((line) => line.trim() !== "");
 
-    // All sections.
-    const sections = new BTree(undefined, (a, b) => a - b);
-    let sectionOrdinal = 1;
-    if (metadata.headings) {
-        for (let index = 0; index < metadata.headings.length; index++) {
-            const section = metadata.headings[index];
-            const start = section.position.start.line;
-            const end =
-                index == metadata.headings.length - 1 ? lines.length : metadata.headings[index + 1].position.start.line;
+    //////////////
+    // Sections //
+    //////////////
+    const metaheadings = metadata.headings ?? [];
+    metaheadings.sort((a, b) => a.position.start.line - b.position.start.line);
 
-            sections.set(
-                start,
-                new MarkdownSection(path, {
-                    ordinal: sectionOrdinal,
-                    title: section.heading,
-                    level: section.level,
-                    position: { start, end },
-                    etags: new Set(),
-                })
-            );
+    const sections = new BTree<number, MarkdownSection>(undefined, (a, b) => a - b);
+    for (let index = 0; index < metaheadings.length; index++) {
+        const section = metaheadings[index];
+        const start = section.position.start.line;
+        const end =
+            index == metaheadings.length - 1 ? lines.length - 1 : metaheadings[index + 1].position.start.line - 1;
 
-            sectionOrdinal += 1;
-        }
+        sections.set(
+            start,
+            new MarkdownSection(path, {
+                ordinal: index + 1,
+                title: section.heading,
+                level: section.level,
+                position: { start, end },
+                blocks: [],
+                etags: new Set(),
+            })
+        );
     }
 
     // Add an implicit section for the "heading" section of the page if there is not an immediate header but there is
     // some content in the file. If there are other sections, then go up to that, otherwise, go for the entire file.
     const firstSection: [number, MarkdownSection] | undefined = sections.getPairOrNextHigher(0);
     if ((!firstSection && !empty) || (firstSection && !emptylines(lines, 0, firstSection[1].position.start))) {
-        const end = firstSection ? firstSection[1].position.start : lines.length;
+        const end = firstSection ? firstSection[1].position.start - 1 : lines.length;
         sections.set(
             0,
             new MarkdownSection(path, {
@@ -55,24 +63,100 @@ export function markdownImport(
                 title: getFileTitle(path),
                 level: 1,
                 position: { start: 0, end },
+                blocks: [],
                 etags: new Set(),
             })
         );
     }
 
-    // For each tag, assign it to the appropriate section that it is a part of.
+    // All blocks; we will assign tags and other metadata to blocks as we encounter them. At the end, only blocks that
+    // have actual metadata will be stored to save on memory pressure.
+    const blocks = new BTree<number, MarkdownBlock>(undefined, (a, b) => a - b);
+    let blockOrdinal = 1;
+    for (const block of metadata.sections || []) {
+        // Skip headings blocks, we handle them specially as sections.
+        if (block.type === "heading") continue;
+
+        const start = block.position.start.line;
+        const end = block.position.end.line;
+
+        if (block.type === "list") {
+            blocks.set(
+                start,
+                new MarkdownListBlock(path, {
+                    ordinal: blockOrdinal,
+                    position: { start, end },
+                    etags: new Set(),
+                    blockId: block.id,
+                    elements: [],
+                })
+            );
+        } else {
+            blocks.set(
+                start,
+                new MarkdownBlock(path, {
+                    ordinal: blockOrdinal,
+                    position: { start, end },
+                    etags: new Set(),
+                    blockId: block.id,
+                    type: block.type,
+                })
+            );
+        }
+    }
+
+    // Add blocks to sections.
+    for (const block of blocks.values() as Iterable<MarkdownBlock>) {
+        const section = sections.getPairOrNextLower(block.position.start);
+
+        if (section && section[1].position.end >= block.position.end) {
+            section[1].blocks.push(block);
+        }
+    }
+
+    // All list items in lists. Start with a simple trivial pass.
+    const listItems = new BTree<number, MarkdownListItem>(undefined, (a, b) => a - b);
+    for (const list of metadata.listItems || []) {
+        const item = convertListItem(path, list);
+        listItems.set(item.position.start, item);
+    }
+
+    // In the second list pass, actually construct the list heirarchy.
+    for (const item of listItems.values()) {
+        if (item.parentLine < 0) {
+            const listBlock = blocks.get(-item.parentLine);
+            if (!listBlock || !(listBlock instanceof MarkdownListBlock)) continue;
+
+            listBlock.elements.push(item);
+        } else {
+            const listItem = listItems.get(item.parentLine);
+            if (!listItem) continue;
+
+            listItem.elements.push(item);
+        }
+    }
+
+    // For each tag, assign it to the appropriate section and block that it is a part of.
     const etags = new Set<string>();
     for (let tagdef of metadata.tags ?? []) {
         const tag = tagdef.tag.startsWith("#") ? tagdef.tag : "#" + tagdef.tag;
+        const line = tagdef.position.start.line;
         etags.add(tag);
 
-        const section = sections.getPairOrNextLower(tagdef.position.start.line);
-        if (!section) {
-            // Not sure why there isn't a section.
-            continue;
+        const section = sections.getPairOrNextLower(line);
+        if (section && section[1].position.end >= line) {
+            section[1].etags.add(tag);
         }
 
-        section[1].etags.add(tag);
+        const block = blocks.getPairOrNextLower(line);
+        if (block && block[1].position.end >= line) {
+            block[1].etags.add(tag);
+        }
+
+        const listItem = blocks.getPairOrNextHigher(line);
+        if (listItem && listItem[1].position.end >= line) {
+            listItem[1].etags.add(tag);
+        }
     }
 
     return new MarkdownFile({
@@ -86,6 +170,28 @@ export function markdownImport(
         size: stats.size,
         position: { start: 0, end: lines.length },
     });
+}
+
+/** Convert a list item into the appropriate markdown list type. */
+function convertListItem(path: string, raw: ListItemCache): MarkdownListItem {
+    const common: Partial<MarkdownListItem> = {
+        etags: new Set(),
+        position: { start: raw.position.start.line, end: raw.position.end.line },
+        elements: [],
+        parentLine: raw.parent,
+        blockId: raw.id,
+    };
+
+    if (raw.task) {
+        return new MarkdownTaskItem(
+            path,
+            Object.assign(common, {
+                status: raw.task,
+            })
+        );
+    } else {
+        return new MarkdownListItem(path, common);
+    }
 }
 
 /** Check if the given line range is all empty. Start is inclusive, end exclusive. */

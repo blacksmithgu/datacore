@@ -8,6 +8,7 @@ onmessage = (event) => {
 
     if (message.type === "markdown") {
         const markdown = markdownImport(message.path, message.contents, message.metadata, message.stat);
+
         postMessage(
             Transferable.transferable({
                 type: "markdown",

@@ -1,8 +1,8 @@
 import { deferred, Deferred } from "expression/deferred";
-import { Datastore } from "index/datastore";
+import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
 import { Indexable } from "index/types/indexable";
-import { MarkdownFile } from "index/types/markdown";
+import { MarkdownFile, MarkdownListBlock, MarkdownListItem } from "index/types/markdown";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
 import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
@@ -112,7 +112,17 @@ export class Datacore extends Component {
             const parsed = MarkdownFile.from(result.result);
 
             this.datastore.store(parsed, (object, store) => {
-                store(object.sections);
+                store(object.sections, (section, store) => {
+                    store(section.blocks, (block, store) => {
+                        if (block instanceof MarkdownListBlock) {
+                            // Recursive store function for storing list heirarchies.
+                            const storeRec: Substorer<MarkdownListItem> = (item, store) =>
+                                store(item.elements, storeRec);
+
+                            store(block.elements, storeRec);
+                        }
+                    });
+                });
             });
 
             this.trigger("update", this.revision);

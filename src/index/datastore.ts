@@ -82,7 +82,7 @@ export class Datastore {
         // Handle array inputs.
         if (Literals.isArray(object)) {
             for (let element of object) {
-                this.store(element);
+                this._recursiveStore(element, revision, substorer, parent);
             }
 
             return;
@@ -103,23 +103,13 @@ export class Datastore {
         // Add the object to the parent children map.
         if (parent) {
             if (!this.children.has(parent)) this.children.set(parent, new Set());
-            this.children.get(parent)?.add(object.$id);
+            this.children.get(parent)!.add(object.$id);
         }
 
         this._index(object);
 
         // Index any subordinate objects in this object.
-        if (substorer) {
-            substorer(object, (incoming, subindex) => {
-                if (Literals.isArray(incoming)) {
-                    for (let element of incoming) {
-                        this._recursiveStore(element, revision, subindex, object.$id);
-                    }
-                } else {
-                    this._recursiveStore(incoming, revision, subindex, object.$id);
-                }
-            });
-        }
+        substorer?.(object, (incoming, subindex) => this._recursiveStore(incoming, revision, subindex, object.$id));
     }
 
     /** Delete an object by ID from the index, recursively deleting any child objects as well. */
