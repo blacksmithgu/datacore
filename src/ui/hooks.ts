@@ -7,7 +7,6 @@ export function useIndexUpdates(datacore: Datacore): number {
 
     useEffect(() => {
         const ref = datacore.on("update", (rev) => setRevision(rev));
-
         return () => datacore.offref(ref);
     }, []);
 

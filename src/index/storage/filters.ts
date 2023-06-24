@@ -196,7 +196,7 @@ export namespace Filters {
     /** Efficiently compute atom && !negated. */
     export function setIntersectNegation<T>(atom: Set<T>, negated: Set<T>): Set<T> {
         if (atom.size > negated.size) {
-            // TODO: Would be nice to avoid the copy.
+            // TODO: Would be nice to avoid the copy, since I'm not sure it's any faster with the copy.
             const result = new Set(atom);
             for (let element of negated) {
                 result.delete(element);
