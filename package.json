@@ -27,6 +27,7 @@
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
     "@types/parsimmon": "^1.10.6",
+    "@types/spark-md5": "^3.0.2",
     "builtin-modules": "3.3.0",
     "esbuild": "^0.16.11",
     "esbuild-plugin-inline-worker": "https://github.com/mitschabaude/esbuild-plugin-inline-worker",
@@ -45,6 +46,7 @@
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
     "preact": "^10.15.1",
-    "sorted-btree": "^1.8.1"
+    "sorted-btree": "^1.8.1",
+    "spark-md5": "^3.0.2"
   }
 }

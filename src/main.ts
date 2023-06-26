@@ -19,12 +19,17 @@ export default class DatacorePlugin extends Plugin {
         this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) ?? {});
         this.addSettingTab(new GeneralSettingsTab(this.app, this));
 
+        // Initialize the core API for usage in all views and downstream apps.
         this.addChild((this.core = new Datacore(this.app, this.manifest.version, this.settings)));
         this.api = new DatacoreApi(this.core);
 
         // Add a visual aid for what datacore is currently doing.
         this.mountIndexState(this.addStatusBarItem(), this.core);
 
+        // Add a hook for all datacorejs blocks.
+        this.registerMarkdownCodeBlockProcessor("datacorejs", (source, el, ctx) => {}, -100);
+
+        // Initialize as soon as the workspace is rewady.
         if (!this.app.workspace.layoutReady) {
             this.app.workspace.onLayoutReady(async () => this.core.initialize());
         } else {

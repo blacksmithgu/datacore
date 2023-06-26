@@ -51,13 +51,13 @@ export class Datastore {
     }
 
     /** Load an object by ID. */
-    public load(id: string): Indexable;
+    public load(id: string): Indexable | undefined;
     /** Load a list of objects by ID. */
     public load(ids: string[]): Indexable[];
 
     load(id: string | string[]): Indexable | Indexable[] | undefined {
         if (Array.isArray(id)) {
-            return id.map((a) => this.load(a)).filter((obj) => obj !== undefined);
+            return id.map((a) => this.load(a)).filter((obj): obj is Indexable => obj !== undefined);
         }
 
         return this.objects.get(id);
@@ -368,4 +368,6 @@ export interface SearchResult<O> {
     duration: number;
     /** The maximum revision of any document in the result, which is useful for diffing. */
     revision: number;
+    /** Whether this is a  */
+    loading?: boolean;
 }
