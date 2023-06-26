@@ -29,10 +29,14 @@ export default class DatacorePlugin extends Plugin {
         this.mountIndexState(this.addStatusBarItem(), this.core);
 
         // Add a hook for all datacorejs blocks.
-        this.registerMarkdownCodeBlockProcessor("datacorejs", (source, el, ctx) => {
-            const localApi = new DatacoreLocalApi(this.api, ctx.sourcePath);
-            ctx.addChild(new JavascriptRenderer(localApi, el, ctx.sourcePath, source));
-        }, -100);
+        this.registerMarkdownCodeBlockProcessor(
+            "datacorejs",
+            (source, el, ctx) => {
+                const localApi = new DatacoreLocalApi(this.api, ctx.sourcePath);
+                ctx.addChild(new JavascriptRenderer(localApi, el, ctx.sourcePath, source));
+            },
+            -100
+        );
 
         // Initialize as soon as the workspace is rewady.
         if (!this.app.workspace.layoutReady) {

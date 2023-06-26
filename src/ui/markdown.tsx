@@ -197,27 +197,24 @@ export function ErrorMessage({ title, message, reset }: { title?: string; messag
         <div class="datacore-error-box">
             {title && <h2 class="datacore-error-title">{title}</h2>}
             <p class="datacore-error-message">{message}</p>
-            {reset && <button class="datacore-error-retry" onClick={reset}>Rerun</button>}
+            {reset && (
+                <button class="datacore-error-retry" onClick={reset}>
+                    Rerun
+                </button>
+            )}
         </div>
     );
 }
 
 /** A simple error boundary which renders a message on failure. */
-export function ErrorBoundary({ title, message, children }: RenderableProps<{ title?: string; message?: string; }>) {
+export function ErrorBoundary({ title, message, children }: RenderableProps<{ title?: string; message?: string }>) {
     const [error, resetError] = useErrorBoundary();
 
     if (error) {
-        return (
-            <ErrorMessage
-                title={title}
-                message={message + "\n\n" + error}
-                reset={resetError}/>
-        );
+        return <ErrorMessage title={title} message={message + "\n\n" + error} reset={resetError} />;
     }
 
-    return <Fragment>
-        {children}
-    </Fragment>;
+    return <Fragment>{children}</Fragment>;
 }
 
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */

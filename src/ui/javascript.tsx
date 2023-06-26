@@ -1,4 +1,12 @@
-import { APP_CONTEXT, DATACORE_CONTEXT, SETTINGS_CONTEXT, COMPONENT_CONTEXT, Lit, ErrorMessage, ErrorBoundary } from "ui/markdown";
+import {
+    APP_CONTEXT,
+    DATACORE_CONTEXT,
+    SETTINGS_CONTEXT,
+    COMPONENT_CONTEXT,
+    Lit,
+    ErrorMessage,
+    ErrorBoundary,
+} from "ui/markdown";
 import { MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
 import { render, h, JSX, createElement, isValidElement } from "preact";
@@ -6,7 +14,12 @@ import { unmountComponentAtNode } from "preact/compat";
 
 /** Renders javascript code as an inline script inside of Obsidian with access. */
 export class JavascriptRenderer extends MarkdownRenderChild {
-    public constructor(public api: DatacoreLocalApi, public container: HTMLElement, public path: string, public script: string) {
+    public constructor(
+        public api: DatacoreLocalApi,
+        public container: HTMLElement,
+        public path: string,
+        public script: string
+    ) {
         super(container);
     }
 
@@ -34,14 +47,17 @@ export class JavascriptRenderer extends MarkdownRenderChild {
                 this.containerEl
             );
         } catch (ex) {
-            render(<ErrorMessage
+            render(
+                <ErrorMessage
                     title="Failed to Render"
                     message={
-                        "Failed to render this datacore script. The script may be being edited, or it may have a "
-                        + "bug. The provided error was:\n\n" + ex}
+                        "Failed to render this datacore script. The script may be being edited, or it may have a " +
+                        "bug. The provided error was:\n\n" +
+                        ex
+                    }
                 />,
                 this.containerEl
-            )
+            );
         }
     }
 
@@ -57,7 +73,7 @@ export function makeRenderableElement(object: any, sourcePath: string): JSX.Elem
     } else if (isValidElement(object)) {
         return object;
     } else {
-        return <Lit value={object} sourcePath={sourcePath}/>;
+        return <Lit value={object} sourcePath={sourcePath} />;
     }
 }
 
@@ -65,7 +81,7 @@ export function makeRenderableElement(object: any, sourcePath: string): JSX.Elem
  * Evaluate a script where 'this' for the script is set to the given context. Allows you to define global variables.
  */
 export function evalInContext(script: string, context: any): any {
-    return (new Function('dc', script))(context);
+    return new Function("dc", script)(context);
 }
 
 /**
