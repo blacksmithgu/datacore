@@ -98,7 +98,10 @@ function hashIds(input: Iterable<Indexable>): string {
     return hasher.end();
 }
 
-/** Internally stores the  */
+/** "Interns" the incoming value, returning the oldest equal instance. This is a trick to improve React diffing
+ *  behavior, as two objects which are equals via equality(a, b) will return the same object reference after being
+ *  interned.
+ */
 export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T {
     const ref = useRef<T>();
 
