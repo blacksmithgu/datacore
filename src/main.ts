@@ -1,9 +1,11 @@
+import { DatacoreLocalApi } from "api/local-api";
 import { DatacoreApi } from "api/plugin-api";
 import { Datacore } from "index/datacore";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { IndexStatusBar } from "ui/index-status";
+import { JavascriptRenderer } from "ui/javascript";
 
 /** Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
@@ -27,7 +29,10 @@ export default class DatacorePlugin extends Plugin {
         this.mountIndexState(this.addStatusBarItem(), this.core);
 
         // Add a hook for all datacorejs blocks.
-        this.registerMarkdownCodeBlockProcessor("datacorejs", (source, el, ctx) => {}, -100);
+        this.registerMarkdownCodeBlockProcessor("datacorejs", (source, el, ctx) => {
+            const localApi = new DatacoreLocalApi(this.api, ctx.sourcePath);
+            ctx.addChild(new JavascriptRenderer(localApi, el, ctx.sourcePath, source));
+        }, -100);
 
         // Initialize as soon as the workspace is rewady.
         if (!this.app.workspace.layoutReady) {

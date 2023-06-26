@@ -1,7 +1,7 @@
 /** Provides core preact / rendering utilities for all view types. */
 import { App, MarkdownRenderChild, MarkdownRenderer } from "obsidian";
-import { h, createContext, ComponentChildren, render, Fragment } from "preact";
-import { useContext, useEffect, useRef } from "preact/hooks";
+import { h, createContext, render, Fragment, RenderableProps } from "preact";
+import { useContext, useEffect, useErrorBoundary, useRef } from "preact/hooks";
 import { Component } from "obsidian";
 import { Literal, Literals } from "expression/literal";
 import React, { unmountComponentAtNode } from "preact/compat";
@@ -191,18 +191,33 @@ export function RawLit({
 /** Intelligently render an arbitrary literal value. */
 export const Lit = React.memo(RawLit);
 
-/** Render a simple nice looking error box in a code style. */
-export function ErrorPre(props: { children: ComponentChildren }, {}) {
-    return <pre class="datacore-error">{props.children}</pre>;
-}
-
 /** Render a pretty centered error message in a box. */
-export function ErrorMessage({ message }: { message: string }) {
+export function ErrorMessage({ title, message, reset }: { title?: string; message: string; reset?: () => void }) {
     return (
         <div class="datacore-error-box">
+            {title && <h2 class="datacore-error-title">{title}</h2>}
             <p class="datacore-error-message">{message}</p>
+            {reset && <button class="datacore-error-retry" onClick={reset}>Rerun</button>}
         </div>
     );
+}
+
+/** A simple error boundary which renders a message on failure. */
+export function ErrorBoundary({ title, message, children }: RenderableProps<{ title?: string; message?: string; }>) {
+    const [error, resetError] = useErrorBoundary();
+
+    if (error) {
+        return (
+            <ErrorMessage
+                title={title}
+                message={message + "\n\n" + error}
+                reset={resetError}/>
+        );
+    }
+
+    return <Fragment>
+        {children}
+    </Fragment>;
 }
 
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
