@@ -46,7 +46,7 @@ export interface UseQuerySettings {
 type HashedSearchResult<O> = SearchResult<O> & { hash?: string };
 
 /** Perform a live query which updates its results whenever the backing query would change. */
-export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): SearchResult<Indexable> {
+export function useFullQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): SearchResult<Indexable> {
     // Track index updates with customizable debouncing.
     const indexRevision = useIndexUpdates(datacore, settings);
 
@@ -86,6 +86,11 @@ export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQu
         // Same revision and same hash, this is the same query result, so return the old object.
         return internedResult.current;
     }, [internedQuery, indexRevision]);
+}
+
+/** Simplier version of useFullQuery which just directly returns results. */
+export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): Indexable[] {
+    return useFullQuery(datacore, query, settings).results;
 }
 
 /** Hash all IDs to produce a single hash. */

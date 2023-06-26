@@ -1,8 +1,14 @@
 import { DatacoreApi } from "api/plugin-api";
+import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
-import { Datastore } from "index/datastore";
+import { Datastore, SearchResult } from "index/datastore";
+import { IndexQuery } from "index/types/index-query";
+import { Indexable } from "index/types/indexable";
 import { MarkdownFile } from "index/types/markdown";
 import { App } from "obsidian";
+import { useFileMetadata, useFullQuery, useQuery } from "ui/hooks";
+import * as luxon from "luxon";
+import * as preact from "preact";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -18,6 +24,16 @@ export class DatacoreLocalApi {
         return this.api.page(this.path)!;
     }
 
+    /** Get acess to luxon functions. */
+    get luxon(): typeof luxon {
+        return luxon;
+    }
+
+    /** Get access to preact functions. */
+    get preact(): typeof preact {
+        return preact;
+    }
+
     /** The internal plugin central datastructure. */
     get core(): Datacore {
         return this.api.core;
@@ -31,5 +47,42 @@ export class DatacoreLocalApi {
     /** Central Obsidian app object. */
     get app(): App {
         return this.core.app;
+    }
+
+    ///////////////////////
+    // General utilities //
+    ///////////////////////
+
+    /** Resolve a local or absolute path or link to an absolute path. */
+    public resolvePath(path: string | Link): string {
+        const rawpath = (path instanceof Link) ? path.path : path;
+        if (rawpath.startsWith("/")) return rawpath.substring(1);
+
+        const absolute = this.app.metadataCache.getFirstLinkpathDest(rawpath, this.path);
+        if (absolute) return absolute.path;
+
+        return rawpath;
+    }
+
+    ////////////
+    /** Hooks */
+    ////////////
+
+    /** Use the file metadata for the current file. */
+    public useCurrentFile(settings?: { debounce?: number }): MarkdownFile {
+        return useFileMetadata(this.core, this.path, settings) as MarkdownFile;
+    }
+
+    /**
+     * Run a query, automatically re-running it whenever the vault changes. Returns more information about the query
+     * execution, such as index revision and total search duration.
+     */
+    public useFullQuery(query: IndexQuery, settings?: { debounce?: number }): SearchResult<Indexable> {
+        return useFullQuery(this.core, query, settings);
+    }
+
+    /** Run a query, automatically re-running it whenever the vault changes. */
+    public useQuery(query: IndexQuery, settings?: { debounce?: number }): Indexable[] {
+        return useQuery(this.core, query, settings);
     }
 }

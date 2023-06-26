@@ -40,9 +40,12 @@
     "typescript": "^4.4.2"
   },
   "dependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.22.5",
+    "@babel/standalone": "^7.22.5",
     "@codemirror/language": "https://github.com/lishid/cm-language",
     "@codemirror/state": "^6.0.1",
     "@codemirror/view": "^6.0.1",
+    "@types/babel__standalone": "^7.1.4",
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
     "preact": "^10.15.1",

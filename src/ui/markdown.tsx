@@ -192,11 +192,12 @@ export function RawLit({
 export const Lit = React.memo(RawLit);
 
 /** Render a pretty centered error message in a box. */
-export function ErrorMessage({ title, message, reset }: { title?: string; message: string; reset?: () => void }) {
+export function ErrorMessage({ title, message, error, reset }: { title?: string; message?: string; error?: string, reset?: () => void }) {
     return (
         <div class="datacore-error-box">
-            {title && <h2 class="datacore-error-title">{title}</h2>}
-            <p class="datacore-error-message">{message}</p>
+            {title && <h4 class="datacore-error-title">{title}</h4>}
+            {message && <p class="datacore-error-message">{message}</p>}
+            {error && <pre class="datacore-error-pre">{error}</pre>}
             {reset && (
                 <button class="datacore-error-retry" onClick={reset}>
                     Rerun
@@ -211,7 +212,7 @@ export function ErrorBoundary({ title, message, children }: RenderableProps<{ ti
     const [error, resetError] = useErrorBoundary();
 
     if (error) {
-        return <ErrorMessage title={title} message={message + "\n\n" + error} reset={resetError} />;
+        return <ErrorMessage title={title} message={message} error={""+error} reset={resetError} />;
     }
 
     return <Fragment>{children}</Fragment>;

@@ -11,9 +11,12 @@ import { MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
 import { render, h, JSX, createElement, isValidElement } from "preact";
 import { unmountComponentAtNode } from "preact/compat";
+import * as babel from "@babel/standalone";
 
 /** Renders javascript code as an inline script inside of Obsidian with access. */
 export class JavascriptRenderer extends MarkdownRenderChild {
+    private loaded: boolean = false;
+
     public constructor(
         public api: DatacoreLocalApi,
         public container: HTMLElement,
@@ -24,11 +27,27 @@ export class JavascriptRenderer extends MarkdownRenderChild {
     }
 
     public async onload() {
+        this.loaded = true;
+
         // TODO: Pass the script through babel.js with commonJS presets to convert JSX.
         // Attempt to parse and evaluate the script to produce either a renderable JSX object
         // or a function.
         try {
-            const renderable = await asyncEvalInContext(this.script, this.api);
+            const jsx = babel.transform(this.script, {
+                plugins: [
+                    ["transform-react-jsx", { "pragma": "h" }],
+                ],
+                parserOpts: {
+                    allowAwaitOutsideFunction: true,
+                    allowImportExportEverywhere: true,
+                    allowSuperOutsideMethod: true,
+                    allowReturnOutsideFunction: true
+                },
+            }).code!;
+
+            const renderable = await asyncEvalInContext(jsx, this.api);
+            if (!this.loaded) return;
+
             const renderableElement = makeRenderableElement(renderable, this.path);
 
             // Very contextual!
@@ -50,11 +69,8 @@ export class JavascriptRenderer extends MarkdownRenderChild {
             render(
                 <ErrorMessage
                     title="Failed to Render"
-                    message={
-                        "Failed to render this datacore script. The script may be being edited, or it may have a " +
-                        "bug. The provided error was:\n\n" +
-                        ex
-                    }
+                    message="Failed to render this datacore script. The script may be being edited, or it may have a bug."
+                    error={"" + ex}
                 />,
                 this.containerEl
             );
@@ -63,6 +79,7 @@ export class JavascriptRenderer extends MarkdownRenderChild {
 
     public onunload(): void {
         unmountComponentAtNode(this.containerEl);
+        this.loaded = false;
     }
 }
 
@@ -81,7 +98,7 @@ export function makeRenderableElement(object: any, sourcePath: string): JSX.Elem
  * Evaluate a script where 'this' for the script is set to the given context. Allows you to define global variables.
  */
 export function evalInContext(script: string, context: any): any {
-    return new Function("dc", script)(context);
+    return new Function("dc", "h", script)(context, h);
 }
 
 /**

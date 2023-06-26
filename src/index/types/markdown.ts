@@ -1,5 +1,5 @@
 import { Link } from "expression/literal";
-import { extractSubtags } from "expression/normalize";
+import { extractSubtags, getFileTitle } from "expression/normalize";
 import { File } from "index/types/file";
 import { Indexable } from "index/types/indexable";
 import { DateTime } from "luxon";
@@ -57,6 +57,11 @@ export class MarkdownFile implements File, Indexable {
     /** Return the number of lines in the document. */
     get lineCount() {
         return this.position.end;
+    }
+
+    /** The name of the file. */
+    get name() {
+        return getFileTitle(this.path);
     }
 }
 
