@@ -46,7 +46,11 @@ export interface UseQuerySettings {
 type HashedSearchResult<O> = SearchResult<O> & { hash?: string };
 
 /** Perform a live query which updates its results whenever the backing query would change. */
-export function useFullQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): SearchResult<Indexable> {
+export function useFullQuery(
+    datacore: Datacore,
+    query: IndexQuery,
+    settings?: UseQuerySettings
+): SearchResult<Indexable> {
     // Track index updates with customizable debouncing.
     const indexRevision = useIndexUpdates(datacore, settings);
 

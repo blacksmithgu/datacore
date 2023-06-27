@@ -14,6 +14,7 @@ export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
 export const DATACORE_CONTEXT = createContext<Datacore>(undefined!);
 export const SETTINGS_CONTEXT = createContext<Settings>(undefined!);
+export const CURRENT_FILE_CONTEXT = createContext<string>(undefined!);
 
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export function RawMarkdown({
@@ -79,12 +80,12 @@ export function RawLit({
     sourcePath,
     inline = false,
     depth = 0,
-}: {
+}: RenderableProps<{
     value: Literal | undefined;
     sourcePath: string;
     inline?: boolean;
     depth?: number;
-}) {
+}>) {
     const settings = useContext(SETTINGS_CONTEXT);
     const app = useContext(APP_CONTEXT);
 
@@ -192,7 +193,17 @@ export function RawLit({
 export const Lit = React.memo(RawLit);
 
 /** Render a pretty centered error message in a box. */
-export function ErrorMessage({ title, message, error, reset }: { title?: string; message?: string; error?: string, reset?: () => void }) {
+export function ErrorMessage({
+    title,
+    message,
+    error,
+    reset,
+}: {
+    title?: string;
+    message?: string;
+    error?: string;
+    reset?: () => void;
+}) {
     return (
         <div class="datacore-error-box">
             {title && <h4 class="datacore-error-title">{title}</h4>}
@@ -212,7 +223,7 @@ export function ErrorBoundary({ title, message, children }: RenderableProps<{ ti
     const [error, resetError] = useErrorBoundary();
 
     if (error) {
-        return <ErrorMessage title={title} message={message} error={""+error} reset={resetError} />;
+        return <ErrorMessage title={title} message={message} error={"" + error} reset={resetError} />;
     }
 
     return <Fragment>{children}</Fragment>;
@@ -224,6 +235,7 @@ export class ReactRenderer extends MarkdownRenderChild {
         public app: App,
         public datacore: Datacore,
         public container: HTMLElement,
+        public sourcePath: string,
         public element: h.JSX.Element
     ) {
         super(container);
@@ -236,7 +248,9 @@ export class ReactRenderer extends MarkdownRenderChild {
                 <COMPONENT_CONTEXT.Provider value={this}>
                     <DATACORE_CONTEXT.Provider value={this.datacore}>
                         <SETTINGS_CONTEXT.Provider value={this.datacore.settings}>
-                            {this.element}
+                            <CURRENT_FILE_CONTEXT.Provider value={this.sourcePath}>
+                                {this.element}
+                            </CURRENT_FILE_CONTEXT.Provider>
                         </SETTINGS_CONTEXT.Provider>
                     </DATACORE_CONTEXT.Provider>
                 </COMPONENT_CONTEXT.Provider>

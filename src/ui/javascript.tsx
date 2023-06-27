@@ -6,6 +6,7 @@ import {
     Lit,
     ErrorMessage,
     ErrorBoundary,
+    CURRENT_FILE_CONTEXT,
 } from "ui/markdown";
 import { MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
@@ -29,19 +30,17 @@ export class JavascriptRenderer extends MarkdownRenderChild {
     public async onload() {
         this.loaded = true;
 
-        // TODO: Pass the script through babel.js with commonJS presets to convert JSX.
-        // Attempt to parse and evaluate the script to produce either a renderable JSX object
-        // or a function.
+        // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
+            // Using babel in this one place adds about 5mb to the js bundle (from 500kb -> 5.7mb)! This noticably
+            // increases plugin load time and so it may be worth going for simpler alternatives.
             const jsx = babel.transform(this.script, {
-                plugins: [
-                    ["transform-react-jsx", { "pragma": "h" }],
-                ],
+                plugins: [["transform-react-jsx", { pragma: "h" }]],
                 parserOpts: {
                     allowAwaitOutsideFunction: true,
                     allowImportExportEverywhere: true,
                     allowSuperOutsideMethod: true,
-                    allowReturnOutsideFunction: true
+                    allowReturnOutsideFunction: true,
                 },
             }).code!;
 
@@ -56,9 +55,11 @@ export class JavascriptRenderer extends MarkdownRenderChild {
                     <COMPONENT_CONTEXT.Provider value={this}>
                         <DATACORE_CONTEXT.Provider value={this.api.core}>
                             <SETTINGS_CONTEXT.Provider value={this.api.core.settings}>
-                                <ErrorBoundary title="Failed To Render" message="The script failed while executing.">
-                                    {renderableElement}
-                                </ErrorBoundary>
+                                <CURRENT_FILE_CONTEXT.Provider value={this.path}>
+                                    <ErrorBoundary message="The script failed while executing.">
+                                        {renderableElement}
+                                    </ErrorBoundary>
+                                </CURRENT_FILE_CONTEXT.Provider>
                             </SETTINGS_CONTEXT.Provider>
                         </DATACORE_CONTEXT.Provider>
                     </COMPONENT_CONTEXT.Provider>
@@ -68,7 +69,6 @@ export class JavascriptRenderer extends MarkdownRenderChild {
         } catch (ex) {
             render(
                 <ErrorMessage
-                    title="Failed to Render"
                     message="Failed to render this datacore script. The script may be being edited, or it may have a bug."
                     error={"" + ex}
                 />,
