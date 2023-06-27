@@ -26,7 +26,7 @@ Each view will have the following general functionality:
   editing, though ratings / dropdowns will have special behavior.
 - [ ] **Pagination**: For performance reasons, all views are paginated (configurable to 10, 20, 50, 100, 250 or a custom
   granularity).
-- [ ] **Live Reloading**: Views automatically update whenever the result of their query changes.
+- [X] **Live Reloading**: Views automatically update whenever the result of their query changes.
 - [ ] **Embed Support**: Most views should play nice with embeds (images, PDFs, other markdown files).
 - [ ] **Add New Element**: Views will support adding new pages automatically via a template; this template can be
   configured or use an existing Obsidian template file.
@@ -46,8 +46,8 @@ it, but the following ways to add metadata will be added:
   add additional metadata to the page / section.
 - [ ] **Inline Objects**: You will be able to define YAML codeblocks as "objects", which are searchable independent of
   the page they are on (for example, "exercise" objects).
-- [ ] **Sections**: Sections can be treated as objects and are directly queryable.
-- [ ] **Tasks**: Tasks can be directly queried and are more performant; metadata can be added using the Task plugin
+- [?] **Sections**: Sections can be treated as objects and are directly queryable.
+- [?] **Tasks**: Tasks can be directly queried and are more performant; metadata can be added using the Task plugin
   emoji or inline fields.
 
 ## Comprehensibility
@@ -67,12 +67,12 @@ clear.
 
 The kind of metadata that Datacore will index.
 
-- [ ] **Markdown Pages**: As expected. Should index sections, tasks, frontmatter, inline fields, and so on.
+- [X] **Markdown Pages**: As expected. Should index sections, tasks, frontmatter, inline fields, and so on.
 - [ ] **Inline Fields**: Inline fields will be opt-in instead of on by default, so performance sensitive vaults can opt
   for inline YAML blocks or frontmatter instead, which are faster to parse.
-- [ ] **Sections**: Every section in markdown pages will be parsed, including the implicit "root" section (the first
+- [X] **Sections**: Every section in markdown pages will be parsed, including the implicit "root" section (the first
   part of the page before any section headers).
-- [ ] **Tasks**: Tasks inside markdown pages will be parsed, along with various metadata from the **Tasks** plugin.
+- [X] **Tasks**: Tasks inside markdown pages will be parsed, along with various metadata from the **Tasks** plugin.
 - [ ] **Canvas Files**: Canvas files will be indexed; each text node will be available to load, as well as all linked
   pages inside of the file.
 - [ ] **Images**: Basic metadata - name, dimensions, format.
@@ -81,9 +81,9 @@ The kind of metadata that Datacore will index.
 
 ## Javascript API
 
-- [ ] **React-based Views**: Javascript swaps to using React for views, which eliminates the "flickering" during
+- [X] **React-based Views**: Javascript swaps to using React for views, which eliminates the "flickering" during
   re-renders, and also allows for access to Datacore visual components.
-- [ ] **Index Queries**: Skip the "query rendering" step and directly access the backing database, which allows for much
+- [X] **Index Queries**: Skip the "query rendering" step and directly access the backing database, which allows for much
   faster queries in exchange for less flexibility.
 - [ ] **Script Imports**: Support `require()` inside of codeblocks; note that this will generally only works for scripts
   inside of the vault.
@@ -100,11 +100,11 @@ Background pre-requisites; this is generally not user facing.
 - [ ] **Performance Controls**: Support choosing which files to index, what file types to index, and what subfeatures to
   index all to speed up performance.
     - All of these features will have timings which indicate how long they take, on average.
-- [ ] **Throttle Controls**: Set a percent allowance of how much CPU to use up for all Datacore tasks.
+- [X] **Throttle Controls**: Set a percent allowance of how much CPU to use up for all Datacore tasks.
 - [ ] **File-based Persistence**: IndexedDB appears to have hard metadata limits and does not work for large vaults
   (where caching is most desparately needed). An alternative multi-file database (of sorted JSON documents), like LowDB
   or LevelDB, will work better.
-- [ ] **Rendering Ratelimiting**: Datacore should never crash Obsidian due to rendering a huge query. All queries have
+- [X] **Rendering Ratelimiting**: Datacore should never crash Obsidian due to rendering a huge query. All queries have
   implicit limits which must be EXPLICITLY turned off. Renders automatically pause after 10 seconds pass.
 - [ ] **NPM Publishing**: Publish the library and indexer to npm; other plugins can directly depend on it without
   requiring users to install Datacore itself.
