@@ -43,6 +43,11 @@ export interface UseQuerySettings {
     debounce?: number;
 }
 
+/**
+ * A search result which includes a hash of all of the IDs; this is used to cache
+ * search results that produced exactly the same result, avoiding an unnecessary React
+ * re-render.
+ */
 type HashedSearchResult<O> = SearchResult<O> & { hash?: string };
 
 /** Perform a live query which updates its results whenever the backing query would change. */
@@ -107,7 +112,8 @@ function hashIds(input: Iterable<Indexable>): string {
     return hasher.end();
 }
 
-/** "Interns" the incoming value, returning the oldest equal instance. This is a trick to improve React diffing
+/**
+ * "Interns" the incoming value, returning the oldest equal instance. This is a trick to improve React diffing
  *  behavior, as two objects which are equals via equality(a, b) will return the same object reference after being
  *  interned.
  */
@@ -120,3 +126,6 @@ export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T 
 
     return ref.current;
 }
+
+/** Hide a value behind a stable proxy. */
+export function useStable()

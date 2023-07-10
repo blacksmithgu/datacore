@@ -8,8 +8,17 @@ export interface Settings {
     /** Are JS views enabled? */
     enableJs: boolean;
 
-    /** Some sane limits for paging and recursive rendering. */
+    /** 
+     * Whether views are paged by default. This is an important performance optimization,
+     * since showing hundreds or thousands of results can be fairly slow!
+     */
+    defaultPagingEnabled: boolean;
+    /** Default paging size for all views (number of entries per page.) */
     defaultPageSize: number;
+    /**
+     * Maximum depth that objects will be rendered to (i.e., how many levels of subproperties
+     * will be rendered by default).
+     */
     maxRecursiveRenderDepth: number;
 
     /** The default format that dates are rendered in (using luxon's moment-like formatting). */
@@ -27,6 +36,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
 
     enableJs: true,
 
+    defaultPagingEnabled: true,
     defaultPageSize: 50,
     maxRecursiveRenderDepth: 5,
 

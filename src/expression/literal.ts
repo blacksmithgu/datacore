@@ -18,9 +18,7 @@ export type LiteralType =
     | "array"
     | "object"
     | "function"
-    | "null"
-    | "html"
-    | "widget";
+    | "null";
 /** The raw values that a literal can take on. */
 export type Literal =
     | boolean
@@ -32,9 +30,7 @@ export type Literal =
     | Array<Literal>
     | DataObject
     | Function
-    | null
-    | HTMLElement
-    | Widget;
+    | null;
 
 /** Maps the string type to it's external, API-facing representation. */
 export type LiteralRepr<T extends LiteralType> = T extends "boolean"
@@ -57,10 +53,6 @@ export type LiteralRepr<T extends LiteralType> = T extends "boolean"
     ? DataObject
     : T extends "function"
     ? Function
-    : T extends "html"
-    ? HTMLElement
-    : T extends "widget"
-    ? Widget
     : any;
 
 /** A wrapped literal value which can be switched on. */
@@ -73,8 +65,6 @@ export type WrappedLiteral =
     | LiteralWrapper<"link">
     | LiteralWrapper<"array">
     | LiteralWrapper<"object">
-    | LiteralWrapper<"html">
-    | LiteralWrapper<"widget">
     | LiteralWrapper<"function">
     | LiteralWrapper<"null">;
 
@@ -123,10 +113,6 @@ export namespace Literals {
             case "number":
             case "boolean":
                 return "" + wrapped.value;
-            case "html":
-                return wrapped.value.outerHTML;
-            case "widget":
-                return wrapped.value.markdown();
             case "link":
                 return wrapped.value.markdown();
             case "function":
@@ -160,11 +146,9 @@ export namespace Literals {
         else if (isBoolean(val)) return { type: "boolean", value: val };
         else if (isDuration(val)) return { type: "duration", value: val };
         else if (isDate(val)) return { type: "date", value: val };
-        else if (isWidget(val)) return { type: "widget", value: val };
         else if (isArray(val)) return { type: "array", value: val };
         else if (isLink(val)) return { type: "link", value: val };
         else if (isFunction(val)) return { type: "function", value: val };
-        else if (isHtml(val)) return { type: "html", value: val };
         else if (isObject(val)) return { type: "object", value: val };
         else return undefined;
     }
@@ -274,8 +258,6 @@ export namespace Literals {
                 }
 
                 return 0;
-            case "widget":
-            case "html":
             case "function":
                 return 0;
         }
@@ -310,8 +292,6 @@ export namespace Literals {
                 return wrapped.value.length > 0;
             case "null":
                 return false;
-            case "html":
-            case "widget":
             case "function":
                 return true;
         }

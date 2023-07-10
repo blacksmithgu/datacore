@@ -97,4 +97,8 @@ export class DatacoreLocalApi {
     public list(elements: any[], settings?: ListState<any>): preact.JSX.Element {
         return preact.h(ListView, Object.assign({}, settings, { elements }), []);
     }
+
+    //////////////////////////
+    // Visual element hooks //
+    //////////////////////////
 }
