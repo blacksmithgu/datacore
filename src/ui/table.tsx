@@ -114,3 +114,7 @@ function useAsElement(element: JSX.Element | Literal): JSX.Element {
         }
     }, [element]);
 }
+
+/////////////////
+// Table Hooks //
+/////////////////

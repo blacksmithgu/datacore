@@ -9,7 +9,7 @@ import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
-import { ListState, ListView } from "ui/list";
+import { COMPONENTS } from "./components";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -50,6 +50,11 @@ export class DatacoreLocalApi {
         return this.core.app;
     }
 
+    /** Provides access to all of the datacore intrinsic react components. */
+    get components(): typeof COMPONENTS {
+        return COMPONENTS;
+    }
+
     ///////////////////////
     // General utilities //
     ///////////////////////
@@ -85,17 +90,6 @@ export class DatacoreLocalApi {
     /** Run a query, automatically re-running it whenever the vault changes. */
     public useQuery(query: IndexQuery, settings?: { debounce?: number }): Indexable[] {
         return useQuery(this.core, query, settings);
-    }
-
-    /////////////////////
-    // Visual elements //
-    /////////////////////
-
-    public readonly List = ListView;
-
-    /** Create a generic list element. */
-    public list(elements: any[], settings?: ListState<any>): preact.JSX.Element {
-        return preact.h(ListView, Object.assign({}, settings, { elements }), []);
     }
 
     //////////////////////////
