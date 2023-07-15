@@ -126,6 +126,3 @@ export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T 
 
     return ref.current;
 }
-
-/** Hide a value behind a stable proxy. */
-export function useStable()
