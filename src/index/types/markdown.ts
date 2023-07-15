@@ -63,6 +63,11 @@ export class MarkdownFile implements File, Indexable {
     get name() {
         return getFileTitle(this.path);
     }
+
+    /** A link to this file. */
+    get link() {
+        return Link.file(this.path);
+    }
 }
 
 export class MarkdownSection implements Indexable {
