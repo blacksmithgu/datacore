@@ -51,20 +51,28 @@ export interface TableColumn<T, V = Literal> {
 }
 
 export function TableView<T>(props: RenderableProps<TableState<T> & { rows: T[] }>) {
-    return <table className="datacore-table">
-        <thead>
-            <TableHeader columns={props.columns} />
-        </thead>
-        <tbody>
-            {props.rows.map(row => <TableRow row={row} columns={props.columns} />)}
-        </tbody>
-    </table>
+    return (
+        <table className="datacore-table">
+            <thead>
+                <TableHeader columns={props.columns} />
+            </thead>
+            <tbody>
+                {props.rows.map((row) => (
+                    <TableRow row={row} columns={props.columns} />
+                ))}
+            </tbody>
+        </table>
+    );
 }
 
 export function TableHeader<T>({ columns }: { columns: TableColumn<T>[] }) {
-    return <tr className="datacore-table-header-row">
-        {columns.map(col => <TableHeaderCell column={col} />)}
-    </tr>
+    return (
+        <tr className="datacore-table-header-row">
+            {columns.map((col) => (
+                <TableHeaderCell column={col} />
+            ))}
+        </tr>
+    );
 }
 
 export function TableHeaderCell<T>({ column }: { column: TableColumn<T> }) {
@@ -78,18 +86,20 @@ export function TableHeaderCell<T>({ column }: { column: TableColumn<T> }) {
         }
     }, [column, column.title]);
 
-    return <th className="datacore-table-header-cell">
-        {header}
-    </th>;
+    return <th className="datacore-table-header-cell">{header}</th>;
 }
 
-export function TableRow<T>({ row, columns }: { row: T, columns: TableColumn<T>[] }) {
-    return <tr className="datacore-table-row">
-        {columns.map(col => <TableRowCell row={row} column={col} />)}
-    </tr>;
+export function TableRow<T>({ row, columns }: { row: T; columns: TableColumn<T>[] }) {
+    return (
+        <tr className="datacore-table-row">
+            {columns.map((col) => (
+                <TableRowCell row={row} column={col} />
+            ))}
+        </tr>
+    );
 }
 
-export function TableRowCell<T>({ row, column }: { row: T, column: TableColumn<T> }) {
+export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T> }) {
     const value = useMemo(() => column.value(row), [row, column]);
     const renderable = useMemo(() => {
         if (column.render) return column.render(value, row);
@@ -97,9 +107,7 @@ export function TableRowCell<T>({ row, column }: { row: T, column: TableColumn<T
     }, [row, column, value]);
     const rendered = useAsElement(renderable);
 
-    return <td className="datacore-table-cell">
-        {rendered}
-    </td>;
+    return <td className="datacore-table-cell">{rendered}</td>;
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element. */
@@ -110,7 +118,7 @@ function useAsElement(element: JSX.Element | Literal): JSX.Element {
         if (isValidElement(element)) {
             return element;
         } else {
-            return <Lit sourcePath={sourcePath} inline={false} value={element as any} />
+            return <Lit sourcePath={sourcePath} inline={false} value={element as any} />;
         }
     }, [element]);
 }

@@ -11,5 +11,5 @@ export const COMPONENTS = {
     /** Renders an arbitrary value. */
     Literal: Lit,
     /** Renders markdown using the Obsidian markdown renderer. */
-    Markdown: Markdown
+    Markdown: Markdown,
 };

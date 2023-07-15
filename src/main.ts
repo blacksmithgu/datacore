@@ -85,35 +85,43 @@ class GeneralSettingsTab extends PluginSettingTab {
         new Setting(this.containerEl)
             .setName("Pagination")
             .setDesc(
-                "If enabled, splits up views into pages of results which can be traversed"
-                 + " via buttons at the top and bottom of the view. This substantially improves"
-                 + " the performance of large views, and can help with visual clutter. Note that"
-                 + " this setting can also be set on a per-view basis.")
-            .addToggle(toggle => {
+                "If enabled, splits up views into pages of results which can be traversed" +
+                    " via buttons at the top and bottom of the view. This substantially improves" +
+                    " the performance of large views, and can help with visual clutter. Note that" +
+                    " this setting can also be set on a per-view basis."
+            )
+            .addToggle((toggle) => {
                 toggle.setValue(this.plugin.settings.defaultPagingEnabled).onChange(async (value) => {
                     await this.plugin.updateSettings({ defaultPagingEnabled: value });
-                })
+                });
             });
 
         new Setting(this.containerEl)
             .setName("Default Page Size")
-            .setDesc("The number of entries to show per page, by default. This can be overriden on"
-                + " a per-view basis.")
-            .addDropdown(dropdown => {
-                const OPTIONS: Record<string, string> = { "25": "25", "50": "50", "100": "100", "200": "200", "500": "500" };
+            .setDesc(
+                "The number of entries to show per page, by default. This can be overriden on" + " a per-view basis."
+            )
+            .addDropdown((dropdown) => {
+                const OPTIONS: Record<string, string> = {
+                    "25": "25",
+                    "50": "50",
+                    "100": "100",
+                    "200": "200",
+                    "500": "500",
+                };
                 const current = "" + this.plugin.settings.defaultPageSize;
                 if (!(current in OPTIONS)) OPTIONS[current] = current;
 
                 dropdown
                     .addOptions(OPTIONS)
                     .setValue(current)
-                    .onChange(async value => {
+                    .onChange(async (value) => {
                         const parsed = parseFloat(value);
                         if (isNaN(parsed)) return;
 
                         await this.plugin.updateSettings({ defaultPageSize: parsed | 0 });
-                    })
-            })
+                    });
+            });
 
         this.containerEl.createEl("h2", { text: "Performance Tuning" });
 

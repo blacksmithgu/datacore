@@ -8,7 +8,7 @@ export interface Settings {
     /** Are JS views enabled? */
     enableJs: boolean;
 
-    /** 
+    /**
      * Whether views are paged by default. This is an important performance optimization,
      * since showing hundreds or thousands of results can be fairly slow!
      */
