@@ -6,7 +6,7 @@ import { renderMinimalDate, renderMinimalDuration } from "expression/normalize";
 export { Link };
 
 /** Shorthand for a mapping from keys to values. */
-export type DataObject = { [key: string]: Literal };
+export type DataObject = Record<string, any>;
 /** The literal types supported by the query engine. */
 export type LiteralType =
     | "boolean"
@@ -169,7 +169,7 @@ export namespace Literals {
     }
 
     /** Compare two arbitrary JavaScript values. Produces a total ordering over ANY possible datacore value. */
-    export function compare(val1: Literal, val2: Literal, linkNormalizer?: (link: string) => string): number {
+    export function compare(val1: Literal | undefined, val2: Literal | undefined, linkNormalizer?: (link: string) => string): number {
         // Handle undefined/nulls first.
         if (val1 === undefined) val1 = null;
         if (val2 === undefined) val2 = null;

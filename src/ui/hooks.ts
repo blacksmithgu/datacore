@@ -2,7 +2,7 @@ import { Datacore } from "index/datacore";
 import { debounce } from "obsidian";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { SearchResult } from "index/datastore";
 import SparkMD5 from "spark-md5";
 import { Literals } from "expression/literal";
@@ -125,4 +125,17 @@ export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T 
     }
 
     return ref.current;
+}
+
+/** Use a stable callback which hides mutable state behind a stable reference. */
+export function useStableCallback<T>(callback: T, deps: any[]): T {
+    const ref = useRef<T>();
+
+    useEffect(() => {
+        ref.current = callback;
+    }, [callback, ...deps]);
+
+    return useCallback((...args: any[]) => {
+        (ref.current as any)(...args)
+    }, [ref]) as T;
 }

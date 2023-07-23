@@ -1,9 +1,22 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import path from "path";
 import fs from "fs";
 
 import inlineWorkerPlugin from "esbuild-plugin-inline-worker";
+
+/** Rewrites react dependencies as preact dependencies so we can use many common react libraries. */
+const preactCompat = {
+	name: "preact-compact",
+	setup(build) {
+		const preact = path.join(process.cwd(), "node_modules", "preact", "compat", "dist", "compat.module.js");
+
+		build.onResolve({filter: /^(react-dom|react)$/}, args => {
+			return { path: preact };
+		});
+	}
+}
 
 // Build the primary javascript file.
 async function build(prod) {
@@ -15,7 +28,10 @@ async function build(prod) {
 		},
 		entryPoints: ['src/main.ts'],
 		bundle: true,
-		plugins: [inlineWorkerPlugin({ workerName: "Datacore Indexer" })],
+		plugins: [
+			inlineWorkerPlugin({ workerName: "Datacore Indexer" }),
+			preactCompat
+		],
 		external: [
 			'obsidian',
 			'electron',
