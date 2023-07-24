@@ -180,10 +180,13 @@ export function TableHeaderCell<T>({
         [sort, dispatch, column.id]
     );
 
+    // We use an internal div to avoid flex messing with the table layout.
     return (
         <th className="datacore-table-header-cell">
-            {sortable && <SortButton className="datacore-table-sort" direction={sort} onClick={sortClicked} />}
-            <div onClick={sortClicked} className="datacore-table-header-title">{header}</div>
+            <div className="datacore-table-header-cell-content">
+                {sortable && <SortButton className="datacore-table-sort" direction={sort} onClick={sortClicked} />}
+                <div onClick={sortClicked} className="datacore-table-header-title">{header}</div>
+            </div>
         </th>
     );
 }

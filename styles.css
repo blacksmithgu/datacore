@@ -37,7 +37,7 @@
     margin-block-end: 0.2em !important;
 }
 
-.datacore-table-header-cell {
+.datacore-table-header-cell-content {
     width: auto;
     display: inline-flex;
     flex-direction: row;
