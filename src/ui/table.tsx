@@ -117,7 +117,8 @@ export function ControlledTableView<T>(
                 if (!column) continue;
 
                 const comparer = column.comparator ?? DEFAULT_TABLE_COMPARATOR;
-                const result = comparer(column.value(a), column.value(b), a, b);
+                const direction = sortKey.direction === "ascending" ? 1 : -1;
+                const result = direction * comparer(column.value(a), column.value(b), a, b);
                 if (result != 0) return result;
             }
 
@@ -133,6 +134,7 @@ export function ControlledTableView<T>(
                         <TableHeaderCell
                             column={col}
                             sort={props.sortOn?.find((s) => s.id == col.id)?.direction}
+                            sortable={(props.sortable ?? true) && (col.sortable ?? true)}
                             dispatch={props.dispatch}
                         />
                     ))}
@@ -151,10 +153,12 @@ export function ControlledTableView<T>(
 export function TableHeaderCell<T>({
     column,
     sort,
+    sortable,
     dispatch,
 }: {
     column: TableColumn<T>;
     sort?: SortDirection;
+    sortable: boolean;
     dispatch: Dispatch<TableAction>;
 }) {
     const header: string | JSX.Element = useMemo(() => {
@@ -178,8 +182,8 @@ export function TableHeaderCell<T>({
 
     return (
         <th className="datacore-table-header-cell">
-            {column.sortable && <SortButton direction={sort} onClick={sortClicked} />}
-            <div className="datacore-table-header-title">{header}</div>
+            {sortable && <SortButton className="datacore-table-sort" direction={sort} onClick={sortClicked} />}
+            <div onClick={sortClicked} className="datacore-table-header-title">{header}</div>
         </th>
     );
 }
@@ -208,7 +212,7 @@ export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T
 }
 
 /** Provides a sort button that has a click handler. */
-export function SortButton({ direction, onClick }: { direction?: SortDirection; onClick?: (evt: MouseEvent) => any }) {
+export function SortButton({ direction, onClick, className }: { direction?: SortDirection; onClick?: (evt: MouseEvent) => any; className?: string }) {
     const icon = useMemo(() => {
         if (direction == "ascending") return faSortDown;
         else if (direction == "descending") return faSortUp;
@@ -216,7 +220,7 @@ export function SortButton({ direction, onClick }: { direction?: SortDirection; 
     }, [direction]);
 
     return (
-        <div onClick={onClick}>
+        <div onClick={onClick} className={className}>
             <FontAwesomeIcon icon={icon} />
         </div>
     );
@@ -256,16 +260,23 @@ export function tableReducer<T>(state: TableState<T>, action: TableAction): Tabl
                 sortOn: undefined,
             };
         case "sort-column":
-            return {
-                ...state,
-                sortOn: [
-                    {
-                        type: "column",
-                        id: action.column,
-                        direction: action.direction ?? "ascending",
-                    },
-                ],
-            };
+            if (action.direction == undefined) {
+                return {
+                    ...state,
+                    sortOn: undefined
+                }
+            } else {
+                return {
+                    ...state,
+                    sortOn: [
+                        {
+                            type: "column",
+                            id: action.column,
+                            direction: action.direction ?? "ascending",
+                        },
+                    ],
+                };
+            }
     }
 
     // In case of ignored operations or malformed requests.

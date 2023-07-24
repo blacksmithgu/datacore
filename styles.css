@@ -37,6 +37,23 @@
     margin-block-end: 0.2em !important;
 }
 
+.datacore-table-header-cell {
+    width: auto;
+    display: inline-flex;
+    flex-direction: row;
+}
+
+.datacore-table-sort {
+    flex-grow: 0;
+    margin-right: 0.25em;
+    align-items: center;
+}
+
+.datacore-table-header-title {
+    align-items: center;
+    flex-grow: 1;
+}
+
 /** Error Boxes. */
 
 .datacore-error-box {
