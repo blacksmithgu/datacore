@@ -11,6 +11,7 @@ import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { COMPONENTS } from "./components";
+import { useTableDispatch } from "ui/table";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -111,4 +112,6 @@ export class DatacoreLocalApi {
     //////////////////////////
     // Visual element hooks //
     //////////////////////////
+
+    public useTableDispatch = useTableDispatch;
 }

@@ -6,10 +6,44 @@ import { useInterning, useStableCallback } from "./hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 
-export interface TableState<T> {
-    /** The actual row data to render. */
+/** Handler for table state updates. If you do not want to handle the event and let the table handle it, just call `next`.  */
+export type TableActionHandler = (action: TableAction, next: Dispatch<TableAction>) => any;
+
+/** All props that can be handed off to the table; provides options for being both controlled and uncontrolled. */
+export interface TableProps<T> {
+    /** Actual data rows to render in the table. */
     rows: T[];
 
+    /** Initial columns for the table. */
+    initialColumns?: TableColumn<T>[];
+    /** Controlled prop for setting the current table columns. */
+    columns?: TableColumn<T>[];
+
+    /** Whether the table can be sorted. */
+    sortable?: boolean;
+
+    /** Initial sorts for the table. */
+    initialSortOn?: SortOn[];
+    /** Controlled prop for setting the sort. */
+    sortOn?: SortOn[];
+
+    /**
+     * If a boolean, enables/disables paging with the default configuration. If a number, paging will be
+     * enabled with the given number of entries per page.
+     */
+    paging?: number | boolean;
+
+    /** The initial page of the table. */
+    initialPage?: number;
+    /** Controlled prop for setting the page of the table. */
+    page?: number;
+
+    /** If set, state updates will go through this function, which can choose which events to listen to. */
+    onUpdate?: TableActionHandler;
+}
+
+/** Contains only the actual relevant state for a table (i.e., excluding initial props). */
+export interface TableState<T> {
     /** The columns in the table; they will be rendered in the order they show up in the array. */
     columns: TableColumn<T>[];
 
@@ -31,8 +65,7 @@ export interface TableState<T> {
 export type SortDirection = "ascending" | "descending";
 
 /** The ways that the table can be sorted. */
-export type SortOn =
-    { type: "column"; id: string; direction: SortDirection };
+export type SortOn = { type: "column"; id: string; direction: SortDirection };
 
 export interface TableColumn<T, V = Literal> {
     /** The unique ID of this table column; you cannot have multiple columns with the same ID in a given table. */
@@ -55,7 +88,9 @@ export interface TableColumn<T, V = Literal> {
 }
 
 /** Low level table view which handles state transitions via the given dispatcher. */
-export function TableView<T>(props: RenderableProps<TableState<T> & { dispatch: TableDispatcher<T> }>) {
+export function ControlledTableView<T>(
+    props: RenderableProps<TableState<T> & { rows: T[]; dispatch: Dispatch<TableAction> }>
+) {
     // Cache columns by reference equality of the specific columns. Columns have various function references
     // inside them and so cannot be compared by value equality.
     const columns = useInterning(props.columns, (a, b) => {
@@ -66,10 +101,10 @@ export function TableView<T>(props: RenderableProps<TableState<T> & { dispatch: 
     // Cache sorts by value equality and filter to only sortable valid fields.
     const rawSorts = useInterning(props.sortOn, (a, b) => Literals.compare(a, b) == 0);
     const sorts = useMemo(() => {
-        return rawSorts?.filter(sort => {
-            const column = columns.find(col => col.id == sort.id);
+        return rawSorts?.filter((sort) => {
+            const column = columns.find((col) => col.id == sort.id);
             return column && (column.sortable ?? true);
-        })
+        });
     }, [columns, rawSorts]);
 
     // Apply sorting to the rows as appropriate.
@@ -78,7 +113,7 @@ export function TableView<T>(props: RenderableProps<TableState<T> & { dispatch: 
 
         return ([] as T[]).concat(props.rows).sort((a, b) => {
             for (let sortKey of sorts) {
-                const column = columns.find(col => col.id == sortKey.id);
+                const column = columns.find((col) => col.id == sortKey.id);
                 if (!column) continue;
 
                 const comparer = column.comparator ?? DEFAULT_TABLE_COMPARATOR;
@@ -95,19 +130,33 @@ export function TableView<T>(props: RenderableProps<TableState<T> & { dispatch: 
             <thead>
                 <tr className="datacore-table-header-row">
                     {columns.map((col) => (
-                        <TableHeaderCell column={col} sort={props.sortOn?.find(s => s.id == col.id)?.direction} dispatch={props.dispatch} />
+                        <TableHeaderCell
+                            column={col}
+                            sort={props.sortOn?.find((s) => s.id == col.id)?.direction}
+                            dispatch={props.dispatch}
+                        />
                     ))}
                 </tr>
             </thead>
             <tbody>
-                {rows.map((row) => <TableRow row={row} columns={columns} />)}
+                {rows.map((row) => (
+                    <TableRow row={row} columns={columns} />
+                ))}
             </tbody>
         </table>
     );
 }
 
 /** An individual column cell in the table. */
-export function TableHeaderCell<T>({ column, sort, dispatch }: { column: TableColumn<T>; sort?: SortDirection; dispatch: TableDispatcher<T> }) {
+export function TableHeaderCell<T>({
+    column,
+    sort,
+    dispatch,
+}: {
+    column: TableColumn<T>;
+    sort?: SortDirection;
+    dispatch: Dispatch<TableAction>;
+}) {
     const header: string | JSX.Element = useMemo(() => {
         if (!column.title) {
             return column.id;
@@ -118,18 +167,21 @@ export function TableHeaderCell<T>({ column, sort, dispatch }: { column: TableCo
         }
     }, [column.id, column.title]);
 
-    const sortClicked = useStableCallback((_event: MouseEvent) => {
-        if (sort == undefined) dispatch.sortOnColumn(column.id, "ascending");
-        else if (sort == "ascending") dispatch.sortOnColumn(column.id, "descending");
-        else dispatch.sortOnColumn(column.id, undefined);
-    }, [sort, dispatch, column.id]);
+    const sortClicked = useStableCallback(
+        (_event: MouseEvent) => {
+            if (sort == undefined) dispatch({ type: "sort-column", column: column.id, direction: "ascending" });
+            else if (sort == "ascending") dispatch({ type: "sort-column", column: column.id, direction: "descending" });
+            else dispatch({ type: "sort-column", column: column.id, direction: undefined });
+        },
+        [sort, dispatch, column.id]
+    );
 
-    return <th className="datacore-table-header-cell">
-        {column.sortable && <SortButton direction={sort} onClick={sortClicked} />}
-        <div className="datacore-table-header-title">
-            {header}
-        </div>
-    </th>;
+    return (
+        <th className="datacore-table-header-cell">
+            {column.sortable && <SortButton direction={sort} onClick={sortClicked} />}
+            <div className="datacore-table-header-title">{header}</div>
+        </th>
+    );
 }
 
 /** A single row inside the table. */
@@ -183,17 +235,17 @@ function useAsElement(element: JSX.Element | Literal): JSX.Element {
     }, [element]);
 }
 
+/** Default comparator for sorting on a table column. */
+export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
+    Literals.compare(a, b);
+
 /////////////////
 // Table Hooks //
 /////////////////
 
 export type TableAction =
     | { type: "reset-all" }
-    | { type: "reset-sort" }
-    | { type: "sort-column", column: string, direction?: "ascending" | "descending" }
-    | { type: "add-column", column: TableColumn<Literal>, index?: number }
-    | { type: "remove-column", column: string }
-    ;
+    | { type: "sort-column"; column: string; direction?: "ascending" | "descending" };
 
 /** Central reducer which updates table state predictably. */
 export function tableReducer<T>(state: TableState<T>, action: TableAction): TableState<T> {
@@ -203,66 +255,58 @@ export function tableReducer<T>(state: TableState<T>, action: TableAction): Tabl
                 ...state,
                 sortOn: undefined,
             };
-        case "reset-sort":
-            return { ...state, sortOn: undefined };
         case "sort-column":
             return {
                 ...state,
-                sortOn: [{
-                    type: "column",
-                    id: action.column,
-                    direction: action.direction ?? "ascending"
-                }]
+                sortOn: [
+                    {
+                        type: "column",
+                        id: action.column,
+                        direction: action.direction ?? "ascending",
+                    },
+                ],
             };
-        case "add-column":
-
     }
 
-    // In case of ignored operations.
+    // In case of ignored operations or malformed requests.
     console.warn(`datacore: Encountered unrecognized table operation: ${action}`);
     return state;
 }
 
-/** Convienent wrapper around the table state reducer which provides more strongly typed methods. */
-export class TableDispatcher<T> {
-    public constructor(public reducer: Dispatch<TableAction>) {}
-
-    /** Reset the table view. */
-    reset() {
-        this.reducer({ type: "reset-all" });
-    }
-
-    /** Reset all sort fields. */
-    resetSort() {
-        this.reducer({ type: "reset-sort" });
-    }
-
-    /** Sort on the given column in the given direction. */
-    sortOnColumn(column: string, direction: "ascending" | "descending" | undefined) {
-        this.reducer({ type: "sort-column", column, direction });
-    }
-}
-
 /** Exposes the full table state as well as various functions for manipulating it. */
-export function useTableDispatch<T>(initial: TableState<T> | (() => TableState<T>)): [TableState<T>, TableDispatcher<T>] {
-    const init = useMemo(() => typeof initial == "function" ? initial() : initial, []);
-    const [state, dispatcher] = useReducer<TableState<T>, TableAction>(tableReducer, init);
-    const fancyDispatch = useMemo(() => new TableDispatcher(dispatcher), [dispatcher]);
-
-    return [state, fancyDispatch];
+export function useTableDispatch<T>(
+    initial: TableState<T> | (() => TableState<T>)
+): [TableState<T>, Dispatch<TableAction>] {
+    const init = useMemo(() => (typeof initial == "function" ? initial() : initial), []);
+    return useReducer<TableState<T>, TableAction>(tableReducer, init);
 }
-
-/** Default comparator for sorting on a table column. */
-export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number =
-    (a, b, _ao, _bo) => Literals.compare(a, b);
 
 ////////////////////
 // Table Wrappers //
 ////////////////////
 
-/** Standard table view which provides all of the default interactions, callbacks, and bindings to the table. */
-export function DefaultTableView<T>(initial: TableState<T> & { rows: T[] }) {
-    const [state, dispatch] = useTableDispatch(initial);
+/** Standard table view which provides the default state implementation. */
+export function TableView<T>(props: RenderableProps<TableProps<T>>) {
+    const [state, dispatch] = useTableDispatch(() => ({
+        columns: props.initialColumns ?? [],
+        page: props.initialPage ?? 0,
+        sortOn: props.initialSortOn ?? [],
+        paging: props.paging,
+        sortable: props.sortable,
+    }));
 
-    return <TableView<T> dispatch={dispatch} {...state} />;
+    // Run dispatch events through `onUpdate` if present.
+    const proxiedDispatch = useStableCallback(
+        (action: TableAction) => {
+            if (props.onUpdate) {
+                props.onUpdate(action, dispatch);
+            } else {
+                dispatch(action);
+            }
+        },
+        [props.onUpdate, dispatch]
+    );
+
+    // Props take predecence over state.
+    return <ControlledTableView<T> dispatch={proxiedDispatch} {...state} {...props} />;
 }

@@ -169,7 +169,11 @@ export namespace Literals {
     }
 
     /** Compare two arbitrary JavaScript values. Produces a total ordering over ANY possible datacore value. */
-    export function compare(val1: Literal | undefined, val2: Literal | undefined, linkNormalizer?: (link: string) => string): number {
+    export function compare(
+        val1: Literal | undefined,
+        val2: Literal | undefined,
+        linkNormalizer?: (link: string) => string
+    ): number {
         // Handle undefined/nulls first.
         if (val1 === undefined) val1 = null;
         if (val2 === undefined) val2 = null;

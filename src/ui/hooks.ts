@@ -135,7 +135,10 @@ export function useStableCallback<T>(callback: T, deps: any[]): T {
         ref.current = callback;
     }, [callback, ...deps]);
 
-    return useCallback((...args: any[]) => {
-        (ref.current as any)(...args)
-    }, [ref]) as T;
+    return useCallback(
+        (...args: any[]) => {
+            (ref.current as any)(...args);
+        },
+        [ref]
+    ) as T;
 }
