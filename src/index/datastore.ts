@@ -238,6 +238,12 @@ export class Datastore {
                     else return [fixed];
                 });
                 return { type: "or", elements: ors };
+            case "not":
+                return { type: "not", element: this._denest(query.element) };
+            case "child-of":
+                return { type: "child-of", parents: this._denest(query.parents) };
+            case "parent-of":
+                return { type: "parent-of", children: this._denest(query.children) };
             default:
                 return query;
         }
@@ -248,36 +254,60 @@ export class Datastore {
         switch (query.type) {
             case "and":
                 const achildren = [] as IndexQuery[];
-                for (let child of query.elements) {
+                for (const child of query.elements) {
+                    const folded = this._constantfold(child);
+
                     // Eliminate 'true' constants and eliminate the entire and on a 'false' constant.
-                    if (child.type === "constant") {
-                        if (child.constant) continue;
+                    if (folded.type === "constant") {
+                        if (folded.constant) continue;
                         else return { type: "constant", constant: false };
                     }
 
-                    achildren.push(child);
+                    achildren.push(folded);
                 }
 
                 return { type: "and", elements: achildren };
             case "or":
                 const ochildren = [] as IndexQuery[];
-                for (let child of query.elements) {
+                for (const child of query.elements) {
+                    const folded = this._constantfold(child);
+
                     // Eliminate 'false' constants and short circuit on a 'true' constant.
-                    if (child.type === "constant") {
-                        if (!child.constant) continue;
+                    if (folded.type === "constant") {
+                        if (!folded.constant) continue;
                         else return { type: "constant", constant: true };
                     }
 
-                    ochildren.push(child);
+                    ochildren.push(folded);
                 }
 
                 return { type: "or", elements: ochildren };
             case "not":
-                if (query.element.type === "constant") {
-                    return { type: "constant", constant: !query.element.constant };
+                const folded = this._constantfold(query.element);
+
+                if (folded.type === "constant") {
+                    return { type: "constant", constant: !folded.constant };
                 }
 
-                return query;
+                return { type: "not", element: folded };
+            case "child-of":
+                // parents = EMPTY means this will also be empty.
+                const parents = this._constantfold(query.parents);
+                if (parents.type === "constant") {
+                    if (!parents.constant) return { type: "constant", constant: false };
+                    else if (parents.constant && query.inclusive) return { type: "constant", constant: true };
+                }
+
+                return { type: "child-of", parents: parents, inclusive: query.inclusive };
+            case "parent-of":
+                // children = EMPTY means this will also be empty.
+                const children = this._constantfold(query.children);
+                if (children.type === "constant") {
+                    if (!children.constant) return { type: "constant", constant: false };
+                    else if (children.constant && query.inclusive) return { type: "constant", constant: true };
+                }
+
+                return { type: "parent-of", children: children, inclusive: query.inclusive };
             default:
                 return query;
         }
@@ -294,6 +324,54 @@ export class Datastore {
                 return Filters.lazyUnion(query.elements, (elem) => this._searchRecursive(elem));
             case "not":
                 return Filters.negate(this._searchRecursive(query.element));
+            case "child-of":
+                // TODO: This is an inefficient implementation and would benefit from "lazily-computed" filters.
+                const parents = this._searchRecursive(query.parents);
+                if (Filters.empty(parents)) {
+                    return Filters.NOTHING;
+                } else if (parents.type === "everything") {
+                    if (query.inclusive) return Filters.EVERYTHING;
+
+                    // Return the set all children. TODO: Consider caching via a `parents` map.
+                    const allChildren = new Set<string>();
+                    for (const element of this.objects.values()) {
+                        if (element.$parent) allChildren.add(element.$id);
+                    }
+
+                    return Filters.atom(allChildren);
+                }
+
+                const resolvedParents = Filters.resolve(parents, this.ids);
+                const childResults = new Set<string>(query.inclusive ? resolvedParents : []);
+
+                for (const parent of resolvedParents) {
+                    for (const child of this._iterateChildren(parent)) {
+                        childResults.add(child);
+                    }
+                }
+
+                return Filters.atom(childResults);
+            case "parent-of":
+                // TODO: This is an inefficient implementation and would benefit from "lazily-computed" filters.
+                const children = this._searchRecursive(query.children);
+                if (Filters.empty(children)) {
+                    return Filters.NOTHING;
+                } else if (children.type === "everything") {
+                    if (query.inclusive) return Filters.EVERYTHING;
+
+                    return Filters.atom(new Set(this.children.keys()));
+                }
+
+                const resolvedChildren = Filters.resolve(children, this.ids);
+                const parentResults = new Set<string>(query.inclusive ? resolvedChildren : []);
+
+                for (const child of resolvedChildren) {
+                    for (const parent of this._iterateParents(child)) {
+                        parentResults.add(parent);
+                    }
+                }
+
+                return Filters.atom(parentResults);
             default:
                 return this._searchPrimitive(query);
         }
@@ -304,6 +382,9 @@ export class Datastore {
         switch (query.type) {
             case "constant":
                 return Filters.constant(query.constant);
+            case "id":
+                const exactObject = this.objects.get(query.value);
+                return exactObject ? Filters.atom(new Set([exactObject.$id])) : Filters.NOTHING;
             case "typed":
                 return Filters.nullableAtom(this.types.get(query.value));
             case "tagged":
@@ -334,13 +415,23 @@ export class Datastore {
 
                 return Filters.atom(result);
             case "bounded-value":
-            case "connected":
             case "equal-value":
             case "field":
+            case "connected":
                 return Filters.NOTHING;
         }
     }
 
+    /** Iterator which produces all parents of the given object. */
+    private *_iterateParents(child: string): Generator<string> {
+        let object = this.objects.get(child);
+        while (object && object?.$parent) {
+            yield object.$parent;
+            object = this.objects.get(object.$parent);
+        }
+    }
+
+    /** Iterative which produces all children (recursively) of the given object. */
     private *_iterateChildren(parent: string): Generator<string> {
         const children = this.children.get(parent);
         if (children && children.size > 0) {

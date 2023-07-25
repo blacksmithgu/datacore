@@ -6,6 +6,13 @@ import { Literal } from "expression/literal";
 /** Valid index-value comparisons. */
 export type IndexComparison = "=" | "!=" | ">" | "<" | ">=" | "<=";
 
+/** Fetch the document with the given ID. */
+export interface IndexId {
+    type: "id";
+    /** The ID of the object to retrieve. */
+    value: string;
+}
+
 /** Fetch documents with the given type. */
 export interface IndexTyped {
     type: "typed";
@@ -22,7 +29,7 @@ export interface IndexTagged {
     exact?: boolean;
 }
 
-/** Fetch documents in the given folder (potentially exactly). */
+/** Fetch documents in the given folder (potentially exactly). Also supports matching on specific files. */
 export interface IndexFolder {
     type: "folder";
     /** The folder that things should be contained within, potentially exactly. */
@@ -84,14 +91,15 @@ export interface IndexValueBounded {
 }
 
 export type IndexPrimitive =
+    | IndexId
     | IndexConstant
     | IndexTyped
     | IndexTagged
     | IndexFolder
-    | IndexConnected
     | IndexField
     | IndexValueEquals
-    | IndexValueBounded;
+    | IndexValueBounded
+    | IndexConnected;
 
 // Logical combinators.
 
@@ -99,6 +107,32 @@ export type IndexPrimitive =
 export interface IndexConstant {
     type: "constant";
     constant: boolean;
+}
+
+/**
+ * Fetch documents which are the children of documents matching the given other filter.
+ */
+export interface IndexChildOf {
+    type: "child-of";
+
+    /** Filter which should produce the list of parent objects that the given document should be a child of. */
+    parents: IndexQuery;
+
+    /** If true, then include the parent objects itself as valid matches. */
+    inclusive?: boolean;
+}
+
+/**
+ * Fetch documents which are parents of documents matching the given filter.
+ */
+export interface IndexParentOf {
+    type: "parent-of";
+
+    /** Filter which should produce the list of child objects that the given document should be a parent of. */
+    children: IndexQuery;
+
+    /** If true, then include the child objects themselves as valid matches. */
+    inclusive?: boolean;
 }
 
 /** AND two or more datastore queries together. */
@@ -119,4 +153,4 @@ export interface IndexNot {
     element: IndexQuery;
 }
 
-export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive;
+export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive | IndexChildOf | IndexParentOf;
