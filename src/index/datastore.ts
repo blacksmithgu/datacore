@@ -393,7 +393,7 @@ export class Datastore {
                 } else {
                     return Filters.nullableAtom(this.tags.get(query.value));
                 }
-            case "folder":
+            case "path":
                 let toplevel;
                 if (query.exact) {
                     toplevel = this.folder.getExact(query.value);

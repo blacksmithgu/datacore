@@ -63,6 +63,12 @@ export class Link {
         return new Link(object);
     }
 
+    /** Create a link by parsing it's interior part (inside of the '[[]]'). */
+    public static parseInner(rawlink: string): Link {
+        let [link, display] = splitOnUnescapedPipe(rawlink);
+        return Link.infer(link, false, display);
+    }
+
     private constructor(fields: Partial<Link>) {
         Object.assign(this, fields);
     }
@@ -159,4 +165,15 @@ export class Link {
     public fileName(): string {
         return getFileTitle(this.path);
     }
+}
+
+/** Split on unescaped pipes in an inner link. */
+export function splitOnUnescapedPipe(link: string): [string, string | undefined] {
+    let pipe = -1;
+    while ((pipe = link.indexOf("|", pipe + 1)) >= 0) {
+        if (pipe > 0 && link[pipe - 1] == "\\") continue;
+        return [link.substring(0, pipe).replace(/\\\|/g, "|"), link.substring(pipe + 1)];
+    }
+
+    return [link.replace(/\\\|/g, "|"), undefined];
 }

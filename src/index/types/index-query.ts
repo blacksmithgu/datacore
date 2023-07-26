@@ -29,9 +29,9 @@ export interface IndexTagged {
     exact?: boolean;
 }
 
-/** Fetch documents in the given folder (potentially exactly). Also supports matching on specific files. */
-export interface IndexFolder {
-    type: "folder";
+/** Fetch documents at the given path (potentially exactly). Also supports matching on specific files. */
+export interface IndexPath {
+    type: "path";
     /** The folder that things should be contained within, potentially exactly. */
     value: string;
     /**
@@ -95,7 +95,7 @@ export type IndexPrimitive =
     | IndexConstant
     | IndexTyped
     | IndexTagged
-    | IndexFolder
+    | IndexPath
     | IndexField
     | IndexValueEquals
     | IndexValueBounded

@@ -49,6 +49,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@types/babel__standalone": "^7.1.4",
+    "emoji-regex": "^10.2.1",
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
     "preact": "^10.15.1",

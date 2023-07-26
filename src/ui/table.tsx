@@ -185,7 +185,9 @@ export function TableHeaderCell<T>({
         <th className="datacore-table-header-cell">
             <div className="datacore-table-header-cell-content">
                 {sortable && <SortButton className="datacore-table-sort" direction={sort} onClick={sortClicked} />}
-                <div onClick={sortClicked} className="datacore-table-header-title">{header}</div>
+                <div onClick={sortClicked} className="datacore-table-header-title">
+                    {header}
+                </div>
             </div>
         </th>
     );
@@ -215,7 +217,15 @@ export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T
 }
 
 /** Provides a sort button that has a click handler. */
-export function SortButton({ direction, onClick, className }: { direction?: SortDirection; onClick?: (evt: MouseEvent) => any; className?: string }) {
+export function SortButton({
+    direction,
+    onClick,
+    className,
+}: {
+    direction?: SortDirection;
+    onClick?: (evt: MouseEvent) => any;
+    className?: string;
+}) {
     const icon = useMemo(() => {
         if (direction == "ascending") return faSortDown;
         else if (direction == "descending") return faSortUp;
@@ -266,8 +276,8 @@ export function tableReducer<T>(state: TableState<T>, action: TableAction): Tabl
             if (action.direction == undefined) {
                 return {
                     ...state,
-                    sortOn: undefined
-                }
+                    sortOn: undefined,
+                };
             } else {
                 return {
                     ...state,
