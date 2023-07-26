@@ -308,24 +308,24 @@ export const QUERY = P.createLanguage<QueryLanguage>({
     queryId: (_) => createFunction("id", PRIMITIVES.string).map(([_, id]) => ({ type: "id", value: id })),
     queryType: (_) =>
         P.string("@")
-            .then((_) => PRIMITIVES.identifier)
+            .then(PRIMITIVES.identifier)
             .map((value) => ({ type: "typed", value: value })),
 
     queryPath: (_) =>
-        createFunction(P.regexp(/e?path/i), PRIMITIVES.string).map(([func, path]) => ({
+        createFunction(P.regexp(/e?path/i).desc("[e]path"), PRIMITIVES.string).map(([func, path]) => ({
             type: "path",
             value: path,
             exact: func === "epath",
         })),
 
     queryParentOf: (q) =>
-        createFunction(P.regexp(/parentof|supertree/i), q.query).map(([func, children]) => ({
+        createFunction(P.regexp(/parentof|supertree/i).desc('parentof'), q.query).map(([func, children]) => ({
             type: "parent-of",
             children,
             inclusive: func === "supertree",
         })),
     queryChildOf: (q) =>
-        createFunction(P.regexp(/childof|subtree/i), q.query).map(([func, parents]) => ({
+        createFunction(P.regexp(/childof|subtree/i).desc('childof'), q.query).map(([func, parents]) => ({
             type: "child-of",
             parents,
             inclusive: func === "subtree",
@@ -335,12 +335,12 @@ export const QUERY = P.createLanguage<QueryLanguage>({
     queryNegate: (q) =>
         P.string("!")
             .skip(P.optWhitespace)
-            .then((_) => q.queryAtom)
+            .then(q.queryAtom)
             .map((value) => ({
                 type: "not",
                 element: value,
             })),
-    queryAtom: (q) => P.alt<IndexQuery>(q.queryParens, q.queryNegate, q.queryTag, q.queryType, q.queryId, q.queryPath),
+    queryAtom: (q) => P.alt<IndexQuery>(q.queryParens, q.queryNegate, q.queryTag, q.queryType, q.queryId, q.queryChildOf, q.queryParentOf, q.queryPath),
     queryAnds: (q) =>
         createBinaryParser(q.queryAtom, PRIMITIVES.binaryAndOp, (left, _op, right) => ({
             type: "and",
@@ -351,7 +351,7 @@ export const QUERY = P.createLanguage<QueryLanguage>({
             type: "or",
             elements: [left, right],
         })),
-    query: (q) => q.queryOrs,
+    query: (q) => q.queryOrs.trim(P.optWhitespace),
 });
 
 /** Return a new parser which executes the underlying parser and returns it's raw string representation. */
