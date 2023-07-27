@@ -1,3 +1,4 @@
+import { Link } from "expression/link";
 import { getFileTitle } from "expression/normalize";
 import {
     MarkdownBlock,
@@ -28,6 +29,7 @@ export function markdownImport(
     //////////////
     // Sections //
     //////////////
+
     const metaheadings = metadata.headings ?? [];
     metaheadings.sort((a, b) => a.position.start.line - b.position.start.line);
 
@@ -47,6 +49,7 @@ export function markdownImport(
                 position: { start, end },
                 blocks: [],
                 etags: new Set(),
+                elinks: [],
             })
         );
     }
@@ -65,9 +68,14 @@ export function markdownImport(
                 position: { start: 0, end },
                 blocks: [],
                 etags: new Set(),
+                elinks: [],
             })
         );
     }
+
+    ////////////
+    // Blocks //
+    ////////////
 
     // All blocks; we will assign tags and other metadata to blocks as we encounter them. At the end, only blocks that
     // have actual metadata will be stored to save on memory pressure.
@@ -87,6 +95,7 @@ export function markdownImport(
                     ordinal: blockOrdinal,
                     position: { start, end },
                     etags: new Set(),
+                    elinks: [],
                     blockId: block.id,
                     elements: [],
                 })
@@ -98,6 +107,7 @@ export function markdownImport(
                     ordinal: blockOrdinal,
                     position: { start, end },
                     etags: new Set(),
+                    elinks: [],
                     blockId: block.id,
                     type: block.type,
                 })
@@ -113,6 +123,10 @@ export function markdownImport(
             section[1].blocks.push(block);
         }
     }
+
+    ///////////
+    // Lists //
+    ///////////
 
     // All list items in lists. Start with a simple trivial pass.
     const listItems = new BTree<number, MarkdownListItem>(undefined, (a, b) => a - b);
@@ -135,6 +149,10 @@ export function markdownImport(
             listItem.elements.push(item);
         }
     }
+
+    //////////
+    // Tags //
+    //////////
 
     // For each tag, assign it to the appropriate section and block that it is a part of.
     const etags = new Set<string>();
@@ -159,9 +177,36 @@ export function markdownImport(
         }
     }
 
+    ///////////
+    // Links //
+    ///////////
+
+    const elinks: Link[] = [];
+    for (let linkdef of metadata.links ?? []) {
+        const link = Link.infer(linkdef.link);
+        const line = linkdef.position.start.line;
+        addLink(elinks, link);
+
+        const section = sections.getPairOrNextLower(line);
+        if (section && section[1].position.end >= line) {
+            addLink(section[1].elinks, link);
+        }
+
+        const block = blocks.getPairOrNextLower(line);
+        if (block && block[1].position.end >= line) {
+            addLink(block[1].elinks, link);
+        }
+
+        const listItem = blocks.getPairOrNextHigher(line);
+        if (listItem && listItem[1].position.end >= line) {
+            addLink(listItem[1].elinks, link);
+        }
+    }
+
     return new MarkdownFile({
         path,
         etags,
+        elinks,
         sections: sections.valuesArray(),
         ctime: DateTime.fromMillis(stats.ctime),
         mtime: DateTime.fromMillis(stats.mtime),
@@ -176,6 +221,7 @@ export function markdownImport(
 function convertListItem(path: string, raw: ListItemCache): MarkdownListItem {
     const common: Partial<MarkdownListItem> = {
         etags: new Set(),
+        elinks: [],
         position: { start: raw.position.start.line, end: raw.position.end.line },
         elements: [],
         parentLine: raw.parent,
@@ -201,4 +247,14 @@ function emptylines(lines: string[], start: number, end: number): boolean {
     }
 
     return false;
+}
+
+/**
+ * Mutably add the given link to the list only if it is not already present.
+ * This is O(n) but should be fine for most files; we could eliminate the O(n) by instead
+ * using intermediate sets but not worth the complexity.
+ */
+function addLink(target: Link[], incoming: Link) {
+    if (target.find((v) => v.equals(incoming))) return;
+    target.push(incoming);
 }

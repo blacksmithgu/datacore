@@ -24,7 +24,7 @@ export class DatacoreApi {
 
     /** Execute a textual or typed index query, returning results plus performance metadata. */
     public fullquery(query: string | IndexQuery): SearchResult<Indexable> {
-        const parsedQuery = (typeof query === "string") ? QUERY.query.tryParse(query) : query;
+        const parsedQuery = typeof query === "string" ? QUERY.query.tryParse(query) : query;
         return this.core.datastore.search(parsedQuery);
     }
 }

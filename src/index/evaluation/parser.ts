@@ -319,13 +319,13 @@ export const QUERY = P.createLanguage<QueryLanguage>({
         })),
 
     queryParentOf: (q) =>
-        createFunction(P.regexp(/parentof|supertree/i).desc('parentof'), q.query).map(([func, children]) => ({
+        createFunction(P.regexp(/parentof|supertree/i).desc("parentof"), q.query).map(([func, children]) => ({
             type: "parent-of",
             children,
             inclusive: func === "supertree",
         })),
     queryChildOf: (q) =>
-        createFunction(P.regexp(/childof|subtree/i).desc('childof'), q.query).map(([func, parents]) => ({
+        createFunction(P.regexp(/childof|subtree/i).desc("childof"), q.query).map(([func, parents]) => ({
             type: "child-of",
             parents,
             inclusive: func === "subtree",
@@ -340,7 +340,17 @@ export const QUERY = P.createLanguage<QueryLanguage>({
                 type: "not",
                 element: value,
             })),
-    queryAtom: (q) => P.alt<IndexQuery>(q.queryParens, q.queryNegate, q.queryTag, q.queryType, q.queryId, q.queryChildOf, q.queryParentOf, q.queryPath),
+    queryAtom: (q) =>
+        P.alt<IndexQuery>(
+            q.queryParens,
+            q.queryNegate,
+            q.queryTag,
+            q.queryType,
+            q.queryId,
+            q.queryChildOf,
+            q.queryParentOf,
+            q.queryPath
+        ),
     queryAnds: (q) =>
         createBinaryParser(q.queryAtom, PRIMITIVES.binaryAndOp, (left, _op, right) => ({
             type: "and",

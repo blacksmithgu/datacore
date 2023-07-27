@@ -1,5 +1,5 @@
 import { Link } from "expression/literal";
-import { extractSubtags, getFileTitle } from "expression/normalize";
+import { extractFileLinks, extractSubtags, getFileTitle } from "expression/normalize";
 import { File } from "index/types/file";
 import { Indexable } from "index/types/indexable";
 import { DateTime } from "luxon";
@@ -32,8 +32,12 @@ export class MarkdownFile implements File, Indexable {
     position: LineSpan;
     /** The exact set of tags in the file. */
     etags: Set<string>;
-    /** All tags (both direct and indirectly) on the file. */
+    /** All tags (both direct and indirectly) in the file. */
     tags: Set<string>;
+    /** The exact set of links in the file. */
+    elinks: Link[];
+    /** All links (both direct and indirect) in the file. */
+    links: Link[];
     /**
      * All child markdown sections of this markdown file. The initial section before any content is special and is
      * named with the title of the file.
@@ -52,6 +56,7 @@ export class MarkdownFile implements File, Indexable {
         Object.assign(this, init);
 
         this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
+        this.links = extractFileLinks(this.elinks);
     }
 
     /** Return the number of lines in the document. */
@@ -92,6 +97,10 @@ export class MarkdownSection implements Indexable {
     etags: Set<string>;
     /** All tags (both direct and indirectly) on the file. */
     tags: Set<string>;
+    /** The exact set of links in the file. */
+    elinks: Link[];
+    /** All links (both direct and indirect) in the file. */
+    links: Link[];
     /** All of the markdown blocks in this section. */
     blocks: MarkdownBlock[];
 
@@ -110,6 +119,7 @@ export class MarkdownSection implements Indexable {
         this.$id = MarkdownSection.readableId(file, this.title, this.ordinal);
 
         this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
+        this.links = extractFileLinks(this.elinks);
     }
 
     /** Obtain the number of lines in the section. */
@@ -149,6 +159,10 @@ export class MarkdownBlock implements Indexable {
     etags: Set<string>;
     /** All tags (both direct and indirectly) on the block. */
     tags: Set<string>;
+    /** The exact set of links in the file. */
+    elinks: Link[];
+    /** All links (both direct and indirect) in the file. */
+    links: Link[];
     /** If present, the distinct block ID for this block. */
     blockId?: string;
     /** The type of block - paragraph, list, and so on. */
@@ -169,6 +183,7 @@ export class MarkdownBlock implements Indexable {
         this.$id = MarkdownBlock.readableId(file, this.ordinal);
 
         this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
+        this.links = extractFileLinks(this.elinks);
     }
 
     /** Generate a readable ID for this block using the ordinal of the block. */
@@ -221,6 +236,10 @@ export class MarkdownListItem {
     etags: Set<string>;
     /** Exact and derived tags on this list item. */
     tags: Set<string>;
+    /** The exact set of links in the file. */
+    elinks: Link[];
+    /** All links (both direct and indirect) in the file. */
+    links: Link[];
     /** The block ID of this list item if present. */
     blockId?: string;
     /**
@@ -252,6 +271,7 @@ export class MarkdownListItem {
         this.type = "list-item";
 
         this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
+        this.links = extractFileLinks(this.elinks);
     }
 
     /** Get the line that this list item starts on. */

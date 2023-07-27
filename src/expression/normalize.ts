@@ -1,6 +1,7 @@
 import { DateTime, Duration } from "luxon";
 import * as P from "parsimmon";
 import emojiRegex from "emoji-regex";
+import { Link } from "./link";
 
 /** Test-environment-friendly function which fetches the current system locale. */
 export function currentLocale(): string {
@@ -104,6 +105,21 @@ export function extractSubtags(tag: string): string[] {
     while (tag.includes("/")) {
         tag = tag.substring(0, tag.lastIndexOf("/"));
         result.push(tag);
+    }
+
+    return result;
+}
+
+/** Split each block and section link into the original link and a corresponding file link. */
+export function extractFileLinks(elinks: Link[]): Link[] {
+    const result: Link[] = [];
+    for (const link of elinks) {
+        result.push(link);
+
+        const fileLink = link.toFile();
+        if (link.type != "file" && !result.find((existing) => existing.equals(fileLink))) {
+            result.push(fileLink);
+        }
     }
 
     return result;
