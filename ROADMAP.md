@@ -8,8 +8,8 @@ Views in Datacore are editable and no longer use the Dataview Query Language. Yo
 statements / columns using the Dataview Expression Language (a subset of the query language which supports math,
 string operations, list operations, and so on).
 
-- [ ] **Table**: The standard columnar table view.
-- [ ] **List**: The standard list view, which just lists elements.
+- [X] **Table**: The standard columnar table view.
+- [X] **List**: The standard list view, which just lists elements.
 - [ ] **Embed List**: A special list which just renders a list of embedded pages 
 - [ ] **Card**: A card-based view which supports a title and card content.
 - [ ] **Grouped**: A special view which allows for splitting query results into subgroups, and render a separate
@@ -24,7 +24,7 @@ Each view will have the following general functionality:
 - [ ] **Filter by Expression / Field**: You can filter on arbitrary fields.
 - [ ] **Inline Editing**: Fields can be directly edited by clicking on them; most editing is just textual inline
   editing, though ratings / dropdowns will have special behavior.
-- [ ] **Pagination**: For performance reasons, all views are paginated (configurable to 10, 20, 50, 100, 250 or a custom
+- [X] **Pagination**: For performance reasons, all views are paginated (configurable to 10, 20, 50, 100, 250 or a custom
   granularity).
 - [X] **Live Reloading**: Views automatically update whenever the result of their query changes.
 - [ ] **Embed Support**: Most views should play nice with embeds (images, PDFs, other markdown files).
@@ -38,16 +38,16 @@ Additionally, there is potential for a few extra nice features:
 
 ## Data Input
 
-Obsidian is adding support for new frontmatter and YAML adding functionality, and has recommended that Datacore move
-away from Inline Fields (since they are much more bespoke). Inline fields will still be supported for users who prefer
+Obsidian has some native support for editing metadata at the page level, and has recommended that Datacore move
+away from inline fields (since they are much more bespoke). Inline fields will still be supported for users who prefer
 it, but the following ways to add metadata will be added:
 
 - [ ] **Inline YAML**: You will be able to place YAML objects anywhere in the document and mark it `inline` to have it
   add additional metadata to the page / section.
 - [ ] **Inline Objects**: You will be able to define YAML codeblocks as "objects", which are searchable independent of
   the page they are on (for example, "exercise" objects).
-- [?] **Sections**: Sections can be treated as objects and are directly queryable.
-- [?] **Tasks**: Tasks can be directly queried and are more performant; metadata can be added using the Task plugin
+- [X] **Sections**: Sections can be treated as objects and are directly queryable.
+- [X] **Tasks**: Tasks can be directly queried and are more performant; metadata can be added using the Task plugin
   emoji or inline fields.
 
 ## Comprehensibility
@@ -92,7 +92,7 @@ The kind of metadata that Datacore will index.
 
 Background pre-requisites; this is generally not user facing.
 
-- [ ] **Rate-limiting Background Importer**. Allow specifying a rate at which new files should be ingested, as well as
+- [X] **Rate-limiting Background Importer**. Allow specifying a rate at which new files should be ingested, as well as
   how long in between consecutive file updates. Starting a vault with Datacore should introduce NO lag (by slowing down
   throttling).
     - This can generally be computed by estimating how long the average file import takes (potentially correlated with

@@ -1,10 +1,12 @@
-import { Literals } from "expression/literal";
+import { Link, Literals } from "expression/literal";
 import { Filter, Filters } from "index/storage/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery } from "index/types/index-query";
-import { Indexable } from "index/types/indexable";
-import { Vault } from "obsidian";
+import { Indexable, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
+import { MetadataCache, Vault } from "obsidian";
+import { MarkdownFile } from "./types/markdown";
+import { extractSubtags, normalizeHeaderForLink } from "expression/normalize";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -27,13 +29,15 @@ export class Datastore {
     private etags: InvertedIndex<string>;
     /** Tracks tag occurence in objects. */
     private tags: InvertedIndex<string>;
+    /** Maps link strings to the object IDs that link to those links. */
+    private links: InvertedIndex<string>;
     /**
      * Quick searches for objects in folders. This index only tracks top-level objects - it is expanded recursively to
      * find child objects.
      */
     private folder: FolderIndex;
 
-    public constructor(vault: Vault) {
+    public constructor(public vault: Vault, public metadataCache: MetadataCache) {
         this.revision = 0;
         this.ids = new Set();
         this.objects = new Map();
@@ -42,6 +46,7 @@ export class Datastore {
         this.types = new InvertedIndex();
         this.etags = new InvertedIndex();
         this.tags = new InvertedIndex();
+        this.links = new InvertedIndex();
         this.folder = new FolderIndex(vault);
     }
 
@@ -150,12 +155,21 @@ export class Datastore {
     private _index(object: Indexable) {
         this.types.set(object.$id, object.$types);
 
-        if ("etags" in object && object.etags != undefined && Symbol.iterator in (object.etags as any)) {
-            this.etags.set(object.$id, object.etags as Iterable<string>);
+        // Exact and derived tags.
+        if (TAGGABLE_TYPE in object.$types && iterableExists(object, "tags")) {
+            const tags = object.tags as Set<string>;
+
+            this.etags.set(object.$id, tags);
+            this.tags.set(object.$id, extractSubtags(tags));
         }
 
-        if ("tags" in object && object.tags != undefined && Symbol.iterator in (object.tags as any)) {
-            this.tags.set(object.$id, object.tags as Iterable<string>);
+        // Exact and derived links.
+        if (LINKBEARING_TYPE in object.$types && iterableExists(object, "links")) {
+            object.links = bulkNormalizeLinks(object.links, this.metadataCache, object.$file ?? "");
+            this.links.set(
+                object.$id,
+                (object.links as Link[]).map((link) => link.obsidianLink())
+            );
         }
     }
 
@@ -163,12 +177,20 @@ export class Datastore {
     private _unindex(object: Indexable) {
         this.types.delete(object.$id, object.$types);
 
-        if ("etags" in object && object.etags != undefined && Symbol.iterator in (object.etags as any)) {
-            this.etags.delete(object.$id, object.etags as Iterable<string>);
+        if (TAGGABLE_TYPE in object.$types && iterableExists(object, "tags")) {
+            const tags = object.tags as Set<string>;
+
+            this.etags.delete(object.$id, tags);
+            this.tags.delete(object.$id, extractSubtags(tags));
         }
 
-        if ("tags" in object && object.tags != undefined && Symbol.iterator in (object.tags as any)) {
-            this.tags.delete(object.$id, object.tags as Iterable<string>);
+        if (LINKBEARING_TYPE in object.$types && iterableExists(object, "links")) {
+            // Assume links are normalized when deleting them. Could be broken but I hope not. We can always use a 2-way index to
+            // fix this if we encounter non-normalized links.
+            this.links.delete(
+                object.$id,
+                (object.links as Link[]).map((link) => link.obsidianLink())
+            );
         }
     }
 
@@ -181,8 +203,39 @@ export class Datastore {
         this.types.clear();
         this.tags.clear();
         this.etags.clear();
+        this.links.clear();
 
         this.revision++;
+    }
+
+    /** Find the corresponding object for a given link. */
+    public resolveLink(link: Link): Indexable | undefined {
+        const file = this.objects.get(link.path);
+        if (!file) return undefined;
+
+        if (link.type === "file") return file;
+
+        // Blocks and header links can only resolve inside of markdown files.
+        if (!(file instanceof MarkdownFile)) return undefined;
+
+        if (link.type === "header") {
+            const section = file.sections.find(
+                (sec) => normalizeHeaderForLink(sec.title) == link.subpath || sec.title == link.subpath
+            );
+
+            if (section) return section;
+            else return undefined;
+        } else if (link.type === "block") {
+            for (const section of file.sections) {
+                const block = section.blocks.find((bl) => bl.blockId === link.subpath);
+
+                if (block) return block;
+            }
+
+            return undefined;
+        } else {
+            throw new Error(`Unrecognized link type: ${link.type}`);
+        }
     }
 
     /**
@@ -459,6 +512,27 @@ export interface SearchResult<O> {
     duration: number;
     /** The maximum revision of any document in the result, which is useful for diffing. */
     revision: number;
-    /** Whether this is a  */
-    loading?: boolean;
+}
+
+/** Type guard which checks if object[key] exists and is an iterable. */
+function iterableExists<T extends Record<string, any>, K extends string>(
+    object: T,
+    key: K
+): object is T & Record<K, Iterable<any>> {
+    return key in object && object[key] !== undefined && Symbol.iterator in object[key];
+}
+
+/** Normalize a link, returning a new link with an absolute path. */
+function normalizeLink(link: Link, cache: MetadataCache, sourcePath: string): Link {
+    const dest = cache.getFirstLinkpathDest(link.path, sourcePath);
+    if (dest) return link.withPath(dest.path);
+    else return link;
+}
+
+/** Normalize a batch of links, returning a new iterable. */
+function bulkNormalizeLinks(links: Iterable<Link>, cache: MetadataCache, sourcePath: string): Iterable<Link> {
+    const result = [];
+    for (let link of links) result.push(normalizeLink(link, cache, sourcePath));
+
+    return result;
 }

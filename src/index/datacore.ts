@@ -35,7 +35,7 @@ export class Datacore extends Component {
         this.metadataCache = app.metadataCache;
         this.events = new Events();
 
-        this.datastore = new Datastore(app.vault);
+        this.datastore = new Datastore(app.vault, app.metadataCache);
         this.initialized = false;
 
         this.addChild(

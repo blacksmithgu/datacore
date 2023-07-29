@@ -100,11 +100,14 @@ export function getExtension(path: string): string {
 // Tag extraction.
 
 /** Parse all subtags out of the given tag. I.e., #hello/i/am would yield [#hello/i/am, #hello/i, #hello]. */
-export function extractSubtags(tag: string): string[] {
-    let result = [tag];
-    while (tag.includes("/")) {
-        tag = tag.substring(0, tag.lastIndexOf("/"));
+export function extractSubtags(tags: string | Iterable<string>): string[] {
+    let result = [];
+    for (let tag of typeof tags === "string" ? [tags] : tags) {
         result.push(tag);
+        while (tag.includes("/")) {
+            tag = tag.substring(0, tag.lastIndexOf("/"));
+            result.push(tag);
+        }
     }
 
     return result;

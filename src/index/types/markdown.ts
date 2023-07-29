@@ -1,18 +1,31 @@
 import { Link } from "expression/literal";
 import { extractFileLinks, extractSubtags, getFileTitle } from "expression/normalize";
-import { File } from "index/types/file";
-import { Indexable } from "index/types/indexable";
+import {
+    FILE_TYPE,
+    File,
+    Indexable,
+    LINKABLE_TYPE,
+    LINKBEARING_TYPE,
+    Linkable,
+    Linkbearing,
+    TAGGABLE_TYPE,
+    Taggable,
+} from "index/types/indexable";
 import { DateTime } from "luxon";
 
 /** A markdown file in the vault; the source of most metadata. */
-export class MarkdownFile implements File, Indexable {
+export class MarkdownFile implements File, Linkbearing, Taggable, Indexable {
     /** All of the types that a markdown file is. */
-    static TYPES = ["file", "file/markdown", "markdown", "markdown/page"];
+    static TYPES = [FILE_TYPE, "markdown", "page", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE];
 
     // Use static types for all markdown files.
     $types: string[] = MarkdownFile.TYPES;
     // Markdown file IDs are always just the full path.
     get $id() {
+        return this.path;
+    }
+    // The file of a file is... it's file.
+    get $file() {
         return this.path;
     }
 
@@ -30,13 +43,9 @@ export class MarkdownFile implements File, Indexable {
     size: number = 0;
     /** The full extent of the file (start 0, end the number of lines in the file.) */
     position: LineSpan;
-    /** The exact set of tags in the file. */
-    etags: Set<string>;
-    /** All tags (both direct and indirectly) in the file. */
+    /** The exact tags in the file. */
     tags: Set<string>;
-    /** The exact set of links in the file. */
-    elinks: Link[];
-    /** All links (both direct and indirect) in the file. */
+    /** All links in the file. */
     links: Link[];
     /**
      * All child markdown sections of this markdown file. The initial section before any content is special and is
@@ -54,9 +63,6 @@ export class MarkdownFile implements File, Indexable {
 
     public constructor(init: Partial<MarkdownFile>) {
         Object.assign(this, init);
-
-        this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
-        this.links = extractFileLinks(this.elinks);
     }
 
     /** Return the number of lines in the document. */
@@ -75,15 +81,14 @@ export class MarkdownFile implements File, Indexable {
     }
 }
 
-export class MarkdownSection implements Indexable {
+export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbearing {
     /** All of the types that a markdown section is. */
-    static TYPES = ["markdown", "section"];
+    static TYPES = ["markdown", "section", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE];
 
     /** Path of the file that this section is in. */
-    private $file: string;
-
     $types: string[] = MarkdownSection.TYPES;
     $id: string;
+    $file: string;
 
     /** The index of this section in the file. */
     ordinal: number;
@@ -93,13 +98,9 @@ export class MarkdownSection implements Indexable {
     level: number;
     /** The span of lines indicating the position of the section. */
     position: LineSpan;
-    /** The exact set of tags in the file. */
-    etags: Set<string>;
-    /** All tags (both direct and indirectly) on the file. */
+    /** All tags on the file. */
     tags: Set<string>;
-    /** The exact set of links in the file. */
-    elinks: Link[];
-    /** All links (both direct and indirect) in the file. */
+    /** All links in the file. */
     links: Link[];
     /** All of the markdown blocks in this section. */
     blocks: MarkdownBlock[];
@@ -117,9 +118,6 @@ export class MarkdownSection implements Indexable {
 
         this.$file = file;
         this.$id = MarkdownSection.readableId(file, this.title, this.ordinal);
-
-        this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
-        this.links = extractFileLinks(this.elinks);
     }
 
     /** Obtain the number of lines in the section. */
@@ -141,27 +139,20 @@ export class MarkdownSection implements Indexable {
 }
 
 /** Base class for all markdown blocks. */
-export class MarkdownBlock implements Indexable {
-    /** All of the types of this markdown block. */
-    static TYPES = ["markdown", "block"];
-
-    /** Path of the file that this block is in. */
-    $file: string;
+export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
+    static TYPES = ["markdown", "block", LINKBEARING_TYPE, TAGGABLE_TYPE];
 
     $types: string[] = MarkdownBlock.TYPES;
     $id: string;
+    $file: string;
 
     /** The index of this block in the file. */
     ordinal: number;
     /** The position/extent of the block. */
     position: LineSpan;
-    /** The exact set of tags in the block. */
-    etags: Set<string>;
-    /** All tags (both direct and indirectly) on the block. */
+    /** All tags on the block. */
     tags: Set<string>;
-    /** The exact set of links in the file. */
-    elinks: Link[];
-    /** All links (both direct and indirect) in the file. */
+    /** All links in the file. */
     links: Link[];
     /** If present, the distinct block ID for this block. */
     blockId?: string;
@@ -181,20 +172,23 @@ export class MarkdownBlock implements Indexable {
 
         this.$file = file;
         this.$id = MarkdownBlock.readableId(file, this.ordinal);
-
-        this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
-        this.links = extractFileLinks(this.elinks);
     }
 
     /** Generate a readable ID for this block using the ordinal of the block. */
     static readableId(file: string, ordinal: number): string {
         return `${file}/block${ordinal}`;
     }
+
+    /** If this block has a block ID, the link to this block. */
+    get link(): Link | undefined {
+        if (this.blockId) return Link.block(this.$file, this.blockId);
+        else return undefined;
+    }
 }
 
 /** Special block for markdown lists (of either plain list entries or tasks). */
-export class MarkdownListBlock extends MarkdownBlock {
-    static TYPES = ["markdown", "block", "block-list"];
+export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbearing {
+    static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE];
 
     $types: string[] = MarkdownListBlock.TYPES;
 
@@ -218,13 +212,12 @@ export class MarkdownListBlock extends MarkdownBlock {
 }
 
 /** A specific list item in a list. */
-export class MarkdownListItem {
-    static TYPES = ["markdown", "list-item"];
-
-    $file: string;
+export class MarkdownListItem implements Linkbearing, Taggable {
+    static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE];
 
     $types: string[] = MarkdownListItem.TYPES;
     $id: string;
+    $file: string;
 
     /** The position of the list item in the file. */
     position: LineSpan;
@@ -232,13 +225,9 @@ export class MarkdownListItem {
     elements: MarkdownListItem[];
     /** The type of list item that this element is. */
     type: string;
-    /** The exact set of tags on this list item. */
-    etags: Set<string>;
-    /** Exact and derived tags on this list item. */
+    /** Exact tags on this list item. */
     tags: Set<string>;
-    /** The exact set of links in the file. */
-    elinks: Link[];
-    /** All links (both direct and indirect) in the file. */
+    /** All links in the file. */
     links: Link[];
     /** The block ID of this list item if present. */
     blockId?: string;
@@ -269,9 +258,6 @@ export class MarkdownListItem {
         this.$file = file;
         this.$id = MarkdownListItem.readableId(file, this.position.start);
         this.type = "list-item";
-
-        this.tags = new Set(Array.from(this.etags).flatMap((t) => extractSubtags(t)));
-        this.links = extractFileLinks(this.elinks);
     }
 
     /** Get the line that this list item starts on. */
@@ -286,8 +272,8 @@ export class MarkdownListItem {
 }
 
 /** A specific task inside of a markdown list. */
-export class MarkdownTaskItem extends MarkdownListItem implements Indexable {
-    static TYPES = ["markdown", "list-item", "task"];
+export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Linkbearing, Taggable {
+    static TYPES = ["markdown", "list-item", "task", LINKBEARING_TYPE, TAGGABLE_TYPE];
 
     $types: string[] = MarkdownTaskItem.TYPES;
 
