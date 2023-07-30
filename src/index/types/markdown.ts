@@ -1,5 +1,5 @@
 import { Link } from "expression/literal";
-import { extractFileLinks, extractSubtags, getFileTitle } from "expression/normalize";
+import { getFileTitle } from "expression/normalize";
 import {
     FILE_TYPE,
     File,

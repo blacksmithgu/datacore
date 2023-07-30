@@ -12,6 +12,7 @@ import {
     IndexQuery,
     IndexTagged,
     IndexTyped,
+    IndexLinked,
 } from "index/types/index-query";
 
 ////////////////////////
@@ -290,6 +291,8 @@ export interface QueryLanguage {
     queryPath: IndexPath;
     queryParentOf: IndexParentOf;
     queryChildOf: IndexChildOf;
+    querySimpleLinked: IndexLinked;
+    queryLinked: IndexLinked;
     queryNegate: IndexNot;
     queryParens: IndexQuery;
     queryAtom: IndexQuery;
@@ -315,20 +318,27 @@ export const QUERY = P.createLanguage<QueryLanguage>({
         createFunction(P.regexp(/e?path/i).desc("[e]path"), PRIMITIVES.string).map(([func, path]) => ({
             type: "path",
             value: path,
-            exact: func === "epath",
+            exact: func.toLowerCase() === "epath",
         })),
 
     queryParentOf: (q) =>
         createFunction(P.regexp(/parentof|supertree/i).desc("parentof"), q.query).map(([func, children]) => ({
             type: "parent-of",
             children,
-            inclusive: func === "supertree",
+            inclusive: func.toLowerCase() === "supertree",
         })),
     queryChildOf: (q) =>
         createFunction(P.regexp(/childof|subtree/i).desc("childof"), q.query).map(([func, parents]) => ({
             type: "child-of",
             parents,
-            inclusive: func === "subtree",
+            inclusive: func.toLowerCase() === "subtree",
+        })),
+    querySimpleLinked: (_) => PRIMITIVES.link.map(link => ({ type: "linked", source: { type: "link", value: link }, direction: "incoming" })),
+    queryLinked: (q) =>
+        createFunction(P.regexp(/linksto|linkedfrom|connected/i).desc("connected"), q.query).map(([func, source]) => ({
+            type: "linked",
+            source,
+            direction: func.toLowerCase() == "linksto" ? "incoming" : (func.toLowerCase() == "linkedfrom" ? "outgoing" : "both")
         })),
 
     queryParens: (q) => q.query.trim(P.optWhitespace).wrap(P.string("("), P.string(")")),
@@ -344,11 +354,13 @@ export const QUERY = P.createLanguage<QueryLanguage>({
         P.alt<IndexQuery>(
             q.queryParens,
             q.queryNegate,
+            q.querySimpleLinked,
             q.queryTag,
             q.queryType,
             q.queryId,
             q.queryChildOf,
             q.queryParentOf,
+            q.queryLinked,
             q.queryPath
         ),
     queryAnds: (q) =>

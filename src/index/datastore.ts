@@ -3,10 +3,11 @@ import { Filter, Filters } from "index/storage/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery } from "index/types/index-query";
-import { Indexable, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
+import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
 import { MarkdownFile } from "./types/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "expression/normalize";
+import FlatQueue from "flatqueue";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -156,7 +157,7 @@ export class Datastore {
         this.types.set(object.$id, object.$types);
 
         // Exact and derived tags.
-        if (TAGGABLE_TYPE in object.$types && iterableExists(object, "tags")) {
+        if (object.$types.contains(TAGGABLE_TYPE) && iterableExists(object, "tags")) {
             const tags = object.tags as Set<string>;
 
             this.etags.set(object.$id, tags);
@@ -164,7 +165,7 @@ export class Datastore {
         }
 
         // Exact and derived links.
-        if (LINKBEARING_TYPE in object.$types && iterableExists(object, "links")) {
+        if (object.$types.contains(LINKBEARING_TYPE) && iterableExists(object, "links")) {
             object.links = bulkNormalizeLinks(object.links, this.metadataCache, object.$file ?? "");
             this.links.set(
                 object.$id,
@@ -177,14 +178,14 @@ export class Datastore {
     private _unindex(object: Indexable) {
         this.types.delete(object.$id, object.$types);
 
-        if (TAGGABLE_TYPE in object.$types && iterableExists(object, "tags")) {
+        if (object.$types.contains(TAGGABLE_TYPE) && iterableExists(object, "tags")) {
             const tags = object.tags as Set<string>;
 
             this.etags.delete(object.$id, tags);
             this.tags.delete(object.$id, extractSubtags(tags));
         }
 
-        if (LINKBEARING_TYPE in object.$types && iterableExists(object, "links")) {
+        if (object.$types.contains(LINKABLE_TYPE) && iterableExists(object, "links")) {
             // Assume links are normalized when deleting them. Could be broken but I hope not. We can always use a 2-way index to
             // fix this if we encounter non-normalized links.
             this.links.delete(
@@ -242,10 +243,10 @@ export class Datastore {
      * Search the datastore for all documents matching the given query, returning them
      * as a list of indexed objects along with performance metadata.
      */
-    public search(query: IndexQuery): SearchResult<Indexable> {
+    public search(query: IndexQuery, context?: SearchContext): SearchResult<Indexable> {
         const start = Date.now();
 
-        const filter = this._searchRecursive(this._optimize(query));
+        const filter = this._searchRecursive(this._optimize(query), context);
         const result = Filters.resolve(filter, this.ids);
 
         const objects: Indexable[] = [];
@@ -294,9 +295,11 @@ export class Datastore {
             case "not":
                 return { type: "not", element: this._denest(query.element) };
             case "child-of":
-                return { type: "child-of", parents: this._denest(query.parents) };
+                return Object.assign({}, query, { parents: this._denest(query.parents) });
             case "parent-of":
-                return { type: "parent-of", children: this._denest(query.children) };
+                return Object.assign({}, query, { children: this._denest(query.children) });
+            case "linked":
+                return Object.assign({}, query, { source: this._denest(query.source) });
             default:
                 return query;
         }
@@ -351,7 +354,7 @@ export class Datastore {
                     else if (parents.constant && query.inclusive) return { type: "constant", constant: true };
                 }
 
-                return { type: "child-of", parents: parents, inclusive: query.inclusive };
+                return Object.assign({}, query, { parents });
             case "parent-of":
                 // children = EMPTY means this will also be empty.
                 const children = this._constantfold(query.children);
@@ -360,26 +363,34 @@ export class Datastore {
                     else if (children.constant && query.inclusive) return { type: "constant", constant: true };
                 }
 
-                return { type: "parent-of", children: children, inclusive: query.inclusive };
+                return Object.assign({}, query, { children });
+            case "linked":
+                const source = this._constantfold(query.source);
+                if (source.type === "constant") {
+                    if (!source.constant) return { type: "constant", constant: false };
+                    else if (source.constant && query.inclusive) return { type: "constant", constant: true };
+                }
+
+                return Object.assign({}, query, { source });
             default:
                 return query;
         }
     }
 
     /** Recursively execute a subquery, returning a set of all matching document IDs. */
-    private _searchRecursive(query: IndexQuery): Filter<string> {
+    private _searchRecursive(query: IndexQuery, context?: SearchContext): Filter<string> {
         switch (query.type) {
             case "and":
                 // TODO: For efficiency, can order queries by probability of being empty.
-                return Filters.lazyIntersect(query.elements, (elem) => this._searchRecursive(elem));
+                return Filters.lazyIntersect(query.elements, (elem) => this._searchRecursive(elem, context));
             case "or":
                 // TODO: For efficiency, can order queries by probability of being EVERYTHING.
-                return Filters.lazyUnion(query.elements, (elem) => this._searchRecursive(elem));
+                return Filters.lazyUnion(query.elements, (elem) => this._searchRecursive(elem, context));
             case "not":
-                return Filters.negate(this._searchRecursive(query.element));
+                return Filters.negate(this._searchRecursive(query.element, context));
             case "child-of":
                 // TODO: This is an inefficient implementation and would benefit from "lazily-computed" filters.
-                const parents = this._searchRecursive(query.parents);
+                const parents = this._searchRecursive(query.parents, context);
                 if (Filters.empty(parents)) {
                     return Filters.NOTHING;
                 } else if (parents.type === "everything") {
@@ -406,7 +417,7 @@ export class Datastore {
                 return Filters.atom(childResults);
             case "parent-of":
                 // TODO: This is an inefficient implementation and would benefit from "lazily-computed" filters.
-                const children = this._searchRecursive(query.children);
+                const children = this._searchRecursive(query.children, context);
                 if (Filters.empty(children)) {
                     return Filters.NOTHING;
                 } else if (children.type === "everything") {
@@ -425,19 +436,42 @@ export class Datastore {
                 }
 
                 return Filters.atom(parentResults);
+            case "linked":
+                if (query.distance && query.distance < 0) return Filters.NOTHING;
+
+                // Compute the source objects first.
+                const sources = this._searchRecursive(query.source, context);
+                if (Filters.empty(sources)) return Filters.NOTHING;
+                else if (sources.type === "everything") {
+                    if (query.inclusive) return Filters.EVERYTHING;
+                    else return Filters.NOTHING;
+                }
+
+                const resolvedSources = Filters.resolve(sources, this.ids);
+                const direction = query.direction ?? "both";
+                const results = this._traverseLinked(resolvedSources, query.distance ?? 1, id => this._iterateAdjacentLinked(id, direction));
+
+                if (!query.inclusive) return Filters.atom(Filters.setIntersectNegation(results, resolvedSources));
+                else return Filters.atom(results);
             default:
-                return this._searchPrimitive(query);
+                return this._searchPrimitive(query, context);
         }
     }
 
     /** Execute a primitive index query, i.e., a query that directly produces results. */
-    private _searchPrimitive(query: IndexPrimitive): Filter<string> {
+    private _searchPrimitive(query: IndexPrimitive, context?: SearchContext): Filter<string> {
         switch (query.type) {
             case "constant":
                 return Filters.constant(query.constant);
             case "id":
                 const exactObject = this.objects.get(query.value);
                 return exactObject ? Filters.atom(new Set([exactObject.$id])) : Filters.NOTHING;
+            case "link":
+                const resolvedPath = this.metadataCache.getFirstLinkpathDest(query.value.path, context?.sourcePath ?? "")?.path;
+                const resolved = resolvedPath ? query.value.withPath(resolvedPath) : query.value;
+
+                const object = this.resolveLink(resolved);
+                return object ? Filters.atom(new Set([object.$id])) : Filters.NOTHING;
             case "typed":
                 return Filters.nullableAtom(this.types.get(query.value));
             case "tagged":
@@ -470,8 +504,57 @@ export class Datastore {
             case "bounded-value":
             case "equal-value":
             case "field":
-            case "connected":
                 return Filters.NOTHING;
+        }
+    }
+
+    /**
+     * Does Breadth-first Search to find all linked files within distance <distance>. This includes all source nodes,
+     * so remove them afterwards if you do not want them.
+     */
+    private _traverseLinked(sourceIds: Set<string>, distance: number, adjacent: (id: string) => Iterable<string>): Set<string> {
+        if (distance < 0) return new Set();
+        if (sourceIds.size == 0) return new Set();
+
+        const visited = new Set<string>(sourceIds);
+
+        const queue = new FlatQueue<string>();
+        for (const element of sourceIds) queue.push(element, 0);
+
+        while (queue.length > 0) {
+            const dist = queue.peekValue()!;
+            const element = queue.pop()!;
+
+            for (const neighbor of adjacent(element)) {
+                if (visited.has(neighbor)) continue;
+
+                visited.add(neighbor);
+                if (dist < distance) queue.push(neighbor, dist + 1);
+            }
+        }
+
+        return visited;
+    }
+
+    /** Iterate all linked objects for the given object. */
+    private *_iterateAdjacentLinked(id: string, direction: "incoming" | "outgoing" | "both"): Generator<string> {
+        const object = this.objects.get(id);
+        if (!object) return;
+
+        if ((direction === "both" || direction === "incoming") && "link" in object && object["link"]) {
+            const incoming = this.links.get((object.link as Link).obsidianLink());
+            if (incoming) {
+                for (const id of incoming) {
+                    yield id;
+                }
+            }
+        }
+
+        if ((direction === "both" || direction === "outgoing") && LINKBEARING_TYPE in object && iterableExists(object, "links")) {
+            for (const link of (object.links as Link[])) {
+                const resolved = this.resolveLink(link);
+                if (resolved) yield resolved.$id;
+            }
         }
     }
 
@@ -512,6 +595,12 @@ export interface SearchResult<O> {
     duration: number;
     /** The maximum revision of any document in the result, which is useful for diffing. */
     revision: number;
+}
+
+/** Extra settings that can be provided to a search. */
+export interface SearchContext {
+    /** The path to run from when resolving links and `this` sections. */
+    sourcePath?: string;
 }
 
 /** Type guard which checks if object[key] exists and is an iterable. */

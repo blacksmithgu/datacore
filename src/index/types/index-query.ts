@@ -1,7 +1,4 @@
-// Primitive, fast operations.
-
-import { Link } from "expression/link";
-import { Literal } from "expression/literal";
+import { Link, Literal } from "expression/literal";
 
 /** Valid index-value comparisons. */
 export type IndexComparison = "=" | "!=" | ">" | "<" | ">=" | "<=";
@@ -11,6 +8,13 @@ export interface IndexId {
     type: "id";
     /** The ID of the object to retrieve. */
     value: string;
+}
+
+/** Fetch a document referenced by the given link. */
+export interface IndexLink {
+    type: "link";
+    /** The link being referenced. */
+    value: Link;
 }
 
 /** Fetch documents with the given type. */
@@ -39,20 +43,6 @@ export interface IndexPath {
      * will be matched.
      */
     exact?: boolean;
-}
-
-/**
- * Fetch documents that are connected to the given document. This generally only operates on linkable objects, which
- * are usually files and potentially sections.
- */
-export interface IndexConnected {
-    type: "connected";
-    /** The source page to search around. */
-    source: Link;
-    /** Whether to look for only outgoing pages, incoming pages, or both incoming and outgoing pages. */
-    direction: "outgoing" | "incoming" | "both";
-    /** How far to look (defaults to 1 if not set). */
-    distance?: number;
 }
 
 /**
@@ -92,14 +82,14 @@ export interface IndexValueBounded {
 
 export type IndexPrimitive =
     | IndexId
+    | IndexLink
     | IndexConstant
     | IndexTyped
     | IndexTagged
     | IndexPath
     | IndexField
     | IndexValueEquals
-    | IndexValueBounded
-    | IndexConnected;
+    | IndexValueBounded;
 
 // Logical combinators.
 
@@ -135,6 +125,23 @@ export interface IndexParentOf {
     inclusive?: boolean;
 }
 
+/**
+ * Start by finding all documents matching `source`, then follow file links in the desired directions (incoming, outgoing,
+ * or both) for the given distance. The simple use of this operator is to just find inlinks/outlinks for a given file,
+ * but it is more general and can look for local groups of files.
+ */
+export interface IndexLinked {
+    type: "linked";
+    /** The source pages to search for connections from. */
+    source: IndexQuery;
+    /** Whether to look for only outgoing pages, incoming pages, or both incoming and outgoing pages. */
+    direction: "outgoing" | "incoming" | "both";
+    /** How far to look (defaults to 1 if not set). */
+    distance?: number;
+    /** If true, then include the source objects themselves as valid matches. */
+    inclusive?: boolean;
+}
+
 /** AND two or more datastore queries together. */
 export interface IndexAnd {
     type: "and";
@@ -153,4 +160,4 @@ export interface IndexNot {
     element: IndexQuery;
 }
 
-export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive | IndexChildOf | IndexParentOf;
+export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive | IndexChildOf | IndexParentOf | IndexLinked; 

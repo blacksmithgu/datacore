@@ -48,8 +48,8 @@ export function markdownImport(
                 level: section.level,
                 position: { start, end },
                 blocks: [],
-                etags: new Set(),
-                elinks: [],
+                tags: new Set(),
+                links: []
             })
         );
     }
@@ -67,8 +67,8 @@ export function markdownImport(
                 level: 1,
                 position: { start: 0, end },
                 blocks: [],
-                etags: new Set(),
-                elinks: [],
+                tags: new Set(),
+                links: [],
             })
         );
     }
@@ -94,8 +94,8 @@ export function markdownImport(
                 new MarkdownListBlock(path, {
                     ordinal: blockOrdinal,
                     position: { start, end },
-                    etags: new Set(),
-                    elinks: [],
+                    tags: new Set(),
+                    links: [],
                     blockId: block.id,
                     elements: [],
                 })
@@ -106,8 +106,8 @@ export function markdownImport(
                 new MarkdownBlock(path, {
                     ordinal: blockOrdinal,
                     position: { start, end },
-                    etags: new Set(),
-                    elinks: [],
+                    tags: new Set(),
+                    links: [],
                     blockId: block.id,
                     type: block.type,
                 })
@@ -155,25 +155,25 @@ export function markdownImport(
     //////////
 
     // For each tag, assign it to the appropriate section and block that it is a part of.
-    const etags = new Set<string>();
+    const tags = new Set<string>();
     for (let tagdef of metadata.tags ?? []) {
         const tag = tagdef.tag.startsWith("#") ? tagdef.tag : "#" + tagdef.tag;
         const line = tagdef.position.start.line;
-        etags.add(tag);
+        tags.add(tag);
 
         const section = sections.getPairOrNextLower(line);
         if (section && section[1].position.end >= line) {
-            section[1].etags.add(tag);
+            section[1].tags.add(tag);
         }
 
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].position.end >= line) {
-            block[1].etags.add(tag);
+            block[1].tags.add(tag);
         }
 
         const listItem = blocks.getPairOrNextHigher(line);
         if (listItem && listItem[1].position.end >= line) {
-            listItem[1].etags.add(tag);
+            listItem[1].tags.add(tag);
         }
     }
 
@@ -181,32 +181,32 @@ export function markdownImport(
     // Links //
     ///////////
 
-    const elinks: Link[] = [];
+    const links: Link[] = [];
     for (let linkdef of metadata.links ?? []) {
         const link = Link.infer(linkdef.link);
         const line = linkdef.position.start.line;
-        addLink(elinks, link);
+        addLink(links, link);
 
         const section = sections.getPairOrNextLower(line);
         if (section && section[1].position.end >= line) {
-            addLink(section[1].elinks, link);
+            addLink(section[1].links, link);
         }
 
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].position.end >= line) {
-            addLink(block[1].elinks, link);
+            addLink(block[1].links, link);
         }
 
         const listItem = blocks.getPairOrNextHigher(line);
         if (listItem && listItem[1].position.end >= line) {
-            addLink(listItem[1].elinks, link);
+            addLink(listItem[1].links, link);
         }
     }
 
     return new MarkdownFile({
         path,
-        etags,
-        elinks,
+        tags,
+        links,
         sections: sections.valuesArray(),
         ctime: DateTime.fromMillis(stats.ctime),
         mtime: DateTime.fromMillis(stats.mtime),
@@ -220,8 +220,8 @@ export function markdownImport(
 /** Convert a list item into the appropriate markdown list type. */
 function convertListItem(path: string, raw: ListItemCache): MarkdownListItem {
     const common: Partial<MarkdownListItem> = {
-        etags: new Set(),
-        elinks: [],
+        tags: new Set(),
+        links: [],
         position: { start: raw.position.start.line, end: raw.position.end.line },
         elements: [],
         parentLine: raw.parent,
