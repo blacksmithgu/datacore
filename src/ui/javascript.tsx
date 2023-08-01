@@ -7,16 +7,19 @@ import {
     ErrorMessage,
     SimpleErrorBoundary,
     CURRENT_FILE_CONTEXT,
+    DatacoreContextProvider,
 } from "ui/markdown";
 import { MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
 import React, { createElement, isValidElement } from "react";
 import { render, unmountComponentAtNode } from "react-dom";
 import * as babel from "@babel/standalone";
+import { Root, createRoot } from "react-dom/client";
 
 /** Renders javascript code as an inline script inside of Obsidian with access. */
 export class JavascriptRenderer extends MarkdownRenderChild {
     private loaded: boolean = false;
+    private root: Root;
 
     public constructor(
         public api: DatacoreLocalApi,
@@ -29,6 +32,7 @@ export class JavascriptRenderer extends MarkdownRenderChild {
 
     public async onload() {
         this.loaded = true;
+        this.root = createRoot(this.containerEl);
 
         // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
@@ -50,35 +54,27 @@ export class JavascriptRenderer extends MarkdownRenderChild {
             const renderableElement = makeRenderableElement(renderable, this.path);
 
             // Very contextual!
-            render(
-                <APP_CONTEXT.Provider value={this.api.app}>
-                    <COMPONENT_CONTEXT.Provider value={this}>
-                        <DATACORE_CONTEXT.Provider value={this.api.core}>
-                            <SETTINGS_CONTEXT.Provider value={this.api.core.settings}>
-                                <CURRENT_FILE_CONTEXT.Provider value={this.path}>
-                                    <SimpleErrorBoundary message="The script failed while executing.">
-                                        {renderableElement}
-                                    </SimpleErrorBoundary>
-                                </CURRENT_FILE_CONTEXT.Provider>
-                            </SETTINGS_CONTEXT.Provider>
-                        </DATACORE_CONTEXT.Provider>
-                    </COMPONENT_CONTEXT.Provider>
-                </APP_CONTEXT.Provider>,
-                this.containerEl
+            this.root.render(
+                <DatacoreContextProvider app={this.api.app} component={this} datacore={this.api.core} settings={this.api.core.settings}>
+                    <CURRENT_FILE_CONTEXT.Provider value={this.path}>
+                        <SimpleErrorBoundary message="The script failed while executing.">
+                            {renderableElement}
+                        </SimpleErrorBoundary>
+                    </CURRENT_FILE_CONTEXT.Provider>
+                </DatacoreContextProvider>
             );
         } catch (ex) {
-            render(
+            this.root.render(
                 <ErrorMessage
                     message="Failed to render this datacore script. The script may be being edited, or it may have a bug."
                     error={"" + ex}
-                />,
-                this.containerEl
+                />
             );
         }
     }
 
     public onunload(): void {
-        unmountComponentAtNode(this.containerEl);
+        if (this.root) this.root.unmount();
         this.loaded = false;
     }
 }

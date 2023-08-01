@@ -1,6 +1,6 @@
 import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Group, Stack, Textarea } from "@mantine/core";
+import { ActionIcon, Divider, Group, Stack, Textarea } from "@mantine/core";
 import React from "react";
 
 /**
@@ -10,9 +10,11 @@ import React from "react";
 export function QueryEditor() {
     return <Stack>
         <Group m="md" position="center" align="start" noWrap>
-            <FontAwesomeIcon style={{ margin: "8px" }} icon={faArrowRightFromBracket} fade />
-            <Textarea id="query" minRows={1} size="lg" ff="Courier New" autosize>
-            </Textarea>
+            <ActionIcon mt="sm" variant="subtle" disabled>
+                <FontAwesomeIcon icon={faArrowRightFromBracket} fade />
+            </ActionIcon>
+            <Textarea p="xs" id="query" minRows={1} size="lg" style={{ flexGrow: 1 }} autosize />
         </Group>
+        <Divider />
     </Stack>
 }

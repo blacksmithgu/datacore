@@ -1,13 +1,15 @@
 import { Datacore } from "index/datacore";
 import { View, WorkspaceLeaf } from "obsidian";
 import { Settings } from "settings";
-import { DatacoreContextProvider } from "ui/markdown";
+import { DatacoreContextProvider, SimpleErrorBoundary } from "ui/markdown";
 import { QueryEditor } from "./query-editor";
 import React from "react";
-import { render, unmountComponentAtNode } from "react-dom";
+import { Root, createRoot } from "react-dom/client";
 
 export class QueryEditorView extends View {
     public static TYPE: string = "datacore/query";
+
+    private root: Root;
 
     public constructor(
         leaf: WorkspaceLeaf,
@@ -28,14 +30,17 @@ export class QueryEditorView extends View {
     }
 
     protected override async onOpen() {
-        render(
-            <DatacoreContextProvider datacore={this.datacore} settings={this.settings} app={this.app} component={this}>
-                <QueryEditor />
-            </DatacoreContextProvider>,
-            this.containerEl)
+        this.root = createRoot(this.containerEl);
+        this.root.render(
+            <SimpleErrorBoundary title="Query Editor" message="The query editor crashed. See message for details.">
+                <DatacoreContextProvider datacore={this.datacore} settings={this.settings} app={this.app} component={this}>
+                    <QueryEditor />
+                </DatacoreContextProvider>
+            </SimpleErrorBoundary>
+        );
     }
 
     protected override async onClose() {
-        unmountComponentAtNode(this.containerEl);
+        if (this.root) this.root.unmount();
     }
 }

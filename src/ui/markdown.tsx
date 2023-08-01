@@ -2,14 +2,15 @@
 import { App, MarkdownRenderChild, MarkdownRenderer } from "obsidian";
 import { Component } from "obsidian";
 import { Literal, Literals } from "expression/literal";
-import React, { createContext, CSSProperties, EventHandler, Fragment, MouseEvent, PropsWithChildren, useContext, useEffect, useRef } from "react";
-import { render, unmountComponentAtNode } from "react-dom";
+import React, { createContext, CSSProperties, EventHandler, Fragment, MouseEvent, PropsWithChildren, useCallback, useContext, useEffect, useRef } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { Datacore } from "index/datacore";
 import { Settings } from "settings";
 import { currentLocale, renderMinimalDate, renderMinimalDuration } from "expression/normalize";
 import { extractImageDimensions, isImageEmbed } from "ui/media";
 import { useStableCallback } from "./hooks";
+import { MantineProvider } from "@mantine/styles";
+import { Root, createRoot } from "react-dom/client";
 
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
@@ -24,15 +25,17 @@ export function DatacoreContextProvider({ children, app, component, datacore, se
     datacore: Datacore;
     settings: Settings;
 }>) {
-    return <COMPONENT_CONTEXT.Provider value={component}>
-        <APP_CONTEXT.Provider value={app}>
-            <DATACORE_CONTEXT.Provider value={datacore}>
-                <SETTINGS_CONTEXT.Provider value={settings}>
-                    {children}
-                </SETTINGS_CONTEXT.Provider>
-            </DATACORE_CONTEXT.Provider>
-        </APP_CONTEXT.Provider>
-    </COMPONENT_CONTEXT.Provider>
+    return <MantineProvider theme={{ colorScheme: "dark" }} withNormalizeCSS withGlobalStyles>
+        <COMPONENT_CONTEXT.Provider value={component}>
+            <APP_CONTEXT.Provider value={app}>
+                <DATACORE_CONTEXT.Provider value={datacore}>
+                    <SETTINGS_CONTEXT.Provider value={settings}>
+                        {children}
+                    </SETTINGS_CONTEXT.Provider>
+                </DATACORE_CONTEXT.Provider>
+            </APP_CONTEXT.Provider>
+        </COMPONENT_CONTEXT.Provider>
+    </MantineProvider>;
 }
 
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
@@ -239,7 +242,7 @@ export function ErrorMessage({
 
 /** A simple error boundary which renders a message on failure. */
 export function SimpleErrorBoundary({ title, message, children }: PropsWithChildren<{ title?: string; message?: string }>) {
-    const fallbackRenderer = useStableCallback(({ error, resetErrorBoundary }: FallbackProps) => {
+    const fallbackRenderer = useCallback(({ error, resetErrorBoundary }: FallbackProps) => {
         return <ErrorMessage title={title} message={message} error={"" + error} reset={resetErrorBoundary} />;
     }, [title, message]);
 
@@ -250,6 +253,8 @@ export function SimpleErrorBoundary({ title, message, children }: PropsWithChild
 
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
 export class ReactRenderer extends MarkdownRenderChild {
+    private root: Root;
+
     public constructor(
         public app: App,
         public datacore: Datacore,
@@ -262,15 +267,14 @@ export class ReactRenderer extends MarkdownRenderChild {
 
     public onload(): void {
         // Very contextual!
-        render(
+        this.root = createRoot(this.container);
+        this.root.render(
             <DatacoreContextProvider app={this.app} component={this} datacore={this.datacore} settings={this.datacore.settings}>
                 {this.element}
-            </DatacoreContextProvider>,
-            this.containerEl
-        );
+            </DatacoreContextProvider>);
     }
 
     public onunload(): void {
-        unmountComponentAtNode(this.containerEl);
+        if (this.root) this.root.unmount();
     }
 }
