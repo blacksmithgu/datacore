@@ -14,7 +14,7 @@ export function QueryEditor() {
                 <ActionIcon mt="sm" variant="subtle" disabled>
                     <FontAwesomeIcon icon={faArrowRightFromBracket} fade />
                 </ActionIcon>
-                <Textarea p="xs" id="query" minRows={1} size="lg" style={{ flexGrow: 1 }} autosize />
+                <Textarea p="xs" id="query" minRows={1} size="lg" style={{ flexGrow: 1 }} styles={{ input: { fontFamily: "Courier New" }}} autosize />
             </Group>
             <Divider />
         </Stack>
