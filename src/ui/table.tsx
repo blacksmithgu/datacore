@@ -1,6 +1,5 @@
 import { Literal, Literals } from "expression/literal";
-import { h, isValidElement, JSX, RenderableProps } from "preact";
-import { Dispatch, useContext, useMemo, useReducer } from "preact/hooks";
+import React, { isValidElement, Dispatch, useContext, useMemo, useReducer, PropsWithChildren, MouseEvent, Reducer } from "react";
 import { CURRENT_FILE_CONTEXT, Lit } from "./markdown";
 import { useInterning, useStableCallback } from "./hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -89,7 +88,7 @@ export interface TableColumn<T, V = Literal> {
 
 /** Low level table view which handles state transitions via the given dispatcher. */
 export function ControlledTableView<T>(
-    props: RenderableProps<TableState<T> & { rows: T[]; dispatch: Dispatch<TableAction> }>
+    props: PropsWithChildren<TableState<T> & { rows: T[]; dispatch: Dispatch<TableAction> }>
 ) {
     // Cache columns by reference equality of the specific columns. Columns have various function references
     // inside them and so cannot be compared by value equality.
@@ -302,7 +301,7 @@ export function useTableDispatch<T>(
     initial: TableState<T> | (() => TableState<T>)
 ): [TableState<T>, Dispatch<TableAction>] {
     const init = useMemo(() => (typeof initial == "function" ? initial() : initial), []);
-    return useReducer<TableState<T>, TableAction>(tableReducer, init);
+    return useReducer(tableReducer as Reducer<TableState<T>, TableAction>, init);
 }
 
 ////////////////////
@@ -310,7 +309,7 @@ export function useTableDispatch<T>(
 ////////////////////
 
 /** Standard table view which provides the default state implementation. */
-export function TableView<T>(props: RenderableProps<TableProps<T>>) {
+export function TableView<T>(props: PropsWithChildren<TableProps<T>>) {
     const [state, dispatch] = useTableDispatch(() => ({
         columns: props.initialColumns ?? [],
         page: props.initialPage ?? 0,

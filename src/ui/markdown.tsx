@@ -1,14 +1,15 @@
 /** Provides core preact / rendering utilities for all view types. */
 import { App, MarkdownRenderChild, MarkdownRenderer } from "obsidian";
-import { h, createContext, render, Fragment, RenderableProps } from "preact";
-import { useContext, useEffect, useErrorBoundary, useRef } from "preact/hooks";
 import { Component } from "obsidian";
 import { Literal, Literals } from "expression/literal";
-import React, { unmountComponentAtNode } from "preact/compat";
+import React, { createContext, CSSProperties, EventHandler, Fragment, MouseEvent, PropsWithChildren, useContext, useEffect, useRef } from "react";
+import { render, unmountComponentAtNode } from "react-dom";
+import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { Datacore } from "index/datacore";
 import { Settings } from "settings";
 import { currentLocale, renderMinimalDate, renderMinimalDuration } from "expression/normalize";
 import { extractImageDimensions, isImageEmbed } from "ui/media";
+import { useStableCallback } from "./hooks";
 
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
@@ -17,7 +18,7 @@ export const SETTINGS_CONTEXT = createContext<Settings>(undefined!);
 export const CURRENT_FILE_CONTEXT = createContext<string>(undefined!);
 
 /** More compact provider for all of the datacore react contexts. */
-export function DatacoreContextProvider({ children, app, component, datacore, settings }: RenderableProps<{
+export function DatacoreContextProvider({ children, app, component, datacore, settings }: PropsWithChildren<{
     app: App;
     component: Component;
     datacore: Datacore;
@@ -46,9 +47,9 @@ export function RawMarkdown({
     content: string;
     sourcePath: string;
     inline?: boolean;
-    style?: string;
+    style?: CSSProperties;
     cls?: string;
-    onClick?: (e: preact.JSX.TargetedMouseEvent<HTMLElement>) => void;
+    onClick?: EventHandler<MouseEvent>;
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);
@@ -70,7 +71,7 @@ export function RawMarkdown({
         });
     }, [content, sourcePath, container.current]);
 
-    return <span ref={container} style={style} class={cls} onClick={onClick}></span>;
+    return <span ref={container} style={style} className={cls} onClick={onClick}></span>;
 }
 
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
@@ -98,7 +99,7 @@ export function RawLit({
     sourcePath,
     inline = false,
     depth = 0,
-}: RenderableProps<{
+}: PropsWithChildren<{
     value: Literal | undefined;
     sourcePath: string;
     inline?: boolean;
@@ -150,9 +151,9 @@ export function RawLit({
     } else if (Literals.isArray(value)) {
         if (!inline) {
             return (
-                <ul class={"dataview dataview-ul dataview-result-list-ul"}>
+                <ul className={"dataview dataview-ul dataview-result-list-ul"}>
                     {value.map((subvalue) => (
-                        <li class="dataview-result-list-li">
+                        <li className="dataview-result-list-li">
                             <Lit value={subvalue} sourcePath={sourcePath} inline={inline} depth={depth + 1} />
                         </li>
                     ))}
@@ -162,7 +163,7 @@ export function RawLit({
             if (value.length == 0) return <Fragment>&lt;Empty List&gt;</Fragment>;
 
             return (
-                <span class="dataview dataview-result-list-span">
+                <span className="dataview dataview-result-list-span">
                     {value.map((subvalue, index) => (
                         <Fragment>
                             {index == 0 ? "" : ", "}
@@ -180,9 +181,9 @@ export function RawLit({
 
         if (!inline) {
             return (
-                <ul class="dataview dataview-ul dataview-result-object-ul">
+                <ul className="dataview dataview-ul dataview-result-object-ul">
                     {Object.entries(value).map(([key, value]) => (
-                        <li class="dataview dataview-li dataview-result-object-li">
+                        <li className="dataview dataview-li dataview-result-object-li">
                             {key}: <Lit value={value} sourcePath={sourcePath} inline={inline} depth={depth + 1} />
                         </li>
                     ))}
@@ -192,7 +193,7 @@ export function RawLit({
             if (Object.keys(value).length == 0) return <Fragment>&lt;Empty Object&gt;</Fragment>;
 
             return (
-                <span class="dataview dataview-result-object-span">
+                <span className="dataview dataview-result-object-span">
                     {Object.entries(value).map(([key, value], index) => (
                         <Fragment>
                             {index == 0 ? "" : ", "}
@@ -223,12 +224,12 @@ export function ErrorMessage({
     reset?: () => void;
 }) {
     return (
-        <div class="datacore-error-box">
-            {title && <h4 class="datacore-error-title">{title}</h4>}
-            {message && <p class="datacore-error-message">{message}</p>}
-            {error && <pre class="datacore-error-pre">{error}</pre>}
+        <div className="datacore-error-box">
+            {title && <h4 className="datacore-error-title">{title}</h4>}
+            {message && <p className="datacore-error-message">{message}</p>}
+            {error && <pre className="datacore-error-pre">{error}</pre>}
             {reset && (
-                <button class="datacore-error-retry" onClick={reset}>
+                <button className="datacore-error-retry" onClick={reset}>
                     Rerun
                 </button>
             )}
@@ -237,14 +238,14 @@ export function ErrorMessage({
 }
 
 /** A simple error boundary which renders a message on failure. */
-export function ErrorBoundary({ title, message, children }: RenderableProps<{ title?: string; message?: string }>) {
-    const [error, resetError] = useErrorBoundary();
+export function SimpleErrorBoundary({ title, message, children }: PropsWithChildren<{ title?: string; message?: string }>) {
+    const fallbackRenderer = useStableCallback(({ error, resetErrorBoundary }: FallbackProps) => {
+        return <ErrorMessage title={title} message={message} error={"" + error} reset={resetErrorBoundary} />;
+    }, [title, message]);
 
-    if (error) {
-        return <ErrorMessage title={title} message={message} error={"" + error} reset={resetError} />;
-    }
-
-    return <Fragment>{children}</Fragment>;
+    return <ErrorBoundary fallbackRender={fallbackRenderer}>
+        {children}
+    </ErrorBoundary>
 }
 
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
@@ -254,7 +255,7 @@ export class ReactRenderer extends MarkdownRenderChild {
         public datacore: Datacore,
         public container: HTMLElement,
         public sourcePath: string,
-        public element: h.JSX.Element
+        public element: React.ReactNode
     ) {
         super(container);
     }
@@ -262,17 +263,9 @@ export class ReactRenderer extends MarkdownRenderChild {
     public onload(): void {
         // Very contextual!
         render(
-            <APP_CONTEXT.Provider value={this.app}>
-                <COMPONENT_CONTEXT.Provider value={this}>
-                    <DATACORE_CONTEXT.Provider value={this.datacore}>
-                        <SETTINGS_CONTEXT.Provider value={this.datacore.settings}>
-                            <CURRENT_FILE_CONTEXT.Provider value={this.sourcePath}>
-                                {this.element}
-                            </CURRENT_FILE_CONTEXT.Provider>
-                        </SETTINGS_CONTEXT.Provider>
-                    </DATACORE_CONTEXT.Provider>
-                </COMPONENT_CONTEXT.Provider>
-            </APP_CONTEXT.Provider>,
+            <DatacoreContextProvider app={this.app} component={this} datacore={this.datacore} settings={this.datacore.settings}>
+                {this.element}
+            </DatacoreContextProvider>,
             this.containerEl
         );
     }

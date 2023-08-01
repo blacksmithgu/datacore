@@ -8,8 +8,7 @@ import { MarkdownFile } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
-import * as preact from "preact";
-import * as hooks from "preact/hooks";
+import * as react from "react";
 import { COMPONENTS } from "./components";
 import { useTableDispatch } from "ui/table";
 
@@ -33,14 +32,10 @@ export class DatacoreLocalApi {
     }
 
     /** Get access to preact functions. */
-    get preact(): typeof preact {
-        return preact;
+    get react(): typeof react {
+        return react;
     }
 
-    /** Get access to preact hooks. */
-    get hooks(): typeof hooks {
-        return hooks;
-    }
 
     /** The internal plugin central datastructure. */
     get core(): Datacore {
@@ -82,13 +77,13 @@ export class DatacoreLocalApi {
     /////////////
 
     // Export the common preact hooks for people to use via `dc.`:
-    public useState = hooks.useState;
-    public useCallback = hooks.useCallback;
-    public useReducer = hooks.useReducer;
-    public useMemo = hooks.useMemo;
-    public useEffect = hooks.useEffect;
-    public useContext = hooks.useContext;
-    public useRef = hooks.useRef;
+    public useState = react.useState;
+    public useCallback = react.useCallback;
+    public useReducer = react.useReducer;
+    public useMemo = react.useMemo;
+    public useEffect = react.useEffect;
+    public useContext = react.useContext;
+    public useRef = react.useRef;
     public useInterning = useInterning;
 
     /** Use the file metadata for the current file. */

@@ -1,7 +1,7 @@
 import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Group, Stack, Textarea } from "@mantine/core";
-import { h } from "preact";
+import React from "react";
 
 /**
  * Centralized query editor which allows for writing queries, previewing

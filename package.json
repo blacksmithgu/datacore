@@ -31,6 +31,8 @@
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
     "@types/parsimmon": "^1.10.6",
+    "@types/react": "^18.2.18",
+    "@types/react-dom": "^18.2.7",
     "@types/spark-md5": "^3.0.2",
     "builtin-modules": "3.3.0",
     "esbuild": "^0.16.11",
@@ -58,7 +60,9 @@
     "flatqueue": "^2.0.3",
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
-    "preact": "^10.15.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-error-boundary": "^4.0.10",
     "sorted-btree": "^1.8.1",
     "spark-md5": "^3.0.2"
   }

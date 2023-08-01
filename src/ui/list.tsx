@@ -1,8 +1,6 @@
 import { Literal } from "expression/literal";
-import { JSX, RenderableProps, isValidElement } from "preact";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
-import { h } from "preact";
-import { useContext } from "preact/hooks";
+import React, { useContext, isValidElement, PropsWithChildren } from "react";
 
 export interface ListState<T> {
     /**
@@ -27,34 +25,39 @@ export interface ListState<T> {
 export function ListView<T>(state: ListState<T>) {
     const type = state.type ?? "unordered";
     const elements = state.elements ?? [];
-    const renderer = state.renderer ?? defaultElementRenderer;
+    const renderer = state.renderer ?? identity;
 
     if (type == "none") {
         return (
-            <div class="datacore-list datacore-list-none">
-                {elements.map((element, index) => renderer(element, index))}
+            <div className="datacore-list datacore-list-none">
+                {elements.map((element, index) => ensureElement(renderer(element, index)))}
             </div>
         );
     } else if (type == "ordered") {
         return (
-            <ol class={"datacore-list datacore-list-ordered"}>
+            <ol className={"datacore-list datacore-list-ordered"}>
                 {elements.map((element, index) => (
-                    <li class="datacore-list-item">{renderer(element, index)}</li>
+                    <li className="datacore-list-item">{ensureElement(renderer(element, index))}</li>
                 ))}
             </ol>
         );
     } else {
         return (
-            <ul class="datacore-list datacore-list-unordered">
+            <ul className="datacore-list datacore-list-unordered">
                 {elements.map((element, index) => (
-                    <li class="datacore-list-item">{renderer(element, index)}</li>
+                    <li className="datacore-list-item">{ensureElement(renderer(element, index))}</li>
                 ))}
             </ul>
         );
     }
 }
 
-export function defaultElementRenderer<T>(element: T): JSX.Element {
+/** No-op element renderer. */
+function identity<T>(element: T): T {
+    return element;
+}
+
+export function ensureElement<T>(element: T): React.ReactNode {
     if (isValidElement(element)) {
         return element;
     } else {
@@ -63,7 +66,7 @@ export function defaultElementRenderer<T>(element: T): JSX.Element {
 }
 
 /** Default list element which just tries to render the value as a literal. */
-export function DefaultListElement<T>({ element }: RenderableProps<{ element: T }>) {
+export function DefaultListElement<T>({ element }: PropsWithChildren<{ element: T }>) {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
 
     return <Lit value={element as Literal} sourcePath={sourcePath} />;

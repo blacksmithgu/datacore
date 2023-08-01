@@ -2,7 +2,7 @@ import { Datacore } from "index/datacore";
 import { debounce } from "obsidian";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SearchResult } from "index/datastore";
 import SparkMD5 from "spark-md5";
 import { Literals } from "expression/literal";

@@ -5,13 +5,13 @@ import {
     COMPONENT_CONTEXT,
     Lit,
     ErrorMessage,
-    ErrorBoundary,
+    SimpleErrorBoundary,
     CURRENT_FILE_CONTEXT,
 } from "ui/markdown";
 import { MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
-import { render, h, JSX, createElement, isValidElement } from "preact";
-import { unmountComponentAtNode } from "preact/compat";
+import React, { createElement, isValidElement } from "react";
+import { render, unmountComponentAtNode } from "react-dom";
 import * as babel from "@babel/standalone";
 
 /** Renders javascript code as an inline script inside of Obsidian with access. */
@@ -56,9 +56,9 @@ export class JavascriptRenderer extends MarkdownRenderChild {
                         <DATACORE_CONTEXT.Provider value={this.api.core}>
                             <SETTINGS_CONTEXT.Provider value={this.api.core.settings}>
                                 <CURRENT_FILE_CONTEXT.Provider value={this.path}>
-                                    <ErrorBoundary message="The script failed while executing.">
+                                    <SimpleErrorBoundary message="The script failed while executing.">
                                         {renderableElement}
-                                    </ErrorBoundary>
+                                    </SimpleErrorBoundary>
                                 </CURRENT_FILE_CONTEXT.Provider>
                             </SETTINGS_CONTEXT.Provider>
                         </DATACORE_CONTEXT.Provider>
@@ -98,7 +98,7 @@ export function makeRenderableElement(object: any, sourcePath: string): JSX.Elem
  * Evaluate a script where 'this' for the script is set to the given context. Allows you to define global variables.
  */
 export function evalInContext(script: string, context: any): any {
-    return new Function("dc", "h", script)(context, h);
+    return new Function("dc", "React", script)(context, React);
 }
 
 /**

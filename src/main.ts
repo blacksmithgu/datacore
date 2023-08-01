@@ -1,7 +1,8 @@
 import { DatacoreApi } from "api/plugin-api";
 import { Datacore } from "index/datacore";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
-import { createElement, render } from "preact";
+import { createElement } from "react";
+import { render, unmountComponentAtNode } from "react-dom";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { QueryEditorView } from "ui/editors/query-editor-view";
 import { IndexStatusBar } from "ui/index-status";
@@ -65,7 +66,7 @@ export default class DatacorePlugin extends Plugin {
         render(createElement(IndexStatusBar, { datacore: core }), root);
 
         // Unmount on exit.
-        this.register(() => render(() => null, root));
+        this.register(() => unmountComponentAtNode(root));
     }
 }
 
