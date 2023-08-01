@@ -16,6 +16,24 @@ export const DATACORE_CONTEXT = createContext<Datacore>(undefined!);
 export const SETTINGS_CONTEXT = createContext<Settings>(undefined!);
 export const CURRENT_FILE_CONTEXT = createContext<string>(undefined!);
 
+/** More compact provider for all of the datacore react contexts. */
+export function DatacoreContextProvider({ children, app, component, datacore, settings }: RenderableProps<{
+    app: App;
+    component: Component;
+    datacore: Datacore;
+    settings: Settings;
+}>) {
+    return <COMPONENT_CONTEXT.Provider value={component}>
+        <APP_CONTEXT.Provider value={app}>
+            <DATACORE_CONTEXT.Provider value={datacore}>
+                <SETTINGS_CONTEXT.Provider value={settings}>
+                    {children}
+                </SETTINGS_CONTEXT.Provider>
+            </DATACORE_CONTEXT.Provider>
+        </APP_CONTEXT.Provider>
+    </COMPONENT_CONTEXT.Provider>
+}
+
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export function RawMarkdown({
     content,

@@ -18,7 +18,15 @@
     "importHelpers": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "lib": ["dom", "es5", "scripthost", "es2018", "DOM.Iterable"]
+    "lib": ["dom", "es5", "scripthost", "es2018", "DOM.Iterable"],
+    "paths": {
+      "react": ["../node_modules/preact/compat"],
+      "react-dom": ["../node_modules/preact/compat"]
+    },
+    "typeRoots": [
+      "src/typings",
+      "node_modules/@types"
+    ]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["lib/**/*"]

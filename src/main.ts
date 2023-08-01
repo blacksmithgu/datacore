@@ -1,11 +1,10 @@
-import { DatacoreLocalApi } from "api/local-api";
 import { DatacoreApi } from "api/plugin-api";
 import { Datacore } from "index/datacore";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
+import { QueryEditorView } from "ui/editors/query-editor-view";
 import { IndexStatusBar } from "ui/index-status";
-import { JavascriptRenderer } from "ui/javascript";
 
 /** Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
@@ -28,15 +27,16 @@ export default class DatacorePlugin extends Plugin {
         // Add a visual aid for what datacore is currently doing.
         this.mountIndexState(this.addStatusBarItem(), this.core);
 
-        // Add a hook for all datacorejs blocks.
-        this.registerMarkdownCodeBlockProcessor(
-            "datacorejs",
-            (source, el, ctx) => {
-                const localApi = new DatacoreLocalApi(this.api, ctx.sourcePath);
-                ctx.addChild(new JavascriptRenderer(localApi, el, ctx.sourcePath, source));
-            },
-            -100
-        );
+        // Datacore query viewer / editor.
+        this.registerView(QueryEditorView.TYPE, (leaf) => new QueryEditorView(leaf, this.core, this.settings));
+        this.addCommand({
+            id: "open-query-editor",
+            name: "Open Query Editor",
+            callback: async () => {
+                const leaf = this.app.workspace.getLeaf("tab");
+                await leaf.open(new QueryEditorView(leaf, this.core, this.settings));
+            }
+        });
 
         // Initialize as soon as the workspace is rewady.
         if (!this.app.workspace.layoutReady) {
@@ -65,9 +65,7 @@ export default class DatacorePlugin extends Plugin {
         render(createElement(IndexStatusBar, { datacore: core }), root);
 
         // Unmount on exit.
-        this.register(() => {
-            render(() => null, root);
-        });
+        this.register(() => render(() => null, root));
     }
 }
 

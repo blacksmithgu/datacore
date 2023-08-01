@@ -48,11 +48,11 @@ async function build(prod) {
 			'@lezer/lr',
 			...builtins],
 		format: 'cjs',
-		watch: !prod,
 		target: 'es2018',
 		logLevel: "info",
 		sourcemap: prod ? false : 'inline',
 		treeShaking: true,
+		minify: prod,
 		outfile: 'build/plugin/main.js',
 	}).catch(() => process.exit(1));
 
