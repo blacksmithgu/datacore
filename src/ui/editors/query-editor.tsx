@@ -11,7 +11,7 @@ export function QueryEditor() {
     return <Stack>
         <Group m="md" position="center" align="start" noWrap>
             <FontAwesomeIcon style={{ margin: "8px" }} icon={faArrowRightFromBracket} fade />
-            <Textarea id="query" minRows={1} size="lg" ff="Courier New" autosize placeholder="Enter Query...">
+            <Textarea id="query" minRows={1} size="lg" ff="Courier New" autosize>
             </Textarea>
         </Group>
     </Stack>
