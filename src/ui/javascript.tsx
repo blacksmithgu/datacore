@@ -55,7 +55,12 @@ export class JavascriptRenderer extends MarkdownRenderChild {
 
             // Very contextual!
             this.root.render(
-                <DatacoreContextProvider app={this.api.app} component={this} datacore={this.api.core} settings={this.api.core.settings}>
+                <DatacoreContextProvider
+                    app={this.api.app}
+                    component={this}
+                    datacore={this.api.core}
+                    settings={this.api.core.settings}
+                >
                     <CURRENT_FILE_CONTEXT.Provider value={this.path}>
                         <SimpleErrorBoundary message="The script failed while executing.">
                             {renderableElement}

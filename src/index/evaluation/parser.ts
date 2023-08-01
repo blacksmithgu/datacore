@@ -333,12 +333,18 @@ export const QUERY = P.createLanguage<QueryLanguage>({
             parents,
             inclusive: func.toLowerCase() === "subtree",
         })),
-    querySimpleLinked: (_) => PRIMITIVES.link.map(link => ({ type: "linked", source: { type: "link", value: link }, direction: "incoming" })),
+    querySimpleLinked: (_) =>
+        PRIMITIVES.link.map((link) => ({
+            type: "linked",
+            source: { type: "link", value: link },
+            direction: "incoming",
+        })),
     queryLinked: (q) =>
         createFunction(P.regexp(/linksto|linkedfrom|connected/i).desc("connected"), q.query).map(([func, source]) => ({
             type: "linked",
             source,
-            direction: func.toLowerCase() == "linksto" ? "incoming" : (func.toLowerCase() == "linkedfrom" ? "outgoing" : "both")
+            direction:
+                func.toLowerCase() == "linksto" ? "incoming" : func.toLowerCase() == "linkedfrom" ? "outgoing" : "both",
         })),
 
     queryParens: (q) => q.query.trim(P.optWhitespace).wrap(P.string("("), P.string(")")),

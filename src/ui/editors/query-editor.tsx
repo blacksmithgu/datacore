@@ -8,13 +8,15 @@ import React from "react";
  * results, manipulating data, and visualizing it in multple ways.
  */
 export function QueryEditor() {
-    return <Stack>
-        <Group m="md" position="center" align="start" noWrap>
-            <ActionIcon mt="sm" variant="subtle" disabled>
-                <FontAwesomeIcon icon={faArrowRightFromBracket} fade />
-            </ActionIcon>
-            <Textarea p="xs" id="query" minRows={1} size="lg" style={{ flexGrow: 1 }} autosize />
-        </Group>
-        <Divider />
-    </Stack>
+    return (
+        <Stack>
+            <Group m="md" position="center" align="start" noWrap>
+                <ActionIcon mt="sm" variant="subtle" disabled>
+                    <FontAwesomeIcon icon={faArrowRightFromBracket} fade />
+                </ActionIcon>
+                <Textarea p="xs" id="query" minRows={1} size="lg" style={{ flexGrow: 1 }} autosize />
+            </Group>
+            <Divider />
+        </Stack>
+    );
 }

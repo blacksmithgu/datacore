@@ -36,7 +36,6 @@ export class DatacoreLocalApi {
         return react;
     }
 
-
     /** The internal plugin central datastructure. */
     get core(): Datacore {
         return this.api.core;

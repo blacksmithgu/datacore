@@ -11,12 +11,9 @@ export class QueryEditorView extends View {
 
     private root: Root;
 
-    public constructor(
-        leaf: WorkspaceLeaf,
-        public datacore: Datacore,
-        public settings: Settings) {
+    public constructor(leaf: WorkspaceLeaf, public datacore: Datacore, public settings: Settings) {
         super(leaf);
-        
+
         this.navigation = true;
         this.icon = "search";
     }
@@ -33,7 +30,12 @@ export class QueryEditorView extends View {
         this.root = createRoot(this.containerEl);
         this.root.render(
             <SimpleErrorBoundary title="Query Editor" message="The query editor crashed. See message for details.">
-                <DatacoreContextProvider datacore={this.datacore} settings={this.settings} app={this.app} component={this}>
+                <DatacoreContextProvider
+                    datacore={this.datacore}
+                    settings={this.settings}
+                    app={this.app}
+                    component={this}
+                >
                     <QueryEditor />
                 </DatacoreContextProvider>
             </SimpleErrorBoundary>

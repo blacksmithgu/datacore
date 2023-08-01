@@ -2,7 +2,18 @@
 import { App, MarkdownRenderChild, MarkdownRenderer } from "obsidian";
 import { Component } from "obsidian";
 import { Literal, Literals } from "expression/literal";
-import React, { createContext, CSSProperties, EventHandler, Fragment, MouseEvent, PropsWithChildren, useCallback, useContext, useEffect, useRef } from "react";
+import React, {
+    createContext,
+    CSSProperties,
+    EventHandler,
+    Fragment,
+    MouseEvent,
+    PropsWithChildren,
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+} from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { Datacore } from "index/datacore";
 import { Settings } from "settings";
@@ -19,23 +30,29 @@ export const SETTINGS_CONTEXT = createContext<Settings>(undefined!);
 export const CURRENT_FILE_CONTEXT = createContext<string>(undefined!);
 
 /** More compact provider for all of the datacore react contexts. */
-export function DatacoreContextProvider({ children, app, component, datacore, settings }: PropsWithChildren<{
+export function DatacoreContextProvider({
+    children,
+    app,
+    component,
+    datacore,
+    settings,
+}: PropsWithChildren<{
     app: App;
     component: Component;
     datacore: Datacore;
     settings: Settings;
 }>) {
-    return <MantineProvider theme={{ colorScheme: "dark" }} withNormalizeCSS withGlobalStyles>
-        <COMPONENT_CONTEXT.Provider value={component}>
-            <APP_CONTEXT.Provider value={app}>
-                <DATACORE_CONTEXT.Provider value={datacore}>
-                    <SETTINGS_CONTEXT.Provider value={settings}>
-                        {children}
-                    </SETTINGS_CONTEXT.Provider>
-                </DATACORE_CONTEXT.Provider>
-            </APP_CONTEXT.Provider>
-        </COMPONENT_CONTEXT.Provider>
-    </MantineProvider>;
+    return (
+        <MantineProvider theme={{ colorScheme: "dark" }} withNormalizeCSS withGlobalStyles>
+            <COMPONENT_CONTEXT.Provider value={component}>
+                <APP_CONTEXT.Provider value={app}>
+                    <DATACORE_CONTEXT.Provider value={datacore}>
+                        <SETTINGS_CONTEXT.Provider value={settings}>{children}</SETTINGS_CONTEXT.Provider>
+                    </DATACORE_CONTEXT.Provider>
+                </APP_CONTEXT.Provider>
+            </COMPONENT_CONTEXT.Provider>
+        </MantineProvider>
+    );
 }
 
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
@@ -241,14 +258,19 @@ export function ErrorMessage({
 }
 
 /** A simple error boundary which renders a message on failure. */
-export function SimpleErrorBoundary({ title, message, children }: PropsWithChildren<{ title?: string; message?: string }>) {
-    const fallbackRenderer = useCallback(({ error, resetErrorBoundary }: FallbackProps) => {
-        return <ErrorMessage title={title} message={message} error={"" + error} reset={resetErrorBoundary} />;
-    }, [title, message]);
+export function SimpleErrorBoundary({
+    title,
+    message,
+    children,
+}: PropsWithChildren<{ title?: string; message?: string }>) {
+    const fallbackRenderer = useCallback(
+        ({ error, resetErrorBoundary }: FallbackProps) => {
+            return <ErrorMessage title={title} message={message} error={"" + error} reset={resetErrorBoundary} />;
+        },
+        [title, message]
+    );
 
-    return <ErrorBoundary fallbackRender={fallbackRenderer}>
-        {children}
-    </ErrorBoundary>
+    return <ErrorBoundary fallbackRender={fallbackRenderer}>{children}</ErrorBoundary>;
 }
 
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
@@ -269,9 +291,15 @@ export class ReactRenderer extends MarkdownRenderChild {
         // Very contextual!
         this.root = createRoot(this.container);
         this.root.render(
-            <DatacoreContextProvider app={this.app} component={this} datacore={this.datacore} settings={this.datacore.settings}>
+            <DatacoreContextProvider
+                app={this.app}
+                component={this}
+                datacore={this.datacore}
+                settings={this.datacore.settings}
+            >
                 {this.element}
-            </DatacoreContextProvider>);
+            </DatacoreContextProvider>
+        );
     }
 
     public onunload(): void {

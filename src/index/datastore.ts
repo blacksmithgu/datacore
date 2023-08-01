@@ -449,7 +449,9 @@ export class Datastore {
 
                 const resolvedSources = Filters.resolve(sources, this.ids);
                 const direction = query.direction ?? "both";
-                const results = this._traverseLinked(resolvedSources, query.distance ?? 1, id => this._iterateAdjacentLinked(id, direction));
+                const results = this._traverseLinked(resolvedSources, query.distance ?? 1, (id) =>
+                    this._iterateAdjacentLinked(id, direction)
+                );
 
                 if (!query.inclusive) return Filters.atom(Filters.setIntersectNegation(results, resolvedSources));
                 else return Filters.atom(results);
@@ -467,7 +469,10 @@ export class Datastore {
                 const exactObject = this.objects.get(query.value);
                 return exactObject ? Filters.atom(new Set([exactObject.$id])) : Filters.NOTHING;
             case "link":
-                const resolvedPath = this.metadataCache.getFirstLinkpathDest(query.value.path, context?.sourcePath ?? "")?.path;
+                const resolvedPath = this.metadataCache.getFirstLinkpathDest(
+                    query.value.path,
+                    context?.sourcePath ?? ""
+                )?.path;
                 const resolved = resolvedPath ? query.value.withPath(resolvedPath) : query.value;
 
                 const object = this.resolveLink(resolved);
@@ -512,7 +517,11 @@ export class Datastore {
      * Does Breadth-first Search to find all linked files within distance <distance>. This includes all source nodes,
      * so remove them afterwards if you do not want them.
      */
-    private _traverseLinked(sourceIds: Set<string>, distance: number, adjacent: (id: string) => Iterable<string>): Set<string> {
+    private _traverseLinked(
+        sourceIds: Set<string>,
+        distance: number,
+        adjacent: (id: string) => Iterable<string>
+    ): Set<string> {
         if (distance < 0) return new Set();
         if (sourceIds.size == 0) return new Set();
 
@@ -550,8 +559,12 @@ export class Datastore {
             }
         }
 
-        if ((direction === "both" || direction === "outgoing") && LINKBEARING_TYPE in object && iterableExists(object, "links")) {
-            for (const link of (object.links as Link[])) {
+        if (
+            (direction === "both" || direction === "outgoing") &&
+            LINKBEARING_TYPE in object &&
+            iterableExists(object, "links")
+        ) {
+            for (const link of object.links as Link[]) {
                 const resolved = this.resolveLink(link);
                 if (resolved) yield resolved.$id;
             }

@@ -160,4 +160,4 @@ export interface IndexNot {
     element: IndexQuery;
 }
 
-export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive | IndexChildOf | IndexParentOf | IndexLinked; 
+export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive | IndexChildOf | IndexParentOf | IndexLinked;

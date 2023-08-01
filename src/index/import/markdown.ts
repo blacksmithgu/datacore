@@ -49,7 +49,7 @@ export function markdownImport(
                 position: { start, end },
                 blocks: [],
                 tags: new Set(),
-                links: []
+                links: [],
             })
         );
     }

@@ -1,5 +1,14 @@
 import { Literal, Literals } from "expression/literal";
-import React, { isValidElement, Dispatch, useContext, useMemo, useReducer, PropsWithChildren, MouseEvent, Reducer } from "react";
+import React, {
+    isValidElement,
+    Dispatch,
+    useContext,
+    useMemo,
+    useReducer,
+    PropsWithChildren,
+    MouseEvent,
+    Reducer,
+} from "react";
 import { CURRENT_FILE_CONTEXT, Lit } from "./markdown";
 import { useInterning, useStableCallback } from "./hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

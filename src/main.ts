@@ -36,7 +36,7 @@ export default class DatacorePlugin extends Plugin {
             callback: async () => {
                 const leaf = this.app.workspace.getLeaf("tab");
                 await leaf.open(new QueryEditorView(leaf, this.core, this.settings));
-            }
+            },
         });
 
         // Initialize as soon as the workspace is rewady.
