@@ -1,18 +1,7 @@
-import {
-    APP_CONTEXT,
-    DATACORE_CONTEXT,
-    SETTINGS_CONTEXT,
-    COMPONENT_CONTEXT,
-    Lit,
-    ErrorMessage,
-    SimpleErrorBoundary,
-    CURRENT_FILE_CONTEXT,
-    DatacoreContextProvider,
-} from "ui/markdown";
+import { Lit, ErrorMessage, SimpleErrorBoundary, CURRENT_FILE_CONTEXT, DatacoreContextProvider } from "ui/markdown";
 import { MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
 import React, { createElement, isValidElement } from "react";
-import { render, unmountComponentAtNode } from "react-dom";
 import * as babel from "@babel/standalone";
 import { Root, createRoot } from "react-dom/client";
 

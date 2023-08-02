@@ -161,3 +161,8 @@ export interface IndexNot {
 }
 
 export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive | IndexChildOf | IndexParentOf | IndexLinked;
+
+/** Constant index query which matches all. */
+export const INDEX_ALL: IndexQuery = { type: "constant", constant: true };
+/** Constant index query which matches nothing. */
+export const INDEX_NONE: IndexQuery = { type: "constant", constant: false };

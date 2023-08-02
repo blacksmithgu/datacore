@@ -34,12 +34,12 @@ export default class DatacorePlugin extends Plugin {
             id: "open-query-editor",
             name: "Open Query Editor",
             callback: async () => {
-                const leaf = this.app.workspace.getLeaf("tab");
+                const leaf = this.app.workspace.getLeaf();
                 await leaf.open(new QueryEditorView(leaf, this.core, this.settings));
             },
         });
 
-        // Initialize as soon as the workspace is rewady.
+        // Initialize as soon as the workspace is ready.
         if (!this.app.workspace.layoutReady) {
             this.app.workspace.onLayoutReady(async () => this.core.initialize());
         } else {
@@ -49,6 +49,7 @@ export default class DatacorePlugin extends Plugin {
         // Make the API globally accessible from any context.
         window.datacore = this.api;
 
+        // bon appetit
         console.log(`Datacore: version ${this.manifest.version} (requires obsidian ${this.manifest.minAppVersion})`);
     }
 
