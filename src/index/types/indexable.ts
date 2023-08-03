@@ -5,6 +5,8 @@ import { DateTime } from "luxon";
 export interface Indexable {
     /** The object types that this indexable is. */
     $types: string[];
+    /** Textual description of the object, such as `Page` or `Section`. Used in visualizations. */
+    $typename: string;
     /** The unique index ID for this object. */
     $id: string;
     /**

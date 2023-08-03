@@ -20,6 +20,8 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable {
 
     // Use static types for all markdown files.
     $types: string[] = MarkdownFile.TYPES;
+    $typename: string = "Page";
+
     // Markdown file IDs are always just the full path.
     get $id() {
         return this.path;
@@ -87,6 +89,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
 
     /** Path of the file that this section is in. */
     $types: string[] = MarkdownSection.TYPES;
+    $typename: string = "Section";
     $id: string;
     $file: string;
 
@@ -143,6 +146,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
     static TYPES = ["markdown", "block", LINKBEARING_TYPE, TAGGABLE_TYPE];
 
     $types: string[] = MarkdownBlock.TYPES;
+    $typename: string = "Block";
     $id: string;
     $file: string;
 
@@ -191,6 +195,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE];
 
     $types: string[] = MarkdownListBlock.TYPES;
+    $typename: string = "List Block";
 
     /** The list items inside of this block. */
     elements: MarkdownListItem[];
@@ -216,6 +221,7 @@ export class MarkdownListItem implements Linkbearing, Taggable {
     static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE];
 
     $types: string[] = MarkdownListItem.TYPES;
+    $typename: string = "List Item";
     $id: string;
     $file: string;
 
@@ -276,6 +282,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     static TYPES = ["markdown", "list-item", "task", LINKBEARING_TYPE, TAGGABLE_TYPE];
 
     $types: string[] = MarkdownTaskItem.TYPES;
+    $typename: string = "Task";
 
     /** The text inside of the task item. */
     status: string;

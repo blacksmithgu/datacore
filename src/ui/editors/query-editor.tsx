@@ -1,10 +1,13 @@
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Divider, MantineSize, Stack, Textarea } from "@mantine/core";
+import { Box, Button, Center, Divider, Group, MantineSize, Select, SelectItem, Stack, Textarea } from "@mantine/core";
+import { SearchResult } from "index/datastore";
 import { QUERY } from "index/evaluation/parser";
 import { INDEX_NONE, IndexQuery } from "index/types/index-query";
-import React, { CSSProperties, useContext, useState } from "react";
+import { Indexable, LINKABLE_TYPE } from "index/types/indexable";
+import React, { CSSProperties, useContext, useMemo, useState } from "react";
 import { useFullQuery, useStableCallback } from "ui/hooks";
+import { ListView } from "ui/list";
 import { DATACORE_CONTEXT } from "ui/markdown";
 
 /**
@@ -16,20 +19,44 @@ export function QueryEditor() {
 
     // The current root query that the query editor is editing.
     const [query, setQuery] = useState<IndexQuery | undefined>(undefined);
-    const results = useFullQuery(datacore, query ?? INDEX_NONE, { debounce: 750 });
+    const results = useFullQuery(datacore, query ?? INDEX_NONE, { debounce: 1000 });
+    const [viewtype, setViewtype] = useState<Viewtype>("list");
 
     return (
-        <Stack id="query-editor" className="query-editor-container">
-            <QueryTextarea m="xs" id="query" style={{ flexGrow: 1 }} onSubmit={setQuery} />
+        <Stack id="query-viewer" className="query-viewer-container" spacing="2px">
+            <Stack id="query-editor" className="query-editor-container" spacing="0px">
+                <QueryTextarea m="xs" id="query" style={{ flexGrow: 1 }} onSubmit={setQuery} />
+                <QueryViewtypePicker m="xs" selected={viewtype} onSelect={setViewtype} />
+            </Stack>
             <Divider />
-            {query && (
-                <p>
-                    Found {results.results.length} results in {results.duration * 1000}ms.
-                </p>
-            )}
+            <Box p="md">
+                {query ? <ListController result={results} /> : <Center>
+                    <h4>Enter a query to get started.</h4>
+                </Center>}
+            </Box>
         </Stack>
     );
 }
+
+/** Button group which provides a way to select the desired base view type. */
+export const QueryViewtypePicker = React.memo(function QueryViewtypePicker({
+    selected,
+    onSelect,
+    m
+}: {
+    selected: Viewtype;
+    onSelect: (option: Viewtype) => any;
+    m?: MantineSize;
+}) {
+    return (
+        <Group m={m} align="center" position="center">
+            {Object.keys(VIEWTYPE_OPTIONS).map(type => {
+                const viewtype = type as Viewtype;
+                return <Button key={viewtype} variant={selected == type ? "outline" : "filled"} onClick={() => onSelect(viewtype)}>{VIEWTYPE_OPTIONS[viewtype].name}</Button>;
+            })}
+        </Group>
+    );
+});
 
 /** Input textarea which provides nice query functionality as well as an "onSubmit" hook which only works with valid input queries. */
 export const QueryTextarea = React.memo(function QueryTextarea({
@@ -92,9 +119,84 @@ export const QueryTextarea = React.memo(function QueryTextarea({
             autosize
             error={error}
             onKeyDown={handleEnter}
-            autoCorrect="none"
-            autoComplete="none"
-            autoCapitalize="none"
+            autoCorrect="off"
+            autoComplete="off"
+            autoCapitalize="off"
+            spellCheck={false}
         />
     );
 });
+
+/** Wrapper for editing lists. */
+export const ListController = React.memo(function ListController({
+    result
+}: {
+    result: SearchResult<Indexable>
+}) {
+    const [paging, setPaging] = useState<string | null>("default");
+    const pagingOption = useMemo(() => {
+        if (!paging || paging == "default") return true;
+        else if (paging == "disabled") return false;
+        else return parseInt(paging, 10);
+    }, [paging]);
+
+    const [style, setStyle] = useState<string | null>("unordered");
+
+    return <Stack>
+        <Group id="shared-controls" position="apart">
+            <h5>List ({result.results.length} elements)</h5>
+            <Group>
+                <span><FontAwesomeIcon icon={faClock}/> {result.duration * 1000} ms</span>
+                <Select variant="default" id="style-selector" data={LIST_OPTIONS} value={style} onChange={setStyle} />
+                <Select variant="default" id="paging-selector" data={PAGING_OPTIONS} value={paging} onChange={setPaging} />
+            </Group>
+        </Group>
+        <Box style={{ overflow: "scroll" }}>
+            <ListView type={style as any ?? "unordered"} paging={pagingOption} rows={result.results} renderer={indexableRenderer} />
+        </Box>
+    </Stack>
+});
+
+/** Default renderer for indexable objects. */
+export function indexableRenderer(element: Indexable) {
+    if (element.$types.contains(LINKABLE_TYPE) && "link" in element && element.link) {
+        return element.link;
+    }
+
+    return `${element.$typename} (${element.$id})`;
+}
+
+export const LIST_OPTIONS: SelectItem[] = [
+    { value: "ordered", label: "Style: Ordered List" },
+    { value: "unordered", label: "Style: Unordered List" },
+    { value: "none", label: "Style: Raw List" }
+];
+
+/** Default paging options for the view. */
+export const PAGING_OPTIONS: SelectItem[] = [
+    { value: "default", label: "Paging: Default" },
+    { value: "disabled", label: "Paging: Disabled" },
+    { value: "50", label: "Paging: 50" },
+    { value: "100", label: "Paging: 100" },
+    { value: "250", label: "Paging: 250" },
+    { value: "1000", label: "Paging: 1000" }
+];
+
+/** Metadata for the different ways you can view data. */
+export const VIEWTYPE_OPTIONS = {
+    "list": {
+        name: "List",
+        controller: ListController
+    },
+    "embeddings": {
+        name: "Embeddings"
+    },
+    "table": {
+        name: "Table"
+    },
+    "task": {
+        name: "Tasks"
+    }
+};
+
+export type Viewtype = keyof typeof VIEWTYPE_OPTIONS;

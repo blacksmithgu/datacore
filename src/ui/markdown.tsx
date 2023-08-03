@@ -132,9 +132,9 @@ export function RawLit({
     if (depth >= settings.maxRecursiveRenderDepth) return <Fragment>...</Fragment>;
 
     if (Literals.isNull(value) || value === undefined) {
-        return <Markdown content={settings.renderNullAs} sourcePath={sourcePath} />;
+        return <Markdown inline={inline} content={settings.renderNullAs} sourcePath={sourcePath} />;
     } else if (Literals.isString(value)) {
-        return <Markdown content={value} sourcePath={sourcePath} />;
+        return <Markdown inline={inline} content={value} sourcePath={sourcePath} />;
     } else if (Literals.isNumber(value)) {
         return <Fragment>{"" + value}</Fragment>;
     } else if (Literals.isBoolean(value)) {
@@ -163,7 +163,7 @@ export function RawLit({
             else return <img alt={value.path} src={resourcePath} />;
         }
 
-        return <Markdown content={value.markdown()} sourcePath={sourcePath} />;
+        return <Markdown inline={inline} content={value.markdown()} sourcePath={sourcePath} />;
     } else if (Literals.isHtml(value)) {
         return <EmbedHtml element={value} />;
     } else if (Literals.isFunction(value)) {

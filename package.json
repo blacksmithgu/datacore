@@ -26,7 +26,6 @@
     "@codemirror/language": "https://github.com/lishid/cm-language",
     "@codemirror/state": "^6.0.1",
     "@codemirror/view": "^6.0.1",
-    "@types/babel__standalone": "^7.1.4",
     "@types/jest": "^27.0.1",
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
@@ -46,8 +45,6 @@
     "typescript": "^4.4.2"
   },
   "dependencies": {
-    "@babel/plugin-transform-react-jsx": "^7.22.5",
-    "@babel/standalone": "^7.22.5",
     "@emotion/react": "^11.11.1",
     "@emotion/serialize": "^1.1.2",
     "@emotion/utils": "^1.2.1",

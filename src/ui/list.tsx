@@ -1,6 +1,6 @@
 import { Literal } from "expression/literal";
-import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
-import React, { useContext, isValidElement, PropsWithChildren } from "react";
+import { CURRENT_FILE_CONTEXT, Lit, SETTINGS_CONTEXT } from "ui/markdown";
+import React, { useContext, isValidElement, PropsWithChildren, useMemo, useState } from "react";
 
 export interface ListState<T> {
     /**
@@ -12,20 +12,36 @@ export interface ListState<T> {
     type?: "ordered" | "unordered" | "none";
 
     /** The full collection of elements in the list. */
-    elements?: T[];
+    rows?: T[];
+
+    /** Controls whether paging is enabled for this element. If true, uses default page size. If a number, paging is enabled with the given page size. */
+    paging?: boolean | number;
 
     /**
      * Custom render function to use for rendering each element. Can produce either JSX or a plain value which will be
      * rendered as a literal.
      */
-    renderer?: (element: T, index: number) => JSX.Element | Literal;
+    renderer?: (element: T, index: number) => React.ReactNode | Literal;
 }
 
 /** A simple and responsive list view. */
 export function ListView<T>(state: ListState<T>) {
+    const settings = useContext(SETTINGS_CONTEXT);
+
     const type = state.type ?? "unordered";
-    const elements = state.elements ?? [];
+    const elements = state.rows ?? [];
     const renderer = state.renderer ?? identity;
+
+    const pageSize = useMemo(() => {
+        if (state.paging === undefined) {
+            if (settings.defaultPagingEnabled) return settings.defaultPageSize;
+            else return undefined;
+        }
+        else if (state.paging == false) return undefined;
+        else if (state.paging == true) return settings.defaultPageSize;
+        else return state.paging;
+    }, [settings.defaultPageSize, settings.defaultPagingEnabled, state.paging]);
+    const [page, setPage] = useState<number>(0);
 
     if (type == "none") {
         return (
@@ -57,6 +73,7 @@ function identity<T>(element: T): T {
     return element;
 }
 
+/** Ensures the given element is a renderable react node. */
 export function ensureElement<T>(element: T): React.ReactNode {
     if (isValidElement(element)) {
         return element;
@@ -69,5 +86,5 @@ export function ensureElement<T>(element: T): React.ReactNode {
 export function DefaultListElement<T>({ element }: PropsWithChildren<{ element: T }>) {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
 
-    return <Lit value={element as Literal} sourcePath={sourcePath} />;
+    return <Lit inline={true} value={element as Literal} sourcePath={sourcePath} />;
 }
