@@ -46,14 +46,18 @@ export function ListView<T>(state: ListState<T>) {
     if (type == "none") {
         return (
             <div className="datacore-list datacore-list-none">
-                {elements.map((element, index) => ensureElement(renderer(element, index)))}
+                {elements.map((element, index) => (
+                    <div className="datacore-unwrapped-list-item" key={index}>
+                        {ensureElement(renderer(element, index))}
+                    </div>
+                ))}
             </div>
         );
     } else if (type == "ordered") {
         return (
             <ol className={"datacore-list datacore-list-ordered"}>
                 {elements.map((element, index) => (
-                    <li className="datacore-list-item">{ensureElement(renderer(element, index))}</li>
+                    <li key={index} className="datacore-list-item">{ensureElement(renderer(element, index))}</li>
                 ))}
             </ol>
         );
@@ -61,7 +65,7 @@ export function ListView<T>(state: ListState<T>) {
         return (
             <ul className="datacore-list datacore-list-unordered">
                 {elements.map((element, index) => (
-                    <li className="datacore-list-item">{ensureElement(renderer(element, index))}</li>
+                    <li key={index} className="datacore-list-item">{ensureElement(renderer(element, index))}</li>
                 ))}
             </ul>
         );

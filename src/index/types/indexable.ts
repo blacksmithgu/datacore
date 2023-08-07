@@ -1,5 +1,6 @@
 import { Link } from "expression/link";
 import { DateTime } from "luxon";
+import { Field } from "./field";
 
 /** Any indexable field, which must have a few index-relevant properties. */
 export interface Indexable {
@@ -50,8 +51,18 @@ export interface Taggable {
 }
 
 /** Metadata for objects which can link to other things. */
-export const LINKBEARING_TYPE = "linkbearing";
+export const LINKBEARING_TYPE = "links";
 export interface Linkbearing {
     /** The links in this file. */
     links: Link[];
+}
+
+/** Metadata for objects which are annotated with fields. */
+export const Fieldbearing = "fields";
+export interface Fieldbearing {
+    /** Return a list of all fields. This may be computed eagerly, so cache this value for repeated operations. */
+    fields: Field[];
+
+    /** Fetch a field with the given name if it is present on this object. */
+    field(key: string): Field | undefined;
 }

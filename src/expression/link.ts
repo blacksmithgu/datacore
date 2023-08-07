@@ -141,16 +141,21 @@ export class Link {
     /** Convert this link to markdown so it can be rendered. */
     public markdown(): string {
         let result = (this.embed ? "!" : "") + "[[" + this.obsidianLink();
-
-        if (this.display) {
-            result += "|" + this.display;
-        } else {
-            result += "|" + getFileTitle(this.path);
-            if (this.type == "header" || this.type == "block") result += " > " + this.subpath;
-        }
-
+        result += this.displayOrDefault();
         result += "]]";
         return result;
+    }
+
+    /** Obtain the display for this link, or return a simple default display. */
+    public displayOrDefault() {
+        if (this.display) {
+            return this.display;
+        } else {
+            let result = getFileTitle(this.path);
+            if (this.type == "header" || this.type == "block") result += " > " + this.subpath;
+
+            return result;
+        }
     }
 
     /** Convert the inner part of the link to something that Obsidian can open / understand. */

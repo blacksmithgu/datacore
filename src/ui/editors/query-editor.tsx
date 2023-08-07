@@ -23,9 +23,9 @@ export function QueryEditor() {
     const [viewtype, setViewtype] = useState<Viewtype>("list");
 
     return (
-        <Stack id="query-viewer" className="query-viewer-container" spacing="2px">
+        <Stack id="query-viewer" className="query-viewer-container" spacing="2px" h="100vh">
             <Stack id="query-editor" className="query-editor-container" spacing="0px">
-                <QueryTextarea m="xs" id="query" style={{ flexGrow: 1 }} onSubmit={setQuery} />
+                <QueryTextarea m="xs" id="query" style={{ flexGrow: 1 }} onSubmit={setQuery} autofocus />
                 <QueryViewtypePicker m="xs" selected={viewtype} onSelect={setViewtype} />
             </Stack>
             <Divider />
@@ -64,11 +64,13 @@ export const QueryTextarea = React.memo(function QueryTextarea({
     style,
     onSubmit,
     m,
+    autofocus,
 }: {
     id?: string;
     style?: CSSProperties;
     onSubmit?: (query: IndexQuery | undefined, text: string) => any;
     m?: MantineSize;
+    autofocus?: boolean;
 }) {
     const [error, setError] = useState<string | undefined>(undefined);
     const [lastSubmitted, setLastSubmitted] = useState<string | undefined>("");
@@ -113,6 +115,7 @@ export const QueryTextarea = React.memo(function QueryTextarea({
             minRows={1}
             size="lg"
             style={style}
+            autoFocus={autofocus}
             styles={{
                 input: { fontFamily: "Courier New", fontSize: 20 },
             }}

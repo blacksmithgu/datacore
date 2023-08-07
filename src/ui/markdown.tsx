@@ -1,7 +1,7 @@
 /** Provides core preact / rendering utilities for all view types. */
 import { App, MarkdownRenderChild, MarkdownRenderer } from "obsidian";
 import { Component } from "obsidian";
-import { Literal, Literals } from "expression/literal";
+import { Link, Literal, Literals } from "expression/literal";
 import React, {
     createContext,
     CSSProperties,
@@ -12,6 +12,7 @@ import React, {
     useCallback,
     useContext,
     useEffect,
+    useMemo,
     useRef,
 } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
@@ -19,7 +20,6 @@ import { Datacore } from "index/datacore";
 import { Settings } from "settings";
 import { currentLocale, renderMinimalDate, renderMinimalDuration } from "expression/normalize";
 import { extractImageDimensions, isImageEmbed } from "ui/media";
-import { useStableCallback } from "./hooks";
 import { MantineProvider } from "@mantine/styles";
 import { Root, createRoot } from "react-dom/client";
 
@@ -42,18 +42,57 @@ export function DatacoreContextProvider({
     datacore: Datacore;
     settings: Settings;
 }>) {
+    const scheme = (getComputedStyle(document.body) as any)["color-scheme"] ?? "light";
+
     return (
-        <MantineProvider theme={{ colorScheme: "dark" }} withNormalizeCSS withGlobalStyles>
+        <MantineProvider theme={{
+            radius: { "xs": "0", "md": "0", "lg": "0", "sm": "0", "xl": "0" },
+            colorScheme: scheme
+        }}>
             <COMPONENT_CONTEXT.Provider value={component}>
                 <APP_CONTEXT.Provider value={app}>
                     <DATACORE_CONTEXT.Provider value={datacore}>
-                        <SETTINGS_CONTEXT.Provider value={settings}>{children}</SETTINGS_CONTEXT.Provider>
+                        <CURRENT_FILE_CONTEXT.Provider value={""}>
+                            <SETTINGS_CONTEXT.Provider value={settings}>{children}</SETTINGS_CONTEXT.Provider>
+                        </CURRENT_FILE_CONTEXT.Provider>
                     </DATACORE_CONTEXT.Provider>
                 </APP_CONTEXT.Provider>
             </COMPONENT_CONTEXT.Provider>
         </MantineProvider>
     );
 }
+
+/** Copies how an Obsidian link is rendered but is about an order of magnitude faster to render than via markdown rendering. */
+export function RawLink({
+    link,
+    sourcePath,
+}: {
+    link: Link | string,
+    sourcePath: string
+}) {
+    const workspace = useContext(APP_CONTEXT).workspace;
+    const parsed = useMemo(() => Literals.isLink(link) ? link : Link.infer(link), [link]);
+    
+    const onClick = useCallback((event: MouseEvent) => {
+        const newtab = event.shiftKey;
+        console.log(parsed.obsidianLink(), sourcePath);
+        workspace.openLinkText(parsed.obsidianLink(), sourcePath, newtab);
+    }, [parsed, sourcePath])
+
+    return <a
+        aria-label={parsed.displayOrDefault()}
+        onClick={onClick}
+        className="internal-link"
+        target="_blank"
+        rel="noopener"
+        data-tooltip-position="top"
+        data-href={parsed.obsidianLink()}
+    >
+        {parsed.displayOrDefault()}
+    </a>;
+}
+
+export const ObsidianLink = React.memo(RawLink);
 
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export function RawMarkdown({
@@ -163,7 +202,7 @@ export function RawLit({
             else return <img alt={value.path} src={resourcePath} />;
         }
 
-        return <Markdown inline={inline} content={value.markdown()} sourcePath={sourcePath} />;
+        return <ObsidianLink link={value} sourcePath={sourcePath} />;
     } else if (Literals.isHtml(value)) {
         return <EmbedHtml element={value} />;
     } else if (Literals.isFunction(value)) {
