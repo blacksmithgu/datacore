@@ -30,9 +30,13 @@ export function QueryEditor() {
             </Stack>
             <Divider />
             <Box p="md">
-                {query ? <ListController result={results} /> : <Center>
-                    <h4>Enter a query to get started.</h4>
-                </Center>}
+                {query ? (
+                    <ListController result={results} />
+                ) : (
+                    <Center>
+                        <h4>Enter a query to get started.</h4>
+                    </Center>
+                )}
             </Box>
         </Stack>
     );
@@ -42,7 +46,7 @@ export function QueryEditor() {
 export const QueryViewtypePicker = React.memo(function QueryViewtypePicker({
     selected,
     onSelect,
-    m
+    m,
 }: {
     selected: Viewtype;
     onSelect: (option: Viewtype) => any;
@@ -50,9 +54,17 @@ export const QueryViewtypePicker = React.memo(function QueryViewtypePicker({
 }) {
     return (
         <Group m={m} align="center" position="center">
-            {Object.keys(VIEWTYPE_OPTIONS).map(type => {
+            {Object.keys(VIEWTYPE_OPTIONS).map((type) => {
                 const viewtype = type as Viewtype;
-                return <Button key={viewtype} variant={selected == type ? "outline" : "filled"} onClick={() => onSelect(viewtype)}>{VIEWTYPE_OPTIONS[viewtype].name}</Button>;
+                return (
+                    <Button
+                        key={viewtype}
+                        variant={selected == type ? "outline" : "filled"}
+                        onClick={() => onSelect(viewtype)}
+                    >
+                        {VIEWTYPE_OPTIONS[viewtype].name}
+                    </Button>
+                );
             })}
         </Group>
     );
@@ -131,11 +143,7 @@ export const QueryTextarea = React.memo(function QueryTextarea({
 });
 
 /** Wrapper for editing lists. */
-export const ListController = React.memo(function ListController({
-    result
-}: {
-    result: SearchResult<Indexable>
-}) {
+export const ListController = React.memo(function ListController({ result }: { result: SearchResult<Indexable> }) {
     const [paging, setPaging] = useState<string | null>("default");
     const pagingOption = useMemo(() => {
         if (!paging || paging == "default") return true;
@@ -145,19 +153,40 @@ export const ListController = React.memo(function ListController({
 
     const [style, setStyle] = useState<string | null>("unordered");
 
-    return <Stack>
-        <Group id="shared-controls" position="apart">
-            <h5>List ({result.results.length} elements)</h5>
-            <Group>
-                <span><FontAwesomeIcon icon={faClock}/> {result.duration * 1000} ms</span>
-                <Select variant="default" id="style-selector" data={LIST_OPTIONS} value={style} onChange={setStyle} />
-                <Select variant="default" id="paging-selector" data={PAGING_OPTIONS} value={paging} onChange={setPaging} />
+    return (
+        <Stack>
+            <Group id="shared-controls" position="apart">
+                <h5>List ({result.results.length} elements)</h5>
+                <Group>
+                    <span>
+                        <FontAwesomeIcon icon={faClock} /> {result.duration * 1000} ms
+                    </span>
+                    <Select
+                        variant="default"
+                        id="style-selector"
+                        data={LIST_OPTIONS}
+                        value={style}
+                        onChange={setStyle}
+                    />
+                    <Select
+                        variant="default"
+                        id="paging-selector"
+                        data={PAGING_OPTIONS}
+                        value={paging}
+                        onChange={setPaging}
+                    />
+                </Group>
             </Group>
-        </Group>
-        <Box style={{ overflow: "scroll" }}>
-            <ListView type={style as any ?? "unordered"} paging={pagingOption} rows={result.results} renderer={indexableRenderer} />
-        </Box>
-    </Stack>
+            <Box style={{ overflow: "scroll" }}>
+                <ListView
+                    type={(style as any) ?? "unordered"}
+                    paging={pagingOption}
+                    rows={result.results}
+                    renderer={indexableRenderer}
+                />
+            </Box>
+        </Stack>
+    );
 });
 
 /** Default renderer for indexable objects. */
@@ -172,7 +201,7 @@ export function indexableRenderer(element: Indexable) {
 export const LIST_OPTIONS: SelectItem[] = [
     { value: "ordered", label: "Style: Ordered List" },
     { value: "unordered", label: "Style: Unordered List" },
-    { value: "none", label: "Style: Raw List" }
+    { value: "none", label: "Style: Raw List" },
 ];
 
 /** Default paging options for the view. */
@@ -182,24 +211,24 @@ export const PAGING_OPTIONS: SelectItem[] = [
     { value: "50", label: "Paging: 50" },
     { value: "100", label: "Paging: 100" },
     { value: "250", label: "Paging: 250" },
-    { value: "1000", label: "Paging: 1000" }
+    { value: "1000", label: "Paging: 1000" },
 ];
 
 /** Metadata for the different ways you can view data. */
 export const VIEWTYPE_OPTIONS = {
-    "list": {
+    list: {
         name: "List",
-        controller: ListController
+        controller: ListController,
     },
-    "embeddings": {
-        name: "Embeddings"
+    embeddings: {
+        name: "Embeddings",
     },
-    "table": {
-        name: "Table"
+    table: {
+        name: "Table",
     },
-    "task": {
-        name: "Tasks"
-    }
+    task: {
+        name: "Tasks",
+    },
 };
 
 export type Viewtype = keyof typeof VIEWTYPE_OPTIONS;

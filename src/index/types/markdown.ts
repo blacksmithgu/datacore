@@ -1,4 +1,4 @@
-import { Link } from "expression/literal";
+import { Link, Literal } from "expression/literal";
 import { getFileTitle } from "expression/normalize";
 import {
     FILE_TYPE,
@@ -12,11 +12,15 @@ import {
     Taggable,
 } from "index/types/indexable";
 import { DateTime } from "luxon";
+import { Extractors, FIELDBEARING_TYPE, FieldExtractor, Fieldbearing } from "./field";
+
+/** A link normalizer which takes in a raw link and produces a normalized link. */
+export type LinkNormalizer = (link: Link) => Link;
 
 /** A markdown file in the vault; the source of most metadata. */
-export class MarkdownFile implements File, Linkbearing, Taggable, Indexable {
+export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fieldbearing {
     /** All of the types that a markdown file is. */
-    static TYPES = [FILE_TYPE, "markdown", "page", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE];
+    static TYPES = [FILE_TYPE, "markdown", "page", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     // Use static types for all markdown files.
     $types: string[] = MarkdownFile.TYPES;
@@ -32,7 +36,10 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable {
     }
 
     /** Frontmatter values in the file, if present. */
-    frontmatter?: Record<string, any>;
+    frontmatter?: Record<string, Literal>;
+    /** Raw values in the front matter before any parsing. Restricted to numbers, strings, arrays, objects, and nulls. */
+    rawfrontmatter?: Record<string, any>;
+
     /** The path this file exists at. */
     path: string;
     /** Obsidian-provided date this page was created. */
@@ -56,9 +63,13 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable {
     sections: MarkdownSection[] = [];
 
     /** Create a markdown file from the given raw values. */
-    static from(raw: Partial<MarkdownFile>): MarkdownFile {
+    static from(raw: Partial<MarkdownFile>, normalizer?: LinkNormalizer): MarkdownFile {
         const file = new MarkdownFile(raw);
-        file.sections = (file.sections ?? []).map(MarkdownSection.from);
+        file.sections = (file.sections ?? []).map((section) => MarkdownSection.from(section, normalizer));
+
+        if (normalizer) {
+            file.links = file.links.map(normalizer);
+        }
 
         return file;
     }
@@ -81,11 +92,22 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable {
     get link() {
         return Link.file(this.path);
     }
+
+    /** All of the indexed fields in this object. */
+    get fields() {
+        return MarkdownFile.FIELD_DEF(this);
+    }
+
+    public field(key: string) {
+        return MarkdownFile.FIELD_DEF(this, key)?.[0];
+    }
+
+    private static FIELD_DEF: FieldExtractor<MarkdownFile> = Extractors.intrinsics();
 }
 
-export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbearing {
+export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbearing, Fieldbearing {
     /** All of the types that a markdown section is. */
-    static TYPES = ["markdown", "section", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE];
+    static TYPES = ["markdown", "section", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     /** Path of the file that this section is in. */
     $types: string[] = MarkdownSection.TYPES;
@@ -109,9 +131,13 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     blocks: MarkdownBlock[];
 
     /** Convert raw markdown section data to the appropriate class. */
-    static from(raw: Partial<MarkdownSection>): MarkdownSection {
+    static from(raw: Partial<MarkdownSection>, normalizer?: LinkNormalizer): MarkdownSection {
         const section = new MarkdownSection((raw as any).$file, raw);
-        section.blocks = (section.blocks ?? []).map(MarkdownBlock.from);
+        section.blocks = (section.blocks ?? []).map((block) => MarkdownBlock.from(block, normalizer));
+
+        if (normalizer) {
+            section.links = section.links.map(normalizer);
+        }
 
         return section;
     }
@@ -128,10 +154,27 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
         return this.position.end - this.position.start;
     }
 
+    /** Alias for title which allows searching over pages and sections by 'name'. */
+    get name(): string {
+        return this.title;
+    }
+
     /** Return a link to this section. */
     get link(): Link {
         return Link.header(this.$file, this.title);
     }
+
+    /** All of the indexed fields in this object. */
+    get fields() {
+        return MarkdownSection.FIELD_DEF(this);
+    }
+
+    /** Fetch a specific field by key. */
+    public field(key: string) {
+        return MarkdownSection.FIELD_DEF(this, key)?.[0];
+    }
+
+    private static FIELD_DEF: FieldExtractor<MarkdownSection> = Extractors.intrinsics();
 
     /** Generate a readable ID for this section using the first 8 characters of the string and the ordinal. */
     static readableId(file: string, title: string, ordinal: number): string {
@@ -163,12 +206,19 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
     /** The type of block - paragraph, list, and so on. */
     type: string;
 
-    static from(object: Partial<MarkdownBlock>): MarkdownBlock {
+    static from(object: Partial<MarkdownBlock>, normalizer?: LinkNormalizer): MarkdownBlock {
+        let result: MarkdownBlock;
         if (object.type === "list") {
-            return new MarkdownListBlock(object.$file!, object as Partial<MarkdownListBlock>);
+            result = MarkdownListBlock.from(object as Partial<MarkdownListBlock>, normalizer);
         } else {
-            return new MarkdownBlock(object.$file!, object);
+            result = new MarkdownBlock(object.$file!, object);
         }
+
+        if (normalizer) {
+            result.links = result.links.map(normalizer);
+        }
+
+        return result;
     }
 
     public constructor(file: string, init: Partial<MarkdownBlock>) {
@@ -178,15 +228,27 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
         this.$id = MarkdownBlock.readableId(file, this.ordinal);
     }
 
-    /** Generate a readable ID for this block using the ordinal of the block. */
-    static readableId(file: string, ordinal: number): string {
-        return `${file}/block${ordinal}`;
-    }
-
     /** If this block has a block ID, the link to this block. */
     get link(): Link | undefined {
         if (this.blockId) return Link.block(this.$file, this.blockId);
         else return undefined;
+    }
+
+    /** All of the indexed fields in this object. */
+    get fields() {
+        return MarkdownBlock.FIELD_DEF(this);
+    }
+
+    /** Fetch a specific field by key. */
+    public field(key: string) {
+        return MarkdownBlock.FIELD_DEF(this, key)?.[0];
+    }
+
+    private static FIELD_DEF: FieldExtractor<MarkdownBlock> = Extractors.intrinsics();
+
+    /** Generate a readable ID for this block using the ordinal of the block. */
+    static readableId(file: string, ordinal: number): string {
+        return `${file}/block${ordinal}`;
     }
 }
 
@@ -202,9 +264,9 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     type: "list";
 
     /** Create a list block from a serialized value. */
-    static from(object: Partial<MarkdownListBlock>): MarkdownListBlock {
+    static from(object: Partial<MarkdownListBlock>, normalizer?: LinkNormalizer): MarkdownListBlock {
         const result = new MarkdownListBlock(object.$file!, object);
-        result.elements = (result.elements || []).map(MarkdownListItem.from);
+        result.elements = (result.elements || []).map((elem) => MarkdownListItem.from(elem, normalizer));
 
         return result;
     }
@@ -249,12 +311,16 @@ export class MarkdownListItem implements Linkbearing, Taggable {
     parentLine: number;
 
     /** Create a list item from a serialized object. */
-    static from(object: Partial<MarkdownListItem>): MarkdownListItem {
+    static from(object: Partial<MarkdownListItem>, normalizer?: LinkNormalizer): MarkdownListItem {
         let result: MarkdownListItem;
         if (object.type === "task") result = new MarkdownTaskItem(object.$file!, object);
         else result = new MarkdownListItem(object.$file!, object);
 
-        result.elements = (result.elements || []).map(MarkdownListItem.from);
+        if (normalizer) {
+            result.links = result.links.map(normalizer);
+        }
+
+        result.elements = (result.elements || []).map((elem) => MarkdownListItem.from(elem, normalizer));
         return result;
     }
 
@@ -270,6 +336,18 @@ export class MarkdownListItem implements Linkbearing, Taggable {
     get line(): number {
         return this.position.start;
     }
+
+    /** All of the indexed fields in this object. */
+    get fields() {
+        return MarkdownListItem.FIELD_DEF(this);
+    }
+
+    /** Fetch a specific field by key. */
+    public field(key: string) {
+        return MarkdownListItem.FIELD_DEF(this, key)?.[0];
+    }
+
+    private static FIELD_DEF: FieldExtractor<MarkdownListItem> = Extractors.intrinsics();
 
     /** Generate a readable ID for this item using the line number. */
     static readableId(file: string, line: number): string {

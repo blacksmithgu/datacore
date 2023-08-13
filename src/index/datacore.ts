@@ -109,7 +109,11 @@ export class Datacore extends Component {
         if (result.type === "error") {
             throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
         } else if (result.type === "markdown") {
-            const parsed = MarkdownFile.from(result.result);
+            const parsed = MarkdownFile.from(result.result, (link) => {
+                const rpath = this.metadataCache.getFirstLinkpathDest(link.path, result.result.$file);
+                if (rpath) return link.withPath(rpath.path);
+                else return link;
+            });
 
             this.datastore.store(parsed, (object, store) => {
                 store(object.sections, (section, store) => {

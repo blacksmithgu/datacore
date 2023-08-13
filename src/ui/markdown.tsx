@@ -45,10 +45,12 @@ export function DatacoreContextProvider({
     const scheme = (getComputedStyle(document.body) as any)["color-scheme"] ?? "light";
 
     return (
-        <MantineProvider theme={{
-            radius: { "xs": "0", "md": "0", "lg": "0", "sm": "0", "xl": "0" },
-            colorScheme: scheme
-        }}>
+        <MantineProvider
+            theme={{
+                radius: { xs: "0", md: "0", lg: "0", sm: "0", xl: "0" },
+                colorScheme: scheme,
+            }}
+        >
             <COMPONENT_CONTEXT.Provider value={component}>
                 <APP_CONTEXT.Provider value={app}>
                     <DATACORE_CONTEXT.Provider value={datacore}>
@@ -63,33 +65,32 @@ export function DatacoreContextProvider({
 }
 
 /** Copies how an Obsidian link is rendered but is about an order of magnitude faster to render than via markdown rendering. */
-export function RawLink({
-    link,
-    sourcePath,
-}: {
-    link: Link | string,
-    sourcePath: string
-}) {
+export function RawLink({ link, sourcePath }: { link: Link | string; sourcePath: string }) {
     const workspace = useContext(APP_CONTEXT).workspace;
-    const parsed = useMemo(() => Literals.isLink(link) ? link : Link.infer(link), [link]);
-    
-    const onClick = useCallback((event: MouseEvent) => {
-        const newtab = event.shiftKey;
-        console.log(parsed.obsidianLink(), sourcePath);
-        workspace.openLinkText(parsed.obsidianLink(), sourcePath, newtab);
-    }, [parsed, sourcePath])
+    const parsed = useMemo(() => (Literals.isLink(link) ? link : Link.infer(link)), [link]);
 
-    return <a
-        aria-label={parsed.displayOrDefault()}
-        onClick={onClick}
-        className="internal-link"
-        target="_blank"
-        rel="noopener"
-        data-tooltip-position="top"
-        data-href={parsed.obsidianLink()}
-    >
-        {parsed.displayOrDefault()}
-    </a>;
+    const onClick = useCallback(
+        (event: MouseEvent) => {
+            const newtab = event.shiftKey;
+            console.log(parsed.obsidianLink(), sourcePath);
+            workspace.openLinkText(parsed.obsidianLink(), sourcePath, newtab);
+        },
+        [parsed, sourcePath]
+    );
+
+    return (
+        <a
+            aria-label={parsed.displayOrDefault()}
+            onClick={onClick}
+            className="internal-link"
+            target="_blank"
+            rel="noopener"
+            data-tooltip-position="top"
+            data-href={parsed.obsidianLink()}
+        >
+            {parsed.displayOrDefault()}
+        </a>
+    );
 }
 
 export const ObsidianLink = React.memo(RawLink);

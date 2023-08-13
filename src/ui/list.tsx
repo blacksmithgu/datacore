@@ -36,8 +36,7 @@ export function ListView<T>(state: ListState<T>) {
         if (state.paging === undefined) {
             if (settings.defaultPagingEnabled) return settings.defaultPageSize;
             else return undefined;
-        }
-        else if (state.paging == false) return undefined;
+        } else if (state.paging == false) return undefined;
         else if (state.paging == true) return settings.defaultPageSize;
         else return state.paging;
     }, [settings.defaultPageSize, settings.defaultPagingEnabled, state.paging]);
@@ -57,7 +56,9 @@ export function ListView<T>(state: ListState<T>) {
         return (
             <ol className={"datacore-list datacore-list-ordered"}>
                 {elements.map((element, index) => (
-                    <li key={index} className="datacore-list-item">{ensureElement(renderer(element, index))}</li>
+                    <li key={index} className="datacore-list-item">
+                        {ensureElement(renderer(element, index))}
+                    </li>
                 ))}
             </ol>
         );
@@ -65,7 +66,9 @@ export function ListView<T>(state: ListState<T>) {
         return (
             <ul className="datacore-list datacore-list-unordered">
                 {elements.map((element, index) => (
-                    <li key={index} className="datacore-list-item">{ensureElement(renderer(element, index))}</li>
+                    <li key={index} className="datacore-list-item">
+                        {ensureElement(renderer(element, index))}
+                    </li>
                 ))}
             </ul>
         );

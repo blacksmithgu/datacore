@@ -166,7 +166,6 @@ export class Datastore {
 
         // Exact and derived links.
         if (object.$types.contains(LINKBEARING_TYPE) && iterableExists(object, "links")) {
-            object.links = bulkNormalizeLinks(object.links, this.metadataCache, object.$file ?? "");
             this.links.set(
                 object.$id,
                 (object.links as Link[]).map((link) => link.obsidianLink())
@@ -622,19 +621,4 @@ function iterableExists<T extends Record<string, any>, K extends string>(
     key: K
 ): object is T & Record<K, Iterable<any>> {
     return key in object && object[key] !== undefined && Symbol.iterator in object[key];
-}
-
-/** Normalize a link, returning a new link with an absolute path. */
-function normalizeLink(link: Link, cache: MetadataCache, sourcePath: string): Link {
-    const dest = cache.getFirstLinkpathDest(link.path, sourcePath);
-    if (dest) return link.withPath(dest.path);
-    else return link;
-}
-
-/** Normalize a batch of links, returning a new iterable. */
-function bulkNormalizeLinks(links: Iterable<Link>, cache: MetadataCache, sourcePath: string): Iterable<Link> {
-    const result = [];
-    for (let link of links) result.push(normalizeLink(link, cache, sourcePath));
-
-    return result;
 }
