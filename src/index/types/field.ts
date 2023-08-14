@@ -1,4 +1,5 @@
 import { Literal, Literals } from "expression/literal";
+import { Indexable } from "./indexable";
 
 /** The source of a field, used when determining what files to overwrite and how. */
 export type Provenance = { type: "frontmatter"; file: string; key: string; raw: string } | { type: "intrinsic" };
@@ -76,12 +77,66 @@ export namespace Extractors {
         };
     }
 
-    /** Merge multiple field extractors into one. */
+    /** Field extractor which extracts frontmatter fields. */
+    export function frontmatter<T extends Fieldbearing & Indexable>(
+        front: (object: T) => Record<string, Literal> | undefined,
+        raw: (object: T) => Record<string, any> | undefined
+    ): FieldExtractor<T> {
+        return (object: T, key?: string) => {
+            const frontmatter = front(object);
+            const raws = raw?.(object) ?? {};
+
+            if (!frontmatter) return [];
+
+            if (key == null) {
+                const fields: Field[] = [];
+
+                for (const key of Object.keys(frontmatter)) {
+                    const value = frontmatter[key];
+                    const raw = raws[key];
+
+                    fields.push({
+                        key,
+                        value,
+                        raw,
+                        provenance: { type: "frontmatter", file: object.$file!, key, raw },
+                    });
+                }
+
+                return fields;
+            } else {
+                if (!(key in frontmatter)) return [];
+
+                const value = frontmatter[key];
+                const raw = raws[key];
+
+                return [
+                    {
+                        key,
+                        value,
+                        raw,
+                        provenance: { type: "frontmatter", file: object.$file!, key, raw },
+                    },
+                ];
+            }
+        };
+    }
+
+    /** Merge multiple field extractors into one; if multiple extractors produce identical keys, keys from the earlier extractor will be preferred. */
     export function merge<T extends Fieldbearing>(...extractors: FieldExtractor<T>[]): FieldExtractor<T> {
         return (object: T, key?: string) => {
             if (key == null) {
+                const used = new Set<string>();
+
                 const fields: Field[] = [];
-                for (const extractor of extractors) fields.push(...extractor(object, undefined));
+                for (const extractor of extractors) {
+                    for (const field of extractor(object, undefined)) {
+                        if (used.has(field.key)) continue;
+
+                        used.add(field.key);
+                        fields.push(field);
+                    }
+                }
                 return fields;
             } else {
                 for (const extractor of extractors) {

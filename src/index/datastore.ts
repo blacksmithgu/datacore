@@ -8,6 +8,8 @@ import { MetadataCache, Vault } from "obsidian";
 import { MarkdownFile } from "./types/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "expression/normalize";
 import FlatQueue from "flatqueue";
+import { FieldIndex } from "./storage/fields";
+import { FIELDBEARING_TYPE, Field } from "./types/field";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -32,6 +34,8 @@ export class Datastore {
     private tags: InvertedIndex<string>;
     /** Maps link strings to the object IDs that link to those links. */
     private links: InvertedIndex<string>;
+    /** Tracks the existence of fields (indexed by normalized key name). */
+    private fields: Map<string, FieldIndex>;
     /**
      * Quick searches for objects in folders. This index only tracks top-level objects - it is expanded recursively to
      * find child objects.
@@ -48,6 +52,7 @@ export class Datastore {
         this.etags = new InvertedIndex();
         this.tags = new InvertedIndex();
         this.links = new InvertedIndex();
+        this.fields = new Map();
         this.folder = new FolderIndex(vault);
     }
 
@@ -170,6 +175,13 @@ export class Datastore {
                 object.$id,
                 (object.links as Link[]).map((link) => link.obsidianLink())
             );
+        }
+
+        if (object.$types.contains(FIELDBEARING_TYPE) && iterableExists(object, "fields")) {
+            for (const field of object.fields as Iterable<Field>) {
+                // Skip any index fields.
+                if (field.key.startsWith("$")) continue;
+            }
         }
     }
 

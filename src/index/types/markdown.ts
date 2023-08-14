@@ -38,7 +38,7 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
     /** Frontmatter values in the file, if present. */
     frontmatter?: Record<string, Literal>;
     /** Raw values in the front matter before any parsing. Restricted to numbers, strings, arrays, objects, and nulls. */
-    rawfrontmatter?: Record<string, any>;
+    rawmatter?: Record<string, any>;
 
     /** The path this file exists at. */
     path: string;
@@ -102,7 +102,13 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
         return MarkdownFile.FIELD_DEF(this, key)?.[0];
     }
 
-    private static FIELD_DEF: FieldExtractor<MarkdownFile> = Extractors.intrinsics();
+    private static FIELD_DEF: FieldExtractor<MarkdownFile> = Extractors.merge(
+        Extractors.intrinsics(),
+        Extractors.frontmatter(
+            (f) => f.frontmatter,
+            (f) => f.rawmatter
+        )
+    );
 }
 
 export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbearing, Fieldbearing {
