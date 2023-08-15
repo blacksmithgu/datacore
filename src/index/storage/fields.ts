@@ -41,7 +41,7 @@ export class FieldIndex {
     }
 
     /** Return a set of all pages in which the field exists at all (even if undefined). */
-    public exists(): Set<string> {
+    public all(): Set<string> {
         return this.present;
     }
 
@@ -49,7 +49,8 @@ export class FieldIndex {
     public range(min?: [Literal, boolean], max?: [Literal, boolean]): Set<string> | undefined {
         if (!this.indexValues) return undefined;
 
-        // TODO: BTree is a bit annoying to implement arbitrary min/max.
+        // TODO: BTree is a bit annoying to implement arbitrary min/max, but this can speed up
+        // range queries by a lot.
         return undefined;
     }
 

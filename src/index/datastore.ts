@@ -1,4 +1,4 @@
-import { Link, Literals } from "expression/literal";
+import { Link, Literal, Literals } from "expression/literal";
 import { Filter, Filters } from "index/storage/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
@@ -6,10 +6,10 @@ import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
 import { MarkdownFile } from "./types/markdown";
-import { extractSubtags, normalizeHeaderForLink } from "expression/normalize";
+import { canonicalizeVarName, extractSubtags, normalizeHeaderForLink } from "expression/normalize";
 import FlatQueue from "flatqueue";
 import { FieldIndex } from "./storage/fields";
-import { FIELDBEARING_TYPE, Field } from "./types/field";
+import { FIELDBEARING_TYPE, Field, Fieldbearing } from "./types/field";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -177,10 +177,16 @@ export class Datastore {
             );
         }
 
-        if (object.$types.contains(FIELDBEARING_TYPE) && iterableExists(object, "fields")) {
+        // All fields on an object.
+        if (object.$types.contains(FIELDBEARING_TYPE) && "fields" in object) {
             for (const field of object.fields as Iterable<Field>) {
                 // Skip any index fields.
                 if (field.key.startsWith("$")) continue;
+
+                const norm = canonicalizeVarName(field.key);
+                if (!this.fields.has(norm)) this.fields.set(norm, new FieldIndex(false));
+
+                this.fields.get(norm)!.add(object.$id, field.value);
             }
         }
     }
@@ -204,6 +210,18 @@ export class Datastore {
                 (object.links as Link[]).map((link) => link.obsidianLink())
             );
         }
+
+        if (object.$types.contains(FIELDBEARING_TYPE) && "fields" in object) {
+            for (const field of object.fields as Iterable<Field>) {
+                // Skip any index fields.
+                if (field.key.startsWith("$")) continue;
+
+                const norm = canonicalizeVarName(field.key);
+                if (!this.fields.has(norm)) continue;
+
+                this.fields.get(norm)!.delete(object.$id, field.value);
+            }
+        }
     }
 
     /** Completely clear the datastore of all values. */
@@ -216,6 +234,7 @@ export class Datastore {
         this.tags.clear();
         this.etags.clear();
         this.links.clear();
+        this.fields.clear();
 
         this.revision++;
     }
@@ -517,11 +536,76 @@ export class Datastore {
                 }
 
                 return Filters.atom(result);
-            case "bounded-value":
-            case "equal-value":
             case "field":
-                return Filters.NOTHING;
+                const normkey = canonicalizeVarName(query.value);
+                const fieldIndex = this.fields.get(normkey);
+                if (fieldIndex == null) return Filters.NOTHING;
+
+                return Filters.atom(fieldIndex.all());
+            case "equal-value":
+                return this._filterFields(
+                    query.field,
+                    (index) => index.equals(query.value),
+                    (field) => Literals.compare(query.value, field.value) == 0
+                );
+            case "bounded-value":
+                // Compute the minimal lambda for checking if the value is in the given bounds.
+                let lower: ((value: Literal) => boolean) | undefined = undefined;
+                if (query.lower) {
+                    const [lowerBound, inclusive] = query.lower;
+                    if (inclusive) lower = (value: Literal) => Literals.compare(value, lowerBound) >= 0;
+                    else lower = (value: Literal) => Literals.compare(value, lowerBound) > 0;
+                }
+
+                let upper: ((value: Literal) => boolean) | undefined = undefined;
+                if (query.upper) {
+                    const [upperBound, inclusive] = query.upper;
+                    if (inclusive) upper = (value: Literal) => Literals.compare(value, upperBound) <= 0;
+                    else upper = (value: Literal) => Literals.compare(value, upperBound) < 0;
+                }
+
+                let filter;
+                if (lower && upper) filter = (field: Field) => lower!(field.value) && upper!(field.value);
+                else if (lower) filter = (field: Field) => lower!(field.value);
+                else if (upper) filter = (field: Field) => upper!(field.value);
+                else
+                    return this._filterFields(
+                        query.field,
+                        (index) => index.all(),
+                        (field) => true
+                    ); // no upper/lower bounds, return everything.
+
+                // TODO: Implement smarter range queries later.
+                return this._filterFields(query.field, (index) => undefined, filter);
         }
+    }
+
+    /** Filter documents by field values, using the fast lookup if it returns a result and otherwise filtering over every document using the slow predicate. */
+    private _filterFields(
+        key: string,
+        fast: (index: FieldIndex) => Set<string> | undefined,
+        slow: (field: Field) => boolean
+    ) {
+        const normkey = canonicalizeVarName(key);
+        const index = this.fields.get(normkey);
+        if (index == null) return Filters.NOTHING;
+
+        const fastlookup = fast(index);
+        if (fastlookup != null) return Filters.atom(fastlookup);
+
+        // Compute by iterating over each field.
+        const matches = new Set<string>();
+        for (const objectId of index.all()) {
+            const object = this.objects.get(objectId);
+            if (!object || !object.$types.contains(FIELDBEARING_TYPE)) continue;
+
+            const field = (object as any as Fieldbearing).field(normkey);
+            if (!field) continue;
+
+            if (slow(field)) matches.add(objectId);
+        }
+
+        return Filters.atom(matches);
     }
 
     /**

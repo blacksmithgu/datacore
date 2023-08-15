@@ -61,7 +61,7 @@ export interface IndexField {
 export interface IndexValueEquals {
     type: "equal-value";
     /** The field whose value we are checking. */
-    field: String;
+    field: string;
     /** The value that we expect it to be equal to. */
     value: Literal;
 }

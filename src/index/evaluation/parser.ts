@@ -13,6 +13,7 @@ import {
     IndexTagged,
     IndexTyped,
     IndexLinked,
+    IndexField,
 } from "index/types/index-query";
 
 ////////////////////////
@@ -279,6 +280,10 @@ export const DATE_SHORTHANDS = {
     "end-of-month": () => DateTime.local().endOf("month"),
 };
 
+/////////////////////////
+// Expression Language //
+/////////////////////////
+
 ////////////////////
 // Query Language //
 ////////////////////
@@ -293,6 +298,7 @@ export interface QueryLanguage {
     queryChildOf: IndexChildOf;
     querySimpleLinked: IndexLinked;
     queryLinked: IndexLinked;
+    queryExists: IndexField;
     queryNegate: IndexNot;
     queryParens: IndexQuery;
     queryAtom: IndexQuery;
@@ -346,6 +352,8 @@ export const QUERY = P.createLanguage<QueryLanguage>({
             direction:
                 func.toLowerCase() == "linksto" ? "incoming" : func.toLowerCase() == "linkedfrom" ? "outgoing" : "both",
         })),
+    queryExists: (q) =>
+        createFunction(P.regexp(/exists/i).desc("exists"), q.q)
 
     queryParens: (q) => q.query.trim(P.optWhitespace).wrap(P.string("("), P.string(")")),
     queryNegate: (q) =>
