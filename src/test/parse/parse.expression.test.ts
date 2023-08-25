@@ -271,15 +271,21 @@ describe("Durations", () => {
 
 describe("Parse Link", () => {
     test("simple", () =>
-        expect(EXPRESSION.expression.tryParse("[[test/Main]]")).toEqual(Expressions.literal(Link.file("test/Main", false))));
+        expect(EXPRESSION.expression.tryParse("[[test/Main]]")).toEqual(
+            Expressions.literal(Link.file("test/Main", false))
+        ));
     test("extension", () =>
         expect(EXPRESSION.expression.tryParse("[[test/Main.md]]")).toEqual(
             Expressions.literal(Link.file("test/Main.md", false))
         ));
     test("number", () =>
-        expect(EXPRESSION.expression.tryParse("[[simple0]]")).toEqual(Expressions.literal(Link.file("simple0", false))));
+        expect(EXPRESSION.expression.tryParse("[[simple0]]")).toEqual(
+            Expressions.literal(Link.file("simple0", false))
+        ));
     test("date", () =>
-        expect(EXPRESSION.expression.tryParse("[[2020-08-15]]")).toEqual(Expressions.literal(Link.file("2020-08-15", false))));
+        expect(EXPRESSION.expression.tryParse("[[2020-08-15]]")).toEqual(
+            Expressions.literal(Link.file("2020-08-15", false))
+        ));
     test("glyphs", () =>
         expect(EXPRESSION.expression.tryParse("[[%Man & Machine + Mind%]]")).toEqual(
             Expressions.literal(Link.file("%Man & Machine + Mind%", false))
@@ -304,7 +310,9 @@ test("Parse link with header/block", () => {
     expect(EXPRESSION.expression.tryParse("[[test/Main#Yes]]")).toEqual(
         Expressions.literal(Link.header("test/Main", "Yes", false))
     );
-    expect(EXPRESSION.expression.tryParse("[[2020#^14df]]")).toEqual(Expressions.literal(Link.block("2020", "14df", false)));
+    expect(EXPRESSION.expression.tryParse("[[2020#^14df]]")).toEqual(
+        Expressions.literal(Link.block("2020", "14df", false))
+    );
 });
 
 test("Parse link with header and display", () => {
@@ -334,13 +342,20 @@ test("Parse Dot Notation", () => {
         Expressions.index(Expressions.variable("Dates"), Expressions.literal("Birthday"))
     );
     expect(EXPRESSION.expression.tryParse("a.b.c3")).toEqual(
-        Expressions.index(Expressions.index(Expressions.variable("a"), Expressions.literal("b")), Expressions.literal("c3"))
+        Expressions.index(
+            Expressions.index(Expressions.variable("a"), Expressions.literal("b")),
+            Expressions.literal("c3")
+        )
     );
 });
 
 test("Parse Index Notation", () => {
-    expect(EXPRESSION.expression.tryParse("a[0]")).toEqual(Expressions.index(Expressions.variable("a"), Expressions.literal(0)));
-    expect(EXPRESSION.expression.tryParse('"hello"[0]')).toEqual(Expressions.index(Expressions.literal("hello"), Expressions.literal(0)));
+    expect(EXPRESSION.expression.tryParse("a[0]")).toEqual(
+        Expressions.index(Expressions.variable("a"), Expressions.literal(0))
+    );
+    expect(EXPRESSION.expression.tryParse('"hello"[0]')).toEqual(
+        Expressions.index(Expressions.literal("hello"), Expressions.literal(0))
+    );
     expect(EXPRESSION.expression.tryParse("hello[brain]")).toEqual(
         Expressions.index(Expressions.variable("hello"), Expressions.variable("brain"))
     );
@@ -348,10 +363,16 @@ test("Parse Index Notation", () => {
 
 test("Parse Mixed Index/Dot Notation", () => {
     expect(EXPRESSION.expression.tryParse("a.b[0]")).toEqual(
-        Expressions.index(Expressions.index(Expressions.variable("a"), Expressions.literal("b")), Expressions.literal(0))
+        Expressions.index(
+            Expressions.index(Expressions.variable("a"), Expressions.literal("b")),
+            Expressions.literal(0)
+        )
     );
     expect(EXPRESSION.expression.tryParse('"hello".what[yes]')).toEqual(
-        Expressions.index(Expressions.index(Expressions.literal("hello"), Expressions.literal("what")), Expressions.variable("yes"))
+        Expressions.index(
+            Expressions.index(Expressions.literal("hello"), Expressions.literal("what")),
+            Expressions.variable("yes")
+        )
     );
 });
 
@@ -373,7 +394,11 @@ test("Parse function with no arguments", () => {
 
 test("Parse function with arguments", () => {
     expect(EXPRESSION.expression.tryParse("list(1, 2, 3)")).toEqual(
-        Expressions.func(Expressions.variable("list"), [Expressions.literal(1), Expressions.literal(2), Expressions.literal(3)])
+        Expressions.func(Expressions.variable("list"), [
+            Expressions.literal(1),
+            Expressions.literal(2),
+            Expressions.literal(3),
+        ])
     );
     expect(EXPRESSION.expression.tryParse('object("a", 1, "b", 2)')).toEqual(
         Expressions.func(Expressions.variable("object"), [
@@ -396,7 +421,9 @@ test("Parse function with duration", () => {
 });
 
 test("Parse null duration", () => {
-    expect(EXPRESSION.expression.tryParse("dur(null)")).toEqual(Expressions.func(Expressions.variable("dur"), [Expressions.literal(null)]));
+    expect(EXPRESSION.expression.tryParse("dur(null)")).toEqual(
+        Expressions.func(Expressions.variable("dur"), [Expressions.literal(null)])
+    );
     expect(EXPRESSION.expression.tryParse('dur("null")')).toEqual(
         Expressions.func(Expressions.variable("dur"), [Expressions.literal("null")])
     );
@@ -423,7 +450,10 @@ test("Parse date +/- null", () => {
 
 test("Parse function with mixed dot, index, and function call", () => {
     expect(EXPRESSION.expression.tryParse("list().parts[0]")).toEqual(
-        Expressions.index(Expressions.index(Expressions.func(Expressions.variable("list"), []), Expressions.literal("parts")), Expressions.literal(0))
+        Expressions.index(
+            Expressions.index(Expressions.func(Expressions.variable("list"), []), Expressions.literal("parts")),
+            Expressions.literal(0)
+        )
     );
 });
 
@@ -440,12 +470,17 @@ describe("Lambda Expressions", () => {
     });
 
     test("Parse 1-argument lambda", () => {
-        expect(EXPRESSION.expression.tryParse("(v) => v")).toEqual(Expressions.lambda(["v"], Expressions.variable("v")));
+        expect(EXPRESSION.expression.tryParse("(v) => v")).toEqual(
+            Expressions.lambda(["v"], Expressions.variable("v"))
+        );
     });
 
     test("Parse 2-argument lambda", () => {
         expect(EXPRESSION.expression.tryParse("(yes, no) => yes - no")).toEqual(
-            Expressions.lambda(["yes", "no"], Expressions.binaryOp(Expressions.variable("yes"), "-", Expressions.variable("no")))
+            Expressions.lambda(
+                ["yes", "no"],
+                Expressions.binaryOp(Expressions.variable("yes"), "-", Expressions.variable("no"))
+            )
         );
     });
 });
@@ -454,17 +489,22 @@ describe("Lambda Expressions", () => {
 
 describe("Lists", () => {
     test("[]", () => expect(EXPRESSION.expression.tryParse("[]")).toEqual(Expressions.list([])));
-    test("[1]", () => expect(EXPRESSION.expression.tryParse("[1]")).toEqual(Expressions.list([Expressions.literal(1)])));
+    test("[1]", () =>
+        expect(EXPRESSION.expression.tryParse("[1]")).toEqual(Expressions.list([Expressions.literal(1)])));
     test("[1, 2]", () =>
-        expect(EXPRESSION.expression.tryParse("[1,2]")).toEqual(Expressions.list([Expressions.literal(1), Expressions.literal(2)])));
+        expect(EXPRESSION.expression.tryParse("[1,2]")).toEqual(
+            Expressions.list([Expressions.literal(1), Expressions.literal(2)])
+        ));
     test("[1, 2, 3]", () =>
         expect(EXPRESSION.expression.tryParse("[ 1,  2, 3   ]")).toEqual(
             Expressions.list([Expressions.literal(1), Expressions.literal(2), Expressions.literal(3)])
         ));
 
-    test('["a"]', () => expect(EXPRESSION.expression.tryParse('["a" ]')).toEqual(Expressions.list([Expressions.literal("a")])));
+    test('["a"]', () =>
+        expect(EXPRESSION.expression.tryParse('["a" ]')).toEqual(Expressions.list([Expressions.literal("a")])));
 
-    test("[[]]", () => expect(EXPRESSION.expression.tryParse("[ [] ]")).toEqual(Expressions.list([Expressions.list([])])));
+    test("[[]]", () =>
+        expect(EXPRESSION.expression.tryParse("[ [] ]")).toEqual(Expressions.list([Expressions.list([])])));
 });
 
 // <-- Objects -->
@@ -474,9 +514,13 @@ describe("Objects", () => {
     test("{ a: 1 }", () =>
         expect(EXPRESSION.expression.tryParse("{ a: 1 }")).toEqual(Expressions.object({ a: Expressions.literal(1) })));
     test('{ "a": 1 }', () =>
-        expect(EXPRESSION.expression.tryParse('{ "a": 1 }')).toEqual(Expressions.object({ a: Expressions.literal(1) })));
+        expect(EXPRESSION.expression.tryParse('{ "a": 1 }')).toEqual(
+            Expressions.object({ a: Expressions.literal(1) })
+        ));
     test('{ "yes no": 1 }', () =>
-        expect(EXPRESSION.expression.tryParse('{ "yes no": 1 }')).toEqual(Expressions.object({ "yes no": Expressions.literal(1) })));
+        expect(EXPRESSION.expression.tryParse('{ "yes no": 1 }')).toEqual(
+            Expressions.object({ "yes no": Expressions.literal(1) })
+        ));
 
     test("{a:1,b:[2]}", () =>
         expect(EXPRESSION.expression.tryParse("{ a: 1, b: [2] }")).toEqual(
@@ -512,14 +556,20 @@ describe("Binary Operators", () => {
     });
 
     test("Multiplication (No Spaces)", () => {
-        expect(EXPRESSION.expression.tryParse("3*a")).toEqual(Expressions.binaryOp(Expressions.literal(3), "*", Expressions.variable("a")));
+        expect(EXPRESSION.expression.tryParse("3*a")).toEqual(
+            Expressions.binaryOp(Expressions.literal(3), "*", Expressions.variable("a"))
+        );
     });
 
     test("Parenthesis", () => {
         let result = EXPRESSION.expression.parse("(16 - 4) - 8") as Success<BinaryOpExpression>;
         expect(result.status).toBe(true);
         expect(result.value).toEqual(
-            Expressions.binaryOp(Expressions.binaryOp(Expressions.literal(16), "-", Expressions.literal(4)), "-", Expressions.literal(8))
+            Expressions.binaryOp(
+                Expressions.binaryOp(Expressions.literal(16), "-", Expressions.literal(4)),
+                "-",
+                Expressions.literal(8)
+            )
         );
     });
 
@@ -542,7 +592,9 @@ test("Parse Negated field", () => {
     expect(EXPRESSION.expression.tryParse("!neat(0)")).toEqual(
         Expressions.negate(Expressions.func(Expressions.variable("neat"), [Expressions.literal(0)]))
     );
-    expect(EXPRESSION.expression.tryParse("!!what")).toEqual(Expressions.negate(Expressions.negate(Expressions.variable("what"))));
+    expect(EXPRESSION.expression.tryParse("!!what")).toEqual(
+        Expressions.negate(Expressions.negate(Expressions.variable("what")))
+    );
 });
 
 test("Parse binaryop negated field", () => {

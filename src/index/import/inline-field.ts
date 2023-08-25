@@ -154,7 +154,7 @@ const FULL_LINE_KEY_PART: P.Parser<string> = P.alt(
     P.regexp(/[0-9\p{Letter}\w\s_/-]+/u)
 )
     .many()
-    .map(parts => parts.join(""));
+    .map((parts) => parts.join(""));
 
 const FULL_LINE_KEY_PARSER: P.Parser<string> = P.regexp(/[^0-9\w\p{Letter}]*/u)
     .then(FULL_LINE_KEY_PART)
@@ -217,7 +217,7 @@ function extractSpecialTaskFields(line: string): InlineField[] {
 /** Sets or replaces the value of an inline field; if the value is 'undefined', deletes the key. */
 export function setInlineField(source: string, key: string, value?: string): string {
     let existing = extractInlineFields(source);
-    let existingKeys = existing.filter(f => f.key == key);
+    let existingKeys = existing.filter((f) => f.key == key);
 
     // Don't do anything if there are duplicate keys OR the key already doesn't exist.
     if (existingKeys.length > 2 || (existingKeys.length == 0 && !value)) return source;
@@ -239,7 +239,7 @@ export function setInlineField(source: string, key: string, value?: string): str
 
 export function setEmojiShorthandCompletionField(source: string, value?: string): string {
     const existing = extractInlineFields(source, true);
-    const existingKeys = existing.filter(f => f.key === "completion" && f.wrapping === "emoji-shorthand");
+    const existingKeys = existing.filter((f) => f.key === "completion" && f.wrapping === "emoji-shorthand");
 
     // Don't do anything if there are duplicate keys OR the key already doesn't exist.
     if (existingKeys.length > 2 || (existingKeys.length == 0 && !value)) return source;

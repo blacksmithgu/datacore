@@ -1,6 +1,6 @@
 import { Literal } from "expression/literal";
-import { CURRENT_FILE_CONTEXT, Lit, SETTINGS_CONTEXT } from "ui/markdown";
-import React, { useContext, isValidElement, PropsWithChildren, useMemo, useState } from "react";
+import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
+import React, { useContext, isValidElement, PropsWithChildren } from "react";
 
 export interface ListState<T> {
     /**
@@ -26,12 +26,13 @@ export interface ListState<T> {
 
 /** A simple and responsive list view. */
 export function ListView<T>(state: ListState<T>) {
-    const settings = useContext(SETTINGS_CONTEXT);
+    // const settings = useContext(SETTINGS_CONTEXT);
 
     const type = state.type ?? "unordered";
     const elements = state.rows ?? [];
     const renderer = state.renderer ?? identity;
 
+    /*
     const pageSize = useMemo(() => {
         if (state.paging === undefined) {
             if (settings.defaultPagingEnabled) return settings.defaultPageSize;
@@ -41,6 +42,7 @@ export function ListView<T>(state: ListState<T>) {
         else return state.paging;
     }, [settings.defaultPageSize, settings.defaultPagingEnabled, state.paging]);
     const [page, setPage] = useState<number>(0);
+    */
 
     if (type == "none") {
         return (

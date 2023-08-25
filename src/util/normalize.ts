@@ -1,7 +1,7 @@
 import { DateTime, Duration } from "luxon";
 import * as P from "parsimmon";
 import emojiRegex from "emoji-regex";
-import { Link } from "./link";
+import { Link } from "expression/link";
 
 /** Test-environment-friendly function which fetches the current system locale. */
 export function currentLocale(): string {

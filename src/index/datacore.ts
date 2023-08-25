@@ -1,4 +1,4 @@
-import { deferred, Deferred } from "expression/deferred";
+import { deferred, Deferred } from "util/deferred";
 import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
 import { Indexable } from "index/types/indexable";

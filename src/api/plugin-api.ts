@@ -14,7 +14,7 @@ export class DatacoreApi {
     public page(path: string | Link): MarkdownFile | undefined {
         const realPath = path instanceof Link ? path.path : path;
 
-        return this.core.datastore.load(realPath) as MarkdownFile;
+        return this.core.datastore.load(realPath) as MarkdownFile | undefined;
     }
 
     /** Execute a textual or typed index query, returning all results. */

@@ -18,7 +18,7 @@ import React, {
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { Datacore } from "index/datacore";
 import { Settings } from "settings";
-import { currentLocale, renderMinimalDate, renderMinimalDuration } from "expression/normalize";
+import { currentLocale, renderMinimalDate, renderMinimalDuration } from "util/normalize";
 import { extractImageDimensions, isImageEmbed } from "ui/media";
 import { MantineProvider } from "@mantine/styles";
 import { Root, createRoot } from "react-dom/client";

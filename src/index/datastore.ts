@@ -6,7 +6,7 @@ import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
 import { MarkdownFile } from "./types/markdown";
-import { canonicalizeVarName, extractSubtags, normalizeHeaderForLink } from "expression/normalize";
+import { canonicalizeVarName, extractSubtags, normalizeHeaderForLink } from "util/normalize";
 import FlatQueue from "flatqueue";
 import { FieldIndex } from "./storage/fields";
 import { FIELDBEARING_TYPE, Field, Fieldbearing } from "./types/field";

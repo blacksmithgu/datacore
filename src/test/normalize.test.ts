@@ -1,4 +1,4 @@
-import { extractSubtags } from "expression/normalize";
+import { extractSubtags } from "util/normalize";
 
 describe("Extract Subtags", () => {
     test("Empty", () => expect(extractSubtags([])).toEqual([]));

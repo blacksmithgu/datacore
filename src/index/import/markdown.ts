@@ -1,5 +1,5 @@
 import { Link } from "expression/link";
-import { getFileTitle } from "expression/normalize";
+import { getFileTitle } from "util/normalize";
 import {
     MarkdownBlock,
     MarkdownFile,
