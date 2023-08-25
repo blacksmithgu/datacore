@@ -1,5 +1,5 @@
 import { Literal, Literals } from "expression/literal";
-import BTree, { EmptyBTree } from "sorted-btree";
+import BTree from "sorted-btree";
 
 export class FieldIndex {
     /** The ID of every object that this field is present on. */

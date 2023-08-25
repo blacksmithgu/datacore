@@ -1,7 +1,16 @@
 import { Link } from "expression/link";
 import { DateTime, Duration } from "luxon";
 import * as P from "parsimmon";
-import { BinaryOp } from "./expression";
+import {
+    BinaryOp,
+    Expression,
+    Expressions,
+    LambdaExpression,
+    ListExpression,
+    LiteralExpression,
+    ObjectExpression,
+    VariableExpression,
+} from "./expression";
 import emojiRegex from "emoji-regex";
 import {
     IndexChildOf,
@@ -15,6 +24,8 @@ import {
     IndexLinked,
     IndexField,
 } from "index/types/index-query";
+import { normalizeDuration } from "expression/normalize";
+import { Literal } from "expression/literal";
 
 ////////////////////////
 // Parsing Primitives //
@@ -43,6 +54,11 @@ export interface PrimitivesLanguage {
     binaryCompareOp: BinaryOp;
     binaryAndOp: BinaryOp;
     binaryOrOp: BinaryOp;
+
+    // Literal field parsing for ingesting inline fields and frontmatter.
+    atomInlineField: Literal;
+    inlineFieldList: Literal[];
+    inlineField: Literal;
 }
 
 /** Implementations for many primitives. */
@@ -208,6 +224,27 @@ export const PRIMITIVES = P.createLanguage<PrimitivesLanguage>({
 
     // A raw null value.
     rawNull: (_) => P.string("null"),
+
+    // Inline field value parsing.
+    atomInlineField: (q) =>
+        P.alt(
+            q.date,
+            q.duration.map((d) => normalizeDuration(d)),
+            q.string,
+            q.tag,
+            q.embedLink,
+            q.bool,
+            q.number,
+            q.rawNull
+        ),
+    inlineFieldList: (q) => q.atomInlineField.sepBy(P.string(",").trim(P.optWhitespace).lookahead(q.atomInlineField)),
+    inlineField: (q) =>
+        P.alt(
+            P.seqMap(q.atomInlineField, P.string(",").trim(P.optWhitespace), q.inlineFieldList, (f, _s, l) =>
+                [f].concat(l)
+            ),
+            q.atomInlineField
+        ),
 });
 
 /** Emoji regex, strpping any regex flags it has. */
@@ -284,6 +321,173 @@ export const DATE_SHORTHANDS = {
 // Expression Language //
 /////////////////////////
 
+export type PostfixFragment =
+    | { type: "dot"; expr: string }
+    | { type: "index"; expr: Expression }
+    | { type: "function"; exprs: Expression[] };
+
+export interface ExpressionLanguage {
+    variable: VariableExpression;
+    number: LiteralExpression;
+    bool: LiteralExpression;
+    string: LiteralExpression;
+    date: LiteralExpression;
+    duration: LiteralExpression;
+    link: LiteralExpression;
+    null: LiteralExpression;
+
+    list: ListExpression;
+    object: ObjectExpression;
+
+    negated: Expression;
+    atom: Expression;
+    index: Expression;
+    lambda: LambdaExpression;
+
+    // Postfix parsers for function calls & the like.
+    dotPostfix: PostfixFragment;
+    indexPostfix: PostfixFragment;
+    functionPostfix: PostfixFragment;
+
+    // Binary op parsers.
+    binaryMulDiv: Expression;
+    binaryPlusMinus: Expression;
+    binaryCompare: Expression;
+    binaryBoolean: Expression;
+    binaryOp: Expression;
+    parens: Expression;
+    expression: Expression;
+}
+
+/**
+ * Parse for the datacore expression language, which provides simple and vaguely JS-looking computation.
+ */
+export const EXPRESSION = P.createLanguage<ExpressionLanguage>({
+    // Field parsing.
+    variable: (_) => PRIMITIVES.identifier.map(Expressions.variable).desc("variable"),
+    number: (_) => PRIMITIVES.number.map(Expressions.literal).desc("number"),
+    string: (_) => PRIMITIVES.string.map(Expressions.literal).desc("string"),
+    bool: (_) => PRIMITIVES.bool.map(Expressions.literal).desc("boolean"),
+    date: (_) =>
+        createFunction("date", PRIMITIVES.datePlus)
+            .map(([_func, date]) => Expressions.literal(date))
+            .desc("date"),
+    duration: (_) =>
+        createFunction("dur", PRIMITIVES.duration)
+            .map(([_func, dur]) => Expressions.literal(dur))
+            .desc("duration"),
+    null: (_) => PRIMITIVES.rawNull.map((_) => Expressions.NULL),
+    link: (_) => PRIMITIVES.link.map(Expressions.literal),
+    list: (q) =>
+        q.expression
+            .sepBy(P.string(",").trim(P.optWhitespace))
+            .wrap(P.string("[").skip(P.optWhitespace), P.optWhitespace.then(P.string("]")))
+            .map((l) => Expressions.list(l))
+            .desc("list"),
+    object: (q) =>
+        P.seqMap(
+            PRIMITIVES.identifier.or(PRIMITIVES.string),
+            P.string(":").trim(P.optWhitespace),
+            q.expression,
+            (name, _sep, value) => {
+                return { name, value };
+            }
+        )
+            .sepBy(P.string(",").trim(P.optWhitespace))
+            .wrap(P.string("{").skip(P.optWhitespace), P.optWhitespace.then(P.string("}")))
+            .map((vals) => {
+                let res: Record<string, Expression> = {};
+                for (let entry of vals) res[entry.name] = entry.value;
+                return Expressions.object(res);
+            })
+            .desc("object ('{ a: 1, b: 2 }')"),
+
+    atom: (q) =>
+        P.alt(
+            // Place embed links above negated fields as they are the special parser case '![[thing]]' and are generally unambigious.
+            PRIMITIVES.embedLink.map((l) => Expressions.literal(l)),
+            q.negated,
+            q.link,
+            q.list,
+            q.object,
+            q.lambda,
+            q.parens,
+            q.bool,
+            q.number,
+            q.string,
+            q.date,
+            q.duration,
+            q.null,
+            q.variable
+        ),
+    index: (q) =>
+        P.seqMap(q.atom, P.alt(q.dotPostfix, q.indexPostfix, q.functionPostfix).many(), (obj, postfixes) => {
+            let result = obj;
+            for (let post of postfixes) {
+                switch (post.type) {
+                    case "dot":
+                        result = Expressions.index(result, Expressions.literal(post.expr));
+                        break;
+                    case "index":
+                        result = Expressions.index(result, post.expr);
+                        break;
+                    case "function":
+                        result = Expressions.func(result, post.exprs);
+                        break;
+                }
+            }
+
+            return result;
+        }),
+    negated: (q) => P.seqMap(P.string("!"), q.index, (_, field) => Expressions.negate(field)).desc("negated field"),
+    parens: (q) => q.expression.trim(P.optWhitespace).wrap(P.string("("), P.string(")")),
+    lambda: (q) =>
+        P.seqMap(
+            PRIMITIVES.identifier
+                .sepBy(P.string(",").trim(P.optWhitespace))
+                .wrap(P.string("(").trim(P.optWhitespace), P.string(")").trim(P.optWhitespace)),
+            P.string("=>").trim(P.optWhitespace),
+            q.expression,
+            (ident, _ignore, value) => {
+                return { type: "lambda", arguments: ident, value };
+            }
+        ),
+
+    dotPostfix: (q) => P.seqMap(P.string("."), PRIMITIVES.identifier, (_, expr) => ({ type: "dot", expr })),
+    indexPostfix: (q) =>
+        P.seqMap(
+            P.string("["),
+            P.optWhitespace,
+            q.expression,
+            P.optWhitespace,
+            P.string("]"),
+            (_, _2, expr, _3, _4) => {
+                return { type: "index", expr };
+            }
+        ),
+    functionPostfix: (q) =>
+        P.seqMap(
+            P.string("("),
+            P.optWhitespace,
+            q.expression.sepBy(P.string(",").trim(P.optWhitespace)),
+            P.optWhitespace,
+            P.string(")"),
+            (_, _1, exprs, _2, _3) => {
+                return { type: "function", exprs };
+            }
+        ),
+
+    // The precedence hierarchy of operators - multiply/divide, add/subtract, compare, and then boolean operations.
+    binaryMulDiv: (q) => createBinaryParser(q.index, PRIMITIVES.binaryMulDiv, Expressions.binaryOp),
+    binaryPlusMinus: (q) => createBinaryParser(q.binaryMulDiv, PRIMITIVES.binaryPlusMinus, Expressions.binaryOp),
+    binaryCompare: (q) => createBinaryParser(q.binaryPlusMinus, PRIMITIVES.binaryCompareOp, Expressions.binaryOp),
+    binaryBoolean: (q) =>
+        createBinaryParser(q.binaryCompare, PRIMITIVES.binaryAndOp.or(PRIMITIVES.binaryOrOp), Expressions.binaryOp),
+    binaryOp: (q) => q.binaryBoolean,
+
+    expression: (q) => q.binaryOp,
+});
+
 ////////////////////
 // Query Language //
 ////////////////////
@@ -352,8 +556,13 @@ export const QUERY = P.createLanguage<QueryLanguage>({
             direction:
                 func.toLowerCase() == "linksto" ? "incoming" : func.toLowerCase() == "linkedfrom" ? "outgoing" : "both",
         })),
-    queryExists: (q) =>
-        createFunction(P.regexp(/exists/i).desc("exists"), q.q)
+    queryExists: (_) =>
+        createFunction(P.regexp(/exists/i).desc("exists"), PRIMITIVES.identifier.or(PRIMITIVES.string)).map(
+            ([_func, ident]) => ({
+                type: "field",
+                value: ident,
+            })
+        ),
 
     queryParens: (q) => q.query.trim(P.optWhitespace).wrap(P.string("("), P.string(")")),
     queryNegate: (q) =>
@@ -372,6 +581,7 @@ export const QUERY = P.createLanguage<QueryLanguage>({
             q.queryTag,
             q.queryType,
             q.queryId,
+            q.queryExists,
             q.queryChildOf,
             q.queryParentOf,
             q.queryLinked,
