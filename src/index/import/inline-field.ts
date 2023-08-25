@@ -1,6 +1,6 @@
 /** Parse inline fields and other embedded metadata in a line. */
 
-import { PRIMITIVES } from "index/evaluation/parser";
+import { PRIMITIVES } from "expression/parser";
 import { Literal } from "expression/literal";
 import * as P from "parsimmon";
 import emojiRegex from "emoji-regex";

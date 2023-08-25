@@ -2,7 +2,7 @@ import { faClock, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, Button, Center, Divider, Group, MantineSize, Select, SelectItem, Stack, Textarea } from "@mantine/core";
 import { SearchResult } from "index/datastore";
-import { QUERY } from "index/evaluation/parser";
+import { QUERY } from "expression/parser";
 import { INDEX_NONE, IndexQuery } from "index/types/index-query";
 import { Indexable, LINKABLE_TYPE } from "index/types/indexable";
 import React, { CSSProperties, useContext, useMemo, useState } from "react";

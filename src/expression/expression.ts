@@ -4,8 +4,10 @@ import { Literal } from "expression/literal";
 export type CompareOp = ">" | ">=" | "<=" | "<" | "=" | "!=";
 /** Arithmetic operators which yield numbers and other values. */
 export type ArithmeticOp = "+" | "-" | "*" | "/" | "%" | "&" | "|";
+/** Index a value into another value. */
+export type LogicalOp = "index";
 /** All valid binary operators. */
-export type BinaryOp = CompareOp | ArithmeticOp;
+export type BinaryOp = CompareOp | ArithmeticOp | LogicalOp;
 
 export type Expression =
     | LiteralExpression
@@ -15,7 +17,6 @@ export type Expression =
     | BinaryOpExpression
     | FunctionExpression
     | LambdaExpression
-    | IndexExpression
     | NegatedExpression;
 
 /** Literal representation of some field type. */
@@ -68,15 +69,6 @@ export interface LambdaExpression {
     value: Expression;
 }
 
-/** An expresion which indexes a variable into another variable. */
-export interface IndexExpression {
-    type: "index";
-    /** The object, array, or other object being indexed into. */
-    object: Expression;
-    /** The index to use to index into the object. */
-    index: Expression;
-}
-
 /** An expression which negates the value of the original field. */
 export interface NegatedExpression {
     type: "negated";
@@ -98,8 +90,8 @@ export namespace Expressions {
         return { type: "binaryop", left, op, right } as BinaryOpExpression;
     }
 
-    export function index(obj: Expression, index: Expression): IndexExpression {
-        return { type: "index", object: obj, index };
+    export function index(obj: Expression, index: Expression): Expression {
+        return { type: "binaryop", left: obj, right: index, op: "index" };
     }
 
     /** Converts a string in dot-notation-format into a variable which indexes. */

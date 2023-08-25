@@ -1,4 +1,4 @@
-import { PRIMITIVES } from "index/evaluation/parser";
+import { PRIMITIVES } from "expression/parser";
 import { Link } from "expression/link";
 import { extractInlineFields, setEmojiShorthandCompletionField, setInlineField } from "index/import/inline-field";
 

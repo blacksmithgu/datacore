@@ -1,5 +1,5 @@
-import { BinaryOpExpression, Expressions, LiteralExpression } from "index/evaluation/expression";
-import { EXPRESSION, PRIMITIVES } from "index/evaluation/parser";
+import { BinaryOpExpression, Expressions, LiteralExpression } from "expression/expression";
+import { EXPRESSION, PRIMITIVES } from "expression/parser";
 import { DateTime, Duration } from "luxon";
 import { Success } from "parsimmon";
 import { Literals, Link } from "expression/literal";

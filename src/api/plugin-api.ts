@@ -1,7 +1,7 @@
 import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
-import { QUERY } from "index/evaluation/parser";
+import { QUERY } from "expression/parser";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownFile } from "index/types/markdown";
