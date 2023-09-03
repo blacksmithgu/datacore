@@ -3,10 +3,10 @@
 import { DateTime } from "luxon";
 import { LiteralType, Link, Literal, Literals } from "expression/literal";
 import { currentLocale } from "util/normalize";
-import { LiteralReprAll, LiteralTypeOrAll, stringSettings } from "./binaryop";
-import { Evaluator } from "./context";
+import { LiteralReprAll, LiteralTypeOrAll, stringSettings } from "expression/binaryop";
+import { Evaluator } from "expression/evaluator";
 import { Expressions } from "expression/expression";
-import { EXPRESSION, PRIMITIVES } from "expression/parser";
+import { PRIMITIVES } from "expression/parser";
 import { escapeRegex } from "util/normalize";
 
 /**
@@ -251,12 +251,12 @@ export namespace DefaultFunctions {
         .add1("link", (link, c) => {
             // Try to parse from the display...
             if (link.display) {
-                let parsedDate = EXPRESSION.date.parse(link.display);
+                let parsedDate = PRIMITIVES.date.parse(link.display);
                 if (parsedDate.status) return parsedDate.value;
             }
 
             // Then try to parse from the path...
-            let parsedDate = EXPRESSION.date.parse(link.path);
+            let parsedDate = PRIMITIVES.date.parse(link.path);
             if (parsedDate.status) return parsedDate.value;
 
             // Then pull it from the file.
@@ -289,7 +289,7 @@ export namespace DefaultFunctions {
     /** Duration constructor function. */
     export const dur = new FunctionBuilder("dur")
         .add1("string", (str) => {
-            let parsedDur = EXPRESSION.duration.parse(str.trim());
+            let parsedDur = PRIMITIVES.duration.parse(str.trim());
             if (parsedDur.status) return parsedDur.value;
             else return null;
         })

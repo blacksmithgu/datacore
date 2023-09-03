@@ -3,7 +3,7 @@ import { LiteralRepr, LiteralType, Literal, Literals, Link } from "expression/li
 import { normalizeDuration } from "util/normalize";
 import { Result } from "api/result";
 import { BinaryOp, Expressions } from "expression/expression";
-import type { Evaluator } from "expression/context";
+import type { Evaluator } from "expression/evaluator";
 import { DateTime, Duration } from "luxon";
 import { Settings } from "settings";
 
