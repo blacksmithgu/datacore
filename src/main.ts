@@ -85,10 +85,10 @@ class GeneralSettingsTab extends PluginSettingTab {
         new Setting(this.containerEl)
             .setName("Pagination")
             .setDesc(
-                "If enabled, splits up views into pages of results which can be traversed" +
-                    " via buttons at the top and bottom of the view. This substantially improves" +
-                    " the performance of large views, and can help with visual clutter. Note that" +
-                    " this setting can also be set on a per-view basis."
+                "If enabled, splits up views into pages of results which can be traversed " +
+                "via buttons at the top and bottom of the view. This substantially improves " +
+                "the performance of large views, and can help with visual clutter. Note that " +
+                "this setting can also be set on a per-view basis."
             )
             .addToggle((toggle) => {
                 toggle.setValue(this.plugin.settings.defaultPagingEnabled).onChange(async (value) => {
@@ -99,7 +99,7 @@ class GeneralSettingsTab extends PluginSettingTab {
         new Setting(this.containerEl)
             .setName("Default Page Size")
             .setDesc(
-                "The number of entries to show per page, by default. This can be overriden on" + " a per-view basis."
+                "The number of entries to show per page, by default. This can be overriden on a per-view basis."
             )
             .addDropdown((dropdown) => {
                 const OPTIONS: Record<string, string> = {
