@@ -4,7 +4,6 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SearchResult } from "index/datastore";
-import SparkMD5 from "spark-md5";
 import { Literals } from "expression/literal";
 
 /** Hook that updates the view whenever the revision updates, returning the newest revision. */
@@ -43,13 +42,6 @@ export interface UseQuerySettings {
     debounce?: number;
 }
 
-/**
- * A search result which includes a hash of all of the IDs; this is used to cache
- * search results that produced exactly the same result, avoiding an unnecessary React
- * re-render.
- */
-type HashedSearchResult<O> = SearchResult<O> & { hash?: string };
-
 /** Perform a live query which updates its results whenever the backing query would change. */
 export function useFullQuery(
     datacore: Datacore,
@@ -65,11 +57,11 @@ export function useFullQuery(
         (a, b) => Literals.compare(a as Record<string, any>, b as Record<string, any>) == 0
     );
     // Intern the output as well so react diffing "just works" with the result of useQuery.
-    const internedResult = useRef<HashedSearchResult<Indexable> | undefined>(undefined);
+    const internedResult = useRef<SearchResult<Indexable> | undefined>(undefined);
 
     // On every index revision update, re-run the query and check if it produced meaningfully new values.
     return useMemo(() => {
-        const newResult = datacore.datastore.search(query) as HashedSearchResult<Indexable>;
+        const newResult = datacore.datastore.search(query);
         if (internedResult.current === undefined) {
             internedResult.current = newResult;
             return newResult;
@@ -82,17 +74,13 @@ export function useFullQuery(
             return newResult;
         }
 
-        // Revisions are the same, so we have to hash.
-        // TODO: Running the query may be faster than hash comparisons, but we'll try it out!
-        if (!oldResult.hash) oldResult.hash = hashIds(oldResult.results);
-        if (!newResult.hash) newResult.hash = hashIds(newResult.results);
-
-        if (oldResult.hash != newResult.hash) {
+        // Revisions are the same, so we have to compare the object sets.
+        if (!sameObjects(oldResult.results, newResult.results)) {
             internedResult.current = newResult;
             return newResult;
         }
 
-        // Same revision and same hash, this is the same query result, so return the old object.
+        // Same revision and same objects, this is the same query result, so return the old object.
         return internedResult.current;
     }, [internedQuery, indexRevision]);
 }
@@ -102,14 +90,22 @@ export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQu
     return useFullQuery(datacore, query, settings).results;
 }
 
-/** Hash all IDs to produce a single hash. */
-function hashIds(input: Iterable<Indexable>): string {
-    const hasher = new SparkMD5();
-    for (const element of input) {
-        hasher.append(element.$id);
+/** Determines if the two sets of objects are the same. */
+function sameObjects(old: Indexable[], incoming: Indexable[]) {
+    if (old.length != incoming.length) return false;
+
+    const olds: Record<string, number> = {};
+    for (const indexable of old) {
+        olds[indexable.$id] = indexable.$revision!;
     }
 
-    return hasher.end();
+    for (const indexable of incoming) {
+        const value = olds[indexable.$id];
+        if (value == undefined) return false;
+        if (value != indexable.$revision) return false;
+    }
+
+    return true;
 }
 
 /**

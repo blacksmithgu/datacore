@@ -1,4 +1,4 @@
-import { normalizeHeaderForLink } from "util/normalize";
+import { extractSubtags, normalizeHeaderForLink } from "util/normalize";
 
 describe("Header Normalization", () => {
     test("Link", () => expect(normalizeHeaderForLink("Header  [[Outer Wilds]]  ")).toEqual("Header Outer Wilds"));
@@ -9,4 +9,13 @@ describe("Header Normalization", () => {
     test("Markup", () => expect(normalizeHeaderForLink("**Header** *Value")).toEqual("Header Value"));
     test("Emoji", () =>
         expect(normalizeHeaderForLink("Header   📷 [[Outer Wilds]]  ")).toEqual("Header 📷 Outer Wilds"));
+});
+
+describe("Extract Subtags", () => {
+    test("Empty", () => expect(extractSubtags([])).toEqual([]));
+    test("Solo", () => expect(extractSubtags("#a")).toEqual(["#a"]));
+    test("Single List", () => expect(extractSubtags(["#a"])).toEqual(["#a"]));
+    test("Double List", () => expect(extractSubtags(["#a", "#b"])).toEqual(["#a", "#b"]));
+
+    test("Subtag", () => expect(extractSubtags("#a/b/c")).toEqual(["#a/b/c", "#a/b", "#a"]));
 });

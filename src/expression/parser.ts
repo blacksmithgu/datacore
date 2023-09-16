@@ -639,6 +639,7 @@ export function createFunction<T>(func: string | P.Parser<string>, args: P.Parse
     );
 }
 
+/** Chains a list of parsers; the first one must succeed, but following ones may fail without failing the overall parse. */
 export function chainOpt<T>(base: P.Parser<T>, ...funcs: ((r: T) => P.Parser<T>)[]): P.Parser<T> {
     return P.custom((_success, _failure) => {
         return (input, i) => {
