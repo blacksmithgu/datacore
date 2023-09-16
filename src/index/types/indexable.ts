@@ -10,10 +10,9 @@ export interface Indexable {
     /** The unique index ID for this object. */
     $id: string;
     /**
-     * The unique index ID for the parent of this object. If present, when the parent is removed, the child will also
-     * be removed.
+     * The indexable object that is the parent of this object. Only set after the object is actually indexed.
      */
-    $parent?: string;
+    $parent?: Indexable;
     /** If present, the revision in the index of this object. */
     $revision?: number;
     /** The file that this indexable was derived from, if file-backed. */

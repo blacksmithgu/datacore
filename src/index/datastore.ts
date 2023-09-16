@@ -6,7 +6,7 @@ import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
 import { MarkdownFile } from "./types/markdown";
-import { canonicalizeVarName, extractSubtags, normalizeHeaderForLink } from "util/normalize";
+import { extractSubtags, normalizeHeaderForLink } from "util/normalize";
 import FlatQueue from "flatqueue";
 import { FieldIndex } from "./storage/fields";
 import { FIELDBEARING_TYPE, Field, Fieldbearing } from "./types/field";
@@ -88,7 +88,7 @@ export class Datastore {
         object: T | T[],
         revision: number,
         substorer?: Substorer<T>,
-        parent?: string
+        parent?: Indexable
     ) {
         // Handle array inputs.
         if (Literals.isArray(object)) {
@@ -113,14 +113,14 @@ export class Datastore {
 
         // Add the object to the parent children map.
         if (parent) {
-            if (!this.children.has(parent)) this.children.set(parent, new Set());
-            this.children.get(parent)!.add(object.$id);
+            if (!this.children.has(parent.$id)) this.children.set(parent.$id, new Set());
+            this.children.get(parent.$id)!.add(object.$id);
         }
 
         this._index(object);
 
         // Index any subordinate objects in this object.
-        substorer?.(object, (incoming, subindex) => this._recursiveStore(incoming, revision, subindex, object.$id));
+        substorer?.(object, (incoming, subindex) => this._recursiveStore(incoming, revision, subindex, object));
     }
 
     /** Delete an object by ID from the index, recursively deleting any child objects as well. */
@@ -183,7 +183,7 @@ export class Datastore {
                 // Skip any index fields.
                 if (field.key.startsWith("$")) continue;
 
-                const norm = canonicalizeVarName(field.key);
+                const norm = field.key.toLowerCase();
                 if (!this.fields.has(norm)) this.fields.set(norm, new FieldIndex(false));
 
                 this.fields.get(norm)!.add(object.$id, field.value);
@@ -216,7 +216,7 @@ export class Datastore {
                 // Skip any index fields.
                 if (field.key.startsWith("$")) continue;
 
-                const norm = canonicalizeVarName(field.key);
+                const norm = field.key.toLowerCase();
                 if (!this.fields.has(norm)) continue;
 
                 this.fields.get(norm)!.delete(object.$id, field.value);
@@ -537,7 +537,7 @@ export class Datastore {
 
                 return Filters.atom(result);
             case "field":
-                const normkey = canonicalizeVarName(query.value);
+                const normkey = query.value.toLowerCase();
                 const fieldIndex = this.fields.get(normkey);
                 if (fieldIndex == null) return Filters.NOTHING;
 
@@ -586,7 +586,7 @@ export class Datastore {
         fast: (index: FieldIndex) => Set<string> | undefined,
         slow: (field: Field) => boolean
     ) {
-        const normkey = canonicalizeVarName(key);
+        const normkey = key.toLowerCase();
         const index = this.fields.get(normkey);
         if (index == null) return Filters.NOTHING;
 
@@ -670,8 +670,8 @@ export class Datastore {
     private *_iterateParents(child: string): Generator<string> {
         let object = this.objects.get(child);
         while (object && object?.$parent) {
-            yield object.$parent;
-            object = this.objects.get(object.$parent);
+            yield object.$parent.$id;
+            object = object.$parent;
         }
     }
 

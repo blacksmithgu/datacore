@@ -12,7 +12,7 @@ import {
     Taggable,
 } from "index/types/indexable";
 import { DateTime } from "luxon";
-import { Extractors, FIELDBEARING_TYPE, FieldExtractor, Fieldbearing } from "./field";
+import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing } from "./field";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
 export type LinkNormalizer = (link: Link) => Link;
@@ -94,12 +94,16 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
     }
 
     /** All of the indexed fields in this object. */
-    get fields() {
+    get fields(): Field[] {
         return MarkdownFile.FIELD_DEF(this);
     }
 
-    public field(key: string) {
+    public field(key: string): Field | undefined {
         return MarkdownFile.FIELD_DEF(this, key)?.[0];
+    }
+
+    public value(key: string): Literal | undefined {
+        return this.field(key)?.value;
     }
 
     private static FIELD_DEF: FieldExtractor<MarkdownFile> = Extractors.merge(
@@ -171,13 +175,17 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     }
 
     /** All of the indexed fields in this object. */
-    get fields() {
+    get fields(): Field[] {
         return MarkdownSection.FIELD_DEF(this);
     }
 
     /** Fetch a specific field by key. */
-    public field(key: string) {
+    public field(key: string): Field {
         return MarkdownSection.FIELD_DEF(this, key)?.[0];
+    }
+
+    public value(key: string): Literal | undefined {
+        return this.field(key)?.value;
     }
 
     private static FIELD_DEF: FieldExtractor<MarkdownSection> = Extractors.intrinsics();
@@ -248,6 +256,10 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
     /** Fetch a specific field by key. */
     public field(key: string) {
         return MarkdownBlock.FIELD_DEF(this, key)?.[0];
+    }
+
+    public value(key: string): Literal | undefined {
+        return this.field(key)?.value;
     }
 
     private static FIELD_DEF: FieldExtractor<MarkdownBlock> = Extractors.intrinsics();
@@ -351,6 +363,10 @@ export class MarkdownListItem implements Linkbearing, Taggable {
     /** Fetch a specific field by key. */
     public field(key: string) {
         return MarkdownListItem.FIELD_DEF(this, key)?.[0];
+    }
+
+    public value(key: string): Literal | undefined {
+        return this.field(key)?.value;
     }
 
     private static FIELD_DEF: FieldExtractor<MarkdownListItem> = Extractors.intrinsics();

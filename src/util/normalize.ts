@@ -138,21 +138,6 @@ export function escapeRegex(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** A parsimmon parser which canonicalizes variable names while properly respecting emoji. */
-const VAR_NAME_CANONICALIZER: P.Parser<string> = P.alt(
-    P.regex(new RegExp(emojiRegex(), "")),
-    P.regex(/[0-9\p{Letter}_-]+/u).map((str) => str.toLocaleLowerCase()),
-    P.whitespace.map((_) => "-"),
-    P.any.map((_) => "")
-)
-    .many()
-    .map((result) => result.join(""));
-
-/** Convert an arbitrary variable name into something JS/query friendly. */
-export function canonicalizeVarName(name: string): string {
-    return VAR_NAME_CANONICALIZER.tryParse(name);
-}
-
 const HEADER_CANONICALIZER: P.Parser<string> = P.alt(
     P.regex(new RegExp(emojiRegex(), "")),
     P.regex(/[0-9\p{Letter}_-]+/u),
