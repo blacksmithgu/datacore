@@ -4,10 +4,10 @@ import { InlineField } from "index/import/inline-field";
 import { FrontmatterEntry } from "./markdown";
 
 /** The source of a field, used when determining what files to overwrite and how. */
-export type Provenance = 
+export type Provenance =
     | { type: "intrinsic" }
     | { type: "frontmatter"; file: string; key: string }
-    | { type: "inline-field"; file: string; line: number; key: string; }; // TODO: I think line is not strictly required for correctness.
+    | { type: "inline-field"; file: string; line: number; key: string }; // TODO: I think line is not strictly required for correctness.
 
 /** General definition for a field. Provides the field key, value, as well as information on it's source and how it can be edited. */
 export interface Field {
@@ -94,7 +94,7 @@ export namespace Extractors {
 
     /** Field extractor which extracts frontmatter fields. */
     export function frontmatter<T extends Indexable>(
-        front: (object: T) => Record<string, FrontmatterEntry> | undefined,
+        front: (object: T) => Record<string, FrontmatterEntry> | undefined
     ): FieldExtractor<T> {
         return (object: T, key?: string) => {
             const frontmatter = front(object);
@@ -134,7 +134,9 @@ export namespace Extractors {
     }
 
     /** Field extractor which shows all inline fields. */
-    export function inlineFields<T extends Indexable>(inlineMap: (object: T) => Record<string, InlineField> | undefined): FieldExtractor<T> {
+    export function inlineFields<T extends Indexable>(
+        inlineMap: (object: T) => Record<string, InlineField> | undefined
+    ): FieldExtractor<T> {
         return (object: T, key?: string) => {
             const map = inlineMap(object);
             if (!map) return [];
@@ -147,8 +149,13 @@ export namespace Extractors {
                         key: field.key,
                         value: field.value,
                         raw: field.raw,
-                        provenance: { type: "inline-field", file: object.$file!, line: field.position.line, key: field.key } as Provenance,
-                    })
+                        provenance: {
+                            type: "inline-field",
+                            file: object.$file!,
+                            line: field.position.line,
+                            key: field.key,
+                        } as Provenance,
+                    });
                 }
 
                 return fields;
@@ -162,8 +169,13 @@ export namespace Extractors {
                         key: field.key,
                         value: field.value,
                         raw: field.raw,
-                        provenance: { type: "inline-field", file: object.$file!, line: field.position.line, key } as Provenance,
-                    }
+                        provenance: {
+                            type: "inline-field",
+                            file: object.$file!,
+                            line: field.position.line,
+                            key,
+                        } as Provenance,
+                    },
                 ];
             }
         };

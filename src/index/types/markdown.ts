@@ -131,8 +131,8 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
 
     private static FIELD_DEF: FieldExtractor<MarkdownFile> = Extractors.merge(
         Extractors.intrinsics(),
-        Extractors.frontmatter(f => f.frontmatter),
-        Extractors.inlineFields(f => f.infields)
+        Extractors.frontmatter((f) => f.frontmatter),
+        Extractors.inlineFields((f) => f.infields)
     );
 }
 
@@ -219,8 +219,8 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
 
     private static FIELD_DEF: FieldExtractor<MarkdownSection> = Extractors.merge(
         Extractors.intrinsics(),
-        Extractors.inlineFields(f => f.infields)
-    )
+        Extractors.inlineFields((f) => f.infields)
+    );
 
     /** Generate a readable ID for this section using the first 8 characters of the string and the ordinal. */
     static readableId(file: string, title: string, ordinal: number): string {
@@ -304,7 +304,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
 
     private static FIELD_DEF: FieldExtractor<MarkdownBlock> = Extractors.merge(
         Extractors.intrinsics(),
-        Extractors.inlineFields(f => f.infields)
+        Extractors.inlineFields((f) => f.infields)
     );
 
     /** Generate a readable ID for this block using the ordinal of the block. */
@@ -422,7 +422,7 @@ export class MarkdownListItem implements Linkbearing, Taggable {
 
     private static FIELD_DEF: FieldExtractor<MarkdownListItem> = Extractors.merge(
         Extractors.intrinsics(),
-        Extractors.inlineFields(f => f.infields)
+        Extractors.inlineFields((f) => f.infields)
     );
 
     /** Generate a readable ID for this item using the line number. */

@@ -335,12 +335,12 @@ function* iterateInlineFields(content: string[]): Generator<InlineField> {
 /**
  * Mutably add the inline field to the list only if a field with the given name is not already present.
  * This is linear time, which hopefully will not be awful. We can complicate the storage container if it is.
- * 
+ *
  * TODO: As a simple optimization, make a builder which makes this O(1).
  */
 function addInlineField(target: Record<string, InlineField>, incoming: InlineField) {
     const lower = incoming.key.toLowerCase();
-    if (Object.keys(target).some(key => key.toLowerCase() == lower)) return;
+    if (Object.keys(target).some((key) => key.toLowerCase() == lower)) return;
 
     target[incoming.key] = incoming;
 }

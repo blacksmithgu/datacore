@@ -74,9 +74,9 @@ class GeneralSettingsTab extends PluginSettingTab {
             .setName("Pagination")
             .setDesc(
                 "If enabled, splits up views into pages of results which can be traversed " +
-                "via buttons at the top and bottom of the view. This substantially improves " +
-                "the performance of large views, and can help with visual clutter. Note that " +
-                "this setting can also be set on a per-view basis."
+                    "via buttons at the top and bottom of the view. This substantially improves " +
+                    "the performance of large views, and can help with visual clutter. Note that " +
+                    "this setting can also be set on a per-view basis."
             )
             .addToggle((toggle) => {
                 toggle.setValue(this.plugin.settings.defaultPagingEnabled).onChange(async (value) => {
@@ -86,9 +86,7 @@ class GeneralSettingsTab extends PluginSettingTab {
 
         new Setting(this.containerEl)
             .setName("Default Page Size")
-            .setDesc(
-                "The number of entries to show per page, by default. This can be overriden on a per-view basis."
-            )
+            .setDesc("The number of entries to show per page, by default. This can be overriden on a per-view basis.")
             .addDropdown((dropdown) => {
                 const OPTIONS: Record<string, string> = {
                     "25": "25",
@@ -115,16 +113,18 @@ class GeneralSettingsTab extends PluginSettingTab {
 
         new Setting(this.containerEl)
             .setName("Inline Fields")
-            .setDesc("If enabled, inline fields will be parsed in all documents. Finding inline fields requires a full text scan through each document, "
-                + "which noticably slows down indexing for large vaults. Disabling this functionality will mean metadata will only come from tags, links, and "
-                + "Properties / frontmatter")
+            .setDesc(
+                "If enabled, inline fields will be parsed in all documents. Finding inline fields requires a full text scan through each document, " +
+                    "which noticably slows down indexing for large vaults. Disabling this functionality will mean metadata will only come from tags, links, and " +
+                    "Properties / frontmatter"
+            )
             .addToggle((toggle) => {
                 toggle.setValue(this.plugin.settings.indexInlineFields).onChange(async (value) => {
                     await this.plugin.updateSettings({ indexInlineFields: value });
 
                     // TODO: Request a full index drop + reindex for correctness.
-                })
-            })
+                });
+            });
 
         new Setting(this.containerEl)
             .setName("Importer Threads")

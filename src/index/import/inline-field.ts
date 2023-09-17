@@ -39,7 +39,7 @@ export interface InlineField {
         startValue: number;
         /** The end column of the field. */
         end: number;
-    }
+    };
     /** If this inline field was defined via a wrapping ('[' or '(' or 'link'), then the wrapping that was used. */
     wrapping?: string;
 }
@@ -47,9 +47,12 @@ export interface InlineField {
 export function asInlineField(local: LocalInlineField, lineno: number): InlineField;
 export function asInlineField(local: LocalInlineField[], lineno: number): InlineField[];
 /** Convert a local inline field into a full inline field by performing parsing and adding the correct line number. */
-export function asInlineField(local: LocalInlineField | LocalInlineField[], lineno: number): InlineField | InlineField[] {
+export function asInlineField(
+    local: LocalInlineField | LocalInlineField[],
+    lineno: number
+): InlineField | InlineField[] {
     if (Array.isArray(local)) {
-        return local.map(f => asInlineField(f, lineno));
+        return local.map((f) => asInlineField(f, lineno));
     }
 
     return {
@@ -63,7 +66,7 @@ export function asInlineField(local: LocalInlineField | LocalInlineField[], line
             end: local.end,
         },
         wrapping: local.wrapping,
-    }
+    };
 }
 
 /** The wrapper characters that can be used to define an inline field. */
