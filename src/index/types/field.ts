@@ -1,8 +1,13 @@
 import { Literal, Literals } from "expression/literal";
 import { Indexable } from "./indexable";
+import { InlineField } from "index/import/inline-field";
+import { FrontmatterEntry } from "./markdown";
 
 /** The source of a field, used when determining what files to overwrite and how. */
-export type Provenance = { type: "frontmatter"; file: string; key: string } | { type: "intrinsic" };
+export type Provenance = 
+    | { type: "intrinsic" }
+    | { type: "frontmatter"; file: string; key: string }
+    | { type: "inline-field"; file: string; line: number; key: string; }; // TODO: I think line is not strictly required for correctness.
 
 /** General definition for a field. Provides the field key, value, as well as information on it's source and how it can be edited. */
 export interface Field {
@@ -53,16 +58,6 @@ export namespace Extractors {
         return true;
     }
 
-    /** Find the value in options that equals the key (case-insensitive), if present. */
-    function findCaseInsensitive(key: string, options: string[]): string | undefined {
-        const lower = key.toLowerCase();
-        for (const option of options) {
-            if (option.toLowerCase() == lower) return option;
-        }
-
-        return undefined;
-    }
-
     /** Generate a list of fields for the given object, returning them as a list. */
     export function intrinsics<T extends Record<string, any>>(except?: Set<string>): FieldExtractor<T> {
         return (object: T, key?: string) => {
@@ -99,48 +94,76 @@ export namespace Extractors {
 
     /** Field extractor which extracts frontmatter fields. */
     export function frontmatter<T extends Indexable>(
-        front: (object: T) => Record<string, Literal> | undefined,
-        raw: (object: T) => Record<string, any> | undefined
+        front: (object: T) => Record<string, FrontmatterEntry> | undefined,
     ): FieldExtractor<T> {
         return (object: T, key?: string) => {
             const frontmatter = front(object);
-            const raws = raw?.(object) ?? {};
-
             if (!frontmatter) return [];
 
             if (key == null) {
                 const fields: Field[] = [];
 
                 for (const key of Object.keys(frontmatter)) {
-                    const value = frontmatter[key];
-                    const raw = raws[key];
+                    const entry = frontmatter[key];
 
                     fields.push({
-                        key,
-                        value,
-                        raw,
-                        provenance: { type: "frontmatter", file: object.$file!, key },
+                        key: entry.key,
+                        value: entry.value,
+                        raw: entry.raw,
+                        provenance: { type: "frontmatter", file: object.$file!, key: entry.key },
                     });
                 }
 
                 return fields;
             } else {
-                // If the key is not in the frontmatter, try finding it via a case-insensitive search.
-                if (!(key in frontmatter)) {
-                    key = findCaseInsensitive(key, Object.keys(frontmatter));
-                    if (key == undefined || !(key in frontmatter)) return [];
-                }
+                key = key.toLowerCase();
+                if (!(key in frontmatter)) return [];
 
-                const value = frontmatter[key];
-                const raw = raws[key];
+                const entry = frontmatter[key];
 
                 return [
                     {
-                        key,
-                        value,
-                        raw,
+                        key: entry.key,
+                        value: entry.value,
+                        raw: entry.raw,
                         provenance: { type: "frontmatter", file: object.$file!, key },
                     },
+                ];
+            }
+        };
+    }
+
+    /** Field extractor which shows all inline fields. */
+    export function inlineFields<T extends Indexable>(inlineMap: (object: T) => Record<string, InlineField> | undefined): FieldExtractor<T> {
+        return (object: T, key?: string) => {
+            const map = inlineMap(object);
+            if (!map) return [];
+
+            if (key == null) {
+                const fields = [];
+
+                for (const field of Object.values(map)) {
+                    fields.push({
+                        key: field.key,
+                        value: field.value,
+                        raw: field.raw,
+                        provenance: { type: "inline-field", file: object.$file!, line: field.position.line, key: field.key } as Provenance,
+                    })
+                }
+
+                return fields;
+            } else {
+                key = key.toLowerCase();
+                if (!(key in map)) return [];
+
+                const field = map[key];
+                return [
+                    {
+                        key: field.key,
+                        value: field.value,
+                        raw: field.raw,
+                        provenance: { type: "inline-field", file: object.$file!, line: field.position.line, key } as Provenance,
+                    }
                 ];
             }
         };

@@ -18,6 +18,7 @@
   "keywords": [
     "obsidian",
     "datacore",
+    "dataview",
     "pkm"
   ],
   "author": "Michael Brenan",
@@ -36,7 +37,6 @@
     "esbuild": "^0.16.11",
     "esbuild-plugin-inline-worker": "https://github.com/mitschabaude/esbuild-plugin-inline-worker",
     "jest": "^27.1.0",
-    "localforage": "1.10.0",
     "obsidian": "^1.1.0",
     "prettier": "2.3.2",
     "ts-jest": "^27.0.5",
@@ -44,16 +44,12 @@
     "typescript": "^4.4.2"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.1",
-    "@emotion/serialize": "^1.1.2",
-    "@emotion/utils": "^1.2.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@mantine/core": "^6.0.17",
-    "@mantine/hooks": "^6.0.17",
     "emoji-regex": "^10.2.1",
     "flatqueue": "^2.0.3",
+    "localforage": "1.10.0",
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
     "react": "^18.2.0",

@@ -1,6 +1,7 @@
 import { Link } from "expression/link";
 import { getFileTitle } from "util/normalize";
 import {
+    FrontmatterEntry,
     MarkdownBlock,
     MarkdownFile,
     MarkdownListBlock,
@@ -11,6 +12,9 @@ import {
 import { DateTime } from "luxon";
 import { CachedMetadata, FileStats, ListItemCache } from "obsidian";
 import BTree from "sorted-btree";
+import { InlineField, asInlineField, extractFullLineField, extractInlineFields } from "./inline-field";
+import { EXPRESSION } from "expression/parser";
+import { Literal } from "expression/literal";
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -67,6 +71,7 @@ export function markdownImport(
                 level: 1,
                 position: { start: 0, end },
                 blocks: [],
+                infields: {},
                 tags: new Set(),
                 links: [],
             })
@@ -96,6 +101,7 @@ export function markdownImport(
                     position: { start, end },
                     tags: new Set(),
                     links: [],
+                    infields: {},
                     blockId: block.id,
                     elements: [],
                 })
@@ -108,6 +114,7 @@ export function markdownImport(
                     position: { start, end },
                     tags: new Set(),
                     links: [],
+                    infields: {},
                     blockId: block.id,
                     type: block.type,
                 })
@@ -203,6 +210,48 @@ export function markdownImport(
         }
     }
 
+    ///////////////////
+    // Inline Fields //
+    ///////////////////
+
+    const inlineFields: Record<string, InlineField> = {};
+    for (const field of iterateInlineFields(lines)) {
+        const line = field.position.line;
+        addInlineField(inlineFields, field);
+
+        const section = sections.getPairOrNextLower(line);
+        if (section && section[1].position.end >= line) {
+            addInlineField(section[1].infields, field);
+        }
+
+        const block = blocks.getPairOrNextLower(line);
+        if (block && block[1].position.end >= line) {
+            addInlineField(block[1].infields, field);
+        }
+
+        const listItem = blocks.getPairOrNextHigher(line);
+        if (listItem && listItem[1].position.end >= line) {
+            addInlineField(listItem[1].infields, field);
+        }
+    }
+
+    /////////////////////////
+    // Frontmatter Parsing //
+    /////////////////////////
+    const frontmatter: Record<string, FrontmatterEntry> = {};
+    for (const key of Object.keys(metadata.frontmatter ?? {})) {
+        const entry = metadata.frontmatter![key];
+
+        // Lower-case the keys; this does mean we may miss some frontmatter entries but I hope not too many people
+        // have identically cased frontmatter keys...
+        // If you do, I'm very sorry to hear that. I may add the raw frontmatter somewhere for your explicit use case.
+        frontmatter[key.toLowerCase()] = {
+            key,
+            value: parseFrontmatter(entry.value),
+            raw: entry.value,
+        };
+    }
+
     return new MarkdownFile({
         path,
         tags,
@@ -210,7 +259,8 @@ export function markdownImport(
         sections: sections.valuesArray(),
         ctime: DateTime.fromMillis(stats.ctime),
         mtime: DateTime.fromMillis(stats.mtime),
-        frontmatter: metadata.frontmatter,
+        frontmatter: frontmatter,
+        infields: inlineFields,
         extension: "md",
         size: stats.size,
         position: { start: 0, end: lines.length },
@@ -224,6 +274,7 @@ function convertListItem(path: string, raw: ListItemCache): MarkdownListItem {
         links: [],
         position: { start: raw.position.start.line, end: raw.position.end.line },
         elements: [],
+        infields: {},
         parentLine: raw.parent,
         blockId: raw.id,
     };
@@ -257,4 +308,84 @@ function emptylines(lines: string[], start: number, end: number): boolean {
 function addLink(target: Link[], incoming: Link) {
     if (target.find((v) => v.equals(incoming))) return;
     target.push(incoming);
+}
+
+/**
+ * Yields all inline fields found in the document by traversing line by line through the document. Performs some optimizations
+ * to skip extra-large lines, and can be disabled.
+ */
+function* iterateInlineFields(content: string[]): Generator<InlineField> {
+    for (let lineno = 0; lineno < content.length; lineno++) {
+        const line = content[lineno];
+
+        // Fast-bailout for lines that are too long or do not contain '::'.
+        if (line.length > 32768 || !line.includes("::")) continue;
+
+        // TODO: Re-add support for those custom emoji fields on tasks and similar.
+        let inlineFields = extractInlineFields(line);
+        if (inlineFields.length > 0) {
+            for (let ifield of inlineFields) yield asInlineField(ifield, lineno);
+        } else {
+            let fullLine = extractFullLineField(line);
+            if (fullLine) yield asInlineField(fullLine, lineno);
+        }
+    }
+}
+
+/**
+ * Mutably add the inline field to the list only if a field with the given name is not already present.
+ * This is linear time, which hopefully will not be awful. We can complicate the storage container if it is.
+ * 
+ * TODO: As a simple optimization, make a builder which makes this O(1).
+ */
+function addInlineField(target: Record<string, InlineField>, incoming: InlineField) {
+    const lower = incoming.key.toLowerCase();
+    if (Object.keys(target).some(key => key.toLowerCase() == lower)) return;
+
+    target[incoming.key] = incoming;
+}
+
+/** Recursively convert frontmatter into fields. We have to dance around YAML structure. */
+export function parseFrontmatter(value: any): Literal {
+    if (value == null) {
+        return null;
+    } else if (typeof value === "object") {
+        if (Array.isArray(value)) {
+            let result = [];
+            for (let child of value as Array<any>) {
+                result.push(parseFrontmatter(child));
+            }
+
+            return result;
+        } else if (value instanceof Date) {
+            let dateParse = DateTime.fromJSDate(value);
+            return dateParse;
+        } else {
+            let object = value as Record<string, any>;
+            let result: Record<string, Literal> = {};
+            for (let key in object) {
+                result[key] = parseFrontmatter(object[key]);
+            }
+
+            return result;
+        }
+    } else if (typeof value === "number") {
+        return value;
+    } else if (typeof value === "boolean") {
+        return value;
+    } else if (typeof value === "string") {
+        let dateParse = EXPRESSION.date.parse(value);
+        if (dateParse.status) return dateParse.value;
+
+        let durationParse = EXPRESSION.duration.parse(value);
+        if (durationParse.status) return durationParse.value;
+
+        let linkParse = EXPRESSION.link.parse(value);
+        if (linkParse.status) return linkParse.value;
+
+        return value;
+    }
+
+    // Backup if we don't understand the type.
+    return null;
 }

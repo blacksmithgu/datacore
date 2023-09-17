@@ -1,4 +1,4 @@
-import { Link, Literal } from "expression/literal";
+import { Link, Literal, Literals } from "expression/literal";
 import { getFileTitle } from "util/normalize";
 import {
     FILE_TYPE,
@@ -13,9 +13,20 @@ import {
 } from "index/types/indexable";
 import { DateTime } from "luxon";
 import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing } from "./field";
+import { InlineField } from "index/import/inline-field";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
 export type LinkNormalizer = (link: Link) => Link;
+
+/** An entry in the frontmatter; includes the raw value, parsed value, and raw key (before lower-casing). */
+export interface FrontmatterEntry {
+    /** The actual string in frontmatter with exact casing. */
+    key: string;
+    /** The parsed value of the frontmatter entry (date, duration, etc.). */
+    value: Literal;
+    /** The raw value of the frontmatter entry before parsing; generally a string or number. */
+    raw: string;
+}
 
 /** A markdown file in the vault; the source of most metadata. */
 export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fieldbearing {
@@ -35,10 +46,10 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
         return this.path;
     }
 
-    /** Frontmatter values in the file, if present. */
-    frontmatter?: Record<string, Literal>;
-    /** Raw values in the front matter before any parsing. Restricted to numbers, strings, arrays, objects, and nulls. */
-    rawmatter?: Record<string, any>;
+    /** Frontmatter values in the file, if present. Maps lower case frontmatter key -> entry. */
+    frontmatter?: Record<string, FrontmatterEntry>;
+    /** Map of all distinct inline fields in the document. Maps lower case key name -> full metadata. */
+    infields: Record<string, InlineField>;
 
     /** The path this file exists at. */
     path: string;
@@ -69,6 +80,18 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
 
         if (normalizer) {
             file.links = file.links.map(normalizer);
+
+            // Normalize links in frontmatter.
+            file.frontmatter = Literals.mapLeaves(file.frontmatter || {}, (value) => {
+                if (Literals.isLink(value)) return normalizer(value);
+                else return value;
+            }) as Record<string, FrontmatterEntry>;
+
+            // Normalize links in inline fields.
+            file.infields = Literals.mapLeaves(file.infields || {}, (value) => {
+                if (Literals.isLink(value)) return normalizer(value);
+                else return value;
+            }) as Record<string, InlineField>;
         }
 
         return file;
@@ -108,10 +131,8 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
 
     private static FIELD_DEF: FieldExtractor<MarkdownFile> = Extractors.merge(
         Extractors.intrinsics(),
-        Extractors.frontmatter(
-            (f) => f.frontmatter,
-            (f) => f.rawmatter
-        )
+        Extractors.frontmatter(f => f.frontmatter),
+        Extractors.inlineFields(f => f.infields)
     );
 }
 
@@ -139,6 +160,8 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     links: Link[];
     /** All of the markdown blocks in this section. */
     blocks: MarkdownBlock[];
+    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    infields: Record<string, InlineField>;
 
     /** Convert raw markdown section data to the appropriate class. */
     static from(raw: Partial<MarkdownSection>, normalizer?: LinkNormalizer): MarkdownSection {
@@ -147,6 +170,12 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
 
         if (normalizer) {
             section.links = section.links.map(normalizer);
+
+            // Normalize links in inline fields.
+            section.infields = Literals.mapLeaves(section.infields || {}, (value) => {
+                if (Literals.isLink(value)) return normalizer(value);
+                else return value;
+            }) as Record<string, InlineField>;
         }
 
         return section;
@@ -188,7 +217,10 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
         return this.field(key)?.value;
     }
 
-    private static FIELD_DEF: FieldExtractor<MarkdownSection> = Extractors.intrinsics();
+    private static FIELD_DEF: FieldExtractor<MarkdownSection> = Extractors.merge(
+        Extractors.intrinsics(),
+        Extractors.inlineFields(f => f.infields)
+    )
 
     /** Generate a readable ID for this section using the first 8 characters of the string and the ordinal. */
     static readableId(file: string, title: string, ordinal: number): string {
@@ -215,6 +247,8 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
     tags: Set<string>;
     /** All links in the file. */
     links: Link[];
+    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    infields: Record<string, InlineField>;
     /** If present, the distinct block ID for this block. */
     blockId?: string;
     /** The type of block - paragraph, list, and so on. */
@@ -230,6 +264,12 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
 
         if (normalizer) {
             result.links = result.links.map(normalizer);
+
+            // Normalize links in inline fields.
+            result.infields = Literals.mapLeaves(result.infields || {}, (value) => {
+                if (Literals.isLink(value)) return normalizer(value);
+                else return value;
+            }) as Record<string, InlineField>;
         }
 
         return result;
@@ -262,7 +302,10 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
         return this.field(key)?.value;
     }
 
-    private static FIELD_DEF: FieldExtractor<MarkdownBlock> = Extractors.intrinsics();
+    private static FIELD_DEF: FieldExtractor<MarkdownBlock> = Extractors.merge(
+        Extractors.intrinsics(),
+        Extractors.inlineFields(f => f.infields)
+    );
 
     /** Generate a readable ID for this block using the ordinal of the block. */
     static readableId(file: string, ordinal: number): string {
@@ -313,6 +356,8 @@ export class MarkdownListItem implements Linkbearing, Taggable {
     type: string;
     /** Exact tags on this list item. */
     tags: Set<string>;
+    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    infields: Record<string, InlineField>;
     /** All links in the file. */
     links: Link[];
     /** The block ID of this list item if present. */
@@ -336,6 +381,12 @@ export class MarkdownListItem implements Linkbearing, Taggable {
 
         if (normalizer) {
             result.links = result.links.map(normalizer);
+
+            // Normalize links in inline fields.
+            result.infields = Literals.mapLeaves(result.infields || {}, (value) => {
+                if (Literals.isLink(value)) return normalizer(value);
+                else return value;
+            }) as Record<string, InlineField>;
         }
 
         result.elements = (result.elements || []).map((elem) => MarkdownListItem.from(elem, normalizer));
@@ -369,7 +420,10 @@ export class MarkdownListItem implements Linkbearing, Taggable {
         return this.field(key)?.value;
     }
 
-    private static FIELD_DEF: FieldExtractor<MarkdownListItem> = Extractors.intrinsics();
+    private static FIELD_DEF: FieldExtractor<MarkdownListItem> = Extractors.merge(
+        Extractors.intrinsics(),
+        Extractors.inlineFields(f => f.infields)
+    );
 
     /** Generate a readable ID for this item using the line number. */
     static readableId(file: string, line: number): string {

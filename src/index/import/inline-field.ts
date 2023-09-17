@@ -5,8 +5,8 @@ import { Literal } from "expression/literal";
 import * as P from "parsimmon";
 import emojiRegex from "emoji-regex";
 
-/** A parsed inline field. */
-export interface InlineField {
+/** A parsed inline field from a specific line. */
+export interface LocalInlineField {
     /** The raw parsed key. */
     key: string;
     /** The raw value of the field. */
@@ -17,8 +17,53 @@ export interface InlineField {
     startValue: number;
     /** The end column of the field. */
     end: number;
-    /** If this inline field was defined via a wrapping ('[' or '('), then the wrapping that was used. */
+    /** If this inline field was defined via a wrapping ('[' or '(' or 'link'), then the wrapping that was used. */
     wrapping?: string;
+}
+
+/** Full inline field metadata for an object. */
+export interface InlineField {
+    /** The actual key describing the inline field. */
+    key: string;
+    /** The raw value of the inline field. */
+    raw: string;
+    /** The parsed value. */
+    value: Literal;
+    /** Full position information for where the inline field is located in the document. */
+    position: {
+        /** The line number the inline field appears on. */
+        line: number;
+        /** The start column of the field. */
+        start: number;
+        /** The start column of the *value* for the field. Immediately after the '::'. */
+        startValue: number;
+        /** The end column of the field. */
+        end: number;
+    }
+    /** If this inline field was defined via a wrapping ('[' or '(' or 'link'), then the wrapping that was used. */
+    wrapping?: string;
+}
+
+export function asInlineField(local: LocalInlineField, lineno: number): InlineField;
+export function asInlineField(local: LocalInlineField[], lineno: number): InlineField[];
+/** Convert a local inline field into a full inline field by performing parsing and adding the correct line number. */
+export function asInlineField(local: LocalInlineField | LocalInlineField[], lineno: number): InlineField | InlineField[] {
+    if (Array.isArray(local)) {
+        return local.map(f => asInlineField(f, lineno));
+    }
+
+    return {
+        key: local.key,
+        raw: local.value,
+        value: parseInlineValue(local.value),
+        position: {
+            line: lineno,
+            start: local.start,
+            startValue: local.startValue,
+            end: local.end,
+        },
+        wrapping: local.wrapping,
+    }
 }
 
 /** The wrapper characters that can be used to define an inline field. */
@@ -74,8 +119,8 @@ function findSeparator(line: string, start: number): { key: string; valueIndex: 
     return { key: line.substring(start, sep).trim(), valueIndex: sep + 2 };
 }
 
-/** Try to completely parse an inline field starting at the given position. Assuems `start` is on a wrapping character. */
-function findSpecificInlineField(line: string, start: number): InlineField | undefined {
+/** Try to completely parse an inline field starting at the given position. Assumes `start` is on a wrapping character. */
+function findSpecificInlineField(line: string, start: number): LocalInlineField | undefined {
     let open = line.charAt(start);
 
     let key = findSeparator(line, start + 1);
@@ -119,8 +164,8 @@ export function parseInlineValue(value: string): Literal {
  * - Look for any wrappers ('[' and '(') in the line, trying to parse whatever comes after it as an inline key::.
  * - If successful, scan until you find a matching end bracket, and parse whatever remains as an inline value.
  */
-export function extractInlineFields(line: string, includeTaskFields: boolean = false): InlineField[] {
-    let fields: InlineField[] = [];
+export function extractInlineFields(line: string, includeTaskFields: boolean = false): LocalInlineField[] {
+    let fields: LocalInlineField[] = [];
     for (let wrapper of Object.keys(INLINE_FIELD_WRAPPERS)) {
         let foundIndex = line.indexOf(wrapper);
         while (foundIndex >= 0) {
@@ -139,7 +184,7 @@ export function extractInlineFields(line: string, includeTaskFields: boolean = f
 
     fields.sort((a, b) => a.start - b.start);
 
-    let filteredFields: InlineField[] = [];
+    let filteredFields: LocalInlineField[] = [];
     for (let i = 0; i < fields.length; i++) {
         if (i == 0 || filteredFields[filteredFields.length - 1].end < fields[i].start) {
             filteredFields.push(fields[i]);
@@ -161,7 +206,7 @@ const FULL_LINE_KEY_PARSER: P.Parser<string> = P.regexp(/[^0-9\w\p{Letter}]*/u)
     .skip(P.regexp(/[_\*~`]*/u));
 
 /** Attempt to extract a full-line field (Key:: Value consuming the entire content line). */
-export function extractFullLineField(text: string): InlineField | undefined {
+export function extractFullLineField(text: string): LocalInlineField | undefined {
     let sep = findSeparator(text, 0);
     if (!sep) return undefined;
 
@@ -194,8 +239,8 @@ export const EMOJI_REGEXES = [
 ];
 
 /** Parse special completed/due/done task fields which are marked via emoji. */
-function extractSpecialTaskFields(line: string): InlineField[] {
-    let results: InlineField[] = [];
+function extractSpecialTaskFields(line: string): LocalInlineField[] {
+    let results: LocalInlineField[] = [];
 
     for (let { regex, key } of EMOJI_REGEXES) {
         const match = regex.exec(line);

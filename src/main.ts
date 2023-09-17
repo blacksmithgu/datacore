@@ -4,7 +4,6 @@ import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { DEFAULT_SETTINGS, Settings } from "settings";
-import { QueryEditorView } from "ui/editors/query-editor-view";
 import { IndexStatusBar } from "ui/index-status";
 
 /** Reactive data engine for your Obsidian.md vault. */
@@ -27,17 +26,6 @@ export default class DatacorePlugin extends Plugin {
 
         // Add a visual aid for what datacore is currently doing.
         this.mountIndexState(this.addStatusBarItem(), this.core);
-
-        // Datacore query viewer / editor.
-        this.registerView(QueryEditorView.TYPE, (leaf) => new QueryEditorView(leaf, this.core, this.settings));
-        this.addCommand({
-            id: "open-query-editor",
-            name: "Open Query Editor",
-            callback: async () => {
-                const leaf = this.app.workspace.getLeaf();
-                await leaf.open(new QueryEditorView(leaf, this.core, this.settings));
-            },
-        });
 
         // Initialize as soon as the workspace is ready.
         if (!this.app.workspace.layoutReady) {
@@ -124,6 +112,19 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         this.containerEl.createEl("h2", { text: "Performance Tuning" });
+
+        new Setting(this.containerEl)
+            .setName("Inline Fields")
+            .setDesc("If enabled, inline fields will be parsed in all documents. Finding inline fields requires a full text scan through each document, "
+                + "which noticably slows down indexing for large vaults. Disabling this functionality will mean metadata will only come from tags, links, and "
+                + "Properties / frontmatter")
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.settings.indexInlineFields).onChange(async (value) => {
+                    await this.plugin.updateSettings({ indexInlineFields: value });
+
+                    // TODO: Request a full index drop + reindex for correctness.
+                })
+            })
 
         new Setting(this.containerEl)
             .setName("Importer Threads")
