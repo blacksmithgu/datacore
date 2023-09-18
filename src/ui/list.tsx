@@ -1,6 +1,8 @@
 import { Literal } from "expression/literal";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
-import React, { useContext, isValidElement, PropsWithChildren } from "react";
+
+import { VNode, h, isValidElement } from "preact";
+import { useContext } from "preact/hooks";
 
 export interface ListState<T> {
     /**
@@ -83,7 +85,7 @@ function identity<T>(element: T): T {
 }
 
 /** Ensures the given element is a renderable react node. */
-export function ensureElement<T>(element: T): React.ReactNode {
+export function ensureElement<T>(element: T): VNode {
     if (isValidElement(element)) {
         return element;
     } else {
@@ -92,7 +94,7 @@ export function ensureElement<T>(element: T): React.ReactNode {
 }
 
 /** Default list element which just tries to render the value as a literal. */
-export function DefaultListElement<T>({ element }: PropsWithChildren<{ element: T }>) {
+export function DefaultListElement<T>({ element }: { element: T }) {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
 
     return <Lit inline={true} value={element as Literal} sourcePath={sourcePath} />;

@@ -1,8 +1,7 @@
 import { DatacoreApi } from "api/plugin-api";
 import { Datacore } from "index/datacore";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
-import { createElement } from "react";
-import { createRoot } from "react-dom/client";
+import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { IndexStatusBar } from "ui/index-status";
 
@@ -52,10 +51,9 @@ export default class DatacorePlugin extends Plugin {
 
     /** Render datacore indexing status using the index. */
     mountIndexState(root: HTMLElement, core: Datacore): void {
-        const react = createRoot(root);
-        react.render(createElement(IndexStatusBar, { datacore: core }));
+        render(createElement(IndexStatusBar, { datacore: core }), root);
 
-        this.register(() => react.unmount());
+        this.register(() => render(null, root));
     }
 }
 

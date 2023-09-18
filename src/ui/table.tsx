@@ -1,18 +1,11 @@
 import { Literal, Literals } from "expression/literal";
-import React, {
-    isValidElement,
-    Dispatch,
-    useContext,
-    useMemo,
-    useReducer,
-    PropsWithChildren,
-    MouseEvent,
-    Reducer,
-} from "react";
 import { CURRENT_FILE_CONTEXT, Lit } from "./markdown";
 import { useInterning, useStableCallback } from "./hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
+
+import { VNode, h, isValidElement } from "preact";
+import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks";
 
 /** Handler for table state updates. If you do not want to handle the event and let the table handle it, just call `next`.  */
 export type TableActionHandler = (action: TableAction, next: Dispatch<TableAction>) => any;
@@ -80,13 +73,13 @@ export interface TableColumn<T, V = Literal> {
     id: string;
 
     /** The title which will display at the top of the column if present. */
-    title?: string | JSX.Element | (() => string | JSX.Element);
+    title?: string | VNode | (() => string | VNode);
 
     /** Value function which maps the row to the value being rendered. */
     value: (object: T) => V;
 
     /** Called to render the given column value. Can depend on both the specific value and the row object. */
-    render?: (value: V, object: T) => Literal | JSX.Element;
+    render?: (value: V, object: T) => Literal | VNode;
 
     /** Optional comparator function which will be used for sorting; if not present, the default value comparator will be used instead. */
     comparator?: (first: V, second: V, firstObject: T, secondObject: T) => number;
@@ -96,9 +89,7 @@ export interface TableColumn<T, V = Literal> {
 }
 
 /** Low level table view which handles state transitions via the given dispatcher. */
-export function ControlledTableView<T>(
-    props: PropsWithChildren<TableState<T> & { rows: T[]; dispatch: Dispatch<TableAction> }>
-) {
+export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispatch: Dispatch<TableAction> }) {
     // Cache columns by reference equality of the specific columns. Columns have various function references
     // inside them and so cannot be compared by value equality.
     const columns = useInterning(props.columns, (a, b) => {
@@ -169,7 +160,7 @@ export function TableHeaderCell<T>({
     sortable: boolean;
     dispatch: Dispatch<TableAction>;
 }) {
-    const header: string | JSX.Element = useMemo(() => {
+    const header: string | VNode = useMemo(() => {
         if (!column.title) {
             return column.id;
         } else if (typeof column.title === "function") {
@@ -248,12 +239,12 @@ export function SortButton({
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element. */
-function useAsElement(element: JSX.Element | Literal): JSX.Element {
+function useAsElement(element: VNode | Literal): VNode {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
 
     return useMemo(() => {
         if (isValidElement(element)) {
-            return element;
+            return element as VNode;
         } else {
             return <Lit sourcePath={sourcePath} inline={false} value={element as any} />;
         }
@@ -318,7 +309,7 @@ export function useTableDispatch<T>(
 ////////////////////
 
 /** Standard table view which provides the default state implementation. */
-export function TableView<T>(props: PropsWithChildren<TableProps<T>>) {
+export function TableView<T>(props: TableProps<T>) {
     const [state, dispatch] = useTableDispatch(() => ({
         columns: props.initialColumns ?? [],
         page: props.initialPage ?? 0,

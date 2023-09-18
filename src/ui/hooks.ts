@@ -2,7 +2,7 @@ import { Datacore } from "index/datacore";
 import { debounce } from "obsidian";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { SearchResult } from "index/datastore";
 import { Literals } from "expression/literal";
 

@@ -37,18 +37,18 @@ class DummyMarkdown implements Indexable {
 }
 
 describe("Frontmatter Behavior", () => {
-    const extractor = Extractors.frontmatter<DummyMarkdown>(x => x.frontmatter);
+    const extractor = Extractors.frontmatter<DummyMarkdown>((x) => x.frontmatter);
     const dummy = new DummyMarkdown({
-        "a": {
+        a: {
             key: "a",
             value: 10,
             raw: "10",
         },
-        "b": {
+        b: {
             key: "b",
             value: "hello",
             raw: "Hello!",
-        }
+        },
     });
 
     test("Fetch A", () =>
@@ -77,9 +77,9 @@ class DummyInlineFields implements Indexable {
 }
 
 describe("Inline Field Behavior", () => {
-    const extractor = Extractors.inlineFields<DummyInlineFields>(x => x.fields);
+    const extractor = Extractors.inlineFields<DummyInlineFields>((x) => x.fields);
     const dummy = new DummyInlineFields({
-        "a": {
+        a: {
             key: "a",
             value: 10,
             raw: "10",
@@ -87,10 +87,10 @@ describe("Inline Field Behavior", () => {
                 line: 1,
                 start: 1,
                 startValue: 1,
-                end: 2
-            }
+                end: 2,
+            },
         },
-        "b": {
+        b: {
             key: "b",
             value: "hello",
             raw: "Hello!",
@@ -98,9 +98,9 @@ describe("Inline Field Behavior", () => {
                 line: 2,
                 start: 1,
                 startValue: 1,
-                end: 2
-            }
-        }
+                end: 2,
+            },
+        },
     });
 
     test("Fetch A", () =>
@@ -110,7 +110,12 @@ describe("Inline Field Behavior", () => {
 
     test("Fetch B Insensitive", () =>
         expect(extractor(dummy, "B")).toEqual([
-            { key: "b", value: "hello", raw: "Hello!", provenance: { type: "inline-field", key: "b", file: "file", line: 2 } },
+            {
+                key: "b",
+                value: "hello",
+                raw: "Hello!",
+                provenance: { type: "inline-field", key: "b", file: "file", line: 2 },
+            },
         ]));
 
     test("Fetch All", () => {

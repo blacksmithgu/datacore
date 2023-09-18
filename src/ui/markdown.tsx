@@ -2,26 +2,14 @@
 import { App, MarkdownRenderChild, MarkdownRenderer } from "obsidian";
 import { Component } from "obsidian";
 import { Link, Literal, Literals } from "expression/literal";
-import React, {
-    createContext,
-    CSSProperties,
-    EventHandler,
-    Fragment,
-    MouseEvent,
-    PropsWithChildren,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-} from "react";
-import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { Datacore } from "index/datacore";
 import { Settings } from "settings";
 import { currentLocale, renderMinimalDate, renderMinimalDuration } from "util/normalize";
-import { extractImageDimensions, isImageEmbed } from "ui/media";
-import { MantineProvider } from "@mantine/styles";
-import { Root, createRoot } from "react-dom/client";
+import { extractImageDimensions, isImageEmbed } from "util/media";
+
+import { h, createContext, Fragment, VNode, render } from "preact";
+import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
+import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
 
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
@@ -42,25 +30,16 @@ export function DatacoreContextProvider({
     datacore: Datacore;
     settings: Settings;
 }>) {
-    const scheme = (getComputedStyle(document.body) as any)["color-scheme"] ?? "light";
-
     return (
-        <MantineProvider
-            theme={{
-                radius: { xs: "0", md: "0", lg: "0", sm: "0", xl: "0" },
-                colorScheme: scheme,
-            }}
-        >
-            <COMPONENT_CONTEXT.Provider value={component}>
-                <APP_CONTEXT.Provider value={app}>
-                    <DATACORE_CONTEXT.Provider value={datacore}>
-                        <CURRENT_FILE_CONTEXT.Provider value={""}>
-                            <SETTINGS_CONTEXT.Provider value={settings}>{children}</SETTINGS_CONTEXT.Provider>
-                        </CURRENT_FILE_CONTEXT.Provider>
-                    </DATACORE_CONTEXT.Provider>
-                </APP_CONTEXT.Provider>
-            </COMPONENT_CONTEXT.Provider>
-        </MantineProvider>
+        <COMPONENT_CONTEXT.Provider value={component}>
+            <APP_CONTEXT.Provider value={app}>
+                <DATACORE_CONTEXT.Provider value={datacore}>
+                    <CURRENT_FILE_CONTEXT.Provider value={""}>
+                        <SETTINGS_CONTEXT.Provider value={settings}>{children}</SETTINGS_CONTEXT.Provider>
+                    </CURRENT_FILE_CONTEXT.Provider>
+                </DATACORE_CONTEXT.Provider>
+            </APP_CONTEXT.Provider>
+        </COMPONENT_CONTEXT.Provider>
     );
 }
 
@@ -93,7 +72,7 @@ export function RawLink({ link, sourcePath }: { link: Link | string; sourcePath:
     );
 }
 
-export const ObsidianLink = React.memo(RawLink);
+export const ObsidianLink = memo(RawLink);
 
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export function RawMarkdown({
@@ -109,7 +88,7 @@ export function RawMarkdown({
     inline?: boolean;
     style?: CSSProperties;
     cls?: string;
-    onClick?: EventHandler<MouseEvent>;
+    onClick?: (event: MouseEvent) => any;
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);
@@ -135,7 +114,7 @@ export function RawMarkdown({
 }
 
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
-export const Markdown = React.memo(RawMarkdown);
+export const Markdown = memo(RawMarkdown);
 
 /** Embeds an HTML element in the react DOM. */
 export function RawEmbedHtml({ element }: { element: HTMLElement }) {
@@ -151,7 +130,7 @@ export function RawEmbedHtml({ element }: { element: HTMLElement }) {
 }
 
 /** Embeds an HTML element in the react DOM. */
-export const EmbedHtml = React.memo(RawEmbedHtml);
+export const EmbedHtml = memo(RawEmbedHtml);
 
 /** Intelligently render an arbitrary literal value. */
 export function RawLit({
@@ -269,7 +248,7 @@ export function RawLit({
 }
 
 /** Intelligently render an arbitrary literal value. */
-export const Lit = React.memo(RawLit);
+export const Lit = memo(RawLit);
 
 /** Render a pretty centered error message in a box. */
 export function ErrorMessage({
@@ -303,34 +282,29 @@ export function SimpleErrorBoundary({
     message,
     children,
 }: PropsWithChildren<{ title?: string; message?: string }>) {
-    const fallbackRenderer = useCallback(
-        ({ error, resetErrorBoundary }: FallbackProps) => {
-            return <ErrorMessage title={title} message={message} error={"" + error} reset={resetErrorBoundary} />;
-        },
-        [title, message]
-    );
+    const [error, reset] = useErrorBoundary();
 
-    return <ErrorBoundary fallbackRender={fallbackRenderer}>{children}</ErrorBoundary>;
+    if (error) {
+        return <ErrorMessage title={title} message={message} error={error.message} reset={reset} />;
+    } else {
+        return <Fragment>{children}</Fragment>;
+    }
 }
 
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
 export class ReactRenderer extends MarkdownRenderChild {
-    private root: Root;
-
     public constructor(
         public app: App,
         public datacore: Datacore,
         public container: HTMLElement,
         public sourcePath: string,
-        public element: React.ReactNode
+        public element: VNode
     ) {
         super(container);
     }
 
     public onload(): void {
-        // Very contextual!
-        this.root = createRoot(this.container);
-        this.root.render(
+        render(
             <DatacoreContextProvider
                 app={this.app}
                 component={this}
@@ -338,11 +312,12 @@ export class ReactRenderer extends MarkdownRenderChild {
                 settings={this.datacore.settings}
             >
                 {this.element}
-            </DatacoreContextProvider>
+            </DatacoreContextProvider>,
+            this.container
         );
     }
 
     public onunload(): void {
-        if (this.root) this.root.unmount();
+        unmountComponentAtNode(this.container);
     }
 }
