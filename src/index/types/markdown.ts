@@ -1,5 +1,5 @@
 import { Link, Literal, Literals } from "expression/literal";
-import { getFileTitle } from "util/normalize";
+import { getFileTitle } from "utils/normalizers";
 import {
     FILE_TYPE,
     File,

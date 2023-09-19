@@ -47,7 +47,10 @@ export namespace Transferable {
                 };
             case "object":
                 let result: Record<string, any> = {};
-                for (let [key, value] of Object.entries(wrapped.value)) result[key] = transferable(value);
+
+                // Only copy owned properties, and not derived/readonly properties like getters/computed fields.
+                for (let key of Object.getOwnPropertyNames(wrapped.value))
+                    result[key] = transferable(wrapped.value[key]);
                 return result;
         }
     }

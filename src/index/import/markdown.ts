@@ -1,5 +1,5 @@
 import { Link } from "expression/link";
-import { getFileTitle } from "util/normalize";
+import { getFileTitle } from "utils/normalizers";
 import {
     FrontmatterEntry,
     MarkdownBlock,
@@ -25,7 +25,7 @@ export function markdownImport(
     markdown: string,
     metadata: CachedMetadata,
     stats: FileStats
-): MarkdownFile {
+): Partial<MarkdownFile> {
     // Total length of the file.
     const lines = markdown.split("\n");
     const empty = !lines.some((line) => line.trim() !== "");
@@ -51,6 +51,7 @@ export function markdownImport(
                 title: section.heading,
                 level: section.level,
                 position: { start, end },
+                infields: {},
                 blocks: [],
                 tags: new Set(),
                 links: [],
@@ -240,15 +241,15 @@ export function markdownImport(
     /////////////////////////
     const frontmatter: Record<string, FrontmatterEntry> = {};
     for (const key of Object.keys(metadata.frontmatter ?? {})) {
-        const entry = metadata.frontmatter![key];
+        const value = metadata.frontmatter![key];
 
         // Lower-case the keys; this does mean we may miss some frontmatter entries but I hope not too many people
-        // have identically cased frontmatter keys...
+        // have frontmatter keys that are identical up to casing...
         // If you do, I'm very sorry to hear that. I may add the raw frontmatter somewhere for your explicit use case.
         frontmatter[key.toLowerCase()] = {
             key,
-            value: parseFrontmatter(entry.value),
-            raw: entry.value,
+            value: parseFrontmatter(value),
+            raw: value,
         };
     }
 
@@ -342,7 +343,7 @@ function addInlineField(target: Record<string, InlineField>, incoming: InlineFie
     const lower = incoming.key.toLowerCase();
     if (Object.keys(target).some((key) => key.toLowerCase() == lower)) return;
 
-    target[incoming.key] = incoming;
+    target[lower] = incoming;
 }
 
 /** Recursively convert frontmatter into fields. We have to dance around YAML structure. */

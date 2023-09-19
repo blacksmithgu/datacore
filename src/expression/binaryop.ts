@@ -1,6 +1,6 @@
 /** Provides a global dispatch table for evaluating binary operators, including comparison. */
 import { LiteralRepr, LiteralType, Literal, Literals, Link } from "expression/literal";
-import { normalizeDuration } from "util/normalize";
+import { normalizeDuration } from "utils/normalizers";
 import { Result } from "api/result";
 import { BinaryOp, Expressions } from "expression/expression";
 import type { Evaluator } from "expression/evaluator";

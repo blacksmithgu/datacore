@@ -1,4 +1,4 @@
-import { deferred, Deferred } from "util/deferred";
+import { deferred, Deferred } from "utils/deferred";
 import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
 import { Indexable } from "index/types/indexable";
@@ -110,7 +110,7 @@ export class Datacore extends Component {
             throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
         } else if (result.type === "markdown") {
             const parsed = MarkdownFile.from(result.result, (link) => {
-                const rpath = this.metadataCache.getFirstLinkpathDest(link.path, result.result.$file);
+                const rpath = this.metadataCache.getFirstLinkpathDest(link.path, result.result.path!);
                 if (rpath) return link.withPath(rpath.path);
                 else return link;
             });

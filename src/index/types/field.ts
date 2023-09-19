@@ -45,7 +45,7 @@ export type FieldExtractor<T> = (object: T, key?: string) => Field[];
 /** Quick utilities for generating fields and doing searches over them. */
 export namespace Extractors {
     /** Default intrinsic fields to be ignored when extracting fields. */
-    export const DEFAULT_EXCLUDES = new Set(["fields", "$$normkeys"]);
+    export const DEFAULT_EXCLUDES = new Set(["fields", "$$normkeys", "constructor", "__proto__"]);
 
     function isValidIntrinsic(object: Record<string, any>, key: string, exclude?: Set<string>): boolean {
         // Don't allow recursion on 'fields' or cached values, and skip any ignored.
@@ -58,13 +58,25 @@ export namespace Extractors {
         return true;
     }
 
+    /** Get all keys of the object, including derived fields from prototypes. */
+    function* prototypeKeys(object: any) {
+        for (const key of Object.keys(object)) yield key;
+
+        let proto = Object.getPrototypeOf(object);
+        while (proto) {
+            for (const key of Object.getOwnPropertyNames(proto)) yield key;
+
+            proto = Object.getPrototypeOf(proto);
+        }
+    }
+
     /** Generate a list of fields for the given object, returning them as a list. */
     export function intrinsics<T extends Record<string, any>>(except?: Set<string>): FieldExtractor<T> {
         return (object: T, key?: string) => {
             if (key == null) {
                 const fields: Field[] = [];
 
-                for (const key of Object.keys(object)) {
+                for (const key of prototypeKeys(object)) {
                     if (!isValidIntrinsic(object, key, except)) continue;
 
                     fields.push({

@@ -24,7 +24,7 @@ import {
     IndexLinked,
     IndexField,
 } from "index/types/index-query";
-import { normalizeDuration } from "util/normalize";
+import { normalizeDuration } from "utils/normalizers";
 import { Literal } from "expression/literal";
 
 ////////////////////////

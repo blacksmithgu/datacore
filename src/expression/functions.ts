@@ -2,12 +2,11 @@
 
 import { DateTime } from "luxon";
 import { LiteralType, Link, Literal, Literals } from "expression/literal";
-import { currentLocale } from "util/normalize";
+import { escapeRegex, currentLocale } from "utils/normalizers";
 import { LiteralReprAll, LiteralTypeOrAll, stringSettings } from "expression/binaryop";
 import { Evaluator } from "expression/evaluator";
 import { Expressions } from "expression/expression";
 import { PRIMITIVES } from "expression/parser";
-import { escapeRegex } from "util/normalize";
 
 /**
  * A function implementation which takes in a function context and a variable number of arguments. Throws an error if an

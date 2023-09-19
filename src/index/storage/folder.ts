@@ -1,4 +1,4 @@
-import { getParentFolder } from "util/normalize";
+import { getParentFolder } from "utils/normalizers";
 import { TFile, TFolder, Vault } from "obsidian";
 
 /** Specific index for tracking objects in relative paths. Specifically tracks top-level page objects. */

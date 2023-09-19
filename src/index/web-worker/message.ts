@@ -35,7 +35,7 @@ export interface MarkdownImportResult {
     /** The type of import. */
     type: "markdown";
     /** The result of importing. */
-    result: MarkdownFile;
+    result: Partial<MarkdownFile>;
 }
 
 export interface ImportFailure {

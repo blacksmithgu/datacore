@@ -1,4 +1,4 @@
-import { extractSubtags, normalizeHeaderForLink } from "util/normalize";
+import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";
 
 describe("Header Normalization", () => {
     test("Link", () => expect(normalizeHeaderForLink("Header  [[Outer Wilds]]  ")).toEqual("Header Outer Wilds"));

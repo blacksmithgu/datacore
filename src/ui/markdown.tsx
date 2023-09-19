@@ -4,8 +4,8 @@ import { Component } from "obsidian";
 import { Link, Literal, Literals } from "expression/literal";
 import { Datacore } from "index/datacore";
 import { Settings } from "settings";
-import { currentLocale, renderMinimalDate, renderMinimalDuration } from "util/normalize";
-import { extractImageDimensions, isImageEmbed } from "util/media";
+import { currentLocale, renderMinimalDate, renderMinimalDuration } from "utils/normalizers";
+import { extractImageDimensions, isImageEmbed } from "utils/media";
 
 import { h, createContext, Fragment, VNode, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";

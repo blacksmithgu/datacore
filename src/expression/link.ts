@@ -1,4 +1,4 @@
-import { getFileTitle, normalizeHeaderForLink } from "util/normalize";
+import { getFileTitle, normalizeHeaderForLink } from "utils/normalizers";
 
 /** The Obsidian 'link', used for uniquely describing a file, header, or block. */
 export class Link {
