@@ -2,7 +2,7 @@ import { deferred, Deferred } from "utils/deferred";
 import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
 import { Indexable } from "index/types/indexable";
-import { MarkdownFile, MarkdownListBlock, MarkdownListItem } from "index/types/markdown";
+import { MarkdownPage, MarkdownListBlock, MarkdownListItem } from "index/types/markdown";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
 import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
@@ -109,7 +109,7 @@ export class Datacore extends Component {
         if (result.type === "error") {
             throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
         } else if (result.type === "markdown") {
-            const parsed = MarkdownFile.from(result.result, (link) => {
+            const parsed = MarkdownPage.from(result.result, (link) => {
                 const rpath = this.metadataCache.getFirstLinkpathDest(link.path, result.result.path!);
                 if (rpath) return link.withPath(rpath.path);
                 else return link;

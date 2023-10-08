@@ -45,8 +45,9 @@ export type FieldExtractor<T> = (object: T, key?: string) => Field[];
 /** Quick utilities for generating fields and doing searches over them. */
 export namespace Extractors {
     /** Default intrinsic fields to be ignored when extracting fields. */
-    export const DEFAULT_EXCLUDES = new Set(["fields", "$$normkeys", "constructor", "__proto__"]);
+    export const DEFAULT_EXCLUDES = new Set(["fields", "constructor", "__proto__"]);
 
+    /** Check if the given property in the object is not excluded and is a plain property (not a function or other special object). */
     function isValidIntrinsic(object: Record<string, any>, key: string, exclude?: Set<string>): boolean {
         // Don't allow recursion on 'fields' or cached values, and skip any ignored.
         if (DEFAULT_EXCLUDES.has(key) || exclude?.has(key)) return false;
@@ -119,7 +120,7 @@ export namespace Extractors {
                     const entry = frontmatter[key];
 
                     fields.push({
-                        key: entry.key,
+                        key: entry.key.toLowerCase(),
                         value: entry.value,
                         raw: entry.raw,
                         provenance: { type: "frontmatter", file: object.$file!, key: entry.key },
@@ -135,7 +136,7 @@ export namespace Extractors {
 
                 return [
                     {
-                        key: entry.key,
+                        key: key,
                         value: entry.value,
                         raw: entry.raw,
                         provenance: { type: "frontmatter", file: object.$file!, key },
@@ -158,7 +159,7 @@ export namespace Extractors {
 
                 for (const field of Object.values(map)) {
                     fields.push({
-                        key: field.key,
+                        key: field.key.toLowerCase(),
                         value: field.value,
                         raw: field.raw,
                         provenance: {
@@ -178,14 +179,14 @@ export namespace Extractors {
                 const field = map[key];
                 return [
                     {
-                        key: field.key,
+                        key: key,
                         value: field.value,
                         raw: field.raw,
                         provenance: {
                             type: "inline-field",
                             file: object.$file!,
                             line: field.position.line,
-                            key,
+                            key: field.key,
                         } as Provenance,
                     },
                 ];

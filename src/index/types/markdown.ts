@@ -29,12 +29,12 @@ export interface FrontmatterEntry {
 }
 
 /** A markdown file in the vault; the source of most metadata. */
-export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fieldbearing {
+export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fieldbearing {
     /** All of the types that a markdown file is. */
     static TYPES = [FILE_TYPE, "markdown", "page", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     // Use static types for all markdown files.
-    $types: string[] = MarkdownFile.TYPES;
+    $types: string[] = MarkdownPage.TYPES;
     $typename: string = "Page";
 
     // Markdown file IDs are always just the full path.
@@ -74,8 +74,8 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
     sections: MarkdownSection[] = [];
 
     /** Create a markdown file from the given raw values. */
-    static from(raw: Partial<MarkdownFile>, normalizer?: LinkNormalizer): MarkdownFile {
-        const file = new MarkdownFile(raw);
+    static from(raw: Partial<MarkdownPage>, normalizer?: LinkNormalizer): MarkdownPage {
+        const file = new MarkdownPage(raw);
         file.sections = (file.sections ?? []).map((section) => MarkdownSection.from(section, normalizer));
 
         if (normalizer) {
@@ -97,7 +97,7 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
         return file;
     }
 
-    public constructor(init: Partial<MarkdownFile>) {
+    public constructor(init: Partial<MarkdownPage>) {
         Object.assign(this, init);
     }
 
@@ -118,18 +118,18 @@ export class MarkdownFile implements File, Linkbearing, Taggable, Indexable, Fie
 
     /** All of the indexed fields in this object. */
     get fields(): Field[] {
-        return MarkdownFile.FIELD_DEF(this);
+        return MarkdownPage.FIELD_DEF(this);
     }
 
     public field(key: string): Field | undefined {
-        return MarkdownFile.FIELD_DEF(this, key)?.[0];
+        return MarkdownPage.FIELD_DEF(this, key)?.[0];
     }
 
     public value(key: string): Literal | undefined {
         return this.field(key)?.value;
     }
 
-    private static FIELD_DEF: FieldExtractor<MarkdownFile> = Extractors.merge(
+    private static FIELD_DEF: FieldExtractor<MarkdownPage> = Extractors.merge(
         Extractors.intrinsics(),
         Extractors.frontmatter((f) => f.frontmatter),
         Extractors.inlineFields((f) => f.infields)

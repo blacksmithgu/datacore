@@ -5,11 +5,12 @@ import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
-import { MarkdownFile } from "./types/markdown";
+import { MarkdownPage } from "./types/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";
 import FlatQueue from "flatqueue";
-import { FieldIndex } from "./storage/fields";
-import { FIELDBEARING_TYPE, Field, Fieldbearing } from "./types/field";
+import { FieldIndex } from "index/storage/fields";
+import { FIELDBEARING_TYPE, Field, Fieldbearing } from "index/types/field";
+import { FilterTrees, IndexResolver, Primitive, Scan, execute, optimizeQuery } from "index/storage/query-executor";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -247,7 +248,7 @@ export class Datastore {
         if (link.type === "file") return file;
 
         // Blocks and header links can only resolve inside of markdown files.
-        if (!(file instanceof MarkdownFile)) return undefined;
+        if (!(file instanceof MarkdownPage)) return undefined;
 
         if (link.type === "header") {
             const section = file.sections.find(
@@ -276,7 +277,7 @@ export class Datastore {
     public search(query: IndexQuery, context?: SearchContext): SearchResult<Indexable> {
         const start = Date.now();
 
-        const filter = this._searchRecursive(this._optimize(query), context);
+        const filter = this._search(query, context);
         const result = Filters.resolve(filter, this.ids);
 
         const objects: Indexable[] = [];
@@ -297,130 +298,27 @@ export class Datastore {
         };
     }
 
-    /** Perform simple recursive optimizations over an index query, such as constant folding and de-nesting. */
-    private _optimize(query: IndexQuery): IndexQuery {
-        query = this._denest(query);
-        query = this._constantfold(query);
+    /** Internal search which yields a filter of results. */
+    private _search(query: IndexQuery, context?: SearchContext): Filter<string> {
+        const resolver: IndexResolver<string> = {
+            universe: this.ids,
+            resolve: (leaf) => this._resolveLeaf(leaf, context),
+        };
 
-        return query;
+        return execute(optimizeQuery(query), resolver);
     }
 
-    /** De-nest recursively nested AND and OR queries into a single top-level and/or. */
-    private _denest(query: IndexQuery): IndexQuery {
-        switch (query.type) {
-            case "and":
-                const ands = query.elements.flatMap((element) => {
-                    const fixed = this._denest(element);
-                    if (fixed.type === "and") return fixed.elements;
-                    else return [fixed];
-                });
-                return { type: "and", elements: ands };
-            case "or":
-                const ors = query.elements.flatMap((element) => {
-                    const fixed = this._denest(element);
-                    if (fixed.type === "or") return fixed.elements;
-                    else return [fixed];
-                });
-                return { type: "or", elements: ors };
-            case "not":
-                return { type: "not", element: this._denest(query.element) };
-            case "child-of":
-                return Object.assign({}, query, { parents: this._denest(query.parents) });
-            case "parent-of":
-                return Object.assign({}, query, { children: this._denest(query.children) });
-            case "linked":
-                return Object.assign({}, query, { source: this._denest(query.source) });
-            default:
-                return query;
-        }
+    /** Resolve a leaf node in a search. */
+    private _resolveLeaf(query: IndexPrimitive, context?: SearchContext): Primitive<string> | Scan<string> {
+        return FilterTrees.primitive(this._resolvePrimitive(query, context));
     }
 
-    /** Perform constant folding by eliminating dead 'true' and 'false' terms. */
-    private _constantfold(query: IndexQuery): IndexQuery {
+    /** Resolve leaf nodes in a search AST, yielding raw sets of results. */
+    private _resolvePrimitive(query: IndexPrimitive, context?: SearchContext): Filter<string> {
         switch (query.type) {
-            case "and":
-                const achildren = [] as IndexQuery[];
-                for (const child of query.elements) {
-                    const folded = this._constantfold(child);
-
-                    // Eliminate 'true' constants and eliminate the entire and on a 'false' constant.
-                    if (folded.type === "constant") {
-                        if (folded.constant) continue;
-                        else return { type: "constant", constant: false };
-                    }
-
-                    achildren.push(folded);
-                }
-
-                return { type: "and", elements: achildren };
-            case "or":
-                const ochildren = [] as IndexQuery[];
-                for (const child of query.elements) {
-                    const folded = this._constantfold(child);
-
-                    // Eliminate 'false' constants and short circuit on a 'true' constant.
-                    if (folded.type === "constant") {
-                        if (!folded.constant) continue;
-                        else return { type: "constant", constant: true };
-                    }
-
-                    ochildren.push(folded);
-                }
-
-                return { type: "or", elements: ochildren };
-            case "not":
-                const folded = this._constantfold(query.element);
-
-                if (folded.type === "constant") {
-                    return { type: "constant", constant: !folded.constant };
-                }
-
-                return { type: "not", element: folded };
             case "child-of":
-                // parents = EMPTY means this will also be empty.
-                const parents = this._constantfold(query.parents);
-                if (parents.type === "constant") {
-                    if (!parents.constant) return { type: "constant", constant: false };
-                    else if (parents.constant && query.inclusive) return { type: "constant", constant: true };
-                }
-
-                return Object.assign({}, query, { parents });
-            case "parent-of":
-                // children = EMPTY means this will also be empty.
-                const children = this._constantfold(query.children);
-                if (children.type === "constant") {
-                    if (!children.constant) return { type: "constant", constant: false };
-                    else if (children.constant && query.inclusive) return { type: "constant", constant: true };
-                }
-
-                return Object.assign({}, query, { children });
-            case "linked":
-                const source = this._constantfold(query.source);
-                if (source.type === "constant") {
-                    if (!source.constant) return { type: "constant", constant: false };
-                    else if (source.constant && query.inclusive) return { type: "constant", constant: true };
-                }
-
-                return Object.assign({}, query, { source });
-            default:
-                return query;
-        }
-    }
-
-    /** Recursively execute a subquery, returning a set of all matching document IDs. */
-    private _searchRecursive(query: IndexQuery, context?: SearchContext): Filter<string> {
-        switch (query.type) {
-            case "and":
-                // TODO: For efficiency, can order queries by probability of being empty.
-                return Filters.lazyIntersect(query.elements, (elem) => this._searchRecursive(elem, context));
-            case "or":
-                // TODO: For efficiency, can order queries by probability of being EVERYTHING.
-                return Filters.lazyUnion(query.elements, (elem) => this._searchRecursive(elem, context));
-            case "not":
-                return Filters.negate(this._searchRecursive(query.element, context));
-            case "child-of":
-                // TODO: This is an inefficient implementation and would benefit from "lazily-computed" filters.
-                const parents = this._searchRecursive(query.parents, context);
+                // TODO: Consider converting this to be a scan instead for a noticable speedup.
+                const parents = this._search(query.parents, context);
                 if (Filters.empty(parents)) {
                     return Filters.NOTHING;
                 } else if (parents.type === "everything") {
@@ -446,8 +344,8 @@ export class Datastore {
 
                 return Filters.atom(childResults);
             case "parent-of":
-                // TODO: This is an inefficient implementation and would benefit from "lazily-computed" filters.
-                const children = this._searchRecursive(query.children, context);
+                // TODO: Consider converting this to be a scan instead for a noticable speedup.
+                const children = this._search(query.children, context);
                 if (Filters.empty(children)) {
                     return Filters.NOTHING;
                 } else if (children.type === "everything") {
@@ -470,7 +368,7 @@ export class Datastore {
                 if (query.distance && query.distance < 0) return Filters.NOTHING;
 
                 // Compute the source objects first.
-                const sources = this._searchRecursive(query.source, context);
+                const sources = this._search(query.source, context);
                 if (Filters.empty(sources)) return Filters.NOTHING;
                 else if (sources.type === "everything") {
                     if (query.inclusive) return Filters.EVERYTHING;
@@ -485,14 +383,6 @@ export class Datastore {
 
                 if (!query.inclusive) return Filters.atom(Filters.setIntersectNegation(results, resolvedSources));
                 else return Filters.atom(results);
-            default:
-                return this._searchPrimitive(query, context);
-        }
-    }
-
-    /** Execute a primitive index query, i.e., a query that directly produces results. */
-    private _searchPrimitive(query: IndexPrimitive, context?: SearchContext): Filter<string> {
-        switch (query.type) {
             case "constant":
                 return Filters.constant(query.constant);
             case "id":

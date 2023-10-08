@@ -3,7 +3,7 @@ import { getFileTitle } from "utils/normalizers";
 import {
     FrontmatterEntry,
     MarkdownBlock,
-    MarkdownFile,
+    MarkdownPage,
     MarkdownListBlock,
     MarkdownListItem,
     MarkdownSection,
@@ -25,7 +25,7 @@ export function markdownImport(
     markdown: string,
     metadata: CachedMetadata,
     stats: FileStats
-): Partial<MarkdownFile> {
+): Partial<MarkdownPage> {
     // Total length of the file.
     const lines = markdown.split("\n");
     const empty = !lines.some((line) => line.trim() !== "");
@@ -211,6 +211,16 @@ export function markdownImport(
         }
     }
 
+    ///////////////////////
+    // Frontmatter Links //
+    ///////////////////////
+
+    // Frontmatter links are only assigned to the page.
+    for (const linkdef of metadata.frontmatterLinks ?? []) {
+        const link = Link.infer(linkdef.link, false, linkdef.displayText);
+        addLink(links, link);
+    }
+
     ///////////////////
     // Inline Fields //
     ///////////////////
@@ -253,7 +263,7 @@ export function markdownImport(
         };
     }
 
-    return new MarkdownFile({
+    return new MarkdownPage({
         path,
         tags,
         links,

@@ -86,12 +86,21 @@ export namespace Filters {
         }
     }
 
+    /** Intersect an iterable of filters. */
+    export function intersect<T>(elements: Iterable<Filter<T>>): Filter<T> {
+        return lazyIntersect(elements, (x) => x);
+    }
+
     /** Intersect filters lazily, short-circuiting if the intersection would produce NOTHING. */
-    export function lazyIntersect<I, T>(elements: Iterable<I>, produce: (input: I) => Filter<T>): Filter<T> {
+    export function lazyIntersect<I, T>(
+        elements: Iterable<I>,
+        produce: (input: I) => Filter<T> | undefined
+    ): Filter<T> {
         const atoms: Set<T>[] = [];
         const negations: Set<T>[] = [];
         for (let element of elements) {
             const filter = produce(element);
+            if (filter === undefined) continue;
 
             // Empty filters will produce an empty intersection.
             if (empty(filter)) return NOTHING;
@@ -120,12 +129,18 @@ export namespace Filters {
         }
     }
 
-    /** Intersect filters lazily, short-circuiting if the union would produce EVERYTHING. */
-    export function lazyUnion<I, T>(elements: Iterable<I>, produce: (input: I) => Filter<T>): Filter<T> {
+    /** Union filters, producing a single result filter. */
+    export function union<T>(filters: Iterable<Filter<T>>): Filter<T> {
+        return lazyUnion(filters, (x) => x);
+    }
+
+    /** Union filters lazily, short-circuiting if the union would produce EVERYTHING. */
+    export function lazyUnion<I, T>(elements: Iterable<I>, produce: (input: I) => Filter<T> | undefined): Filter<T> {
         const atoms: Set<T>[] = [];
         const negations: Set<T>[] = [];
         for (let element of elements) {
             const filter = produce(element);
+            if (filter === undefined) continue;
 
             // EVERYTHING filters will produce everything always.
             if (filter.type === "everything") return EVERYTHING;

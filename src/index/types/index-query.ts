@@ -1,7 +1,14 @@
+import { Expression } from "expression/expression";
 import { Link, Literal } from "expression/literal";
 
 /** Valid index-value comparisons. */
 export type IndexComparison = "=" | "!=" | ">" | "<" | ">=" | "<=";
+
+/** Return all results (true) or no results (false). */
+export interface IndexConstant {
+    type: "constant";
+    constant: boolean;
+}
 
 /** Fetch the document with the given ID. */
 export interface IndexId {
@@ -80,24 +87,22 @@ export interface IndexValueBounded {
     upper?: [Literal, boolean];
 }
 
-export type IndexPrimitive =
-    | IndexId
-    | IndexLink
-    | IndexConstant
-    | IndexTyped
-    | IndexTagged
-    | IndexPath
-    | IndexField
-    | IndexValueEquals
-    | IndexValueBounded;
+/**
+ * Execute arbitrary expressions against the document, returning true if the expression evaluates to true.
+ *
+ * This is the most general form of query; it will implicitly require that all fields in the expression are
+ * defined on the page.
+ */
+export interface IndexExpression {
+    type: "expression";
 
-// Logical combinators.
-
-/** Return all results (true) or no results (false). */
-export interface IndexConstant {
-    type: "constant";
-    constant: boolean;
+    /** The expression to evaluate against each object. */
+    expression: Expression;
 }
+
+/////////////////////////////
+// Complex nested queries. //
+/////////////////////////////
 
 /**
  * Fetch documents which are the children of documents matching the given other filter.
@@ -142,6 +147,24 @@ export interface IndexLinked {
     inclusive?: boolean;
 }
 
+export type IndexPrimitive =
+    | IndexId
+    | IndexLink
+    | IndexConstant
+    | IndexTyped
+    | IndexTagged
+    | IndexPath
+    | IndexField
+    | IndexValueEquals
+    | IndexValueBounded
+    | IndexChildOf
+    | IndexParentOf
+    | IndexLinked;
+
+///////////////////////
+// Index Combinators //
+///////////////////////
+
 /** AND two or more datastore queries together. */
 export interface IndexAnd {
     type: "and";
@@ -160,7 +183,10 @@ export interface IndexNot {
     element: IndexQuery;
 }
 
-export type IndexQuery = IndexAnd | IndexOr | IndexNot | IndexPrimitive | IndexChildOf | IndexParentOf | IndexLinked;
+/** Pure combinators for combining queries. */
+export type IndexCombinator = IndexAnd | IndexOr | IndexNot;
+/** A full query AST. */
+export type IndexQuery = IndexCombinator | IndexPrimitive;
 
 /** Constant index query which matches all. */
 export const INDEX_ALL: IndexQuery = { type: "constant", constant: true };

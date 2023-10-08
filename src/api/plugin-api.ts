@@ -4,17 +4,17 @@ import { SearchResult } from "index/datastore";
 import { QUERY } from "expression/parser";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownFile } from "index/types/markdown";
+import { MarkdownPage } from "index/types/markdown";
 
 /** Exterally visible API for datacore. */
 export class DatacoreApi {
     public constructor(public core: Datacore) {}
 
     /** Load a markdown file by full path or link. */
-    public page(path: string | Link): MarkdownFile | undefined {
+    public page(path: string | Link): MarkdownPage | undefined {
         const realPath = path instanceof Link ? path.path : path;
 
-        return this.core.datastore.load(realPath) as MarkdownFile | undefined;
+        return this.core.datastore.load(realPath) as MarkdownPage | undefined;
     }
 
     /** Execute a textual or typed index query, returning all results. */

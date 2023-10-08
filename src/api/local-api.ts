@@ -4,7 +4,7 @@ import { Datacore } from "index/datacore";
 import { Datastore, SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownFile } from "index/types/markdown";
+import { MarkdownPage } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -23,7 +23,7 @@ export class DatacoreLocalApi {
     }
 
     /** The full markdown file metadata for the current file. */
-    public currentFile(): MarkdownFile {
+    public currentFile(): MarkdownPage {
         return this.api.page(this.path)!;
     }
 
@@ -88,8 +88,8 @@ export class DatacoreLocalApi {
     public useInterning = useInterning;
 
     /** Use the file metadata for the current file. */
-    public useCurrentFile(settings?: { debounce?: number }): MarkdownFile {
-        return useFileMetadata(this.core, this.path, settings) as MarkdownFile;
+    public useCurrentFile(settings?: { debounce?: number }): MarkdownPage {
+        return useFileMetadata(this.core, this.path, settings) as MarkdownPage;
     }
 
     /**
