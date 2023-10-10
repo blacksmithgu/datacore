@@ -177,19 +177,21 @@ export namespace Filters {
         if (sets.length == 0) return new Set();
         else if (sets.length == 1) return sets[0];
 
-        // Sort by size and use the smallest set as the iteration focus.
+        // Sort by size and combine smallest and largest set repeatedly.
         let sorted = ([] as Set<T>[]).concat(sets).sort((a, b) => a.size - b.size);
 
-        const result = new Set<T>();
-        outer: for (let element of sorted[0]) {
-            for (let index = 1; index < sorted.length; index++) {
-                if (!sorted[index].has(element)) continue outer;
+        while (sorted.length > 1) {
+            const result = new Set<T>();
+            const largest = sorted.pop()!;
+
+            for (let element of sorted[0]) {
+                if (largest.has(element)) result.add(element);
             }
 
-            result.add(element);
+            sorted[0] = result;
         }
 
-        return result;
+        return sorted[0];
     }
 
     /** Efficiently compute the union of sets. */

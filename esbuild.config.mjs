@@ -37,7 +37,6 @@ async function build(prod) {
 		logLevel: "info",
 		sourcemap: prod ? false : 'inline',
 		treeShaking: true,
-		minify: prod,
 		outfile: 'build/plugin/main.js',
 	}).catch(() => process.exit(1));
 

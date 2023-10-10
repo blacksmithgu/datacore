@@ -11,6 +11,8 @@ import FlatQueue from "flatqueue";
 import { FieldIndex } from "index/storage/fields";
 import { FIELDBEARING_TYPE, Field, Fieldbearing } from "index/types/field";
 import { FilterTrees, IndexResolver, Primitive, Scan, execute, optimizeQuery } from "index/storage/query-executor";
+import { Expression } from "expression/expression";
+import { Evaluator } from "expression/evaluator";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -468,6 +470,31 @@ export class Datastore {
                 // TODO: Implement smarter range queries later.
                 return this._filterFields(query.field, (index) => undefined, filter);
         }
+    }
+
+    /** Execute an expression over the given set of objects, returning only the matching objects. */
+    private _scanExpression(expression: Expression, candidates: Set<string>, context?: SearchContext): Filter<string> {
+        const results: Set<string> = new Set();
+        const errors: string[] = [];
+
+        const evaulator = new Evaluator(null, this.settings, {
+            "this": context?.sourcePath ? this.resolveLink(Link.file(context.sourcePath)) : undefined,
+        });
+
+        for (const candidate of candidates) {
+            const object = this.load(candidate);
+            if (!object) continue;
+
+            const result = evaulator.evaluate(expression, object);
+            if (!result.successful) {
+                errors.push(result.error);
+                continue;
+            }
+
+            if (Literals.isTruthy(result)) results.add(object.$id);
+        }
+
+        return Filters.atom(results);
     }
 
     /** Filter documents by field values, using the fast lookup if it returns a result and otherwise filtering over every document using the slow predicate. */

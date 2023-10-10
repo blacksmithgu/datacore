@@ -33,6 +33,7 @@ export class Datacore extends Component {
 
         this.vault = app.vault;
         this.metadataCache = app.metadataCache;
+        this.persister = new LocalStorageCache("primary", version);
         this.events = new Events();
 
         this.datastore = new Datastore(app.vault, app.metadataCache);

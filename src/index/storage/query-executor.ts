@@ -250,7 +250,6 @@ function constructTreeOr<T>(query: IndexOr, resolver: IndexResolver<T>): FilterT
 /**
  * Given a filter tree of scans and constants, constructs the set of objects to scan over for each scan and then resolves the tree to
  * a final result from the bottom -> top.
- *
  */
 export function resolveTree<T>(tree: FilterTree<T>, universe: Set<T>, limits: Filter<T>[]): Filter<T> {
     switch (tree.type) {
