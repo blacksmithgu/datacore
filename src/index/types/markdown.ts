@@ -12,7 +12,7 @@ import {
     Taggable,
 } from "index/types/indexable";
 import { DateTime } from "luxon";
-import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing } from "./field";
+import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing } from "../../expression/field";
 import { InlineField } from "index/import/inline-field";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */

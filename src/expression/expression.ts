@@ -1,4 +1,5 @@
-import { Literal } from "expression/literal";
+import { Literal, Literals } from "expression/literal";
+import { Filters } from "./filters";
 
 /** Comparison operators which yield true/false. */
 export type CompareOp = ">" | ">=" | "<=" | "<" | "=" | "!=";
@@ -78,6 +79,9 @@ export interface NegatedExpression {
 }
 
 export namespace Expressions {
+    /** The implicit field referencing the current field. */
+    export const ROW: string = "row";
+
     export function variable(name: string): VariableExpression {
         return { type: "variable", name };
     }
@@ -127,6 +131,39 @@ export namespace Expressions {
 
     export function isCompareOp(op: BinaryOp): op is CompareOp {
         return op == "<=" || op == "<" || op == ">" || op == ">=" || op == "!=" || op == "=";
+    }
+
+    /** Returns a set of all unbound variables (i.e., variables not provided by `row`, lambdas, or similar.) */
+    export function unboundVariables(expr: Expression, bound: Set<string> = new Set([ROW])): Set<string> {
+        switch (expr.type) {
+            case "binaryop":
+                // Special case `row["...."]`.
+                if (expr.op === "index" && expr.left.type == "variable" && expr.left.name == ROW && expr.right.type == "literal" && Literals.isString(expr.right.value)) {
+                    if (bound.has(expr.right.value)) return new Set();
+                    else return new Set([expr.right.value]);
+                }
+
+                // Otherwise just check left and right.
+                return Filters.setUnion([unboundVariables(expr.left, bound), unboundVariables(expr.right, bound)]);
+            case "function":
+                return Filters.setUnion(expr.arguments.map((a) => unboundVariables(a, bound)));
+            case "lambda":
+                const newBound = bound ?? new Set();
+                for (const arg of expr.arguments) newBound.add(arg);
+
+                return unboundVariables(expr.value, newBound);
+            case "list":
+                return Filters.setUnion(expr.values.map((v) => unboundVariables(v, bound)));
+            case "negated":
+                return unboundVariables(expr.child, bound);
+            case "object":
+                return Filters.setUnion(Object.values(expr.values).map((v) => unboundVariables(v, bound)));
+            case "variable":
+                if (bound && bound.has(expr.name)) return new Set();
+                else return new Set([expr.name]);
+            case "literal":
+                return new Set();
+        }
     }
 
     export const NULL = Expressions.literal(null);

@@ -1,7 +1,7 @@
 import { Literal, Literals } from "expression/literal";
-import { Indexable } from "./indexable";
+import { Indexable } from "../index/types/indexable";
 import { InlineField } from "index/import/inline-field";
-import { FrontmatterEntry } from "./markdown";
+import { FrontmatterEntry } from "../index/types/markdown";
 
 /** The source of a field, used when determining what files to overwrite and how. */
 export type Provenance =
@@ -29,6 +29,18 @@ export interface Fieldbearing {
 
     /** Fetch a field with the given name if it is present on this object. */
     field(key: string): Field | undefined;
+}
+
+export namespace Fieldbearings {
+    export function isFieldbearing(object: any): object is Fieldbearing {
+        return object != null && typeof object === "object" && "field" in object && (typeof object["field"] == "function");
+    }
+
+    /** Get a key from a generic map or fieldbearing object. */
+    export function get(object: Fieldbearing | Record<string, Literal>, key: string): Literal | undefined {
+        if (isFieldbearing(object)) return object.field(key)?.value;
+        else return object[key];
+    }
 }
 
 /** Constant for the intrinsic provenance.  */

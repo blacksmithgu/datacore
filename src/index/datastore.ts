@@ -1,4 +1,4 @@
-import { Link, Literal, Literals } from "expression/literal";
+import { Link, Literals } from "expression/literal";
 import { Filter, Filters } from "index/storage/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
@@ -10,9 +10,7 @@ import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";
 import FlatQueue from "flatqueue";
 import { FieldIndex } from "index/storage/fields";
 import { FIELDBEARING_TYPE, Field, Fieldbearing } from "index/types/field";
-import { FilterTrees, IndexResolver, Primitive, Scan, execute, optimizeQuery } from "index/storage/query-executor";
-import { Expression } from "expression/expression";
-import { Evaluator } from "expression/evaluator";
+import { IndexResolver, execute, optimizeQuery } from "index/storage/query-executor";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -304,15 +302,11 @@ export class Datastore {
     private _search(query: IndexQuery, context?: SearchContext): Filter<string> {
         const resolver: IndexResolver<string> = {
             universe: this.ids,
-            resolve: (leaf) => this._resolveLeaf(leaf, context),
+            resolve: (leaf) => this._resolvePrimitive(leaf, context),
+            load: (id) => this.load(id)
         };
 
         return execute(optimizeQuery(query), resolver);
-    }
-
-    /** Resolve a leaf node in a search. */
-    private _resolveLeaf(query: IndexPrimitive, context?: SearchContext): Primitive<string> | Scan<string> {
-        return FilterTrees.primitive(this._resolvePrimitive(query, context));
     }
 
     /** Resolve leaf nodes in a search AST, yielding raw sets of results. */
@@ -435,66 +429,13 @@ export class Datastore {
 
                 return Filters.atom(fieldIndex.all());
             case "equal-value":
-                return this._filterFields(
-                    query.field,
-                    (index) => index.equals(query.value),
-                    (field) => Literals.compare(query.value, field.value) == 0
-                );
-            case "bounded-value":
-                // Compute the minimal lambda for checking if the value is in the given bounds.
-                let lower: ((value: Literal) => boolean) | undefined = undefined;
-                if (query.lower) {
-                    const [lowerBound, inclusive] = query.lower;
-                    if (inclusive) lower = (value: Literal) => Literals.compare(value, lowerBound) >= 0;
-                    else lower = (value: Literal) => Literals.compare(value, lowerBound) > 0;
-                }
-
-                let upper: ((value: Literal) => boolean) | undefined = undefined;
-                if (query.upper) {
-                    const [upperBound, inclusive] = query.upper;
-                    if (inclusive) upper = (value: Literal) => Literals.compare(value, upperBound) <= 0;
-                    else upper = (value: Literal) => Literals.compare(value, upperBound) < 0;
-                }
-
-                let filter;
-                if (lower && upper) filter = (field: Field) => lower!(field.value) && upper!(field.value);
-                else if (lower) filter = (field: Field) => lower!(field.value);
-                else if (upper) filter = (field: Field) => upper!(field.value);
-                else
-                    return this._filterFields(
+                return Filters.lazyUnion(query.values,
+                    value => this._filterFields(
                         query.field,
-                        (index) => index.all(),
-                        (field) => true
-                    ); // no upper/lower bounds, return everything.
-
-                // TODO: Implement smarter range queries later.
-                return this._filterFields(query.field, (index) => undefined, filter);
+                        (index) => index.equals(value),
+                        (field) => Literals.compare(value, field.value) == 0
+                    ));
         }
-    }
-
-    /** Execute an expression over the given set of objects, returning only the matching objects. */
-    private _scanExpression(expression: Expression, candidates: Set<string>, context?: SearchContext): Filter<string> {
-        const results: Set<string> = new Set();
-        const errors: string[] = [];
-
-        const evaulator = new Evaluator(null, this.settings, {
-            "this": context?.sourcePath ? this.resolveLink(Link.file(context.sourcePath)) : undefined,
-        });
-
-        for (const candidate of candidates) {
-            const object = this.load(candidate);
-            if (!object) continue;
-
-            const result = evaulator.evaluate(expression, object);
-            if (!result.successful) {
-                errors.push(result.error);
-                continue;
-            }
-
-            if (Literals.isTruthy(result)) results.add(object.$id);
-        }
-
-        return Filters.atom(results);
     }
 
     /** Filter documents by field values, using the fast lookup if it returns a result and otherwise filtering over every document using the slow predicate. */
@@ -502,7 +443,7 @@ export class Datastore {
         key: string,
         fast: (index: FieldIndex) => Set<string> | undefined,
         slow: (field: Field) => boolean
-    ) {
+    ): Filter<string> {
         const normkey = key.toLowerCase();
         const index = this.fields.get(normkey);
         if (index == null) return Filters.NOTHING;

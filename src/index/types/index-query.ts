@@ -62,29 +62,15 @@ export interface IndexField {
 }
 
 /**
- * Fetch documents whose field value is equal to the given value. This will only work for specially indexed fields
+ * Fetch documents whose field value is equal to one of the given values. This will only work for specially indexed fields
  * which can be compared against, such as task 'completed', and the 'date' field of date-labelled pages.
  */
 export interface IndexValueEquals {
     type: "equal-value";
     /** The field whose value we are checking. */
     field: string;
-    /** The value that we expect it to be equal to. */
-    value: Literal;
-}
-
-/**
- * Fetch documents whose field value is in the given bounds. This will only work for specially indexed fields which can
- * be compared against, such as task 'completed' or task 'status', and the 'date' field of date-labelled pages.
- */
-export interface IndexValueBounded {
-    type: "bounded-value";
-    /** The field whose value we are checking. */
-    field: string;
-    /** The (lower bound, is-inclusive). */
-    lower?: [Literal, boolean];
-    /** The (upper bound, is-inclusive). */
-    upper?: [Literal, boolean];
+    /** The set of acceptable values. */
+    values: Literal[];
 }
 
 /**
@@ -156,7 +142,6 @@ export type IndexPrimitive =
     | IndexPath
     | IndexField
     | IndexValueEquals
-    | IndexValueBounded
     | IndexChildOf
     | IndexParentOf
     | IndexLinked;
@@ -186,7 +171,7 @@ export interface IndexNot {
 /** Pure combinators for combining queries. */
 export type IndexCombinator = IndexAnd | IndexOr | IndexNot;
 /** A full query AST. */
-export type IndexQuery = IndexCombinator | IndexPrimitive;
+export type IndexQuery = IndexCombinator | IndexExpression | IndexPrimitive;
 
 /** Constant index query which matches all. */
 export const INDEX_ALL: IndexQuery = { type: "constant", constant: true };

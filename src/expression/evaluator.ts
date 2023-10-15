@@ -6,6 +6,7 @@ import { BinaryOpHandler, createBinaryOps } from "./binaryop";
 import { Expression } from "expression/expression";
 import { DEFAULT_FUNCTIONS, FunctionImpl } from "./functions";
 import { Settings } from "settings";
+import { Fieldbearing, Fieldbearings } from "./field";
 
 /** Handles link resolution and normalization inside of a context. */
 export interface LinkHandler {
@@ -19,6 +20,10 @@ export interface LinkHandler {
     /** Return true if the given path actually exists, false otherwise. */
     exists(path: string): boolean;
 }
+
+/** Any object which provides variables to the evaluator. */
+export type MaybeArray<T> = T | T[];
+export type ObjectOrFieldbearing = MaybeArray<Fieldbearing | Record<string, Literal>>;
 
 /**
  * Evaluation context that expressions can be evaluated in. Includes global state, as well as available functions and a handler
@@ -49,20 +54,27 @@ export class Evaluator {
     }
 
     /** Try to evaluate an arbitrary expression in this context, raising an exception on failure. */
-    public tryEvaluate(expr: Expression, data: Record<string, Literal> = {}): Literal {
+    public tryEvaluate(expr: Expression, data: ObjectOrFieldbearing = {}): Literal {
         return this.evaluate(expr, data).orElseThrow();
     }
 
     /** Evaluate an arbitrary expression in this context. */
-    public evaluate(expr: Expression, data: Record<string, Literal> = {}): Result<Literal, string> {
+    public evaluate(expr: Expression, data: ObjectOrFieldbearing = {}): Result<Literal, string> {
         switch (expr.type) {
             case "literal":
                 return Result.success(expr.value);
             case "variable":
                 if (expr.name === "row") return Result.success(data);
-                else if (expr.name in data) return Result.success(data[expr.name]);
-                else if (expr.name in this.globals) return Result.success(this.globals[expr.name]);
-                else return Result.success(null);
+
+                // Look through all of the "stack frames".
+                for (const obj of Array.isArray(data) ? data : [data]) {
+                    const local = Fieldbearings.get(obj, expr.name);
+                    if (local !== undefined) return Result.success(local);
+                }
+
+                if (expr.name in this.globals) return Result.success(this.globals[expr.name]);
+
+                return Result.success(null);
             case "negated":
                 return this.evaluate(expr.child, data).map((s) => !Literals.isTruthy(s));
             case "binaryop":
@@ -89,12 +101,14 @@ export class Evaluator {
                 // Just relying on JS to capture 'data' for us implicitly; unsure
                 // if this is correct thing to do. Could cause weird behaviors.
                 return Result.success((ctx: Evaluator, ...args: Literal[]) => {
-                    let copy: Record<string, Literal> = Object.assign({}, data);
+                    let locals: Record<string, Literal> = {};
                     for (let arg = 0; arg < Math.min(args.length, expr.arguments.length); arg++) {
-                        copy[expr.arguments[arg]] = args[arg];
+                        locals[expr.arguments[arg]] = args[arg];
                     }
 
-                    return ctx.evaluate(expr.value, copy).orElseThrow();
+                    // Put locals first since they should supercede parent data (i.e., shadow parent variables).
+                    const newData = Array.isArray(data) ? [locals, ...data] : [locals, data];
+                    return ctx.evaluate(expr.value, newData).orElseThrow();
                 });
             case "function":
                 let rawFunc =

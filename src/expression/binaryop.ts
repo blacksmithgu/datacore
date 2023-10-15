@@ -6,6 +6,7 @@ import { BinaryOp, Expressions } from "expression/expression";
 import type { Evaluator } from "expression/evaluator";
 import { DateTime, Duration } from "luxon";
 import { Settings } from "settings";
+import { Fieldbearings } from "./field";
 
 /** A literal type or a catch-all '*'. */
 export type LiteralTypeOrAll = LiteralType | "*";
@@ -176,7 +177,7 @@ export function createBinaryOps(linkNormalizer: (x: string) => string): BinaryOp
 
                 return Result.success(result);
             })
-            .register("object", "index", "string", (obj, key) => obj[key] ?? null)
+            .register("object", "index", "string", (obj, key) => Fieldbearings.get(obj, key) ?? null)
             .registerResult("link", "index", "string", indexLink)
             .registerResult("link", "index", "number", indexLink)
             .register("object", "index", "number", (obj, key) => obj[key] ?? null)

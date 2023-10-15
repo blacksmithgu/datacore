@@ -45,15 +45,6 @@ export class FieldIndex {
         return this.present;
     }
 
-    /** Return all pages whose values are in the given (min, max) bounds. */
-    public range(min?: [Literal, boolean], max?: [Literal, boolean]): Set<string> | undefined {
-        if (!this.indexValues) return undefined;
-
-        // TODO: BTree is a bit annoying to implement arbitrary min/max, but this can speed up
-        // range queries by a lot.
-        return undefined;
-    }
-
     /** Return all pages with a value exactly equal to the given value. */
     public equals(value: Literal): Set<string> | undefined {
         if (!this.indexValues) return undefined;
