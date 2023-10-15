@@ -3,7 +3,7 @@ import { Filter, Filters } from "expression/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery } from "index/types/index-query";
-import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
+import { INDEX_FIELDS, Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
 import { MarkdownPage } from "./types/markdown/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";
@@ -182,7 +182,7 @@ export class Datastore {
         if (object.$types.contains(FIELDBEARING_TYPE) && "fields" in object) {
             for (const field of object.fields as Iterable<Field>) {
                 // Skip any index fields.
-                if (field.key.startsWith("$")) continue;
+                if (INDEX_FIELDS.has(field.key)) continue;
 
                 const norm = field.key.toLowerCase();
                 if (!this.fields.has(norm)) this.fields.set(norm, new FieldIndex(false));
@@ -215,7 +215,7 @@ export class Datastore {
         if (object.$types.contains(FIELDBEARING_TYPE) && "fields" in object) {
             for (const field of object.fields as Iterable<Field>) {
                 // Skip any index fields.
-                if (field.key.startsWith("$")) continue;
+                if (INDEX_FIELDS.has(field.key)) continue;
 
                 const norm = field.key.toLowerCase();
                 if (!this.fields.has(norm)) continue;

@@ -2,7 +2,7 @@ import { Link } from "expression/link";
 import { DateTime } from "luxon";
 
 /** The names of all index fields that are present on ALL indexed types. */
-export const INDEX_FIELDS = ["$types", "$typename", "$id", "$revision"];
+export const INDEX_FIELDS = new Set(["$types", "$typename", "$id", "$revision"]);
 
 /** Any indexable field, which must have a few index-relevant properties. */
 export interface Indexable {
