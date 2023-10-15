@@ -1,15 +1,15 @@
 import { Link, Literals } from "expression/literal";
-import { Filter, Filters } from "index/storage/filters";
+import { Filter, Filters } from "expression/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery } from "index/types/index-query";
 import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
-import { MarkdownPage } from "./types/markdown";
+import { MarkdownPage } from "./types/markdown/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";
 import FlatQueue from "flatqueue";
 import { FieldIndex } from "index/storage/fields";
-import { FIELDBEARING_TYPE, Field, Fieldbearing } from "index/types/field";
+import { FIELDBEARING_TYPE, Field, Fieldbearing } from "expression/field";
 import { IndexResolver, execute, optimizeQuery } from "index/storage/query-executor";
 
 /** Central, index storage for datacore values. */
@@ -251,15 +251,15 @@ export class Datastore {
         if (!(file instanceof MarkdownPage)) return undefined;
 
         if (link.type === "header") {
-            const section = file.sections.find(
-                (sec) => normalizeHeaderForLink(sec.title) == link.subpath || sec.title == link.subpath
+            const section = file.$sections.find(
+                (sec) => normalizeHeaderForLink(sec.$title) == link.subpath || sec.$title == link.subpath
             );
 
             if (section) return section;
             else return undefined;
         } else if (link.type === "block") {
-            for (const section of file.sections) {
-                const block = section.blocks.find((bl) => bl.blockId === link.subpath);
+            for (const section of file.$sections) {
+                const block = section.$blocks.find((bl) => bl.$blockId === link.subpath);
 
                 if (block) return block;
             }

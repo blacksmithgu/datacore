@@ -2,11 +2,11 @@ import { deferred, Deferred } from "utils/deferred";
 import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage, MarkdownListBlock, MarkdownListItem } from "index/types/markdown";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
 import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
 import { Settings } from "settings";
+import { MarkdownListBlock, MarkdownListItem, MarkdownPage } from "./types/markdown/markdown";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -111,20 +111,20 @@ export class Datacore extends Component {
             throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
         } else if (result.type === "markdown") {
             const parsed = MarkdownPage.from(result.result, (link) => {
-                const rpath = this.metadataCache.getFirstLinkpathDest(link.path, result.result.path!);
+                const rpath = this.metadataCache.getFirstLinkpathDest(link.path, result.result.$path!);
                 if (rpath) return link.withPath(rpath.path);
                 else return link;
             });
 
             this.datastore.store(parsed, (object, store) => {
-                store(object.sections, (section, store) => {
-                    store(section.blocks, (block, store) => {
+                store(object.$sections, (section, store) => {
+                    store(section.$blocks, (block, store) => {
                         if (block instanceof MarkdownListBlock) {
                             // Recursive store function for storing list heirarchies.
                             const storeRec: Substorer<MarkdownListItem> = (item, store) =>
-                                store(item.elements, storeRec);
+                                store(item.$elements, storeRec);
 
-                            store(block.elements, storeRec);
+                            store(block.$elements, storeRec);
                         }
                     });
                 });

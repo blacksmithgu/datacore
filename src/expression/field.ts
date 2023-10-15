@@ -1,7 +1,7 @@
 import { Literal, Literals } from "expression/literal";
 import { Indexable } from "../index/types/indexable";
 import { InlineField } from "index/import/inline-field";
-import { FrontmatterEntry } from "../index/types/markdown";
+import { FrontmatterEntry } from "index/types/markdown/json";
 
 /** The source of a field, used when determining what files to overwrite and how. */
 export type Provenance =
@@ -56,13 +56,10 @@ export type FieldExtractor<T> = (object: T, key?: string) => Field[];
 
 /** Quick utilities for generating fields and doing searches over them. */
 export namespace Extractors {
-    /** Default intrinsic fields to be ignored when extracting fields. */
-    export const DEFAULT_EXCLUDES = new Set(["fields", "constructor", "__proto__"]);
-
     /** Check if the given property in the object is not excluded and is a plain property (not a function or other special object). */
     function isValidIntrinsic(object: Record<string, any>, key: string, exclude?: Set<string>): boolean {
-        // Don't allow recursion on 'fields' or cached values, and skip any ignored.
-        if (DEFAULT_EXCLUDES.has(key) || exclude?.has(key)) return false;
+        // Don't allow recursion on 'fields' or cached values, and skip any ignored and non-intrinsics.
+        if (exclude?.has(key) || !key.startsWith("$")) return false;
 
         // No functions, only use actual values.
         const value = (object as any)[key];

@@ -26,34 +26,34 @@ export interface Indexable {
 export const LINKABLE_TYPE = "linkable";
 export interface Linkable {
     /** A link to this linkable object. */
-    link: Link;
+    $link: Link;
 }
 
 /** General metadata for any file. */
 export const FILE_TYPE = "file";
 export interface File extends Linkable {
     /** The path this file exists at. */
-    path: string;
+    $path: string;
     /** Obsidian-provided date this page was created. */
-    ctime: DateTime;
+    $ctime: DateTime;
     /** Obsidian-provided date this page was modified. */
-    mtime: DateTime;
+    $mtime: DateTime;
     /** Obsidian-provided size of this page in bytes. */
-    size: number;
+    $size: number;
     /** The extension of the file. */
-    extension: string;
+    $extension: string;
 }
 
 /** Metadata for taggable objects. */
 export const TAGGABLE_TYPE = "taggable";
 export interface Taggable {
-    /** The exact set of tags on this object. (#a/b/c or #foo/bar). */
-    tags: Set<string>;
+    /** The exact tags on this object. (#a/b/c or #foo/bar). */
+    $tags: string[];
 }
 
 /** Metadata for objects which can link to other things. */
 export const LINKBEARING_TYPE = "links";
 export interface Linkbearing {
     /** The links in this file. */
-    links: Link[];
+    $links: Link[];
 }

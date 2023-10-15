@@ -1,20 +1,12 @@
 import { Link } from "expression/link";
 import { getFileTitle } from "utils/normalizers";
-import {
-    FrontmatterEntry,
-    MarkdownBlock,
-    MarkdownPage,
-    MarkdownListBlock,
-    MarkdownListItem,
-    MarkdownSection,
-    MarkdownTaskItem,
-} from "index/types/markdown";
 import { DateTime } from "luxon";
 import { CachedMetadata, FileStats, ListItemCache } from "obsidian";
 import BTree from "sorted-btree";
 import { InlineField, asInlineField, extractFullLineField, extractInlineFields } from "./inline-field";
 import { EXPRESSION } from "expression/parser";
 import { Literal } from "expression/literal";
+import { FrontmatterEntry, JsonMarkdownBlock, JsonMarkdownListBlock, JsonMarkdownListItem, JsonMarkdownPage, JsonMarkdownSection, JsonMarkdownTaskItem } from "index/types/markdown/json";
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -25,7 +17,7 @@ export function markdownImport(
     markdown: string,
     metadata: CachedMetadata,
     stats: FileStats
-): Partial<MarkdownPage> {
+): JsonMarkdownPage {
     // Total length of the file.
     const lines = markdown.split("\n");
     const empty = !lines.some((line) => line.trim() !== "");
@@ -37,46 +29,40 @@ export function markdownImport(
     const metaheadings = metadata.headings ?? [];
     metaheadings.sort((a, b) => a.position.start.line - b.position.start.line);
 
-    const sections = new BTree<number, MarkdownSection>(undefined, (a, b) => a - b);
+    const sections = new BTree<number, JsonMarkdownSection>(undefined, (a, b) => a - b);
     for (let index = 0; index < metaheadings.length; index++) {
         const section = metaheadings[index];
         const start = section.position.start.line;
         const end =
             index == metaheadings.length - 1 ? lines.length - 1 : metaheadings[index + 1].position.start.line - 1;
 
-        sections.set(
-            start,
-            new MarkdownSection(path, {
-                ordinal: index + 1,
-                title: section.heading,
-                level: section.level,
-                position: { start, end },
-                infields: {},
-                blocks: [],
-                tags: new Set(),
-                links: [],
-            })
-        );
+        sections.set(start, {
+            $ordinal: index + 1,
+            $title: section.heading,
+            $level: section.level,
+            $position: { start, end },
+            $infields: {},
+            $blocks: [],
+            $tags: [],
+            $links: [],
+        });
     }
 
     // Add an implicit section for the "heading" section of the page if there is not an immediate header but there is
     // some content in the file. If there are other sections, then go up to that, otherwise, go for the entire file.
-    const firstSection: [number, MarkdownSection] | undefined = sections.getPairOrNextHigher(0);
-    if ((!firstSection && !empty) || (firstSection && !emptylines(lines, 0, firstSection[1].position.start))) {
-        const end = firstSection ? firstSection[1].position.start - 1 : lines.length;
-        sections.set(
-            0,
-            new MarkdownSection(path, {
-                ordinal: 0,
-                title: getFileTitle(path),
-                level: 1,
-                position: { start: 0, end },
-                blocks: [],
-                infields: {},
-                tags: new Set(),
-                links: [],
-            })
-        );
+    const firstSection: [number, JsonMarkdownSection] | undefined = sections.getPairOrNextHigher(0);
+    if ((!firstSection && !empty) || (firstSection && !emptylines(lines, 0, firstSection[1].$position.start))) {
+        const end = firstSection ? firstSection[1].$position.start - 1 : lines.length;
+        sections.set(0, {
+            $ordinal: 0,
+            $title: getFileTitle(path),
+            $level: 1,
+            $position: { start: 0, end },
+            $blocks: [],
+            $infields: {},
+            $tags: [],
+            $links: [],
+        });
     }
 
     ////////////
@@ -85,7 +71,7 @@ export function markdownImport(
 
     // All blocks; we will assign tags and other metadata to blocks as we encounter them. At the end, only blocks that
     // have actual metadata will be stored to save on memory pressure.
-    const blocks = new BTree<number, MarkdownBlock>(undefined, (a, b) => a - b);
+    const blocks = new BTree<number, JsonMarkdownBlock>(undefined, (a, b) => a - b);
     let blockOrdinal = 1;
     for (const block of metadata.sections || []) {
         // Skip headings blocks, we handle them specially as sections.
@@ -95,40 +81,35 @@ export function markdownImport(
         const end = block.position.end.line;
 
         if (block.type === "list") {
-            blocks.set(
-                start,
-                new MarkdownListBlock(path, {
-                    ordinal: blockOrdinal,
-                    position: { start, end },
-                    tags: new Set(),
-                    links: [],
-                    infields: {},
-                    blockId: block.id,
-                    elements: [],
-                })
-            );
+            blocks.set(start, {
+                $ordinal: blockOrdinal,
+                $position: { start, end },
+                $tags: [],
+                $links: [],
+                $infields: {},
+                $blockId: block.id,
+                $elements: [],
+                $type: "list"
+            } as JsonMarkdownListBlock);
         } else {
-            blocks.set(
-                start,
-                new MarkdownBlock(path, {
-                    ordinal: blockOrdinal,
-                    position: { start, end },
-                    tags: new Set(),
-                    links: [],
-                    infields: {},
-                    blockId: block.id,
-                    type: block.type,
-                })
-            );
+            blocks.set(start, {
+                $ordinal: blockOrdinal,
+                $position: { start, end },
+                $tags: [],
+                $links: [],
+                $infields: {},
+                $blockId: block.id,
+                $type: block.type,
+            });
         }
     }
 
     // Add blocks to sections.
-    for (const block of blocks.values() as Iterable<MarkdownBlock>) {
-        const section = sections.getPairOrNextLower(block.position.start);
+    for (const block of blocks.values() as Iterable<JsonMarkdownBlock>) {
+        const section = sections.getPairOrNextLower(block.$position.start);
 
-        if (section && section[1].position.end >= block.position.end) {
-            section[1].blocks.push(block);
+        if (section && section[1].$position.end >= block.$position.end) {
+            section[1].$blocks.push(block);
         }
     }
 
@@ -137,24 +118,24 @@ export function markdownImport(
     ///////////
 
     // All list items in lists. Start with a simple trivial pass.
-    const listItems = new BTree<number, MarkdownListItem>(undefined, (a, b) => a - b);
+    const listItems = new BTree<number, JsonMarkdownListItem>(undefined, (a, b) => a - b);
     for (const list of metadata.listItems || []) {
-        const item = convertListItem(path, list);
-        listItems.set(item.position.start, item);
+        const item = convertListItem(list);
+        listItems.set(item.$position.start, item);
     }
 
     // In the second list pass, actually construct the list heirarchy.
     for (const item of listItems.values()) {
-        if (item.parentLine < 0) {
-            const listBlock = blocks.get(-item.parentLine);
-            if (!listBlock || !(listBlock instanceof MarkdownListBlock)) continue;
+        if (item.$parentLine < 0) {
+            const listBlock = blocks.get(-item.$parentLine);
+            if (!listBlock || !(listBlock.$type === "list")) continue;
 
-            listBlock.elements.push(item);
+            (listBlock as JsonMarkdownListBlock).$elements.push(item);
         } else {
-            const listItem = listItems.get(item.parentLine);
+            const listItem = listItems.get(item.$parentLine);
             if (!listItem) continue;
 
-            listItem.elements.push(item);
+            listItem.$elements.push(item);
         }
     }
 
@@ -170,19 +151,13 @@ export function markdownImport(
         tags.add(tag);
 
         const section = sections.getPairOrNextLower(line);
-        if (section && section[1].position.end >= line) {
-            section[1].tags.add(tag);
-        }
+        if (section && section[1].$position.end >= line) addTag(section[1].$tags, tag);
 
         const block = blocks.getPairOrNextLower(line);
-        if (block && block[1].position.end >= line) {
-            block[1].tags.add(tag);
-        }
+        if (block && block[1].$position.end >= line) addTag(block[1].$tags, tag);
 
         const listItem = blocks.getPairOrNextHigher(line);
-        if (listItem && listItem[1].position.end >= line) {
-            listItem[1].tags.add(tag);
-        }
+        if (listItem && listItem[1].$position.end >= line) addTag(listItem[1].$tags, tag);
     }
 
     ///////////
@@ -196,19 +171,13 @@ export function markdownImport(
         addLink(links, link);
 
         const section = sections.getPairOrNextLower(line);
-        if (section && section[1].position.end >= line) {
-            addLink(section[1].links, link);
-        }
+        if (section && section[1].$position.end >= line) addLink(section[1].$links, link);
 
         const block = blocks.getPairOrNextLower(line);
-        if (block && block[1].position.end >= line) {
-            addLink(block[1].links, link);
-        }
+        if (block && block[1].$position.end >= line) addLink(block[1].$links, link);
 
         const listItem = blocks.getPairOrNextHigher(line);
-        if (listItem && listItem[1].position.end >= line) {
-            addLink(listItem[1].links, link);
-        }
+        if (listItem && listItem[1].$position.end >= line) addLink(listItem[1].$links, link);
     }
 
     ///////////////////////
@@ -231,19 +200,13 @@ export function markdownImport(
         addInlineField(inlineFields, field);
 
         const section = sections.getPairOrNextLower(line);
-        if (section && section[1].position.end >= line) {
-            addInlineField(section[1].infields, field);
-        }
+        if (section && section[1].$position.end >= line) addInlineField(section[1].$infields, field);
 
         const block = blocks.getPairOrNextLower(line);
-        if (block && block[1].position.end >= line) {
-            addInlineField(block[1].infields, field);
-        }
+        if (block && block[1].$position.end >= line) addInlineField(block[1].$infields, field);
 
         const listItem = blocks.getPairOrNextHigher(line);
-        if (listItem && listItem[1].position.end >= line) {
-            addInlineField(listItem[1].infields, field);
-        }
+        if (listItem && listItem[1].$position.end >= line) addInlineField(listItem[1].$infields, field);
     }
 
     /////////////////////////
@@ -263,42 +226,46 @@ export function markdownImport(
         };
     }
 
-    return new MarkdownPage({
-        path,
-        tags,
-        links,
-        sections: sections.valuesArray(),
-        ctime: DateTime.fromMillis(stats.ctime),
-        mtime: DateTime.fromMillis(stats.mtime),
-        frontmatter: frontmatter,
-        infields: inlineFields,
-        extension: "md",
-        size: stats.size,
-        position: { start: 0, end: lines.length },
-    });
+    return {
+        $path: path,
+        $tags: Array.from(tags),
+        $links: links,
+        $sections: sections.valuesArray(),
+        $ctime: stats.ctime,
+        $mtime: stats.mtime,
+        $frontmatter: frontmatter,
+        $infields: inlineFields,
+        $extension: "md",
+        $size: stats.size,
+        $position: { start: 0, end: lines.length },
+    };
 }
 
 /** Convert a list item into the appropriate markdown list type. */
-function convertListItem(path: string, raw: ListItemCache): MarkdownListItem {
-    const common: Partial<MarkdownListItem> = {
-        tags: new Set(),
-        links: [],
-        position: { start: raw.position.start.line, end: raw.position.end.line },
-        elements: [],
-        infields: {},
-        parentLine: raw.parent,
-        blockId: raw.id,
-    };
-
+function convertListItem(raw: ListItemCache): JsonMarkdownListItem {
     if (raw.task) {
-        return new MarkdownTaskItem(
-            path,
-            Object.assign(common, {
-                status: raw.task,
-            })
-        );
+        return {
+            $tags: [],
+            $links: [],
+            $position: { start: raw.position.start.line, end: raw.position.end.line },
+            $elements: [],
+            $infields: {},
+            $parentLine: raw.parent,
+            $blockId: raw.id,
+            $type: "task",
+            $status: raw.task,
+        } as JsonMarkdownTaskItem;
     } else {
-        return new MarkdownListItem(path, common);
+        return {
+            $tags: [],
+            $links: [],
+            $position: { start: raw.position.start.line, end: raw.position.end.line },
+            $elements: [],
+            $infields: {},
+            $parentLine: raw.parent,
+            $blockId: raw.id,
+            $type: "list",
+        };
     }
 }
 
@@ -354,6 +321,12 @@ function addInlineField(target: Record<string, InlineField>, incoming: InlineFie
     if (Object.keys(target).some((key) => key.toLowerCase() == lower)) return;
 
     target[lower] = incoming;
+}
+
+/** Add a tag to the given list only if it is not already present. */
+function addTag(target: string[], incoming: string) {
+    if (target.contains(incoming)) return;
+    target.push(incoming);
 }
 
 /** Recursively convert frontmatter into fields. We have to dance around YAML structure. */
