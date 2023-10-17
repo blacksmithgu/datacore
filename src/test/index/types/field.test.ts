@@ -4,10 +4,10 @@ import { Indexable } from "index/types/indexable";
 import { FrontmatterEntry } from "index/types/markdown/json";
 
 class DummyFields {
-    public constructor(public text: string, public value: number, public size: number) {}
+    public constructor(public $text: string, public $value: number, public $size: number) {}
 
-    public get valueSize(): number {
-        return this.value + this.size;
+    public get $valueSize(): number {
+        return this.$value + this.$size;
     }
 }
 
@@ -16,14 +16,14 @@ describe("Intrinsic Behavior", () => {
     const dummy = new DummyFields("Hello", 10, 20);
 
     test("Fetch Text", () =>
-        expect(intrinsics(dummy, "text")).toEqual([{ key: "text", value: "Hello", provenance: INTRINSIC_PROVENANCE }]));
+        expect(intrinsics(dummy, "$text")).toEqual([{ key: "$text", value: "Hello", provenance: INTRINSIC_PROVENANCE }]));
 
     test("Fetch Value", () =>
-        expect(intrinsics(dummy, "value")).toEqual([{ key: "value", value: 10, provenance: INTRINSIC_PROVENANCE }]));
+        expect(intrinsics(dummy, "$value")).toEqual([{ key: "$value", value: 10, provenance: INTRINSIC_PROVENANCE }]));
 
     test("Fetch Derived", () =>
-        expect(intrinsics(dummy, "valueSize")).toEqual([
-            { key: "valueSize", value: 30, provenance: INTRINSIC_PROVENANCE },
+        expect(intrinsics(dummy, "$valueSize")).toEqual([
+            { key: "$valueSize", value: 30, provenance: INTRINSIC_PROVENANCE },
         ]));
 });
 
