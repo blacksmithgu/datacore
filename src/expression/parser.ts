@@ -23,6 +23,7 @@ import {
     IndexTyped,
     IndexLinked,
     IndexField,
+    IndexExpression,
 } from "index/types/index-query";
 import { normalizeDuration } from "utils/normalizers";
 import { Literal } from "expression/literal";
@@ -106,8 +107,8 @@ export const PRIMITIVES = P.createLanguage<PrimitivesLanguage>({
     // A variable identifier, which is alphanumeric and must start with a letter or... emoji.
     identifier: (_) =>
         P.seqMap(
-            P.alt(P.regexp(/\p{Letter}/u), P.regexp(EMOJI_REGEX).desc("text")),
-            P.alt(P.regexp(/[0-9\p{Letter}_-]/u), P.regexp(EMOJI_REGEX).desc("text")).many(),
+            P.alt(P.regexp(/[\p{Letter}$]/u), P.regexp(EMOJI_REGEX).desc("text")),
+            P.alt(P.regexp(/[0-9\p{Letter}$_-]/u), P.regexp(EMOJI_REGEX).desc("text")).many(),
             (first, rest) => first + rest.join("")
         ).desc("variable"),
 
@@ -503,6 +504,8 @@ export interface QueryLanguage {
     querySimpleLinked: IndexLinked;
     queryLinked: IndexLinked;
     queryExists: IndexField;
+    queryQuotedExpression: IndexExpression;
+    queryRawExpression: IndexExpression;
     queryNegate: IndexNot;
     queryParens: IndexQuery;
     queryAtom: IndexQuery;
@@ -563,6 +566,12 @@ export const QUERY = P.createLanguage<QueryLanguage>({
                 value: ident,
             })
         ),
+    queryQuotedExpression: (q) =>
+        createFunction(P.regexp(/expr/i).desc("expr"), EXPRESSION.expression).map(([_, expr]) => ({
+            type: "expression",
+            expression: expr,
+        })),
+    queryRawExpression: (q) => EXPRESSION.binaryCompare.map((expr) => ({ type: "expression", expression: expr })),
 
     queryParens: (q) => q.query.trim(P.optWhitespace).wrap(P.string("("), P.string(")")),
     queryNegate: (q) =>
@@ -585,7 +594,10 @@ export const QUERY = P.createLanguage<QueryLanguage>({
             q.queryChildOf,
             q.queryParentOf,
             q.queryLinked,
-            q.queryPath
+            q.queryPath,
+            q.queryQuotedExpression,
+            // Expressions are essentially the "catch-all" of otherwise unparseable terms, so they should go absolute last.
+            q.queryRawExpression
         ),
     queryAnds: (q) =>
         createBinaryParser(q.queryAtom, PRIMITIVES.binaryAndOp, (left, _op, right) => ({

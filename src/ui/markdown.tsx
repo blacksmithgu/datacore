@@ -116,22 +116,6 @@ export function RawMarkdown({
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export const Markdown = memo(RawMarkdown);
 
-/** Embeds an HTML element in the react DOM. */
-export function RawEmbedHtml({ element }: { element: HTMLElement }) {
-    const container = useRef<HTMLElement | null>(null);
-
-    useEffect(() => {
-        if (!container.current) return;
-        container.current.innerHTML = "";
-        container.current.appendChild(element);
-    }, [container.current, element]);
-
-    return <span ref={container}></span>;
-}
-
-/** Embeds an HTML element in the react DOM. */
-export const EmbedHtml = memo(RawEmbedHtml);
-
 /** Intelligently render an arbitrary literal value. */
 export function RawLit({
     value,
@@ -183,8 +167,6 @@ export function RawLit({
         }
 
         return <ObsidianLink link={value} sourcePath={sourcePath} />;
-    } else if (Literals.isHtml(value)) {
-        return <EmbedHtml element={value} />;
     } else if (Literals.isFunction(value)) {
         return <Fragment>&lt;function&gt;</Fragment>;
     } else if (Literals.isArray(value)) {

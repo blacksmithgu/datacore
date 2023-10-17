@@ -14,7 +14,16 @@ import {
 import { DateTime } from "luxon";
 import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing } from "../../../expression/field";
 import { InlineField } from "index/import/inline-field";
-import { FrontmatterEntry, LineSpan, JsonMarkdownPage, JsonMarkdownSection, JsonMarkdownBlock, JsonMarkdownListBlock, JsonMarkdownListItem, JsonMarkdownTaskItem } from "./builders";
+import {
+    FrontmatterEntry,
+    LineSpan,
+    JsonMarkdownPage,
+    JsonMarkdownSection,
+    JsonMarkdownBlock,
+    JsonMarkdownListBlock,
+    JsonMarkdownListItem,
+    JsonMarkdownTaskItem,
+} from "./json";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
 export type LinkNormalizer = (link: Link) => Link;
@@ -67,7 +76,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
 
     /** Create a markdown file from the given raw values. */
     static from(raw: JsonMarkdownPage, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownPage {
-        const sections = raw.$sections.map(sect => MarkdownSection.from(sect, raw.$path, normalizer));
+        const sections = raw.$sections.map((sect) => MarkdownSection.from(sect, raw.$path, normalizer));
 
         return new MarkdownPage({
             $path: raw.$path,
@@ -80,7 +89,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
             $position: raw.$position,
             $tags: raw.$tags,
             $links: raw.$links.map(normalizer),
-            $sections: sections
+            $sections: sections,
         });
     }
 
@@ -131,7 +140,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
             $position: this.$position,
             $tags: this.$tags,
             $links: this.$links,
-            $sections: this.$sections.map(sect => sect.partial())
+            $sections: this.$sections.map((sect) => sect.partial()),
         };
     }
 
@@ -182,7 +191,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
             $tags: raw.$tags,
             $links: raw.$links.map(normalizer),
             $blocks: blocks,
-            $infields: normalizeLinks(raw.$infields, normalizer)
+            $infields: normalizeLinks(raw.$infields, normalizer),
         });
     }
 
@@ -228,7 +237,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
             $tags: this.$tags,
             $links: this.$links,
             $blocks: this.$blocks.map((block) => block.partial()),
-            $infields: this.$infields
+            $infields: this.$infields,
         };
     }
 
@@ -283,7 +292,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
             $links: object.$links.map(normalizer),
             $infields: normalizeLinks(object.$infields, normalizer),
             $blockId: object.$blockId,
-            $type: object.$type
+            $type: object.$type,
         });
     }
 
@@ -319,7 +328,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
             $links: this.$links,
             $infields: this.$infields,
             $blockId: this.$blockId,
-            $type: this.$type
+            $type: this.$type,
         };
     }
 
@@ -345,7 +354,11 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     $elements: MarkdownListItem[];
 
     /** Create a list block from a serialized value. */
-    static from(object: JsonMarkdownListBlock, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownListBlock {
+    static from(
+        object: JsonMarkdownListBlock,
+        file: string,
+        normalizer: LinkNormalizer = NOOP_NORMALIZER
+    ): MarkdownListBlock {
         const elements = object.$elements.map((elem) => MarkdownListItem.from(elem, file, normalizer));
         return new MarkdownListBlock({
             // TODO: This is shared with other blocks, should probably be fixed.
@@ -408,7 +421,11 @@ export class MarkdownListItem implements Linkbearing, Taggable {
     $parentLine: number;
 
     /** Create a list item from a serialized object. */
-    static from(object: JsonMarkdownListItem, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownListItem {
+    static from(
+        object: JsonMarkdownListItem,
+        file: string,
+        normalizer: LinkNormalizer = NOOP_NORMALIZER
+    ): MarkdownListItem {
         if (object.$type === "task") return MarkdownTaskItem.from(object as JsonMarkdownTaskItem, file, normalizer);
 
         const elements = object.$elements.map((elem) => MarkdownListItem.from(elem, file, normalizer));
@@ -501,7 +518,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
             $links: object.$links.map(normalizer),
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
-            $status: object.$status
+            $status: object.$status,
         });
     }
 
@@ -511,7 +528,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
 
     public partial(): JsonMarkdownListItem {
         return Object.assign(super.partial(), {
-            $status: this.$status
+            $status: this.$status,
         });
     }
 

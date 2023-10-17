@@ -124,7 +124,7 @@ export interface JsonMarkdownListItem {
 
 export interface JsonMarkdownTaskItem extends JsonMarkdownListItem {
     $type: "task";
-    
+
     /** The text inside of the task item. */
     $status: string;
 }

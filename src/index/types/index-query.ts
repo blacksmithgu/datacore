@@ -133,6 +133,7 @@ export interface IndexLinked {
     inclusive?: boolean;
 }
 
+/** Primary index sources which just directly produce sets of matches. */
 export type IndexPrimitive =
     | IndexId
     | IndexLink
@@ -141,10 +142,10 @@ export type IndexPrimitive =
     | IndexTagged
     | IndexPath
     | IndexField
-    | IndexValueEquals
-    | IndexChildOf
-    | IndexParentOf
-    | IndexLinked;
+    | IndexValueEquals;
+
+/** Secondary index sources which take in another index source, modify it somehow, and return a new set of matches. */
+export type IndexIntermediate = IndexChildOf | IndexParentOf | IndexLinked;
 
 ///////////////////////
 // Index Combinators //
@@ -170,8 +171,10 @@ export interface IndexNot {
 
 /** Pure combinators for combining queries. */
 export type IndexCombinator = IndexAnd | IndexOr | IndexNot;
+/** Anything that produces sets of matching values. */
+export type IndexSource = IndexIntermediate | IndexPrimitive;
 /** A full query AST. */
-export type IndexQuery = IndexCombinator | IndexExpression | IndexPrimitive;
+export type IndexQuery = IndexCombinator | IndexExpression | IndexSource;
 
 /** Constant index query which matches all. */
 export const INDEX_ALL: IndexQuery = { type: "constant", constant: true };

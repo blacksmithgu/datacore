@@ -138,7 +138,13 @@ export namespace Expressions {
         switch (expr.type) {
             case "binaryop":
                 // Special case `row["...."]`.
-                if (expr.op === "index" && expr.left.type == "variable" && expr.left.name == ROW && expr.right.type == "literal" && Literals.isString(expr.right.value)) {
+                if (
+                    expr.op === "index" &&
+                    expr.left.type == "variable" &&
+                    expr.left.name == ROW &&
+                    expr.right.type == "literal" &&
+                    Literals.isString(expr.right.value)
+                ) {
                     if (bound.has(expr.right.value)) return new Set();
                     else return new Set([expr.right.value]);
                 }
@@ -163,6 +169,41 @@ export namespace Expressions {
                 else return new Set([expr.name]);
             case "literal":
                 return new Set();
+        }
+    }
+
+    /** Render an expression as a string. */
+    export function toString(expr: Expression): string {
+        switch (expr.type) {
+            case "binaryop":
+                if (expr.op === "index") {
+                    return `${toString(expr.left)}[${toString(expr.right)}]`;
+                }
+
+                return `${toString(expr.left)} ${expr.op} ${toString(expr.right)}`;
+            case "function":
+                return `${toString(expr.func)}(${expr.arguments.map(toString).join(", ")})`;
+            case "lambda":
+                return `(${expr.arguments.join(", ")}) => ${toString(expr.value)}`;
+            case "list":
+                return `[${expr.values.map(toString).join(", ")}]`;
+            case "negated":
+                return `!${toString(expr.child)}`;
+            case "object":
+                return `{${Object.entries(expr.values)
+                    .map(([k, v]) => `${k}: ${toString(v)}`)
+                    .join(", ")}}`;
+            case "variable":
+                return expr.name;
+            case "literal":
+                const wrapped = Literals.wrapValue(expr.value);
+                if (!wrapped) return "null";
+                switch (wrapped.type) {
+                    case "string":
+                        return `"${wrapped.value}"`;
+                    default:
+                        return Literals.toString(wrapped.value);
+                }
         }
     }
 

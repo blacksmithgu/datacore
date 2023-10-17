@@ -6,7 +6,15 @@ import BTree from "sorted-btree";
 import { InlineField, asInlineField, extractFullLineField, extractInlineFields } from "./inline-field";
 import { EXPRESSION } from "expression/parser";
 import { Literal } from "expression/literal";
-import { FrontmatterEntry, JsonMarkdownBlock, JsonMarkdownListBlock, JsonMarkdownListItem, JsonMarkdownPage, JsonMarkdownSection, JsonMarkdownTaskItem } from "index/types/markdown/json";
+import {
+    FrontmatterEntry,
+    JsonMarkdownBlock,
+    JsonMarkdownListBlock,
+    JsonMarkdownListItem,
+    JsonMarkdownPage,
+    JsonMarkdownSection,
+    JsonMarkdownTaskItem,
+} from "index/types/markdown/json";
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -89,7 +97,7 @@ export function markdownImport(
                 $infields: {},
                 $blockId: block.id,
                 $elements: [],
-                $type: "list"
+                $type: "list",
             } as JsonMarkdownListBlock);
         } else {
             blocks.set(start, {
@@ -325,7 +333,7 @@ function addInlineField(target: Record<string, InlineField>, incoming: InlineFie
 
 /** Add a tag to the given list only if it is not already present. */
 function addTag(target: string[], incoming: string) {
-    if (target.contains(incoming)) return;
+    if (target.indexOf(incoming) != -1) return;
     target.push(incoming);
 }
 

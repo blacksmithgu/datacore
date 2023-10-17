@@ -21,9 +21,14 @@ export interface LinkHandler {
     exists(path: string): boolean;
 }
 
-/** Any object which provides variables to the evaluator. */
-export type MaybeArray<T> = T | T[];
-export type ObjectOrFieldbearing = MaybeArray<Fieldbearing | Record<string, Literal>>;
+/** Source of variables which can be referenced in the evaluator. */
+export interface Variables {
+    /** Render the entire variable store to a key-value map. */
+    all(): DataObject;
+
+    /** Resolve a variable by name. */
+    resolve(name: string): Literal | undefined;
+}
 
 /**
  * Evaluation context that expressions can be evaluated in. Includes global state, as well as available functions and a handler
@@ -54,37 +59,35 @@ export class Evaluator {
     }
 
     /** Try to evaluate an arbitrary expression in this context, raising an exception on failure. */
-    public tryEvaluate(expr: Expression, data: ObjectOrFieldbearing = {}): Literal {
-        return this.evaluate(expr, data).orElseThrow();
+    public tryEvaluate(expr: Expression, variables: Variables = Variables.empty()): Literal {
+        return this.evaluate(expr, variables).orElseThrow();
     }
 
     /** Evaluate an arbitrary expression in this context. */
-    public evaluate(expr: Expression, data: ObjectOrFieldbearing = {}): Result<Literal, string> {
+    public evaluate(expr: Expression, variables: Variables = Variables.empty()): Result<Literal, string> {
         switch (expr.type) {
             case "literal":
                 return Result.success(expr.value);
             case "variable":
-                if (expr.name === "row") return Result.success(data);
+                if (expr.name === "row") return Result.success(variables.all());
 
-                // Look through all of the "stack frames".
-                for (const obj of Array.isArray(data) ? data : [data]) {
-                    const local = Fieldbearings.get(obj, expr.name);
-                    if (local !== undefined) return Result.success(local);
-                }
-
+                const resolved = variables.resolve(expr.name);
+                if (resolved !== undefined) return Result.success(resolved);
                 if (expr.name in this.globals) return Result.success(this.globals[expr.name]);
 
                 return Result.success(null);
             case "negated":
-                return this.evaluate(expr.child, data).map((s) => !Literals.isTruthy(s));
+                return this.evaluate(expr.child, variables).map((s) => !Literals.isTruthy(s));
             case "binaryop":
-                return Result.flatMap2(this.evaluate(expr.left, data), this.evaluate(expr.right, data), (a, b) =>
-                    this.binaryOps.evaluate(expr.op, a, b, this)
+                return Result.flatMap2(
+                    this.evaluate(expr.left, variables),
+                    this.evaluate(expr.right, variables),
+                    (a, b) => this.binaryOps.evaluate(expr.op, a, b, this)
                 );
             case "list":
                 let result = [];
                 for (let child of expr.values) {
-                    let subeval = this.evaluate(child, data);
+                    let subeval = this.evaluate(child, variables);
                     if (!subeval.successful) return subeval;
                     result.push(subeval.value);
                 }
@@ -92,7 +95,7 @@ export class Evaluator {
             case "object":
                 let objResult: DataObject = {};
                 for (let [key, child] of Object.entries(expr.values)) {
-                    let subeval = this.evaluate(child, data);
+                    let subeval = this.evaluate(child, variables);
                     if (!subeval.successful) return subeval;
                     objResult[key] = subeval.value;
                 }
@@ -106,21 +109,19 @@ export class Evaluator {
                         locals[expr.arguments[arg]] = args[arg];
                     }
 
-                    // Put locals first since they should supercede parent data (i.e., shadow parent variables).
-                    const newData = Array.isArray(data) ? [locals, ...data] : [locals, data];
-                    return ctx.evaluate(expr.value, newData).orElseThrow();
+                    return ctx.evaluate(expr.value, Variables.lambda(variables, locals)).orElseThrow();
                 });
             case "function":
                 let rawFunc =
                     expr.func.type == "variable"
                         ? Result.success<string, string>(expr.func.name)
-                        : this.evaluate(expr.func, data);
+                        : this.evaluate(expr.func, variables);
                 if (!rawFunc.successful) return rawFunc;
                 let func = rawFunc.value;
 
                 let args: Literal[] = [];
                 for (let arg of expr.arguments) {
-                    let resolved = this.evaluate(arg, data);
+                    let resolved = this.evaluate(arg, variables);
                     if (!resolved.successful) return resolved;
                     args.push(resolved.value);
                 }
@@ -137,5 +138,68 @@ export class Evaluator {
                     return Result.failure(e.message);
                 }
         }
+    }
+}
+
+/** Get variables from a plain object. */
+export class ObjectVariables implements Variables {
+    public constructor(public object: DataObject) {}
+
+    public all(): DataObject {
+        return this.object;
+    }
+
+    public resolve(name: string): Literal | undefined {
+        return this.object[name];
+    }
+}
+
+/** Get variables from a field-bearing object (which supports case insensitivity). */
+export class FieldbearingVariables implements Variables {
+    public constructor(public object: Fieldbearing) {}
+
+    public all(): DataObject {
+        const object: DataObject = {};
+        for (const field of this.object.fields) {
+            object[field.key] = field.value;
+        }
+
+        return object;
+    }
+
+    public resolve(name: string): Literal | undefined {
+        return this.object.field(name)?.value;
+    }
+}
+
+/** Delegate to local context first, then to parent context if not available. */
+export class LambdaVariables implements Variables {
+    public constructor(public parent: Variables, public locals: Record<string, Literal>) {}
+
+    public all(): DataObject {
+        return { ...this.parent.all(), ...this.locals };
+    }
+
+    public resolve(name: string): Literal | undefined {
+        return this.locals[name] ?? this.parent.resolve(name);
+    }
+}
+
+/** Default utility functions for making variable stores. */
+export namespace Variables {
+    export function empty() {
+        return new ObjectVariables({});
+    }
+
+    export function infer(object: any): Variables {
+        if (Fieldbearings.isFieldbearing(object)) {
+            return new FieldbearingVariables(object);
+        } else {
+            return new ObjectVariables(object);
+        }
+    }
+
+    export function lambda(parent: Variables, locals: Record<string, Literal>): Variables {
+        return new LambdaVariables(parent, locals);
     }
 }

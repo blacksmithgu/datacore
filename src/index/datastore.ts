@@ -2,7 +2,7 @@ import { Link, Literals } from "expression/literal";
 import { Filter, Filters } from "expression/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
-import { IndexPrimitive, IndexQuery } from "index/types/index-query";
+import { IndexPrimitive, IndexQuery, IndexSource } from "index/types/index-query";
 import { INDEX_FIELDS, Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
 import { MarkdownPage } from "./types/markdown/markdown";
@@ -11,6 +11,9 @@ import FlatQueue from "flatqueue";
 import { FieldIndex } from "index/storage/fields";
 import { FIELDBEARING_TYPE, Field, Fieldbearing } from "expression/field";
 import { IndexResolver, execute, optimizeQuery } from "index/storage/query-executor";
+import { Result } from "api/result";
+import { Evaluator } from "expression/evaluator";
+import { Settings } from "settings";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -43,7 +46,7 @@ export class Datastore {
      */
     private folder: FolderIndex;
 
-    public constructor(public vault: Vault, public metadataCache: MetadataCache) {
+    public constructor(public vault: Vault, public metadataCache: MetadataCache, public settings: Settings) {
         this.revision = 0;
         this.ids = new Set();
         this.objects = new Map();
@@ -67,6 +70,7 @@ export class Datastore {
     /** Load a list of objects by ID. */
     public load(ids: string[]): Indexable[];
 
+    /** Load an object by ID or list of IDs. */
     load(id: string | string[]): Indexable | Indexable[] | undefined {
         if (Array.isArray(id)) {
             return id.map((a) => this.load(a)).filter((obj): obj is Indexable => obj !== undefined);
@@ -241,7 +245,12 @@ export class Datastore {
     }
 
     /** Find the corresponding object for a given link. */
-    public resolveLink(link: Link): Indexable | undefined {
+    public resolveLink(link: Link, sourcePath?: string): Indexable | undefined {
+        if (sourcePath) {
+            const linkdest = this.metadataCache.getFirstLinkpathDest(link.path, sourcePath);
+            if (linkdest) link = link.withPath(linkdest.path);
+        }
+
         const file = this.objects.get(link.path);
         if (!file) return undefined;
 
@@ -274,11 +283,12 @@ export class Datastore {
      * Search the datastore for all documents matching the given query, returning them
      * as a list of indexed objects along with performance metadata.
      */
-    public search(query: IndexQuery, context?: SearchContext): SearchResult<Indexable> {
+    public search(query: IndexQuery, settings?: SearchSettings): Result<SearchResult<Indexable>, string> {
         const start = Date.now();
 
-        const filter = this._search(query, context);
-        const result = Filters.resolve(filter, this.ids);
+        const maybeFilter = this._search(query, settings);
+        if (!maybeFilter.successful) return maybeFilter.cast();
+        const result = Filters.resolve(maybeFilter.value, this.ids);
 
         const objects: Indexable[] = [];
         let maxRevision = 0;
@@ -290,35 +300,56 @@ export class Datastore {
             }
         }
 
-        return {
+        return Result.success({
             query: query,
             results: objects,
             duration: (Date.now() - start) / 1000.0,
             revision: maxRevision,
-        };
+        });
     }
 
     /** Internal search which yields a filter of results. */
-    private _search(query: IndexQuery, context?: SearchContext): Filter<string> {
+    private _search(query: IndexQuery, settings?: SearchSettings): Result<Filter<string>, string> {
+        const sourcePath = settings?.sourcePath;
+        const file = sourcePath ? this.objects.get(sourcePath) : undefined;
+
+        const evaluator = new Evaluator(
+            {
+                exists: (path: string | Link) =>
+                    this.resolveLink(typeof path == "string" ? Link.file(path) : path, sourcePath) != null,
+                resolve: (path: string) =>
+                    this.resolveLink(typeof path == "string" ? Link.file(path) : path, sourcePath) ?? null,
+                normalize: (path: string) =>
+                    this.metadataCache.getFirstLinkpathDest(path, sourcePath ?? "")?.path ?? path,
+            },
+            this.settings
+        );
+
+        // Set `this` on the file if needed.
+        if (file) evaluator.set("this", file);
+
         const resolver: IndexResolver<string> = {
             universe: this.ids,
-            resolve: (leaf) => this._resolvePrimitive(leaf, context),
-            load: (id) => this.load(id)
+            resolve: (leaf) => this._resolveSource(leaf, settings),
+            resolvePrimitive: (leaf) => this._resolvePrimitive(leaf, settings),
+            load: (id) => this.load(id),
         };
 
-        return execute(optimizeQuery(query), resolver);
+        return execute(optimizeQuery(query), resolver, evaluator);
     }
 
-    /** Resolve leaf nodes in a search AST, yielding raw sets of results. */
-    private _resolvePrimitive(query: IndexPrimitive, context?: SearchContext): Filter<string> {
+    private _resolveSource(query: IndexSource, settings?: SearchSettings): Result<Filter<string>, string> {
         switch (query.type) {
             case "child-of":
                 // TODO: Consider converting this to be a scan instead for a noticable speedup.
-                const parents = this._search(query.parents, context);
+                const maybeParents = this._search(query.parents, settings);
+                if (!maybeParents.successful) return maybeParents.cast();
+
+                const parents = maybeParents.value;
                 if (Filters.empty(parents)) {
-                    return Filters.NOTHING;
+                    return Result.success(Filters.NOTHING);
                 } else if (parents.type === "everything") {
-                    if (query.inclusive) return Filters.EVERYTHING;
+                    if (query.inclusive) return Result.success(Filters.EVERYTHING);
 
                     // Return the set all children. TODO: Consider caching via a `parents` map.
                     const allChildren = new Set<string>();
@@ -326,7 +357,7 @@ export class Datastore {
                         if (element.$parent) allChildren.add(element.$id);
                     }
 
-                    return Filters.atom(allChildren);
+                    return Result.success(Filters.atom(allChildren));
                 }
 
                 const resolvedParents = Filters.resolve(parents, this.ids);
@@ -338,16 +369,19 @@ export class Datastore {
                     }
                 }
 
-                return Filters.atom(childResults);
+                return Result.success(Filters.atom(childResults));
             case "parent-of":
                 // TODO: Consider converting this to be a scan instead for a noticable speedup.
-                const children = this._search(query.children, context);
-                if (Filters.empty(children)) {
-                    return Filters.NOTHING;
-                } else if (children.type === "everything") {
-                    if (query.inclusive) return Filters.EVERYTHING;
+                const maybeChildren = this._search(query.children, settings);
+                if (!maybeChildren.successful) return maybeChildren.cast();
+                const children = maybeChildren.value;
 
-                    return Filters.atom(new Set(this.children.keys()));
+                if (Filters.empty(children)) {
+                    return Result.success(Filters.NOTHING);
+                } else if (children.type === "everything") {
+                    if (query.inclusive) return Result.success(Filters.EVERYTHING);
+
+                    return Result.success(Filters.atom(new Set(this.children.keys())));
                 }
 
                 const resolvedChildren = Filters.resolve(children, this.ids);
@@ -359,16 +393,19 @@ export class Datastore {
                     }
                 }
 
-                return Filters.atom(parentResults);
+                return Result.success(Filters.atom(parentResults));
             case "linked":
-                if (query.distance && query.distance < 0) return Filters.NOTHING;
+                if (query.distance && query.distance < 0) return Result.success(Filters.NOTHING);
 
                 // Compute the source objects first.
-                const sources = this._search(query.source, context);
-                if (Filters.empty(sources)) return Filters.NOTHING;
+                const maybeSources = this._search(query.source, settings);
+                if (!maybeSources.successful) return maybeSources.cast();
+                const sources = maybeSources.value;
+
+                if (Filters.empty(sources)) return Result.success(Filters.NOTHING);
                 else if (sources.type === "everything") {
-                    if (query.inclusive) return Filters.EVERYTHING;
-                    else return Filters.NOTHING;
+                    if (query.inclusive) return Result.success(Filters.EVERYTHING);
+                    else return Result.success(Filters.NOTHING);
                 }
 
                 const resolvedSources = Filters.resolve(sources, this.ids);
@@ -377,8 +414,17 @@ export class Datastore {
                     this._iterateAdjacentLinked(id, direction)
                 );
 
-                if (!query.inclusive) return Filters.atom(Filters.setIntersectNegation(results, resolvedSources));
-                else return Filters.atom(results);
+                if (!query.inclusive)
+                    return Result.success(Filters.atom(Filters.setIntersectNegation(results, resolvedSources)));
+                else return Result.success(Filters.atom(results));
+            default:
+                return Result.success(this._resolvePrimitive(query, settings));
+        }
+    }
+
+    /** Resolve leaf nodes in a search AST, yielding raw sets of results. */
+    private _resolvePrimitive(query: IndexPrimitive, settings?: SearchSettings): Filter<string> {
+        switch (query.type) {
             case "constant":
                 return Filters.constant(query.constant);
             case "id":
@@ -387,7 +433,7 @@ export class Datastore {
             case "link":
                 const resolvedPath = this.metadataCache.getFirstLinkpathDest(
                     query.value.path,
-                    context?.sourcePath ?? ""
+                    settings?.sourcePath ?? ""
                 )?.path;
                 const resolved = resolvedPath ? query.value.withPath(resolvedPath) : query.value;
 
@@ -429,12 +475,13 @@ export class Datastore {
 
                 return Filters.atom(fieldIndex.all());
             case "equal-value":
-                return Filters.lazyUnion(query.values,
-                    value => this._filterFields(
+                return Filters.lazyUnion(query.values, (value) =>
+                    this._filterFields(
                         query.field,
                         (index) => index.equals(value),
                         (field) => Literals.compare(value, field.value) == 0
-                    ));
+                    )
+                );
         }
     }
 
@@ -564,7 +611,7 @@ export interface SearchResult<O> {
 }
 
 /** Extra settings that can be provided to a search. */
-export interface SearchContext {
+export interface SearchSettings {
     /** The path to run from when resolving links and `this` sections. */
     sourcePath?: string;
 }

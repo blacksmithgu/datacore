@@ -1,5 +1,4 @@
-import { Groupings, Values } from "data-model/value";
-import { QuerySettings } from "settings";
+import { Groupings, Literals } from "expression/literal";
 
 /** A function which maps an array element to some value. */
 export type ArrayFunc<T, O> = (elem: T, index: number, arr: T[]) => O;
@@ -178,30 +177,19 @@ class DataArrayImpl<T> implements DataArray<T> {
         },
     };
 
-    public static wrap<T>(
-        arr: T[],
-        settings: QuerySettings,
-        defaultComparator: ArrayComparator<any> = Values.compareValue
-    ): DataArray<T> {
-        return new Proxy<DataArrayImpl<T>>(
-            new DataArrayImpl<T>(arr, settings, defaultComparator),
-            DataArrayImpl.ARRAY_PROXY
-        );
+    public static wrap<T>(arr: T[], defaultComparator: ArrayComparator<any> = Literals.compare): DataArray<T> {
+        return new Proxy<DataArrayImpl<T>>(new DataArrayImpl<T>(arr, defaultComparator), DataArrayImpl.ARRAY_PROXY);
     }
 
     public length: number;
     [key: string]: any;
 
-    private constructor(
-        public values: any[],
-        public settings: QuerySettings,
-        public defaultComparator: ArrayComparator<any> = Values.compareValue
-    ) {
+    private constructor(public values: any[], public defaultComparator: ArrayComparator<any> = Literals.compare) {
         this.length = values.length;
     }
 
     private lwrap<U>(values: U[]): DataArray<U> {
-        return DataArrayImpl.wrap(values, this.settings, this.defaultComparator);
+        return DataArrayImpl.wrap(values, this.defaultComparator);
     }
 
     public where(predicate: ArrayFunc<T, boolean>): DataArray<T> {
@@ -250,7 +238,7 @@ class DataArrayImpl<T> implements DataArray<T> {
 
     /** Return the first index of the given (optionally starting the search) */
     public indexOf(element: T, fromIndex?: number): number {
-        return this.findIndex(e => this.defaultComparator(e, element) == 0, fromIndex);
+        return this.findIndex((e) => this.defaultComparator(e, element) == 0, fromIndex);
     }
 
     /** Return the first element that satisfies the given predicate. */
@@ -273,7 +261,7 @@ class DataArrayImpl<T> implements DataArray<T> {
     }
 
     public join(sep?: string): string {
-        return this.map(s => Values.toString(s, this.settings))
+        return this.map((s) => Literals.toString(s))
             .array()
             .join(sep ?? ", ");
     }
@@ -293,7 +281,7 @@ class DataArrayImpl<T> implements DataArray<T> {
             return direction === "desc" ? -realComparator(aKey, bKey) : realComparator(aKey, bKey);
         });
 
-        return this.lwrap(copy.map(e => e.value));
+        return this.lwrap(copy.map((e) => e.value));
     }
 
     public sortInPlace<U>(
@@ -346,10 +334,10 @@ class DataArrayImpl<T> implements DataArray<T> {
 
     public groupIn<U>(key: ArrayFunc<LowestKey<T>, U>, comparator?: ArrayComparator<U>): DataArray<Ingrouped<U, T>> {
         if (Groupings.isGrouping(this.values)) {
-            return this.map(v => {
+            return this.map((v) => {
                 return {
                     key: (v as any).key,
-                    rows: DataArray.wrap((v as any).rows, this.settings).groupIn(key as any, comparator as any),
+                    rows: DataArray.wrap((v as any).rows).groupIn(key as any, comparator as any),
                 } as any;
             });
         } else {
@@ -359,12 +347,12 @@ class DataArrayImpl<T> implements DataArray<T> {
 
     public distinct<U>(key?: ArrayFunc<T, U>, comparator?: ArrayComparator<U>): DataArray<T> {
         if (this.values.length == 0) return this;
-        let realKey = key ?? (x => x as any as U);
+        let realKey = key ?? ((x) => x as any as U);
 
         // For similar reasons to groupBy, do a sort and take the first element of each block.
         let intermediate = this.map((x, index) => {
             return { key: realKey(x, index, this.values), value: x };
-        }).sort(x => x.key, "asc", comparator);
+        }).sort((x) => x.key, "asc", comparator);
         comparator = comparator ?? this.defaultComparator;
 
         let result: T[] = [intermediate[0].value];
@@ -402,7 +390,7 @@ class DataArrayImpl<T> implements DataArray<T> {
             let value = child[key];
             if (value === undefined || value === null) continue;
 
-            if (Array.isArray(value) || DataArray.isDataArray(value)) value.forEach(v => result.push(v));
+            if (Array.isArray(value) || DataArray.isDataArray(value)) value.forEach((v) => result.push(v));
             else result.push(value);
         }
 
@@ -430,8 +418,8 @@ class DataArrayImpl<T> implements DataArray<T> {
             let value = next[key];
 
             if (value === undefined || value === null) continue;
-            if (Array.isArray(value)) value.forEach(v => queue.push(v));
-            else if (value instanceof DataArrayImpl) value.forEach(v => queue.push(v));
+            if (Array.isArray(value)) value.forEach((v) => queue.push(v));
+            else if (value instanceof DataArrayImpl) value.forEach((v) => queue.push(v));
             else queue.push(value);
 
             result.push(next);
@@ -462,18 +450,18 @@ class DataArrayImpl<T> implements DataArray<T> {
 /** Provides utility functions for generating data arrays. */
 export namespace DataArray {
     /** Create a new Dataview data array. */
-    export function wrap<T>(raw: T[] | DataArray<T>, settings: QuerySettings): DataArray<T> {
+    export function wrap<T>(raw: T[] | DataArray<T>): DataArray<T> {
         if (isDataArray(raw)) return raw;
-        return DataArrayImpl.wrap(raw, settings);
+        return DataArrayImpl.wrap(raw);
     }
 
     /** Create a new DataArray from an iterable object. */
-    export function from<T>(raw: Iterable<T>, settings: QuerySettings): DataArray<T> {
+    export function from<T>(raw: Iterable<T>): DataArray<T> {
         if (isDataArray(raw)) return raw;
 
         let data = [];
         for (let elem of raw) data.push(elem);
-        return DataArrayImpl.wrap(data, settings);
+        return DataArrayImpl.wrap(data);
     }
 
     /** Return true if the given object is a data array. */

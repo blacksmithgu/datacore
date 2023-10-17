@@ -33,7 +33,9 @@ export interface Fieldbearing {
 
 export namespace Fieldbearings {
     export function isFieldbearing(object: any): object is Fieldbearing {
-        return object != null && typeof object === "object" && "field" in object && (typeof object["field"] == "function");
+        return (
+            object != null && typeof object === "object" && "field" in object && typeof object["field"] == "function"
+        );
     }
 
     /** Get a key from a generic map or fieldbearing object. */

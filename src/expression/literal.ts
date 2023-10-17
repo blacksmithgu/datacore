@@ -356,31 +356,15 @@ export namespace Literals {
         return val instanceof Link;
     }
 
-    /** Determine if the value is a widget. */
-    export function isWidget(val: any): val is Widget {
-        return val instanceof Widget;
-    }
-
-    /** Determine if the value is arbitary HTML. */
-    export function isHtml(val: any): val is HTMLElement {
-        if (typeof HTMLElement !== "undefined") {
-            return val instanceof HTMLElement;
-        } else {
-            return false;
-        }
-    }
-
     /** Checks if the given value is an object (and not any other datacore-recognized object-like type). */
     export function isObject(val: any): val is Record<string, any> {
         return (
+            val !== undefined &&
             typeof val == "object" &&
-            !isHtml(val) &&
-            !isWidget(val) &&
             !isArray(val) &&
             !isDuration(val) &&
             !isDate(val) &&
             !isLink(val) &&
-            val !== undefined &&
             !isNull(val)
         );
     }
@@ -391,19 +375,31 @@ export namespace Literals {
     }
 }
 
-/**
- * A trivial base class which just defines the '$widget' identifier type. Subtypes of
- * widget are responsible for adding whatever metadata is relevant. If you want your widget
- * to have rendering functionality (which you probably do), you should extend `RenderWidget`.
- */
-export abstract class Widget {
-    public constructor(public $widget: string) {}
+/** A grouping on a type which supports recursively-nested groups. */
+export type GroupElement<T> = { key: Literal; rows: Grouping<T> };
+export type Grouping<T> = T[] | GroupElement<T>[];
 
-    /**
-     * Attempt to render this widget in markdown, if possible; if markdown is not possible,
-     * then this will attempt to render as HTML. Note that many widgets have interactive
-     * components or difficult functional components and the `markdown` function can simply
-     * return a placeholder in this case (such as `<function>` or `<task-list>`).
-     */
-    public abstract markdown(): string;
+export namespace Groupings {
+    /** Determines if the given group entry is a standalone value, or a grouping of sub-entries. */
+    export function isElementGroup<T>(entry: T | GroupElement<T>): entry is GroupElement<T> {
+        return Literals.isObject(entry) && Object.keys(entry).length == 2 && "key" in entry && "rows" in entry;
+    }
+
+    /** Determines if the given array is a grouping array. */
+    export function isGrouping<T>(entry: Grouping<T>): entry is GroupElement<T>[] {
+        for (let element of entry) if (!isElementGroup(element)) return false;
+
+        return true;
+    }
+
+    /** Count the total number of elements in a recursive grouping. */
+    export function count<T>(elements: Grouping<T>): number {
+        if (isGrouping(elements)) {
+            let result = 0;
+            for (let subgroup of elements) result += count(subgroup.rows);
+            return result;
+        } else {
+            return elements.length;
+        }
+    }
 }

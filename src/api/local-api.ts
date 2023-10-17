@@ -4,9 +4,9 @@ import { Datacore } from "index/datacore";
 import { Datastore, SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown";
+import { MarkdownPage } from "index/types/markdown/markdown";
 import { App } from "obsidian";
-import { useFileMetadata, useFullQuery, useInterning, useQuery } from "ui/hooks";
+import { UseQueryResult, useFileMetadata, useFullQuery, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
@@ -96,12 +96,12 @@ export class DatacoreLocalApi {
      * Run a query, automatically re-running it whenever the vault changes. Returns more information about the query
      * execution, such as index revision and total search duration.
      */
-    public useFullQuery(query: IndexQuery, settings?: { debounce?: number }): SearchResult<Indexable> {
+    public useFullQuery(query: IndexQuery, settings?: { debounce?: number }): UseQueryResult<SearchResult<Indexable>> {
         return useFullQuery(this.core, query, settings);
     }
 
     /** Run a query, automatically re-running it whenever the vault changes. */
-    public useQuery(query: IndexQuery, settings?: { debounce?: number }): Indexable[] {
+    public useQuery(query: IndexQuery, settings?: { debounce?: number }): UseQueryResult<Indexable[]> {
         return useQuery(this.core, query, settings);
     }
 

@@ -1,3 +1,5 @@
+import { Result } from "api/result";
+
 /** Static set element which matches everything. */
 export type Everything = { type: "everything" };
 /** Static set element which matches nothing. */
@@ -96,14 +98,25 @@ export namespace Filters {
         elements: Iterable<I>,
         produce: (input: I) => Filter<T> | undefined
     ): Filter<T> {
+        return lazyFailableIntersection(elements, (x) => Result.success(produce(x))).orElseThrow();
+    }
+
+    /** Intersect filters lazily, short-circuiting if the intersection would produce NOTHING. */
+    export function lazyFailableIntersection<I, T, E>(
+        elements: Iterable<I>,
+        produce: (input: I) => Result<Filter<T> | undefined, E>
+    ): Result<Filter<T>, E> {
         const atoms: Set<T>[] = [];
         const negations: Set<T>[] = [];
         for (let element of elements) {
-            const filter = produce(element);
+            const maybeFilter = produce(element);
+            if (!maybeFilter.successful) return maybeFilter.cast();
+
+            const filter = maybeFilter.value;
             if (filter === undefined) continue;
 
             // Empty filters will produce an empty intersection.
-            if (empty(filter)) return NOTHING;
+            if (empty(filter)) return Result.success(NOTHING);
             // EVERYTHING filters are redundant in ANDs, skip them.
             if (filter.type === "everything") continue;
 
@@ -119,13 +132,13 @@ export namespace Filters {
         // If both, compute x = (a && b) and y = (c || d), and then compute x && !y.
 
         if (atoms.length == 0 && negations.length == 0) {
-            return EVERYTHING;
+            return Result.success(EVERYTHING);
         } else if (atoms.length > 0 && negations.length == 0) {
-            return atom(setIntersect(atoms));
+            return Result.success(atom(setIntersect(atoms)));
         } else if (atoms.length == 0 && negations.length > 0) {
-            return negated(setUnion(negations));
+            return Result.success(negated(setUnion(negations)));
         } else {
-            return Filters.atom(setIntersectNegation(setIntersect(atoms), setUnion(negations)));
+            return Result.success(Filters.atom(setIntersectNegation(setIntersect(atoms), setUnion(negations))));
         }
     }
 
@@ -136,14 +149,25 @@ export namespace Filters {
 
     /** Union filters lazily, short-circuiting if the union would produce EVERYTHING. */
     export function lazyUnion<I, T>(elements: Iterable<I>, produce: (input: I) => Filter<T> | undefined): Filter<T> {
+        return lazyFailableUnion(elements, (x) => Result.success(produce(x))).orElseThrow();
+    }
+
+    /** Union filters lazily, short-circuiting if the union would produce EVERYTHING. */
+    export function lazyFailableUnion<I, T, E>(
+        elements: Iterable<I>,
+        produce: (input: I) => Result<Filter<T> | undefined, E>
+    ): Result<Filter<T>, E> {
         const atoms: Set<T>[] = [];
         const negations: Set<T>[] = [];
         for (let element of elements) {
-            const filter = produce(element);
+            const maybeFilter = produce(element);
+            if (!maybeFilter.successful) return maybeFilter.cast();
+
+            const filter = maybeFilter.value;
             if (filter === undefined) continue;
 
             // EVERYTHING filters will produce everything always.
-            if (filter.type === "everything") return EVERYTHING;
+            if (filter.type === "everything") return Result.success(EVERYTHING);
             // Empty filters are redundant.
             if (empty(filter)) continue;
 
@@ -162,13 +186,13 @@ export namespace Filters {
         // can be computed using intersection logic.
 
         if (atoms.length == 0 && negations.length == 0) {
-            return NOTHING;
+            return Result.success(NOTHING);
         } else if (atoms.length > 0 && negations.length == 0) {
-            return Filters.atom(setUnion(atoms));
+            return Result.success(Filters.atom(setUnion(atoms)));
         } else if (atoms.length == 0 && negations.length > 0) {
-            return Filters.negated(setIntersect(negations));
+            return Result.success(Filters.negated(setIntersect(negations)));
         } else {
-            return negated(setIntersectNegation(setIntersect(negations), setUnion(atoms)));
+            return Result.success(negated(setIntersectNegation(setIntersect(negations), setUnion(atoms))));
         }
     }
 

@@ -42,42 +42,49 @@ export interface UseQuerySettings {
     debounce?: number;
 }
 
+/** The result of using a query. */
+export type UseQueryResult<O> =
+    | { type: "loading" }
+    | { type: "error"; error: string }
+    | { type: "success"; results: O };
+
 /** Perform a live query which updates its results whenever the backing query would change. */
 export function useFullQuery(
     datacore: Datacore,
     query: IndexQuery,
     settings?: UseQuerySettings
-): SearchResult<Indexable> {
+): UseQueryResult<SearchResult<Indexable>> {
     // Track index updates with customizable debouncing.
     const indexRevision = useIndexUpdates(datacore, settings);
 
     // We "intern" the query, meaning we reuse the oldest version if it is semantically equal but just a different object.
-    const internedQuery = useInterning(
-        query,
-        (a, b) => Literals.compare(a as Record<string, any>, b as Record<string, any>) == 0
-    );
+    const internedQuery = useInterning(query, (a, b) => Literals.compare(a, b) == 0);
     // Intern the output as well so react diffing "just works" with the result of useQuery.
-    const internedResult = useRef<SearchResult<Indexable> | undefined>(undefined);
+    const internedResult = useRef<UseQueryResult<SearchResult<Indexable>>>({ type: "loading" });
 
     // On every index revision update, re-run the query and check if it produced meaningfully new values.
     return useMemo(() => {
-        const newResult = datacore.datastore.search(query);
-        if (internedResult.current === undefined) {
-            internedResult.current = newResult;
-            return newResult;
+        // TODO: When this becomes async later we can add `loading` as an interim state.
+        const maybeNewResult = datacore.datastore.search(query);
+        if (!maybeNewResult.successful) {
+            internedResult.current = { type: "error", error: maybeNewResult.error };
+            return internedResult.current;
         }
 
-        // If revisions differ, this is definitely a novel new result, so return it.
+        // If loading or in error state, always replace with a success.
+        const newResult = maybeNewResult.value;
+        if (internedResult.current.type === "loading" || internedResult.current.type === "error") {
+            return (internedResult.current = { type: "success", results: newResult });
+        }
+
+        // If both are successful, diff the actual results. First do a fast check of revisions, then
+        // a slower check of the actual objects.
         const oldResult = internedResult.current;
-        if (oldResult.revision != newResult.revision) {
-            internedResult.current = newResult;
-            return newResult;
-        }
-
-        // Revisions are the same, so we have to compare the object sets.
-        if (!sameObjects(oldResult.results, newResult.results)) {
-            internedResult.current = newResult;
-            return newResult;
+        if (
+            oldResult.results.revision != newResult.revision ||
+            !sameObjects(oldResult.results.results, newResult.results)
+        ) {
+            return (internedResult.current = { type: "success", results: newResult });
         }
 
         // Same revision and same objects, this is the same query result, so return the old object.
@@ -86,8 +93,21 @@ export function useFullQuery(
 }
 
 /** Simplier version of useFullQuery which just directly returns results. */
-export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): Indexable[] {
-    return useFullQuery(datacore, query, settings).results;
+export function useQuery(
+    datacore: Datacore,
+    query: IndexQuery,
+    settings?: UseQuerySettings
+): UseQueryResult<Indexable[]> {
+    const full = useFullQuery(datacore, query, settings);
+
+    return useMemo(() => {
+        if (full.type === "success") {
+            return {
+                type: "success",
+                results: full.results.results,
+            };
+        } else return full;
+    }, [full]);
 }
 
 /** Determines if the two sets of objects are the same. */

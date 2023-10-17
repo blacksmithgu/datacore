@@ -109,4 +109,17 @@ export namespace Result {
     ): Result<O, E> {
         return flatMap2(first, second, (a, b) => success(f(a, b)));
     }
+
+    /** Map a failable function over all elements in the list, returning early on failure. */
+    export function mapAll<T, O, E>(input: Iterable<T>, func: (input: T) => Result<O, E>): Result<O[], E> {
+        const result: O[] = [];
+        for (const element of input) {
+            const output = func(element);
+            if (!output.successful) return output.cast();
+
+            result.push(output.value);
+        }
+
+        return Result.success(result);
+    }
 }
