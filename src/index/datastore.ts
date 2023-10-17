@@ -60,6 +60,11 @@ export class Datastore {
         this.folder = new FolderIndex(vault);
     }
 
+    /** Return the total number of objects in the store. */
+    public get size(): number {
+        return this.objects.size;
+    }
+
     /** Update the revision of the datastore due to an external update. */
     public touch() {
         this.revision += 1;

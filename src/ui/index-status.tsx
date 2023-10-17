@@ -4,28 +4,18 @@ import { h } from "preact";
 
 /** Render a helpful status indicator in the status bar of how the import is going. */
 export function IndexStatusBar({ datacore }: { datacore: Datacore }) {
-    useIndexUpdates(datacore);
+    useIndexUpdates(datacore, { debounce: 250 });
 
     // Whenever the view updates, figure out what state we are in based on if an initializer is present.
     if (datacore.initializer) {
         return (
             <span>
-                <b>Datacore:&nbsp;</b>
-                Scanning {datacore.initializer.initialized} of {datacore.initializer.files}.
+                Scanning {datacore.initializer.initialized} of {datacore.initializer.files} files
             </span>
         );
     } else if (datacore.importer.queue.length > 0) {
-        return (
-            <span>
-                <b>Datacore:&nbsp;</b>
-                Updating {datacore.importer.queue.length} files.
-            </span>
-        );
+        return <span>Updating {datacore.importer.queue.length} files</span>;
     } else {
-        return (
-            <span>
-                <b>Datacore:&nbsp;</b> Ready
-            </span>
-        );
+        return <span>{datacore.datastore.size} objects</span>;
     }
 }
