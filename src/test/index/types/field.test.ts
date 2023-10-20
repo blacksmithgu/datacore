@@ -16,7 +16,9 @@ describe("Intrinsic Behavior", () => {
     const dummy = new DummyFields("Hello", 10, 20);
 
     test("Fetch Text", () =>
-        expect(intrinsics(dummy, "$text")).toEqual([{ key: "$text", value: "Hello", provenance: INTRINSIC_PROVENANCE }]));
+        expect(intrinsics(dummy, "$text")).toEqual([
+            { key: "$text", value: "Hello", provenance: INTRINSIC_PROVENANCE },
+        ]));
 
     test("Fetch Value", () =>
         expect(intrinsics(dummy, "$value")).toEqual([{ key: "$value", value: 10, provenance: INTRINSIC_PROVENANCE }]));

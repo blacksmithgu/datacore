@@ -255,8 +255,8 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
 }
 
 /** Base class for all markdown blocks. */
-export class MarkdownBlock implements Indexable, Linkbearing, Taggable {
-    static TYPES = ["markdown", "block", LINKBEARING_TYPE, TAGGABLE_TYPE];
+export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbearing {
+    static TYPES = ["markdown", "block", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownBlock.TYPES;
     $typename: string = "Block";
@@ -387,8 +387,8 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
 }
 
 /** A specific list item in a list. */
-export class MarkdownListItem implements Linkbearing, Taggable {
-    static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE];
+export class MarkdownListItem implements Linkbearing, Taggable, Fieldbearing {
+    static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListItem.TYPES;
     $typename: string = "List Item";
@@ -496,8 +496,8 @@ export class MarkdownListItem implements Linkbearing, Taggable {
 }
 
 /** A specific task inside of a markdown list. */
-export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Linkbearing, Taggable {
-    static TYPES = ["markdown", "list-item", "task", LINKBEARING_TYPE, TAGGABLE_TYPE];
+export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Linkbearing, Taggable, Fieldbearing {
+    static TYPES = ["markdown", "list-item", "task", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownTaskItem.TYPES;
     $typename: string = "Task";
