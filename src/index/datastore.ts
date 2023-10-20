@@ -172,18 +172,18 @@ export class Datastore {
         this.types.set(object.$id, object.$types);
 
         // Exact and derived tags.
-        if (object.$types.contains(TAGGABLE_TYPE) && iterableExists(object, "tags")) {
-            const tags = object.tags as Set<string>;
+        if (object.$types.contains(TAGGABLE_TYPE) && iterableExists(object, "$tags")) {
+            const tags = object.$tags as Set<string>;
 
             this.etags.set(object.$id, tags);
             this.tags.set(object.$id, extractSubtags(tags));
         }
 
         // Exact and derived links.
-        if (object.$types.contains(LINKBEARING_TYPE) && iterableExists(object, "links")) {
+        if (object.$types.contains(LINKBEARING_TYPE) && iterableExists(object, "$links")) {
             this.links.set(
                 object.$id,
-                (object.links as Link[]).map((link) => link.obsidianLink())
+                (object.$links as Link[]).map((link) => link.obsidianLink())
             );
         }
 
@@ -205,19 +205,19 @@ export class Datastore {
     private _unindex(object: Indexable) {
         this.types.delete(object.$id, object.$types);
 
-        if (object.$types.contains(TAGGABLE_TYPE) && iterableExists(object, "tags")) {
-            const tags = object.tags as Set<string>;
+        if (object.$types.contains(TAGGABLE_TYPE) && iterableExists(object, "$tags")) {
+            const tags = object.$tags as Set<string>;
 
             this.etags.delete(object.$id, tags);
             this.tags.delete(object.$id, extractSubtags(tags));
         }
 
-        if (object.$types.contains(LINKABLE_TYPE) && iterableExists(object, "links")) {
+        if (object.$types.contains(LINKABLE_TYPE) && iterableExists(object, "$links")) {
             // Assume links are normalized when deleting them. Could be broken but I hope not. We can always use a 2-way index to
             // fix this if we encounter non-normalized links.
             this.links.delete(
                 object.$id,
-                (object.links as Link[]).map((link) => link.obsidianLink())
+                (object.$links as Link[]).map((link) => link.obsidianLink())
             );
         }
 
