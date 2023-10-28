@@ -23,6 +23,7 @@ import {
     JsonMarkdownListBlock,
     JsonMarkdownListItem,
     JsonMarkdownTaskItem,
+    JsonMarkdownYamlObject,
 } from "./json";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
@@ -535,6 +536,45 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     /** Determine if the given task is completed. */
     public get $completed() {
         return this.$status === "x" || this.$status === "X";
+    }
+}
+
+export class MarkdownYAMLBlock extends MarkdownBlock implements Indexable, Fieldbearing {
+    static TYPES = ["markdown", "block", "inline-yaml", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
+
+    $types: string[] = MarkdownYAMLBlock.TYPES;
+    $typename: string = "YAML";
+    $id: string;
+    $file: string;
+    $position: LineSpan;
+    $blockId?: string;
+    $type: "yaml-data";
+    $fields: Field[];
+
+
+    public constructor(init: Partial<MarkdownYAMLBlock>) {
+        super(init);
+    }
+
+    static from(object: JsonMarkdownYamlObject, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownYAMLBlock {
+        return new MarkdownYAMLBlock({
+            $file: file,
+            $id: MarkdownYAMLBlock.readableId(file, object.$position.start),
+            $position: object.$position,
+            $infields: object.$infields,
+            $ordinal: object.$ordinal,
+            $fields: object.$fields,
+            $links: object.$links.map(normalizer),
+            $tags: object.$tags,
+            $type: "yaml-data",
+            $blockId: object.$blockId,
+        })
+    }
+    get fields() {
+        return this.$fields;
+    }
+    static readableId(file: string, line: number): string {
+        return `${file}/yaml${line}`;
     }
 }
 
