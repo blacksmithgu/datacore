@@ -1,11 +1,11 @@
 import { Link } from "expression/link";
 import { getFileTitle } from "utils/normalizers";
 import { DateTime } from "luxon";
-import { CachedMetadata, FileStats, ListItemCache } from "obsidian";
+import { CachedMetadata, FileStats, ListItemCache, parseYaml } from "obsidian";
 import BTree from "sorted-btree";
 import { InlineField, asInlineField, extractFullLineField, extractInlineFields } from "./inline-field";
 import { EXPRESSION } from "expression/parser";
-import { Literal } from "expression/literal";
+import {  Literal } from "expression/literal";
 import {
     FrontmatterEntry,
     JsonMarkdownBlock,
@@ -14,7 +14,11 @@ import {
     JsonMarkdownPage,
     JsonMarkdownSection,
     JsonMarkdownTaskItem,
+    JsonMarkdownYamlObject,
 } from "index/types/markdown/json";
+import { Field } from "expression/field";
+
+const YAML_DATA_REGEX = /```yaml,data/i;
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -87,6 +91,7 @@ export function markdownImport(
 
         const start = block.position.start.line;
         const end = block.position.end.line;
+        const startLine = lines[start]; // to use to check the codeblock type
 
         if (block.type === "list") {
             blocks.set(start, {
@@ -99,6 +104,30 @@ export function markdownImport(
                 $elements: [],
                 $type: "list",
             } as JsonMarkdownListBlock);
+        } else if (block.type == "code" && YAML_DATA_REGEX.test(startLine)) {
+            let toParse: string[] = [];
+            let yamlInitialIdx = start;
+            while (yamlInitialIdx <= end) {
+                toParse.push(lines[yamlInitialIdx]);
+                yamlInitialIdx++;
+            }
+            let obj = parseYaml(toParse.join("\n"));
+            let yElements: Field[] = [];
+            for (let k in obj) {
+                yElements.push({
+                    key: k,
+                    value: parseFrontmatter(obj[k]),
+                });
+            }
+            blocks.set(start, {
+                $ordinal: blockOrdinal,
+                $position: { start, end },
+                $tags: [],
+                $infields: {},
+                $type: "yaml-data",
+                $fields: yElements,
+                $links: parseYAMLLinks(obj),
+            } as JsonMarkdownYamlObject);
         } else {
             blocks.set(start, {
                 $ordinal: blockOrdinal,
@@ -380,4 +409,44 @@ export function parseFrontmatter(value: any): Literal {
 
     // Backup if we don't understand the type.
     return null;
+}
+/** recursively parse yaml links and return them as a single array */
+export function parseYAMLLinks(obj: any): Link[] {
+    let links: Link[] = [];
+    for (let v in obj) {
+        let obj2 = parseFrontmatter(obj[v]);
+
+        if (typeof obj2 === "object") {
+            if (Array.isArray(obj2)) {
+                let result = [];
+                for (let child of obj2 as Array<any>) {
+                    result.push(parseFrontmatter(child));
+                }
+                for (let c of result) {
+                    if (c instanceof Link) addLink(links, c);
+                    else {
+                        let inner = parseYAMLLinks(c);
+                        for (let n of inner) addLink(links, n);
+                    }
+                }
+            } else {
+                let object = obj2 as Record<string, any>;
+                let result: Record<string, Literal> = {};
+                for (let key in object) {
+                    result[key] = parseFrontmatter(object[key]);
+                    let rk = result[key];
+                    if (rk instanceof Link) {
+                        addLink(links, rk);
+                    } else {
+                        let inner = parseYAMLLinks(rk);
+                        for (let n of inner) addLink(links, n);
+                    }
+                }
+            }
+        } else if (typeof obj2 === "string") {
+            let linkParse = EXPRESSION.link.parse(obj2);
+            if (linkParse.status && linkParse.value.value instanceof Link) addLink(links, linkParse.value.value);
+        }
+    }
+    return links;
 }
