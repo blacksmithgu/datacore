@@ -406,7 +406,6 @@ function isLinkObject(inobj: any): boolean {
 }
 /** recursively parse yaml links and return them as a single array */
 export function parseYAMLLinks(obj: any): Link[] {
-    const log = (a: any, k: string) => console.log(`[YAML/import] | ${k}`, a);
 
     let links: Link[] = [];
     if(isLinkObject(obj)) {
@@ -416,11 +415,9 @@ export function parseYAMLLinks(obj: any): Link[] {
     for (let v in obj) {
         let obj2 = parseFrontmatter(obj[v]);
         let asany = obj2 as any;
-        log(obj2, "top");
         if (typeof obj2 === "object") {
             if (Array.isArray(obj2)) {
                 let result = obj2.map((child) => parseFrontmatter(child));
-                log(result, "res");
                 for (let c of result) {
                     if(typeof c === "object" && (c as any).value) {
                         parseYAMLLinks(c).forEach((n) => addLink(links, Link.fromObject(n)))
