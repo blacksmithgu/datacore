@@ -282,6 +282,8 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     static from(object: JsonMarkdownBlock, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownBlock {
         if (object.$type === "list") {
             return MarkdownListBlock.from(object as JsonMarkdownListBlock, file, normalizer);
+        } else if(object.$type === "yaml-data") {
+            return MarkdownYAMLBlock.from(object as JsonMarkdownYamlObject, file, normalizer)
         }
 
         return new MarkdownBlock({
@@ -539,7 +541,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     }
 }
 
-export class MarkdownYAMLBlock extends MarkdownBlock implements Indexable, Fieldbearing {
+export class MarkdownYAMLBlock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
     static TYPES = ["markdown", "block", "inline-yaml", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownYAMLBlock.TYPES;
@@ -554,6 +556,8 @@ export class MarkdownYAMLBlock extends MarkdownBlock implements Indexable, Field
 
     public constructor(init: Partial<MarkdownYAMLBlock>) {
         super(init);
+        Object.assign(this, init);
+        this.$typename = "YAML"
     }
 
     static from(object: JsonMarkdownYamlObject, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownYAMLBlock {
@@ -565,6 +569,7 @@ export class MarkdownYAMLBlock extends MarkdownBlock implements Indexable, Field
             $ordinal: object.$ordinal,
             $fields: object.$fields,
             $links: object.$links.map(normalizer),
+            $typename: "YAML",
             $tags: object.$tags,
             $type: "yaml-data",
             $blockId: object.$blockId,
