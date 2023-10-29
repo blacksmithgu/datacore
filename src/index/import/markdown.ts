@@ -1,7 +1,8 @@
 import { Link } from "expression/link";
 import { getFileTitle } from "utils/normalizers";
 import { DateTime } from "luxon";
-import { CachedMetadata, FileStats, ListItemCache, parseYaml } from "obsidian";
+import { CachedMetadata, FileStats, ListItemCache } from "obsidian";
+import { parse as parseYaml } from "yaml";
 import BTree from "sorted-btree";
 import { InlineField, asInlineField, extractFullLineField, extractInlineFields } from "./inline-field";
 import { EXPRESSION } from "expression/parser";
