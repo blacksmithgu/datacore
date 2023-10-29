@@ -105,27 +105,17 @@ export function markdownImport(
                 $type: "list",
             } as JsonMarkdownListBlock);
         } else if (block.type == "code" && YAML_DATA_REGEX.test(startLine)) {
-            let toParse: string[] = [];
-            let yamlInitialIdx = start;
-            while (yamlInitialIdx <= end) {
-                toParse.push(lines[yamlInitialIdx]);
-                yamlInitialIdx++;
-            }
-            let obj = parseYaml(toParse.join("\n"));
-            let yElements: Field[] = [];
-            for (let k in obj) {
-                yElements.push({
-                    key: k,
-                    value: parseFrontmatter(obj[k]),
-                });
-            }
+            let toParse: string[] = lines.slice(start, end - 1);
+            let obj = parseYaml(toParse.join("\n").replace(/\t/g, "  "));
+            let fields: Field[] = Object.entries(obj).map(([key, value]) => ({ key, value: parseFrontmatter(value) }));
+
             blocks.set(start, {
                 $ordinal: blockOrdinal,
                 $position: { start, end },
                 $tags: [],
                 $infields: {},
                 $type: "yaml-data",
-                $fields: yElements,
+                $fields: fields,
                 $links: parseYAMLLinks(obj),
             } as JsonMarkdownYamlObject);
         } else {
@@ -418,34 +408,26 @@ export function parseYAMLLinks(obj: any): Link[] {
 
         if (typeof obj2 === "object") {
             if (Array.isArray(obj2)) {
-                let result = [];
-                for (let child of obj2 as Array<any>) {
-                    result.push(parseFrontmatter(child));
-                }
+                let result = obj2.map(child => parseFrontmatter(child))
                 for (let c of result) {
                     if (c instanceof Link) addLink(links, c);
                     else {
-                        let inner = parseYAMLLinks(c);
-                        for (let n of inner) addLink(links, n);
+                        parseYAMLLinks(c).forEach(n => addLink(links, n));
                     }
                 }
             } else {
-                let object = obj2 as Record<string, any>;
-                let result: Record<string, Literal> = {};
-                for (let key in object) {
-                    result[key] = parseFrontmatter(object[key]);
-                    let rk = result[key];
+                for (let key in obj2) {
+                    let rk = parseFrontmatter((obj2 as Record<string, Literal>)[key]);
                     if (rk instanceof Link) {
                         addLink(links, rk);
                     } else {
-                        let inner = parseYAMLLinks(rk);
-                        for (let n of inner) addLink(links, n);
+                        parseYAMLLinks(rk).forEach(n => addLink(links, n));
                     }
                 }
             }
         } else if (typeof obj2 === "string") {
             let linkParse = EXPRESSION.link.parse(obj2);
-            if (linkParse.status && linkParse.value.value instanceof Link) addLink(links, linkParse.value.value);
+            if (linkParse.status) addLink(links, linkParse.value.value as Link);
         }
     }
     return links;
