@@ -542,7 +542,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
 }
 
 export class MarkdownYAMLBlock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
-    static TYPES = ["markdown", "block", "inline-yaml", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
+    static TYPES = ["markdown", "block", "yaml-data", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownYAMLBlock.TYPES;
     $typename: string = "YAML";
