@@ -213,7 +213,7 @@ export function markdownImport(
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].$position.end >= line) addInlineField(block[1].$infields, field);
 
-        const listItem = blocks.getPairOrNextHigher(line);
+        const listItem = listItems.getPairOrNextLower(line);
         if (listItem && listItem[1].$position.end >= line) addInlineField(listItem[1].$infields, field);
     }
 
