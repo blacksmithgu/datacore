@@ -420,6 +420,9 @@ export class MarkdownListItem implements Linkbearing, Taggable {
      */
     $parentLine: number;
 
+    /** the contents of the list item */
+    $text: string;
+
     /** Create a list item from a serialized object. */
     static from(
         object: JsonMarkdownListItem,
@@ -440,6 +443,7 @@ export class MarkdownListItem implements Linkbearing, Taggable {
             $links: object.$links.map(normalizer),
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
+            $text: object.$text
         });
     }
 
@@ -519,6 +523,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
             $status: object.$status,
+            $text: object.$text
         });
     }
 
