@@ -184,7 +184,7 @@ export function markdownImport(
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].$position.end >= line) addLink(block[1].$links, link);
 
-        const listItem = blocks.getPairOrNextHigher(line);
+        const listItem = listItems.getPairOrNextLower(line);
         if (listItem && listItem[1].$position.end >= line) addLink(listItem[1].$links, link);
     }
 
