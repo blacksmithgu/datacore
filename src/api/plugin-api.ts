@@ -6,6 +6,9 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown/markdown";
 import { Result } from "./result";
+import { Component, MarkdownPostProcessorContext } from "obsidian";
+import { DatacoreJSRenderer } from "ui/js-renderer";
+import { DatacoreLocalApi } from "./local-api";
 
 /** Exterally visible API for datacore. */
 export class DatacoreApi {
