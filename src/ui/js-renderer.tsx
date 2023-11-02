@@ -19,7 +19,8 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 			await asyncEvalInContext(DatacoreJSRenderer.PRE + "\n" + this.script, this.api)
 		} catch(e) {
 			// i'll change this i promise xD
-			this.containerEl.innerHTML = "either you fucked up or i fucked up";
+			console.error(e)
+			this.containerEl.innerHTML = "either you fucked up or i fucked up. check the console.";
 
 		}
 	}
