@@ -25,7 +25,10 @@ export default class DatacorePlugin extends Plugin {
 
         // Add a visual aid for what datacore is currently doing.
         this.mountIndexState(this.addStatusBarItem(), this.core);
-
+        this.registerPriorityCodeblockPostProcessor("datacorejs", -100, 
+            async(source: string, el, ctx) => 
+            this.coreCodeblockJs(source, el, ctx)
+    )
         // Initialize as soon as the workspace is ready.
         if (!this.app.workspace.layoutReady) {
             this.app.workspace.onLayoutReady(async () => this.core.initialize());
@@ -54,6 +57,19 @@ export default class DatacorePlugin extends Plugin {
         render(createElement(IndexStatusBar, { datacore: core }), root);
 
         this.register(() => render(null, root));
+    }
+
+    private async coreCodeblockJs(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+        this.api.executeJs(source, el, ctx, ctx.sourcePath);
+    }
+
+    public registerPriorityCodeblockPostProcessor(
+        language: string,
+        priority: number,
+        processor: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => Promise<void>
+    ) {
+        let registered = this.registerMarkdownCodeBlockProcessor(language, processor);
+        registered.sortOrder = priority;
     }
 }
 
