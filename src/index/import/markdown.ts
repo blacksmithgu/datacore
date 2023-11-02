@@ -116,7 +116,7 @@ export function markdownImport(
     for (const block of blocks.values() as Iterable<JsonMarkdownBlock>) {
         const section = sections.getPairOrNextLower(block.$position.start);
 
-        if (section && section[1].$position.end >= block.$position.end) {
+        if (section /* && section[1].$position.end >= block.$position.end */) {
             section[1].$blocks.push(block);
         }
     }
