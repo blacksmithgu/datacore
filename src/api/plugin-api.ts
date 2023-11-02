@@ -53,4 +53,15 @@ export class DatacoreApi {
         const parsedQuery = typeof query === "string" ? QUERY.query.tryParse(query) : query;
         return this.core.datastore.search(parsedQuery);
     }
+    /**javascript! */
+    public async executeJs(
+        source: string, 
+        container: HTMLElement, 
+        component: Component | MarkdownPostProcessorContext, 
+        filePath: string
+    ) {
+        let local = new DatacoreLocalApi(this, filePath)
+        let renderer = new DatacoreJSRenderer(local, source, container, filePath);
+        component.addChild(renderer)
+    }
 }
