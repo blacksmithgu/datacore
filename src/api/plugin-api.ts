@@ -60,7 +60,7 @@ export class DatacoreApi {
         component: Component | MarkdownPostProcessorContext, 
         filePath: string
     ) {
-        let local = new DatacoreLocalApi(this, filePath)
+        let local = new DatacoreLocalApi(this, filePath, container)
         let renderer = new DatacoreJSRenderer(local, source, container, filePath);
         component.addChild(renderer)
     }

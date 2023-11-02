@@ -15,7 +15,7 @@ import { useTableDispatch } from "ui/table";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
-    public constructor(public api: DatacoreApi, public path: string) {}
+    public constructor(public api: DatacoreApi, public path: string, public container: HTMLElement) {}
 
     /** The current file path for the local API. */
     public currentPath(): string {
