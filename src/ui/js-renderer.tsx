@@ -1,8 +1,10 @@
 import { DatacoreLocalApi } from "api/local-api";
 import { MarkdownRenderChild } from "obsidian";
 import { asyncEvalInContext } from "api/utils";
+import { ReactRenderer } from "./markdown";
+import { VNode } from "preact";
 
-export class DatacoreJSRenderer extends MarkdownRenderChild {
+export class DatacoreJSRenderer extends ReactRenderer {
 	static PRE: string = "const datacore = this; const dc = this;"
 	constructor(
 		public api: DatacoreLocalApi,
@@ -10,7 +12,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 		public container: HTMLElement, 
 		public origin: string
 	) {
-		super(container);
+		super(api.core.app, api.core, container, origin, api.preact.h("div", {}) as VNode<{}>);
 
 	}
 	async onload() {
@@ -19,7 +21,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 			await asyncEvalInContext(DatacoreJSRenderer.PRE + "\n" + this.script, this.api)
 		} catch(e) {
 			console.error(e)
-			this.containerEl.innerHTML = `<pre>e
+			this.containerEl.innerHTML = `<pre>${e}
 ${e.stack}
 </pre>`;
 
