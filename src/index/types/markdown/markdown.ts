@@ -387,7 +387,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
 }
 
 /** A specific list item in a list. */
-export class MarkdownListItem implements Linkbearing, Taggable, Fieldbearing {
+export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Fieldbearing {
     static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListItem.TYPES;
