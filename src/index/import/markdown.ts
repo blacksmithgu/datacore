@@ -136,7 +136,7 @@ export function markdownImport(
     for (const item of listItems.values()) {
         let content = lines
             .slice(item.$position.start, (item.$position.end) + 1).join("\n")
-            // .replace(/-\s|^[\t\f\v ]+/gm, "")
+            .replace(/^[\t\f\v ]/gm, "")
             /** strip inline fields maybe */
             // .replace(/[\[\(].*?::\s*.*?[\]\)]/gm, "")
         item.$text = content;
