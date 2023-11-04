@@ -1,7 +1,8 @@
 import { Lit, ErrorMessage, SimpleErrorBoundary, CURRENT_FILE_CONTEXT, DatacoreContextProvider } from "ui/markdown";
 import { MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
-import React, { JSX, createElement, h, isValidElement, render } from "preact";
+import { JSX, createElement, h, isValidElement, render } from "preact";
+import React from "preact/compat";
 import { unmountComponentAtNode } from "preact/compat";
 // import * as babel from "@babel/standalone";
 // import { Root, createRoot } from "preact/compat";
