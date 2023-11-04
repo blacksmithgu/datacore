@@ -64,7 +64,7 @@ export class DatacoreApi {
         filePath: string
     ) {
         let local = new DatacoreLocalApi(this, filePath, container)
-        let renderer = new DatacoreJSRenderer(local, source, container, filePath);
+        let renderer = new DatacoreJSRenderer(local, container, filePath, source);
         component.addChild(renderer)
     }
 }
