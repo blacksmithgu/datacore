@@ -16,10 +16,7 @@ import { ReactRenderer } from "ui/markdown";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
-    public readonly Renderer: ReactRenderer;
-    public constructor(public api: DatacoreApi, public path: string, public container: HTMLElement) {
-        this.Renderer = new ReactRenderer(this.core.app, this.core, container, path)
-    }
+    public constructor(public api: DatacoreApi, public path: string, public container: HTMLElement) {}
 
     /** The current file path for the local API. */
     public currentPath(): string {
@@ -115,7 +112,7 @@ export class DatacoreLocalApi {
 
     public useTableDispatch = useTableDispatch;
 
-    public render(el: preact.VNode) {
+/*     public render(el: preact.VNode) {
         this.Renderer.element = el;
         this.Renderer.load();
     }
@@ -124,5 +121,5 @@ export class DatacoreLocalApi {
         this.container.appendChild(nd);
         let newRenderer = new ReactRenderer(this.core.app, this.core, nd, this.currentPath(), el)
         newRenderer.load();
-    }
+    } */
 }
