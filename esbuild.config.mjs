@@ -32,6 +32,9 @@ async function build(prod) {
 			'@lezer/highlight',
 			'@lezer/lr',
 			...builtins],
+			alias: {
+				"react": "preact/compat"
+			},
 		format: 'cjs',
 		target: 'es2018',
 		logLevel: "info",
