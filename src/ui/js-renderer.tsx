@@ -57,6 +57,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 							this.container
 					);
 			} catch (ex) {
+				console.error(ex)
 					render(
 							<ErrorMessage
 									message="Failed to render this datacore script. The script may be being edited, or it may have a bug."
