@@ -12,6 +12,20 @@ declare module "obsidian" {
                 };
             };
         };
+        embedRegistry: {
+            embedByExtension: {
+                [key: string]: unknown,
+                md: MarkdownRenderer,
+            }
+            getEmbedCreator: (arg: {extension: string}) => (arg2: {
+                app: App,
+                linktext: string,
+                sourcePath: string,
+                showInline: boolean,
+                depth: number,
+                containerEl: HTMLElement
+            }) => View
+        }
     }
 }
 
