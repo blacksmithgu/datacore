@@ -117,6 +117,7 @@ export function RawMarkdown({
                     linkText: embed.getAttribute("src") ?? "",
                     inline: true
                 }
+                embed.empty()
                 render(<APP_CONTEXT.Provider value={app}>
                     <Embed {...props}/>
                 </APP_CONTEXT.Provider>, embed)
