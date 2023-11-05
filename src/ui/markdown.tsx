@@ -10,6 +10,7 @@ import { extractImageDimensions, isImageEmbed } from "utils/media";
 import { h, createContext, Fragment, VNode, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
+import { Embed } from "./embed";
 
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
@@ -164,6 +165,8 @@ export function RawLit({
             else if (dimensions && dimensions.length == 1)
                 return <img alt={value.path} src={resourcePath} width={dimensions[0]} />;
             else return <img alt={value.path} src={resourcePath} />;
+        } else if(value.embed) {
+            return <Embed linkText={value.fileName()} embedderPath={sourcePath} inline={inline} />
         }
 
         return <ObsidianLink link={value} sourcePath={sourcePath} />;
