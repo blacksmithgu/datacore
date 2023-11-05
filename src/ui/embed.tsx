@@ -3,30 +3,31 @@ import { APP_CONTEXT, COMPONENT_CONTEXT } from "./markdown";
 import { h } from "preact";
 
 export interface EmbedProps {
-	extension: string;
+	linkText: string;
 	originalPath: string;
-	linktext: string;
 }
 
-export function Embed(props: EmbedProps) {
-	const component = useContext(COMPONENT_CONTEXT);
+export function Embed({linkText: linktext, originalPath}: EmbedProps) {
 	const app = useContext(APP_CONTEXT);
-	const container = useRef<HTMLElement | null>(null);
+	const container = useRef<HTMLDivElement | null>(null);
+	const linkedFile = app.metadataCache.getFirstLinkpathDest(linktext, linktext)
 	useEffect(() => {
 		if(!container.current) return;
 
 		container.current.innerHTML = "";
-
-		app.embedRegistry.getEmbedCreator({extension: props.extension})({
-			linktext: props.linktext,
-			sourcePath: props.originalPath,
+		let inter = app.embedRegistry.getEmbedCreator(linkedFile!)
+		// @ts-ignore
+		let embedComponent = new inter({
+			linktext: linktext,
+			sourcePath: linkedFile?.path!,
 			showInline: true,
 			app,
 			depth: 0,
-			containerEl: container.current
-		})
-	})
-	return (<div>
-
-	</div>)
+			containerEl: container.current,
+			displayMode: true
+		}, linkedFile!)
+		embedComponent.load()
+		embedComponent.loadFile(linkedFile)
+	}, [container.current, linktext, originalPath])
+	return (<div ref={container}></div>)
 }
