@@ -115,8 +115,7 @@ export function RawMarkdown({
                 let props: EmbedProps = {
                     embedderPath: sourcePath,
                     linkText: embed.getAttribute("src") ?? "",
-                    inline: true,
-                    depth: 1
+                    inline: true
                 }
                 render(<APP_CONTEXT.Provider value={app}>
                     <Embed {...props}/>
