@@ -23,8 +23,9 @@ declare module "obsidian" {
                 sourcePath: string,
                 showInline: boolean,
                 depth: number,
-                containerEl: HTMLElement
-            }) => View
+                containerEl: HTMLElement,
+                displayMode: boolean;
+            }, file: TFile) => View
         }
     }
 }
