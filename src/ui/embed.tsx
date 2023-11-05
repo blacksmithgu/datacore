@@ -4,10 +4,10 @@ import { h } from "preact";
 
 export interface EmbedProps {
 	linkText: string;
-	originalPath: string;
+	embedderPath: string;
 }
 
-export function Embed({linkText: linktext, originalPath}: EmbedProps) {
+export function Embed({linkText: linktext, embedderPath: originalPath}: EmbedProps) {
 	const app = useContext(APP_CONTEXT);
 	const container = useRef<HTMLDivElement | null>(null);
 	const linkedFile = app.metadataCache.getFirstLinkpathDest(linktext, linktext)
