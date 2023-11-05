@@ -10,7 +10,7 @@ import { extractImageDimensions, isImageEmbed } from "utils/media";
 import { h, createContext, Fragment, VNode, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
-import { Embed } from "./embed";
+import { Embed, EmbedProps } from "./embed";
 
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
@@ -107,6 +107,17 @@ export function RawMarkdown({
                 let children = paragraph.childNodes;
                 paragraph.replaceWith(...Array.from(children));
                 paragraph = container.current.querySelector("p");
+            }
+            let embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
+            // have embeds actually load instead of displaying as plain text
+            while(embed) {
+                let props: EmbedProps = {
+                    embedderPath: sourcePath,
+                    linkText: embed.getAttribute("src") ?? "",
+                    inline: true
+                }
+                render(<Embed {...props}/>, embed)
+                embed = container.current.querySelector("span.internal-embed:not(.is-loaded)")
             }
         });
     }, [content, sourcePath, container.current]);
