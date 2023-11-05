@@ -37,7 +37,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
     importerNumThreads: 2,
     importerUtilization: 0.75,
 
-    enableJs: true,
+    enableJs: false,
 
     defaultPagingEnabled: true,
     defaultPageSize: 50,

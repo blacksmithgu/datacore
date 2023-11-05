@@ -25,10 +25,14 @@ export default class DatacorePlugin extends Plugin {
 
         // Add a visual aid for what datacore is currently doing.
         this.mountIndexState(this.addStatusBarItem(), this.core);
-        this.registerPriorityCodeblockPostProcessor("datacorejs", -100, 
-            async(source: string, el, ctx) => 
-            this.coreCodeblockJs(source, el, ctx)
-    )
+
+        // Primary visual elements (DatacoreJS and Datacore blocks).
+        this.registerMarkdownCodeBlockProcessor(
+            "datacorejs",
+            async (source: string, el, ctx) => this.renderJavascript(source, el, ctx),
+            -100
+        );
+
         // Initialize as soon as the workspace is ready.
         if (!this.app.workspace.layoutReady) {
             this.app.workspace.onLayoutReady(async () => this.core.initialize());
@@ -47,29 +51,22 @@ export default class DatacorePlugin extends Plugin {
         console.log(`Datacore: version ${this.manifest.version} unloaded.`);
     }
 
+    /** Execute a javascript datacore script and render it into the given element. */
+    public async renderJavascript(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+        this.api.executeJs(source, el, ctx, ctx.sourcePath);
+    }
+
+    /** Update the given settings to new values. */
     async updateSettings(settings: Partial<Settings>) {
         Object.assign(this.settings, settings);
         await this.saveData(this.settings);
     }
 
     /** Render datacore indexing status using the index. */
-    mountIndexState(root: HTMLElement, core: Datacore): void {
+    private mountIndexState(root: HTMLElement, core: Datacore): void {
         render(createElement(IndexStatusBar, { datacore: core }), root);
 
         this.register(() => render(null, root));
-    }
-
-    private async coreCodeblockJs(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-        this.api.executeJs(source, el, ctx, ctx.sourcePath);
-    }
-
-    public registerPriorityCodeblockPostProcessor(
-        language: string,
-        priority: number,
-        processor: (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => Promise<void>
-    ) {
-        let registered = this.registerMarkdownCodeBlockProcessor(language, processor);
-        registered.sortOrder = priority;
     }
 }
 
