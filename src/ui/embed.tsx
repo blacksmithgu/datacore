@@ -17,8 +17,8 @@ export function Embed({linkText: linktext, embedderPath: originalPath, inline}: 
 
 		container.current.innerHTML = "";
 		// @ts-ignore
-		let inter = app.embedRegistry.getEmbedCreator(linkedFile!)
-		let embedComponent = new inter({
+		let creator = app.embedRegistry.getEmbedCreator(linkedFile!)
+		let embedComponent = new creator({
 			linktext: linktext,
 			sourcePath: linkedFile?.path!,
 			showInline: inline,
