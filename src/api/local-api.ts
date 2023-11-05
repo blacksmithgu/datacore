@@ -12,7 +12,6 @@ import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { COMPONENTS } from "./components";
 import { useTableDispatch } from "ui/table";
-import { ReactRenderer } from "ui/markdown";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -110,16 +109,5 @@ export class DatacoreLocalApi {
     // Visual element hooks //
     //////////////////////////
 
-    public useTableDispatch = useTableDispatch;
-
-/*     public render(el: preact.VNode) {
-        this.Renderer.element = el;
-        this.Renderer.load();
-    }
-    public addChild(el: preact.VNode) {
-        let nd = this.container.createEl("div")
-        this.container.appendChild(nd);
-        let newRenderer = new ReactRenderer(this.core.app, this.core, nd, this.currentPath(), el)
-        newRenderer.load();
-    } */
+    public useTable = useTableDispatch;
 }

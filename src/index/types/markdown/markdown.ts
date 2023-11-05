@@ -1,4 +1,4 @@
-import { Link, Literal, Literals } from "expression/literal";
+import { DataObject, Link, Literal, Literals } from "expression/literal";
 import { getFileTitle } from "utils/normalizers";
 import {
     FILE_TYPE,
@@ -23,7 +23,7 @@ import {
     JsonMarkdownListBlock,
     JsonMarkdownListItem,
     JsonMarkdownTaskItem,
-    JsonMarkdownYamlObject,
+    JsonMarkdownDatablock as JsonMarkdownDatablock,
 } from "./json";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
@@ -282,8 +282,8 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     static from(object: JsonMarkdownBlock, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownBlock {
         if (object.$type === "list") {
             return MarkdownListBlock.from(object as JsonMarkdownListBlock, file, normalizer);
-        } else if(object.$type === "yaml-data") {
-            return MarkdownYAMLBlock.from(object as JsonMarkdownYamlObject, file, normalizer)
+        } else if (object.$type === "datablock") {
+            return MarkdownDatablock.from(object as JsonMarkdownDatablock, file, normalizer);
         }
 
         return new MarkdownBlock({
@@ -335,7 +335,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
         };
     }
 
-    private static FIELD_DEF: FieldExtractor<MarkdownBlock> = Extractors.merge(
+    static FIELD_DEF: FieldExtractor<MarkdownBlock> = Extractors.merge(
         Extractors.intrinsics(),
         Extractors.inlineFields((f) => f.$infields)
     );
@@ -387,6 +387,73 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     public constructor(init: Partial<MarkdownListBlock>) {
         super(init);
     }
+}
+
+/** A data-annotated YAML codeblock. */
+export class MarkdownDatablock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
+    static TYPES = ["markdown", "block", "datablock", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
+
+    $types: string[] = MarkdownDatablock.TYPES;
+    $data: DataObject;
+
+    public constructor(init: Partial<MarkdownDatablock>) {
+        super(init);
+    }
+
+    static from(
+        object: JsonMarkdownDatablock,
+        file: string,
+        normalizer: LinkNormalizer = NOOP_NORMALIZER
+    ): MarkdownDatablock {
+        // Datablocks are based on what is essentially just frontmatter; we can apply
+        // the same normalization logic to them.
+        const normdata = normalizeLinks(object.$data, normalizer);
+        const links = gatherLinks(normdata);
+        const tags = gatherTags(normdata);
+
+        return new MarkdownDatablock({
+            $file: file,
+            $id: MarkdownDatablock.readableId(file, object.$position.start),
+            $position: object.$position,
+            $infields: {},
+            $ordinal: object.$ordinal,
+            $data: normdata,
+            $links: links,
+            $typename: "Datablock",
+            $tags: tags,
+            $type: "datablock",
+            $blockId: object.$blockId,
+        });
+    }
+
+    /** All of the indexed fields in this object. */
+    get fields() {
+        return MarkdownDatablock.SUB_FIELD_DEF(this);
+    }
+
+    /** Fetch a specific field by key. */
+    public field(key: string) {
+        return MarkdownDatablock.SUB_FIELD_DEF(this, key)?.[0];
+    }
+
+    public value(key: string): Literal | undefined {
+        return this.field(key)?.value;
+    }
+
+    public partial(): JsonMarkdownBlock {
+        return Object.assign(super.partial(), {
+            $data: this.$data,
+        });
+    }
+
+    static readableId(file: string, line: number): string {
+        return `${file}/datablock${line}`;
+    }
+
+    static SUB_FIELD_DEF: FieldExtractor<MarkdownDatablock> = Extractors.merge<MarkdownDatablock>(
+        MarkdownBlock.FIELD_DEF,
+        Extractors.frontmatter((f) => f.$data)
+    );
 }
 
 /** A specific list item in a list. */
@@ -541,52 +608,37 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     }
 }
 
-export class MarkdownYAMLBlock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
-    static TYPES = ["markdown", "block", "yaml-data", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
-
-    $types: string[] = MarkdownYAMLBlock.TYPES;
-    $typename: string = "YAML";
-    $id: string;
-    $file: string;
-    $position: LineSpan;
-    $blockId?: string;
-    $type: "yaml-data";
-    $fields: Field[];
-
-
-    public constructor(init: Partial<MarkdownYAMLBlock>) {
-        super(init);
-        Object.assign(this, init);
-        this.$typename = "YAML"
-    }
-
-    static from(object: JsonMarkdownYamlObject, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownYAMLBlock {
-        return new MarkdownYAMLBlock({
-            $file: file,
-            $id: MarkdownYAMLBlock.readableId(file, object.$position.start),
-            $position: object.$position,
-            $infields: object.$infields,
-            $ordinal: object.$ordinal,
-            $fields: object.$fields,
-            $links: object.$links.map(normalizer),
-            $typename: "YAML",
-            $tags: object.$tags,
-            $type: "yaml-data",
-            $blockId: object.$blockId,
-        })
-    }
-    get fields() {
-        return this.$fields;
-    }
-    static readableId(file: string, line: number): string {
-        return `${file}/yaml${line}`;
-    }
-}
-
 /** Normalize links deeply in the object. */
 function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T {
     return Literals.mapLeaves(input, (value) => {
         if (Literals.isLink(value)) return normalizer(value);
         else return value;
     }) as T;
+}
+
+/** Recursively gather links from a literal object. */
+function gatherLinks(input: Literal): Link[] {
+    const result: Link[] = [];
+
+    Literals.mapLeaves(input, (value) => {
+        if (Literals.isLink(value)) result.push(value);
+        return null;
+    });
+
+    return result;
+}
+
+/** Gather tags from a datablock. */
+function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
+    function recurse(input: any): string[] {
+        if (Literals.isString(input)) return [input.startsWith("#") ? input : "#" + input];
+        else if (Literals.isArray(input)) return input.flatMap(recurse);
+        else return [];
+    }
+
+    let tags: string[] = [];
+    if ("tag" in data) tags = tags.concat(recurse(data["tags"]));
+    if ("tags" in data) tags = tags.concat(recurse(data["tags"]));
+
+    return tags;
 }
