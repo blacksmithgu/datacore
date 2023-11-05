@@ -109,14 +109,19 @@ export function RawMarkdown({
                 paragraph = container.current.querySelector("p");
             }
             let embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
+            
             // have embeds actually load instead of displaying as plain text
             while(embed) {
                 let props: EmbedProps = {
                     embedderPath: sourcePath,
                     linkText: embed.getAttribute("src") ?? "",
-                    inline: true
+                    inline: true,
+                    depth: 1
                 }
-                render(<Embed {...props}/>, embed)
+                render(<APP_CONTEXT.Provider value={app}>
+                    <Embed {...props}/>
+                </APP_CONTEXT.Provider>, embed)
+                embed.addClass("is-loaded")
                 embed = container.current.querySelector("span.internal-embed:not(.is-loaded)")
             }
         });
