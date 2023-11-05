@@ -280,7 +280,7 @@ export class ReactRenderer extends MarkdownRenderChild {
         public datacore: Datacore,
         public container: HTMLElement,
         public sourcePath: string,
-        public element?: VNode
+        public element: VNode
     ) {
         super(container);
     }
