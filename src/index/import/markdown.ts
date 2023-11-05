@@ -136,7 +136,7 @@ export function markdownImport(
     for (const block of blocks.values() as Iterable<JsonMarkdownBlock>) {
         const section = sections.getPairOrNextLower(block.$position.start);
 
-        if (section && section[1].$position.end >= block.$position.end) {
+        if (section /* && section[1].$position.end >= block.$position.end */) {
             section[1].$blocks.push(block);
         }
     }
@@ -204,7 +204,7 @@ export function markdownImport(
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].$position.end >= line) addLink(block[1].$links, link);
 
-        const listItem = blocks.getPairOrNextHigher(line);
+        const listItem = listItems.getPairOrNextLower(line);
         if (listItem && listItem[1].$position.end >= line) addLink(listItem[1].$links, link);
     }
 
@@ -233,7 +233,7 @@ export function markdownImport(
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].$position.end >= line) addInlineField(block[1].$infields, field);
 
-        const listItem = blocks.getPairOrNextHigher(line);
+        const listItem = listItems.getPairOrNextLower(line);
         if (listItem && listItem[1].$position.end >= line) addInlineField(listItem[1].$infields, field);
     }
 
