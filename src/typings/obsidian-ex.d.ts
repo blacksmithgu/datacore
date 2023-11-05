@@ -17,7 +17,7 @@ declare module "obsidian" {
                 [key: string]: unknown,
                 md: MarkdownRenderer,
             }
-            getEmbedCreator: (arg: {extension: string}) => (arg2: {
+            getEmbedCreator: (arg: {extension: string}) => new (arg2: {
                 app: App,
                 linktext: string,
                 sourcePath: string,
@@ -25,7 +25,7 @@ declare module "obsidian" {
                 depth: number,
                 containerEl: HTMLElement,
                 displayMode: boolean;
-            }, file: TFile) => View
+            }, file: TFile) => (FileView & {loadFile: (file: TFile) => void})
         }
     }
 }

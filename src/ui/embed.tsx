@@ -15,8 +15,8 @@ export function Embed({linkText: linktext, embedderPath: originalPath}: EmbedPro
 		if(!container.current) return;
 
 		container.current.innerHTML = "";
-		let inter = app.embedRegistry.getEmbedCreator(linkedFile!)
 		// @ts-ignore
+		let inter = app.embedRegistry.getEmbedCreator(linkedFile!)
 		let embedComponent = new inter({
 			linktext: linktext,
 			sourcePath: linkedFile?.path!,
@@ -27,7 +27,7 @@ export function Embed({linkText: linktext, embedderPath: originalPath}: EmbedPro
 			displayMode: true
 		}, linkedFile!)
 		embedComponent.load()
-		embedComponent.loadFile(linkedFile)
+		embedComponent.loadFile(linkedFile!)
 	}, [container.current, linktext, originalPath])
 	return (<div ref={container}></div>)
 }
