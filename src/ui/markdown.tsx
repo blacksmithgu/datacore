@@ -93,6 +93,7 @@ export function RawMarkdown({
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);
+    const app = useContext(APP_CONTEXT)
 
     useEffect(() => {
         if (!container.current) return;
