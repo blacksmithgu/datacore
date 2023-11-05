@@ -6,6 +6,9 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown/markdown";
 import { Result } from "./result";
+import { Component, MarkdownPostProcessorContext } from "obsidian";
+import { DatacoreJSRenderer } from "ui/js-renderer";
+import { DatacoreLocalApi } from "./local-api";
 
 /** Exterally visible API for datacore. */
 export class DatacoreApi {
@@ -52,5 +55,16 @@ export class DatacoreApi {
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         const parsedQuery = typeof query === "string" ? QUERY.query.tryParse(query) : query;
         return this.core.datastore.search(parsedQuery);
+    }
+    /**javascript! */
+    public async executeJs(
+        source: string, 
+        container: HTMLElement, 
+        component: Component | MarkdownPostProcessorContext, 
+        filePath: string
+    ) {
+        let local = new DatacoreLocalApi(this, filePath, container)
+        let renderer = new DatacoreJSRenderer(local, container, filePath, source);
+        component.addChild(renderer)
     }
 }

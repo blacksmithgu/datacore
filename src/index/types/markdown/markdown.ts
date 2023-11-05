@@ -23,6 +23,7 @@ import {
     JsonMarkdownListBlock,
     JsonMarkdownListItem,
     JsonMarkdownTaskItem,
+    JsonMarkdownYamlObject,
 } from "./json";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
@@ -281,6 +282,8 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     static from(object: JsonMarkdownBlock, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownBlock {
         if (object.$type === "list") {
             return MarkdownListBlock.from(object as JsonMarkdownListBlock, file, normalizer);
+        } else if(object.$type === "yaml-data") {
+            return MarkdownYAMLBlock.from(object as JsonMarkdownYamlObject, file, normalizer)
         }
 
         return new MarkdownBlock({
@@ -387,7 +390,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
 }
 
 /** A specific list item in a list. */
-export class MarkdownListItem implements Linkbearing, Taggable, Fieldbearing {
+export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Fieldbearing {
     static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListItem.TYPES;
@@ -535,6 +538,48 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     /** Determine if the given task is completed. */
     public get $completed() {
         return this.$status === "x" || this.$status === "X";
+    }
+}
+
+export class MarkdownYAMLBlock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
+    static TYPES = ["markdown", "block", "yaml-data", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
+
+    $types: string[] = MarkdownYAMLBlock.TYPES;
+    $typename: string = "YAML";
+    $id: string;
+    $file: string;
+    $position: LineSpan;
+    $blockId?: string;
+    $type: "yaml-data";
+    $fields: Field[];
+
+
+    public constructor(init: Partial<MarkdownYAMLBlock>) {
+        super(init);
+        Object.assign(this, init);
+        this.$typename = "YAML"
+    }
+
+    static from(object: JsonMarkdownYamlObject, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownYAMLBlock {
+        return new MarkdownYAMLBlock({
+            $file: file,
+            $id: MarkdownYAMLBlock.readableId(file, object.$position.start),
+            $position: object.$position,
+            $infields: object.$infields,
+            $ordinal: object.$ordinal,
+            $fields: object.$fields,
+            $links: object.$links.map(normalizer),
+            $typename: "YAML",
+            $tags: object.$tags,
+            $type: "yaml-data",
+            $blockId: object.$blockId,
+        })
+    }
+    get fields() {
+        return this.$fields;
+    }
+    static readableId(file: string, line: number): string {
+        return `${file}/yaml${line}`;
     }
 }
 

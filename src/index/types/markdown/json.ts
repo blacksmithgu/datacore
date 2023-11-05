@@ -1,6 +1,7 @@
 //! Note: These are "serialization" types for datacore metadata, which contain
 // the absolute minimum information needed to save and load datacore data.
 
+import { Field } from "expression/field";
 import { Link, Literal } from "expression/literal";
 import { InlineField } from "index/import/inline-field";
 
@@ -127,4 +128,11 @@ export interface JsonMarkdownTaskItem extends JsonMarkdownListItem {
 
     /** The text inside of the task item. */
     $status: string;
+}
+
+
+export interface JsonMarkdownYamlObject extends JsonMarkdownBlock {
+    $type: "yaml-data";
+    /** top level fields in the YAML object */
+    $fields: Field[];
 }
