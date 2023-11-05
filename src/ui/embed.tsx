@@ -5,9 +5,10 @@ import { h } from "preact";
 export interface EmbedProps {
 	linkText: string;
 	embedderPath: string;
+	inline: boolean;
 }
 
-export function Embed({linkText: linktext, embedderPath: originalPath}: EmbedProps) {
+export function Embed({linkText: linktext, embedderPath: originalPath, inline}: EmbedProps) {
 	const app = useContext(APP_CONTEXT);
 	const container = useRef<HTMLDivElement | null>(null);
 	const linkedFile = app.metadataCache.getFirstLinkpathDest(linktext, linktext)
@@ -20,7 +21,7 @@ export function Embed({linkText: linktext, embedderPath: originalPath}: EmbedPro
 		let embedComponent = new inter({
 			linktext: linktext,
 			sourcePath: linkedFile?.path!,
-			showInline: true,
+			showInline: inline,
 			app,
 			depth: 0,
 			containerEl: container.current,
