@@ -17,7 +17,7 @@ declare module "obsidian" {
                 [key: string]: unknown,
                 md: MarkdownRenderer,
             }
-            getEmbedCreator: (arg: {extension: string}) => new (arg2: {
+            getEmbedCreator: (arg: TFile) => new (arg2: {
                 app: App,
                 linktext: string,
                 sourcePath: string,
