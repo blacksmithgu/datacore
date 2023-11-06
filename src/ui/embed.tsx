@@ -6,9 +6,10 @@ export interface EmbedProps {
 	linkText: string;
 	embedderPath: string;
 	inline: boolean;
+	subPath?: string;
 }
 
-export function Embed({linkText: linktext, embedderPath: originalPath, inline}: EmbedProps) {
+export function Embed({linkText: linktext, embedderPath: originalPath, inline, subPath}: EmbedProps) {
 	const app = useContext(APP_CONTEXT);
 	const container = useRef<HTMLDivElement | null>(null);
 	const linkedFile = app.metadataCache.getFirstLinkpathDest(linktext, linktext)
@@ -26,9 +27,9 @@ export function Embed({linkText: linktext, embedderPath: originalPath, inline}: 
 			depth: 0,
 			containerEl: container.current,
 			displayMode: true
-		}, linkedFile!)
+		}, linkedFile!, subPath)
 		embedComponent.load()
 		embedComponent.loadFile(linkedFile!)
 	}, [container.current, linktext, originalPath])
-	return (<div ref={container}></div>)
+	return (<div ref={container}>...</div>)
 }

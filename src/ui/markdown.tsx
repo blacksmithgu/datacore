@@ -183,7 +183,7 @@ export function RawLit({
                 return <img alt={value.path} src={resourcePath} width={dimensions[0]} />;
             else return <img alt={value.path} src={resourcePath} />;
         } else if(value.embed) {
-            return <Embed linkText={value.fileName()} embedderPath={sourcePath} inline={inline} />
+            return <Embed linkText={value.fileName()} subPath={value.subpath} embedderPath={sourcePath} inline={inline} />
         }
 
         return <ObsidianLink link={value} sourcePath={sourcePath} />;

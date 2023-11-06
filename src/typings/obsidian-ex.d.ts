@@ -25,7 +25,7 @@ declare module "obsidian" {
                 depth: number,
                 containerEl: HTMLElement,
                 displayMode: boolean;
-            }, file: TFile) => (FileView & {loadFile: (file: TFile) => void})
+            }, file: TFile, subpath?: string) => (FileView & {loadFile: (file: TFile) => void})
         }
     }
 }
