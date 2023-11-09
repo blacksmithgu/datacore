@@ -21,8 +21,7 @@ export interface EditableProps<T> {
     dispatch: Dispatch<EditableAction>;
 }
 
-export type EditableAction =
-    | {
+export type EditableAction = {
           type: "change";
           // oldValue: any,
           newValue: any;
