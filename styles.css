@@ -75,6 +75,6 @@
     text-align: center;
 }
 
-.datacore-editable {
+.datacore-editable:focus {
     white-space: pre-line;
 }
