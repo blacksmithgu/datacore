@@ -18,20 +18,20 @@ export interface EditableProps<T> {
     defaultRender?: VNode;
     editor: React.ReactNode;
     state: EditableState<T>;
-    dispatch: Dispatch<EditableAction>;
+    dispatch: Dispatch<EditableAction<T>>;
 }
 
-export type EditableAction = {
+export type EditableAction<T> = {
           type: "change";
           // oldValue: any,
-          newValue: any;
+          newValue: T;
       }
     | {
           type: "editing-toggled";
           newValue: boolean;
       };
 
-export function editableReducer<T>(state: EditableState<T>, action: EditableAction): EditableState<T> {
+export function editableReducer<T>(state: EditableState<T>, action: EditableAction<T>): EditableState<T> {
     switch (action.type) {
         case "change":
             state.onChange(action.newValue);
@@ -44,9 +44,9 @@ export function editableReducer<T>(state: EditableState<T>, action: EditableActi
 
 export function useEditableDispatch<T>(
     initial: EditableState<T> | (() => EditableState<T>)
-): [EditableState<T>, Dispatch<EditableAction>] {
+): [EditableState<T>, Dispatch<EditableAction<T>>] {
     const init = useMemo(() => (typeof initial == "function" ? initial() : initial), []);
-    return useReducer(editableReducer as Reducer<EditableState<T>, EditableAction>, init);
+    return useReducer(editableReducer as Reducer<EditableState<T>, EditableAction<T>>, init);
 }
 
 export function cleanUpText<T>(original: T, inline: boolean): string | T {
