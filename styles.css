@@ -81,6 +81,8 @@
     /* white-space: pre-line; */
 }
 
-.datacore-editable-outer, .datacore-editable-outer > span {
+.datacore-editable-outer {
     display: inline-block;
+    vertical-align: top;
+}
 }
