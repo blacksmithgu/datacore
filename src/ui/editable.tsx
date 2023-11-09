@@ -1,10 +1,9 @@
 import { Fragment, VNode, h } from "preact";
-import { Dispatch, Reducer, useContext, useMemo, useReducer, useRef, useState } from "preact/hooks";
+import { Dispatch, Reducer, useContext, useMemo, useReducer, useRef } from "preact/hooks";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useStableCallback } from "./hooks";
-import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
+import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
 import { Literal } from "expression/literal";
-import { JSXInternal } from "preact/src/jsx";
 
 export interface EditableState<T> {
     isEditing?: boolean;
