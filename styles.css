@@ -75,6 +75,12 @@
     text-align: center;
 }
 
-.datacore-editable:focus {
-    white-space: pre-line;
+
+.datacore-editable:focus, .datacore-editable-outer:has(span[contenteditable]) {
+    border: 2px solid var(--color-blue);
+    /* white-space: pre-line; */
+}
+
+.datacore-editable-outer, .datacore-editable-outer > span {
+    display: inline-block;
 }
