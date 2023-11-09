@@ -74,3 +74,7 @@
     color: var(--text-muted);
     text-align: center;
 }
+
+.datacore-editable {
+    white-space: pre-line;
+}
