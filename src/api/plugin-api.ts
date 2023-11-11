@@ -6,6 +6,9 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown/markdown";
 import { Result } from "./result";
+import { Component, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
+import { DatacoreJSRenderer } from "ui/javascript";
+import { DatacoreLocalApi } from "./local-api";
 
 /** Exterally visible API for datacore. */
 export class DatacoreApi {
@@ -52,5 +55,28 @@ export class DatacoreApi {
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         const parsedQuery = typeof query === "string" ? QUERY.query.tryParse(query) : query;
         return this.core.datastore.search(parsedQuery);
+    }
+
+    /////////////////////
+    // Visual Elements //
+    /////////////////////
+
+    /**
+     * Run the given DatacoreJS script, rendering it into the given container. This function
+     * will return quickly; actual rendering is done asynchronously in the background.
+     *
+     * Returns a markdown render child representing the rendered object.
+     */
+    public executeJs(
+        source: string,
+        container: HTMLElement,
+        component: Component | MarkdownPostProcessorContext,
+        sourcePath: string
+    ): MarkdownRenderChild {
+        let local = new DatacoreLocalApi(this, sourcePath, container);
+        const renderer = new DatacoreJSRenderer(local, container, sourcePath, source);
+        component.addChild(renderer);
+
+        return renderer;
     }
 }

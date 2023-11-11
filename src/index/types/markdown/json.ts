@@ -95,6 +95,13 @@ export interface JsonMarkdownListBlock extends JsonMarkdownBlock {
     $type: "list";
 }
 
+export interface JsonMarkdownDatablock extends JsonMarkdownBlock {
+    /** The raw data in the object. */
+    $data: Record<string, FrontmatterEntry>;
+
+    $type: "datablock";
+}
+
 export interface JsonMarkdownListItem {
     /** The position of the list item in the file. */
     $position: LineSpan;

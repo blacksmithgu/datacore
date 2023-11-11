@@ -53,6 +53,11 @@ export interface TableState<T> {
     /** The fields to sort the view on, if relevant. */
     sortOn?: SortOn[];
 
+    /** Whether the table can be grouped. */
+    groupable?: boolean;
+    /** The fields to group the view on, if relevant. */
+    groupOn?: GroupOn[];
+
     /**
      * If a boolean, enables/disables paging with the default configuration. If a number, paging will be
      * enabled with the given number of entries per page.
@@ -67,6 +72,9 @@ export type SortDirection = "ascending" | "descending";
 
 /** The ways that the table can be sorted. */
 export type SortOn = { type: "column"; id: string; direction: SortDirection };
+
+/** The ways that the data in the table can be grouped. */
+export type GroupOn = { type: "column"; id: string; flatten?: boolean };
 
 export interface TableColumn<T, V = Literal> {
     /** The unique ID of this table column; you cannot have multiple columns with the same ID in a given table. */

@@ -2,6 +2,7 @@ import { Link } from "expression/link";
 import { getFileTitle } from "utils/normalizers";
 import { DateTime } from "luxon";
 import { CachedMetadata, FileStats, ListItemCache } from "obsidian";
+import { parse as parseYaml } from "yaml";
 import BTree from "sorted-btree";
 import { InlineField, asInlineField, extractFullLineField, extractInlineFields } from "./inline-field";
 import { EXPRESSION } from "expression/parser";
@@ -14,7 +15,11 @@ import {
     JsonMarkdownPage,
     JsonMarkdownSection,
     JsonMarkdownTaskItem,
+    JsonMarkdownDatablock,
 } from "index/types/markdown/json";
+
+/** Matches yaml datablocks, which show up as independent objects in the datacore index. */
+const YAML_DATA_REGEX = /```yaml:data/i;
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -87,6 +92,7 @@ export function markdownImport(
 
         const start = block.position.start.line;
         const end = block.position.end.line;
+        const startLine = lines[start]; // to use to check the codeblock type
 
         if (block.type === "list") {
             blocks.set(start, {
@@ -99,6 +105,33 @@ export function markdownImport(
                 $elements: [],
                 $type: "list",
             } as JsonMarkdownListBlock);
+        } else if (block.type == "code" && YAML_DATA_REGEX.test(startLine)) {
+            const yaml: string = lines
+                .slice(start + 1, end)
+                .join("\n")
+                .replace(/\t/gm, "  ");
+            const parsed = parseYaml(yaml);
+
+            const split: Record<string, FrontmatterEntry> = {};
+            for (const key of Object.keys(parsed)) {
+                const value = parsed[key];
+
+                split[key.toLowerCase()] = {
+                    key: key,
+                    value: parseFrontmatter(value),
+                    raw: value,
+                };
+            }
+
+            blocks.set(start, {
+                $ordinal: blockOrdinal,
+                $position: { start, end },
+                $tags: [],
+                $infields: {},
+                $type: "datablock",
+                $data: split,
+                $links: [],
+            } as JsonMarkdownDatablock);
         } else {
             blocks.set(start, {
                 $ordinal: blockOrdinal,
@@ -170,7 +203,7 @@ export function markdownImport(
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].$position.end >= line) addTag(block[1].$tags, tag);
 
-        const listItem = blocks.getPairOrNextHigher(line);
+        const listItem = blocks.getPairOrNextLower(line);
         if (listItem && listItem[1].$position.end >= line) addTag(listItem[1].$tags, tag);
     }
 
@@ -190,7 +223,7 @@ export function markdownImport(
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].$position.end >= line) addLink(block[1].$links, link);
 
-        const listItem = blocks.getPairOrNextHigher(line);
+        const listItem = listItems.getPairOrNextLower(line);
         if (listItem && listItem[1].$position.end >= line) addLink(listItem[1].$links, link);
     }
 
@@ -219,13 +252,14 @@ export function markdownImport(
         const block = blocks.getPairOrNextLower(line);
         if (block && block[1].$position.end >= line) addInlineField(block[1].$infields, field);
 
-        const listItem = blocks.getPairOrNextHigher(line);
+        const listItem = listItems.getPairOrNextLower(line);
         if (listItem && listItem[1].$position.end >= line) addInlineField(listItem[1].$infields, field);
     }
 
     /////////////////////////
     // Frontmatter Parsing //
     /////////////////////////
+
     const frontmatter: Record<string, FrontmatterEntry> = {};
     for (const key of Object.keys(metadata.frontmatter ?? {})) {
         const value = metadata.frontmatter![key];

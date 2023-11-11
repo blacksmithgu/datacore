@@ -1,6 +1,6 @@
 import { DatacoreApi } from "api/plugin-api";
 import { Datacore } from "index/datacore";
-import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { IndexStatusBar } from "ui/index-status";
@@ -26,6 +26,13 @@ export default class DatacorePlugin extends Plugin {
         // Add a visual aid for what datacore is currently doing.
         this.mountIndexState(this.addStatusBarItem(), this.core);
 
+        // Primary visual elements (DatacoreJS and Datacore blocks).
+        this.registerMarkdownCodeBlockProcessor(
+            "datacorejs",
+            async (source: string, el, ctx) => this.renderJavascript(source, el, ctx),
+            -100
+        );
+
         // Initialize as soon as the workspace is ready.
         if (!this.app.workspace.layoutReady) {
             this.app.workspace.onLayoutReady(async () => this.core.initialize());
@@ -44,13 +51,19 @@ export default class DatacorePlugin extends Plugin {
         console.log(`Datacore: version ${this.manifest.version} unloaded.`);
     }
 
+    /** Execute a javascript datacore script and render it into the given element. */
+    public async renderJavascript(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+        this.api.executeJs(source, el, ctx, ctx.sourcePath);
+    }
+
+    /** Update the given settings to new values. */
     async updateSettings(settings: Partial<Settings>) {
         Object.assign(this.settings, settings);
         await this.saveData(this.settings);
     }
 
     /** Render datacore indexing status using the index. */
-    mountIndexState(root: HTMLElement, core: Datacore): void {
+    private mountIndexState(root: HTMLElement, core: Datacore): void {
         render(createElement(IndexStatusBar, { datacore: core }), root);
 
         this.register(() => render(null, root));
