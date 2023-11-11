@@ -162,6 +162,12 @@ export function markdownImport(
     const listItems = new BTree<number, JsonMarkdownListItem>(undefined, (a, b) => a - b);
     for (const list of metadata.listItems || []) {
         const item = convertListItem(list);
+        let content = lines
+            .slice(item.$position.start, (item.$position.end) + 1).join("\n")
+            /** strip inline fields maybe */
+        let marker = content.split("\n")[0].replace(/>|\t/g, "").trim().slice(0, 1)
+        item.$symbol = marker;
+        item.$text = content.replace(/[\-+\*]\s\[.\]\s/, "");
         listItems.set(item.$position.start, item);
     }
 
