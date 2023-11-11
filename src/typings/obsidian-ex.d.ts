@@ -12,6 +12,21 @@ declare module "obsidian" {
                 };
             };
         };
+        embedRegistry: {
+            embedByExtension: {
+                [key: string]: unknown,
+                md: MarkdownRenderer,
+            }
+            getEmbedCreator: (arg: TFile) => new (arg2: {
+                app: App,
+                linktext: string,
+                sourcePath: string,
+                showInline: boolean,
+                depth: number,
+                containerEl: HTMLElement,
+                displayMode: boolean;
+            }, file: TFile, subpath?: string) => (FileView & {loadFile: (file: TFile) => void})
+        }
     }
 }
 
