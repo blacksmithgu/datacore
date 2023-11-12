@@ -1,5 +1,6 @@
 import { Fragment, VNode, h } from "preact";
-import { Dispatch, Reducer, useContext, useMemo, useReducer, useRef } from "preact/hooks";
+import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useReducer } from "preact/compat";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useStableCallback } from "./hooks";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
@@ -8,7 +9,7 @@ import { Literal } from "expression/literal";
 export interface EditableState<T> {
     isEditing?: boolean;
     content: T;
-    onChange: (val: T) => any;
+    updater: (val: T) => any;
     inline?: boolean;
 }
 
@@ -18,50 +19,61 @@ export interface EditableProps<T> {
     editor: React.ReactNode;
     state: EditableState<T>;
     dispatch: Dispatch<EditableAction<T>>;
+    state: EditableState<T>;
 }
 
-export type EditableAction<T> = {
-          type: "change";
+export type EditableAction<T> =
+    | {
+          type: "commit";
           // oldValue: any,
           newValue: T;
       }
     | {
           type: "editing-toggled";
           newValue: boolean;
+      }
+    | {
+          type: "content-changed";
+          newValue: T;
       };
 
 export function editableReducer<T>(state: EditableState<T>, action: EditableAction<T>): EditableState<T> {
     switch (action.type) {
-        case "change":
-            state.onChange(action.newValue);
-            return {...state, content: action.newValue};
+        case "commit":
+            state.updater(action.newValue);
+            return { ...state, content: action.newValue };
         case "editing-toggled":
-            state.onChange(state.content);
+            state.updater(state.content);
             return { ...state, isEditing: action.newValue };
+        case "content-changed":
+            return { ...state, content: action.newValue };
+        default:
+            return state;
     }
+    return state;
 }
 
 export function useEditableDispatch<T>(
     initial: EditableState<T> | (() => EditableState<T>)
 ): [EditableState<T>, Dispatch<EditableAction<T>>] {
-    const init = useMemo(() => (typeof initial == "function" ? initial() : initial), []);
-    return useReducer(editableReducer as Reducer<EditableState<T>, EditableAction<T>>, init);
+    const init = useMemo(() => (typeof initial == "function" ? initial() : initial), [initial]);
+    return useReducer(editableReducer as Reducer<EditableState<T>, EditableAction<T>>, init, (s) => init);
 }
 
-export function cleanUpText<T>(original: T, inline: boolean): string | T {
+export function cleanUpText(original: string, inline: boolean): string {
     if (typeof original === "string") {
         let ret = original
             .replace(/<div><\/div>|<br>/gim, "\n")
-            .replace(/<div[^>]*>/gmi, "")
-            .replace(/<\/div>/gmi, "")
-            .replace(/&nbsp;/gmi, " ");
+            .replace(/<div[^>]*>/gim, "")
+            .replace(/<\/div>/gim, "")
+            .replace(/&nbsp;/gim, " ");
         if (inline) ret = ret.trimEnd();
         return ret;
     }
     return original;
 }
 
-function insertBrs<T>(original: T): string | T {
+function insertBrs(original: string): string {
     if (typeof original == "string") {
         return original.replace(/\n/gm, "<br>").replace(/&nbsp;/gm, " ");
     } else {
@@ -69,7 +81,7 @@ function insertBrs<T>(original: T): string | T {
     }
 }
 
-export function Editable<T>({ state, sourcePath, defaultRender, editor }: EditableProps<T>) {
+export function Editable<T>({ sourcePath, defaultRender, editor, dispatch, state }: EditableProps<T>) {
     const currentRef = useRef(null);
 
     const element = useMemo(() => {
@@ -79,6 +91,9 @@ export function Editable<T>({ state, sourcePath, defaultRender, editor }: Editab
             return defaultRender;
         }
     }, [state.isEditing, state.content, sourcePath, defaultRender]);
+		useEffect(() => {
+			dispatch({type: "content-changed", newValue: state.content})
+		}, [state.content, state.isEditing])
     return (
         <span className="datacore-editable-outer" ref={currentRef}>
             {element}
@@ -87,27 +102,33 @@ export function Editable<T>({ state, sourcePath, defaultRender, editor }: Editab
 }
 
 export function TextEditable(props: EditableState<string> & { markdown?: boolean; sourcePath: string }) {
+    const cfc = useContext(CURRENT_FILE_CONTEXT);
     const [state, dispatch] = useEditableDispatch<string>(() => ({
         isEditing: false,
         content: props.content,
-        onChange: props.onChange,
+        updater: props.updater,
         inline: props.inline ?? true,
     }));
-    const cfc = useContext(CURRENT_FILE_CONTEXT);
-    const text = useRef(state.content);
+
+    const text = useRef("-");
+    useEffect(() => {
+				text.current = props.content;
+        dispatch({ type: "content-changed", newValue: props.content });
+    }, [props.content]);
+
     const onChangeCb = useStableCallback(
         async (evt: ContentEditableEvent) => {
             text.current = insertBrs(evt.target.value);
             // await onChange(text.current)
         },
-        [text.current, state.content, props.sourcePath, state.onChange, state.isEditing]
+        [text.current, props.sourcePath, state.content, state.updater, state.isEditing]
     );
 
     const finalize = async () => {
-				dispatch({
-					type: "change",
-					newValue: cleanUpText(text.current, state.inline!)
-				})
+        dispatch({
+            type: "commit",
+            newValue: cleanUpText(text.current, props.inline!),
+        });
         dispatch({
             type: "editing-toggled",
             newValue: false,
@@ -125,7 +146,7 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
                 }
             }
         },
-        [text.current, state.content, state.isEditing, props.sourcePath, state.onChange]
+        [text.current, props.sourcePath, state.updater, state.content, state.isEditing]
     );
 
     const dblClick = useStableCallback(
@@ -136,36 +157,37 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
                 newValue: true,
             });
         },
-        [text.current, state.content, props.sourcePath, state.onChange, state.isEditing]
+        [text.current, props.sourcePath, state.updater, state.isEditing, state.content]
     );
-    const readonlyEl = useMemo(() => {
-        return (
-            <Fragment>
-                {props.markdown ? (
-                    <Markdown content={cleanUpText(text.current as string, state.inline ?? false)} sourcePath={props.sourcePath || cfc} />
-                ) : (
-                    <Lit inline={false} sourcePath={props.sourcePath || cfc} value={text.current as Literal} />
-                )}
-            </Fragment>
-        );
-    }, [props.markdown, text.current, state.isEditing]);
-    const editor = useMemo(
-			() => (
-				// @ts-ignore
-            <ContentEditable
-                tagName="span"
-                onKeyUp={onInput}
-                className="datacore-editable"
-                onChange={onChangeCb}
-                html={text.current}
-            />
-        ),
-        [state.content, text.current]
+    const readonlyEl = (
+        <Fragment>
+            {props.markdown ? (
+                <Markdown
+                    content={cleanUpText(text.current as string, props.inline ?? false)}
+                    sourcePath={props.sourcePath || cfc}
+                />
+            ) : (
+                <Lit inline={false} sourcePath={props.sourcePath || cfc} value={text.current as Literal} />
+            )}
+        </Fragment>
     );
+    // }, [props.markdown, text.current, state.content, state.isEditing]);
+    const editor = (
+        // @ts-ignore
+        <ContentEditable
+            tagName="span"
+            onKeyUp={onInput}
+            className="datacore-editable"
+            onChange={onChangeCb}
+            html={text.current}
+        />
+    );
+    //, [state.content, text.current]
+    //);
     return (
         <span onDblClick={dblClick}>
             <Editable<string> dispatch={dispatch} editor={editor} defaultRender={readonlyEl} state={state} />
+						{/* {state.isEditing ? {editor} : readonlyEl} */}
         </span>
     );
 }
-
