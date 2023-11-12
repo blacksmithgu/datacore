@@ -1,7 +1,6 @@
 import { Fragment, VNode, h } from "preact";
-import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { ChangeEvent, useReducer } from "preact/compat";
-import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useStableCallback } from "./hooks";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
 import { Literal } from "expression/literal";
@@ -50,7 +49,6 @@ export function editableReducer<T>(state: EditableState<T>, action: EditableActi
         default:
             return state;
     }
-    return state;
 }
 
 export function useEditableDispatch<T>(
@@ -169,7 +167,6 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
     return (
         <span onDblClick={dblClick}>
             <Editable<string> dispatch={dispatch} editor={editor} defaultRender={readonlyEl} state={state} />
-						{/* {state.isEditing ? {editor} : readonlyEl} */}
         </span>
     );
 }
