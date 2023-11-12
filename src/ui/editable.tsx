@@ -116,7 +116,8 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
 					await finalize();
 				}
 			} else {
-				if (e.key === "Escape") {
+				if (e.key === "Enter" && e.ctrlKey) {
+					e.preventDefault();
 					await finalize();
 				}
 			}
