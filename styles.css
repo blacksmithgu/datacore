@@ -76,7 +76,7 @@
 }
 
 
-.datacore-editable:focus, .datacore-editable-outer:has(span[contenteditable]) {
+.datacore-editable-outer:has(span[contenteditable]) {
     border: 2px solid var(--color-blue);
     /* white-space: pre-line; */
 }
