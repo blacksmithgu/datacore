@@ -1,6 +1,6 @@
 import { Fragment, VNode, h } from "preact";
 import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { useReducer } from "preact/compat";
+import { ChangeEvent, useReducer } from "preact/compat";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useStableCallback } from "./hooks";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
@@ -73,14 +73,6 @@ export function cleanUpText(original: string, inline: boolean): string {
     return original;
 }
 
-function insertBrs(original: string): string {
-    if (typeof original == "string") {
-        return original.replace(/\n/gm, "<br>").replace(/&nbsp;/gm, " ");
-    } else {
-        return original;
-    }
-}
-
 export function Editable<T>({ sourcePath, defaultRender, editor, dispatch, state }: EditableProps<T>) {
     const currentRef = useRef(null);
 
@@ -117,9 +109,8 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
     }, [props.content]);
 
     const onChangeCb = useStableCallback(
-        async (evt: ContentEditableEvent) => {
-            text.current = insertBrs(evt.target.value);
-            // await onChange(text.current)
+        async (evt: ChangeEvent) => {
+            text.current = (evt.currentTarget as HTMLTextAreaElement).value
         },
         [text.current, props.sourcePath, state.content, state.updater, state.isEditing]
     );
@@ -151,7 +142,6 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
 
     const dblClick = useStableCallback(
         (e: MouseEvent) => {
-            text.current = insertBrs(text.current);
             dispatch({
                 type: "editing-toggled",
                 newValue: true,
@@ -171,19 +161,11 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
             )}
         </Fragment>
     );
-    // }, [props.markdown, text.current, state.content, state.isEditing]);
     const editor = (
-        // @ts-ignore
-        <ContentEditable
-            tagName="span"
-            onKeyUp={onInput}
-            className="datacore-editable"
-            onChange={onChangeCb}
-            html={text.current}
-        />
+				<textarea className="datacore-editable" onChange={onChangeCb} onKeyUp={onInput}>
+					{text.current}
+				</textarea>
     );
-    //, [state.content, text.current]
-    //);
     return (
         <span onDblClick={dblClick}>
             <Editable<string> dispatch={dispatch} editor={editor} defaultRender={readonlyEl} state={state} />
