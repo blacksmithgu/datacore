@@ -78,10 +78,23 @@
 
 .datacore-editable-outer:has(span[contenteditable]) {
     border: 2px solid var(--color-blue);
-    /* white-space: pre-line; */
+}
+
+textarea.datacore-editable {
+    resize: vertical; 
+    font-size: var(--font-ui-medium);
+    width: 100%;
+}
+
+.has-texteditable {
+    display: inline-block;
+    width: -webkit-fill-available;
 }
 
 .datacore-editable-outer {
     display: inline-block;
     vertical-align: top;
+    width: 100%;
+}
+
 }

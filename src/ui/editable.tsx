@@ -83,7 +83,7 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
 		isEditing: false,
 		content: props.content,
 		updater: props.updater,
-		inline: props.inline ?? true,
+		inline: props.inline ?? false,
 	}));
 
 	const text = useRef("-");
@@ -146,13 +146,13 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
 			)}
 		</Fragment>
 	);
-	const editor = (
+	const editor = !state.inline ? (
 		<textarea className="datacore-editable" onChange={onChangeCb} onKeyUp={onInput}>
 			{text.current}
 		</textarea>
-	);
+	) : <input className="datacore-editable" type="text" onChange={onChangeCb} onKeyUp={onInput}/>;
 	return (
-		<span onDblClick={dblClick}>
+		<span className="has-texteditable" onDblClick={dblClick}>
 			<Editable<string> dispatch={dispatch} editor={editor} defaultRender={readonlyEl} state={state} />
 		</span>
 	);
