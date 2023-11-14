@@ -10,6 +10,7 @@ import { extractImageDimensions, isImageEmbed } from "utils/media";
 import { h, createContext, Fragment, VNode, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
+import { Embed, EmbedProps } from "./embed";
 
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
@@ -92,6 +93,7 @@ export function RawMarkdown({
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);
+    const app = useContext(APP_CONTEXT)
 
     useEffect(() => {
         if (!container.current) return;
@@ -106,6 +108,22 @@ export function RawMarkdown({
                 let children = paragraph.childNodes;
                 paragraph.replaceWith(...Array.from(children));
                 paragraph = container.current.querySelector("p");
+            }
+            let embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
+            
+            // have embeds actually load instead of displaying as plain text
+            while(embed) {
+                let props: EmbedProps = {
+                    embedderPath: sourcePath,
+                    linkText: embed.getAttribute("src") ?? "",
+                    inline: true
+                }
+                embed.empty()
+                render(<APP_CONTEXT.Provider value={app}>
+                    <Embed {...props}/>
+                </APP_CONTEXT.Provider>, embed)
+                embed.addClass("is-loaded")
+                embed = container.current.querySelector("span.internal-embed:not(.is-loaded)")
             }
         });
     }, [content, sourcePath, container.current]);
@@ -164,6 +182,8 @@ export function RawLit({
             else if (dimensions && dimensions.length == 1)
                 return <img alt={value.path} src={resourcePath} width={dimensions[0]} />;
             else return <img alt={value.path} src={resourcePath} />;
+        } else if(value.embed) {
+            return <Embed linkText={value.fileName()} subPath={value.subpath} embedderPath={sourcePath} inline={inline} />
         }
 
         return <ObsidianLink link={value} sourcePath={sourcePath} />;
