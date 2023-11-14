@@ -140,6 +140,7 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
 				<Markdown
 					content={text.current as string}
 					sourcePath={props.sourcePath || cfc}
+					inline={false}
 				/>
 			) : (
 				<Lit inline={false} sourcePath={props.sourcePath || cfc} value={text.current as Literal} />
