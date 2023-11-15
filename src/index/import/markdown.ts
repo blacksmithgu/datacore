@@ -317,7 +317,7 @@ function emptylines(lines: string[], start: number, end: number): boolean {
         if (lines[index].trim() !== "") return false;
     }
 
-    return false;
+    return true;
 }
 
 /**
