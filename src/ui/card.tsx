@@ -7,13 +7,14 @@ export interface CardProps<T> {
 	value: T;
 
 	/** card title.  */
-	title: (val: T) => (Literal | VNode) | Literal;
+	title: Literal | ((val: T) => Literal | VNode);
 
 	/** card content. */
-	content: (val: T) => (Literal | VNode) | Literal;
+	content: Literal | ((val: T) => Literal | VNode);
+
 
 	/**optional footer (because why not?) */
-	footer?: (val: T) => (Literal | VNode) | Literal;
+	footer?: Literal | ((val: T) => Literal | VNode);
 
 	/** whether the title should display centered */
 	centerTitle?: boolean;
@@ -44,10 +45,6 @@ export function Card<T>(props: CardProps<T>) {
 		}
 		return null
 	},[props.footer, props.value])
-	const footer = (
-	<div className="datacore-card-footer">
-		{footerContent}
-	</div>)
 
 	const titleClasses = useMemo(() => {
 		let base = ["datacore-card-title"];
@@ -64,7 +61,9 @@ export function Card<T>(props: CardProps<T>) {
 				<div className="datacore-card-content">
 					{innerContent}
 				</div>
-				{footer}
+				<div className="datacore-card-footer">
+					{footerContent}
+				</div>
 			</div>
 		</div>
 	)
