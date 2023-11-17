@@ -212,7 +212,7 @@ export class Datastore {
             this.tags.delete(object.$id, extractSubtags(tags));
         }
 
-        if (object.$types.contains(LINKABLE_TYPE) && iterableExists(object, "$links")) {
+        if (object.$types.contains(LINKBEARING_TYPE) && iterableExists(object, "$links")) {
             // Assume links are normalized when deleting them. Could be broken but I hope not. We can always use a 2-way index to
             // fix this if we encounter non-normalized links.
             this.links.delete(
