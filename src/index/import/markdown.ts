@@ -96,7 +96,7 @@ export function markdownImport(
 
         if (block.type === "list") {
             blocks.set(start, {
-                $ordinal: blockOrdinal,
+                $ordinal: blockOrdinal++,
                 $position: { start, end },
                 $tags: [],
                 $links: [],
@@ -124,7 +124,7 @@ export function markdownImport(
             }
 
             blocks.set(start, {
-                $ordinal: blockOrdinal,
+                $ordinal: blockOrdinal++,
                 $position: { start, end },
                 $tags: [],
                 $infields: {},
@@ -134,7 +134,7 @@ export function markdownImport(
             } as JsonMarkdownDatablock);
         } else {
             blocks.set(start, {
-                $ordinal: blockOrdinal,
+                $ordinal: blockOrdinal++,
                 $position: { start, end },
                 $tags: [],
                 $links: [],
