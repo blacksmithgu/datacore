@@ -38,8 +38,6 @@ export class PDF implements File, Indexable, Linkable {
             $extension: this.$extension,
             $size: this.$size,
             $pageCount: this.$pageCount
-            // $,
-            // $sections: this.$sections.map((sect) => sect.partial()),
         };
     }
     public static from(raw: JsonPDF): PDF {
