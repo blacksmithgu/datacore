@@ -33,5 +33,6 @@ declare module "obsidian" {
 declare global {
     interface Window {
         datacore?: DatacoreApi;
+        pdfjsLib?: typeof import("pdfjs-dist")
     }
 }
