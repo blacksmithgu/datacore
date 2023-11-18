@@ -50,6 +50,7 @@
     "localforage": "1.10.0",
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
+    "pdfjs-dist": "^4.0.189",
     "preact": "^10.17.1",
     "sorted-btree": "^1.8.1",
     "yaml": "^2.3.3"
