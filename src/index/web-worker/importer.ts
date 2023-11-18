@@ -81,10 +81,28 @@ export class FileImporter extends Component {
         const [file, resolve, reject] = this.queue.shift()!;
 
         worker.active = [file, resolve, reject, Date.now()];
+
+        let type: string;
+
+        switch(file.extension) {
+            case "pdf": {
+                type = "pdf";
+                break;
+            }
+            case "md": {
+                type = "markdown";
+                break;
+            }
+            case "canvas": {
+                type = "canvas";
+                break;
+            }
+        }
+
         this.vault.cachedRead(file).then((c) =>
             worker!.worker.postMessage(
                 Transferable.transferable({
-                    type: "markdown",
+                    type,
                     path: file.path,
                     contents: c,
                     stat: file.stat,
