@@ -13,7 +13,7 @@ export class PDF implements File, Indexable, Linkable {
     $mtime: DateTime;
     $size: number;
     $extension: string;
-    $pageCount: number = 0;
+    $pageCount: number;
     // file IDs are always just the full path.
     get $id() {
         return this.$path;
@@ -47,8 +47,7 @@ export class PDF implements File, Indexable, Linkable {
             $mtime: DateTime.fromMillis(raw.$mtime),
             $extension: raw.$extension,
             $size: raw.$size,
-            // $,
-            // $sections: this.$sections.map((sect) => sect.partial()),
+            $pageCount: raw.$pageCount
         });
     }
 }
