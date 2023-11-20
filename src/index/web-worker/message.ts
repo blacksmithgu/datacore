@@ -35,10 +35,10 @@ export interface PDFImport {
 
     /** The path we are importing. */
     path: string;
-    /** The raw JSON contents we are importing. */
-    // contents: string;
     /** The stats for the file. */
     stat: FileStats;
+    
+    resourceURI: string;
 }
 
 /** Available import commands to be sent to an import web worker. */
