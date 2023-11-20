@@ -5,7 +5,7 @@ export interface JsonPDF {
 			$ctime: number;
 			/** Obsidian-provided date this page was modified. */
 			$mtime: number;
-			/** The extension; for markdown files, almost always '.md'. */
+			/** The extension; for pdf files, almost always '.pdf'. */
 			$extension: string;
 			/** Obsidian-provided size of this page in bytes. */
 			$size: number;
