@@ -33,7 +33,7 @@ onmessage = async (event) => {
                 unescape(
                     encodeURIComponent(
                         await (
-                            await fetch("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.189/build/pdf.worker.mjs")
+                            await fetch("https://cdn.jsdelivr.net/npm/pdfjs-dist@latest/build/pdf.worker.mjs")
                         ).text()
                     )
                 )
@@ -42,7 +42,7 @@ onmessage = async (event) => {
                 unescape(
                     encodeURIComponent(
                         await (
-                            await fetch("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.189/build/pdf.min.mjs")
+                            await fetch("https://cdn.jsdelivr.net/npm/pdfjs-dist@latest/build/pdf.min.mjs")
                         ).text()
                     )
                 )
