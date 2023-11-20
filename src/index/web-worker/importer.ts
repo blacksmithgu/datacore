@@ -83,10 +83,12 @@ export class FileImporter extends Component {
         worker.active = [file, resolve, reject, Date.now()];
 
         let type: string;
+        let resPath: string;
 
         switch(file.extension) {
             case "pdf": {
                 type = "pdf";
+                resPath = this.vault.getResourcePath(file);
                 break;
             }
             case "md": {
@@ -107,6 +109,7 @@ export class FileImporter extends Component {
                     contents: c,
                     stat: file.stat,
                     metadata: this.metadataCache.getFileCache(file),
+                    resourceURI: resPath
                 } as ImportCommand)
             )
         );
