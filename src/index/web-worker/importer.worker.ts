@@ -2,10 +2,10 @@ import { markdownImport } from "index/import/markdown";
 import { pdfImport } from "index/import/pdf";
 import { ImportCommand, MarkdownImportResult, PdfImportResult } from "index/web-worker/message";
 import { Transferable } from "index/web-worker/transferable";
-import { TFile } from "obsidian";
+import { document } from "./polyfill";
 
 /** Web worker entry point for importing. */
-onmessage = (event) => {
+onmessage = async (event) => {
     try {
         const message = Transferable.value(event.data) as ImportCommand;
 
@@ -19,19 +19,48 @@ onmessage = (event) => {
                 } as MarkdownImportResult)
             );
         } else if (message.type === "pdf") {
-            window.pdfjsLib?.getDocument(
-                app.vault.getResourcePath(app.vault.getAbstractFileByPath(message.path) as TFile)
-            )?.promise.then(pdf => {
-                if (pdf) {
-                    postMessage(
-                        Transferable.transferable({
-                            type: "pdf",
-                            result: pdfImport(message.path, message.stat, pdf),
-                        } as PdfImportResult)
-                    );
-                }
-            })
-            
+            /** dear reader, i know there is no good explanation for any of the following code... */
+
+            /** we need to shit-fill window.location to placate the pdf worker */
+            globalThis["window"] = {
+                // @ts-ignore
+                location: "app://obsidian.md",
+            };
+
+            /** add `document` shitfill to global object (to placate the pdf worker) */
+            Object.assign(globalThis, { document });
+            const rawPdfWorker = `data:text/javascript;base64,${btoa(
+                unescape(
+                    encodeURIComponent(
+                        await (
+                            await fetch("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.189/build/pdf.worker.mjs")
+                        ).text()
+                    )
+                )
+            )}`;
+            const rawPdfJs = `data:text/javascript;base64,${btoa(
+                unescape(
+                    encodeURIComponent(
+                        await (
+                            await fetch("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.189/build/pdf.min.mjs")
+                        ).text()
+                    )
+                )
+            )}`;
+            let pdfjsLib = await import(rawPdfJs)
+            pdfjsLib.GlobalWorkerOptions.workerSrc = rawPdfWorker;
+            console.debug(message.path, message.resourceURI);
+            pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(rawPdfWorker, { type: "module" });
+
+            let { promise } = await pdfjsLib.getDocument(message.resourceURI);
+            let pdf = await promise;
+
+            postMessage(
+                Transferable.transferable({
+                    type: "pdf",
+                    result: pdfImport(message.path, message.stat, pdf),
+                } as PdfImportResult)
+            );
         } else {
             postMessage({ $error: "Unsupported import method." });
         }
