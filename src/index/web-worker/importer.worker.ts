@@ -2,7 +2,6 @@ import { markdownImport } from "index/import/markdown";
 import { pdfImport } from "index/import/pdf";
 import { ImportCommand, MarkdownImportResult, PdfImportResult } from "index/web-worker/message";
 import { Transferable } from "index/web-worker/transferable";
-import { document } from "./polyfill";
 
 /** Web worker entry point for importing. */
 onmessage = async (event) => {

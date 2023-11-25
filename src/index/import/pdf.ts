@@ -1,6 +1,5 @@
 import { JsonPDF } from "index/types/pdf/json";
 import { PDFImport } from "index/web-worker/message";
-import { FileStats } from "obsidian";
 
 export async function pdfImport({ path, resourceURI, stat: stats }: PDFImport): Promise<JsonPDF> {
     /** dear reader, i know there is no good explanation for any of the following code... */
