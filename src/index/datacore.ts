@@ -1,7 +1,7 @@
 import { deferred, Deferred } from "utils/deferred";
 import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
-import { Indexable } from "index/types/indexable";
+import { Indexable, INDEXABLE_EXTENSIONS } from "index/types/indexable";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult, PdfImportResult } from "index/web-worker/message";
 import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
@@ -133,7 +133,7 @@ export class Datacore extends Component {
 
             this.trigger("update", this.revision);
             return parsed;
-        } else if((result as PdfImportResult).type.toLocaleLowerCase() == "pdf" || file.extension.toLocaleLowerCase() === "pdf") {
+        } else if((result as PdfImportResult).type.toLocaleLowerCase() == "pdf") {
             this.trigger("update", this.revision);
             let parsed = PDF.from((result as PdfImportResult).result);
             this.datastore.store(parsed);
@@ -275,7 +275,7 @@ export class DatacoreInitializer extends Component {
     private async init(file: TFile): Promise<InitializationResult> {
         try {
             const metadata = this.core.metadataCache.getFileCache(file);
-            if (!metadata && file.extension != "pdf" && file.extension != "canvas") return { status: "skipped" };
+            if (!metadata && !INDEXABLE_EXTENSIONS.includes(file.extension.toLocaleLowerCase())) return { status: "skipped" };
 
             await this.core.reload(file);
             return { status: "imported" };
