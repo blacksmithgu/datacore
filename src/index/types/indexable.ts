@@ -57,3 +57,10 @@ export interface Linkbearing {
     /** The links in this file. */
     $links: Link[];
 }
+
+export const INDEXABLE_EXTENSIONS = [
+	"md", "canvas", "pdf", 
+	"jpeg", "jpg", "png", "gif", 
+	"mp4", "mkv",
+	"mp3", "m4a", "aac"
+]
