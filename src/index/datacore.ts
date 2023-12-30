@@ -3,7 +3,7 @@ import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
 import { Indexable, INDEXABLE_EXTENSIONS } from "index/types/indexable";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
-import { ImportResult } from "index/web-worker/message";
+import { ImportResult, PdfImportResult } from "index/web-worker/message";
 import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
 import { Settings } from "settings";
 import { MarkdownListBlock, MarkdownListItem, MarkdownPage } from "./types/markdown";
@@ -12,6 +12,7 @@ import { DateTime } from "luxon";
 import { EmbedQueue } from "./embed-queue";
 import { JsonMarkdownPage } from "./types/json/markdown";
 import { Canvas, CanvasTextCard } from "./types/canvas";
+import { PDF } from "./types/pdf/pdf";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -210,6 +211,11 @@ export class Datacore extends Component {
             this.persister.storeFile(parsed.$path, parsed.json());
             this.trigger("update", this.revision);
             return parsed;
+        } else if((result as PdfImportResult).type.toLocaleLowerCase() == "pdf") {
+            this.trigger("update", this.revision);
+            let parsed = PDF.from((result as PdfImportResult).result);
+            this.datastore.store(parsed);
+            return parsed
         }
 
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);

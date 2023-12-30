@@ -1,5 +1,6 @@
 import { CanvasMetadataIndex, JsonCanvas } from "index/types/json/canvas";
 import { JsonMarkdownPage } from "index/types/json/markdown";
+import { JsonPDF } from "index/types/pdf/json";
 import { CachedMetadata, FileStats } from "obsidian";
 
 /** A command to import a markdown file. */
@@ -30,8 +31,21 @@ export interface CanvasImport {
     index: CanvasMetadataIndex["any"];
 }
 
+
+/** A command to import a canvas file. */
+export interface PDFImport {
+    type: "pdf";
+
+    /** The path we are importing. */
+    path: string;
+    /** The stats for the file. */
+    stat: FileStats;
+    
+    resourceURI: string;
+}
+
 /** Available import commands to be sent to an import web worker. */
-export type ImportCommand = MarkdownImport | CanvasImport;
+export type ImportCommand = MarkdownImport | CanvasImport | PDFImport;
 
 /** The result of importing a file of some variety. */
 export interface MarkdownImportResult {
@@ -44,6 +58,14 @@ export interface CanvasImportResult {
     type: "canvas";
     result: JsonCanvas;
 }
+
+export interface PdfImportResult {
+    /** The type of import. */
+    type: "pdf";
+    /** The result of importing. */
+    result: JsonPDF;
+}
+
 export interface ImportFailure {
     /** Failed to import. */
     type: "error";
