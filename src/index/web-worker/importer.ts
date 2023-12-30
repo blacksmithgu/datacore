@@ -3,7 +3,7 @@
 import { Transferable } from "index/web-worker/transferable";
 import ImportWorker from "index/web-worker/importer.worker";
 import { Component, MetadataCache, TFile, Vault } from "obsidian";
-import { ImportCommand } from "index/web-worker/message";
+import { MarkdownImport, PDFImport } from "index/web-worker/message";
 
 /** Settings for throttling import. */
 export interface ImportThrottle {
@@ -82,37 +82,29 @@ export class FileImporter extends Component {
 
         worker.active = [file, resolve, reject, Date.now()];
 
-        let type: string;
-        let resPath: string;
-
-        switch(file.extension) {
-            case "pdf": {
-                type = "pdf";
-                resPath = this.vault.getResourcePath(file);
-                break;
+        this.vault.cachedRead(file).then((c) => {
+            switch (file.extension) {
+                case "pdf":
+                    worker!.worker.postMessage(
+                        Transferable.transferable({
+                            type: "pdf",
+                            path: file.path,
+                            stat: file.stat,
+                            resourceURI: this.vault.getResourcePath(file)
+                        } as PDFImport)
+                    );
+                default:
+                    worker!.worker.postMessage(
+                        Transferable.transferable({
+                            type: "markdown",
+                            path: file.path,
+                            contents: c,
+                            stat: file.stat,
+                            metadata: this.metadataCache.getFileCache(file),
+                        } as MarkdownImport)
+                    );
             }
-            case "md": {
-                type = "markdown";
-                break;
-            }
-            case "canvas": {
-                type = "canvas";
-                break;
-            }
-        }
-
-        this.vault.cachedRead(file).then((c) =>
-            worker!.worker.postMessage(
-                Transferable.transferable({
-                    type,
-                    path: file.path,
-                    contents: c,
-                    stat: file.stat,
-                    metadata: this.metadataCache.getFileCache(file),
-                    resourceURI: resPath
-                } as ImportCommand)
-            )
-        );
+        });
     }
 
     /** Finish the parsing of a file, potentially queueing a new file. */

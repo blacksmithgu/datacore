@@ -3,7 +3,7 @@ import { Filter, Filters } from "expression/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery, IndexSource } from "index/types/index-query";
-import { INDEX_FIELDS, Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
+import { INDEX_FIELDS, Indexable, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
 import { MarkdownPage } from "./types/markdown/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";

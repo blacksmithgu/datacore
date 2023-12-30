@@ -4,6 +4,7 @@ import { FILE_TYPE, File, Indexable, LINKABLE_TYPE, Linkable } from "../indexabl
 import { JsonPDF } from "./json";
 export class PDF implements File, Indexable, Linkable {
     static TYPES = [FILE_TYPE, "pdf", LINKABLE_TYPE];
+
     $types: string[] = PDF.TYPES;
     $typename: string = "PDF";
     $parent?: Indexable | undefined;
@@ -14,21 +15,26 @@ export class PDF implements File, Indexable, Linkable {
     $size: number;
     $extension: string;
     $pageCount: number;
+
     // file IDs are always just the full path.
     get $id() {
         return this.$path;
     }
+
     // The file of a file is... it's file.
     get $file() {
         return this.$path;
     }
+
     /** A link to this file. */
     get $link() {
         return Link.file(this.$path);
     }
+
     private constructor(init: Partial<PDF>) {
         Object.assign(this, init);
     }
+
     /** Convert this page into it's partial representation for saving. */
     public partial(): JsonPDF {
         return {
@@ -40,6 +46,7 @@ export class PDF implements File, Indexable, Linkable {
             $pageCount: this.$pageCount
         };
     }
+
     public static from(raw: JsonPDF): PDF {
         return new PDF({
             $path: raw.$path,

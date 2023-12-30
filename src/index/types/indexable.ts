@@ -58,9 +58,8 @@ export interface Linkbearing {
     $links: Link[];
 }
 
-export const INDEXABLE_EXTENSIONS = [
-	"md", "canvas", "pdf", 
-	"jpeg", "jpg", "png", "gif", 
-	"mp4", "mkv",
-	"mp3", "m4a", "aac"
-]
+/**
+ * All supported extensions. This should probably become a dynamic lookup table and not just
+ * a fixed list at some point, especially if we add the ability to turn indexing on/off.
+ */
+export const INDEXABLE_EXTENSIONS = [ "md", "pdf" ];

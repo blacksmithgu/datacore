@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef } from "preact/hooks";
-import { APP_CONTEXT, COMPONENT_CONTEXT } from "./markdown";
+import { APP_CONTEXT } from "./markdown";
 import { h } from "preact";
 
 export interface EmbedProps {

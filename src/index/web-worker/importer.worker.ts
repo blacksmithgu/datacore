@@ -18,10 +18,12 @@ onmessage = async (event) => {
                 } as MarkdownImportResult)
             );
         } else if (message.type === "pdf") {
+            const pdf = await pdfImport(message);
+
             postMessage(
                 Transferable.transferable({
                     type: "pdf",
-                    result: await pdfImport(message),
+                    result: pdf
                 } as PdfImportResult)
             );
         } else {
