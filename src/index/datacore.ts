@@ -133,7 +133,7 @@ export class Datacore extends Component {
 
             this.trigger("update", this.revision);
             return parsed;
-        } else if(result.type == "pdf") {
+        } else if (result.type == "pdf") {
             let parsed = PDF.from(result.result);
             this.datastore.store(parsed);
 
@@ -276,7 +276,8 @@ export class DatacoreInitializer extends Component {
     private async init(file: TFile): Promise<InitializationResult> {
         try {
             const metadata = this.core.metadataCache.getFileCache(file);
-            if (!metadata && !INDEXABLE_EXTENSIONS.includes(file.extension.toLocaleLowerCase())) return { status: "skipped" };
+            if (!metadata && !INDEXABLE_EXTENSIONS.includes(file.extension.toLocaleLowerCase()))
+                return { status: "skipped" };
 
             await this.core.reload(file);
             return { status: "imported" };

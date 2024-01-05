@@ -1,10 +1,10 @@
-import { Literal, Literals } from "expression/literal";
+import { Grouping, Groupings, Literal, Literals } from "expression/literal";
 import { CURRENT_FILE_CONTEXT, Lit } from "./markdown";
 import { useInterning, useStableCallback } from "./hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 
-import { VNode, h, isValidElement } from "preact";
+import { Fragment, VNode, h, isValidElement } from "preact";
 import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks";
 
 /** Handler for table state updates. If you do not want to handle the event and let the table handle it, just call `next`.  */
@@ -94,6 +94,9 @@ export interface TableColumn<T, V = Literal> {
 
     /** Enables or disables sorting on this column. */
     sortable?: boolean;
+
+    /** Enables or disables grouping on this column. */
+    groupable?: boolean;
 }
 
 /** Low level table view which handles state transitions via the given dispatcher. */
@@ -104,6 +107,20 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
         if (a.length != b.length) return false;
         return a.every((value, index) => value == b[index]);
     });
+
+    // Filter out any grouping columns, as those will be shown as groups instead.
+    const visualColumns = useMemo(() => {
+        if (!props.groupOn) return columns;
+        else return columns.filter(col => !props.groupOn!.some(group => group.id == col.id));
+    }, [columns, props.groupOn]);
+
+    const rawGroups = useInterning(props.groupOn, (a, b) => Literals.compare(a, b) == 0);
+    const groups = useMemo(() => {
+        return rawGroups?.filter((group) => {
+            const column = columns.find((col) => col.id == group.id);
+            return column && (column.groupable ?? true);
+        });
+    }, [columns, rawGroups]);
 
     // Cache sorts by value equality and filter to only sortable valid fields.
     const rawSorts = useInterning(props.sortOn, (a, b) => Literals.compare(a, b) == 0);
@@ -133,11 +150,16 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
         });
     }, [props.rows, sorts]);
 
+    // Then group if grouping is set.
+    const groupedRows: Grouping<T> = useMemo(() => {
+        if (groups == undefined || groups.length == 0) return rows;
+    }, [rows, groups]);
+
     return (
         <table className="datacore-table">
             <thead>
                 <tr className="datacore-table-header-row">
-                    {columns.map((col) => (
+                    {visualColumns.map((col) => (
                         <TableHeaderCell
                             column={col}
                             sort={props.sortOn?.find((s) => s.id == col.id)?.direction}
@@ -148,9 +170,7 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
                 </tr>
             </thead>
             <tbody>
-                {rows.map((row) => (
-                    <TableRow row={row} columns={columns} />
-                ))}
+                <TableBody level={0} columns={visualColumns} rows={groupedRows} dispatch={props.dispatch} />
             </tbody>
         </table>
     );
@@ -200,10 +220,36 @@ export function TableHeaderCell<T>({
     );
 }
 
-/** A single row inside the table. */
-export function TableRow<T>({ row, columns }: { row: T; columns: TableColumn<T>[] }) {
+export function TableBody<T>({ level, columns, rows, dispatch }: { level: number; columns: TableColumn<T>[]; rows: Grouping<T>; dispatch: Dispatch<TableAction> }) {
+    if (Groupings.isLeaf(rows)) {
+        return (
+            <Fragment>
+                {rows.map((row) => (
+                    <TableRow level={level} row={row} columns={columns} />
+                ))}
+            </Fragment>
+        )
+    } else {
+        return (
+            <Fragment>
+                <TableGroupHeader level={level}
+            </Fragment>
+        )
+    }
+}
+
+export function TableGroupHeader<T>({ level, value, width, dispatch }: { level: number; width: number; dispatch: Dispatch<TableAction> }) {
     return (
-        <tr className="datacore-table-row">
+        <tr className="datacore-table-group-header">
+            <td colSpan={width}
+        </tr>
+    )
+}
+
+/** A single row inside the table. */
+export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: TableColumn<T>[] }) {
+    return (
+        <tr className="datacore-table-row" style={level ? `padding-left: ${level*5}px` : undefined}>
             {columns.map((col) => (
                 <TableRowCell row={row} column={col} />
             ))}
@@ -262,6 +308,10 @@ function useAsElement(element: VNode | Literal): VNode {
 /** Default comparator for sorting on a table column. */
 export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
     Literals.compare(a, b);
+
+////////////////////////////////
+// Grouping Utility Functions //
+////////////////////////////////
 
 /////////////////
 // Table Hooks //

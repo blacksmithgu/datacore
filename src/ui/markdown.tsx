@@ -93,13 +93,13 @@ export function RawMarkdown({
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);
-    const app = useContext(APP_CONTEXT)
+    const app = useContext(APP_CONTEXT);
 
     useEffect(() => {
         if (!container.current) return;
 
         container.current.innerHTML = "";
-        MarkdownRenderer.renderMarkdown(content, container.current, sourcePath, component).then(() => {
+        MarkdownRenderer.render(app, content, container.current, sourcePath, component).then(() => {
             if (!container.current || !inline) return;
 
             // Unwrap any created paragraph elements if we are inline.
@@ -109,21 +109,24 @@ export function RawMarkdown({
                 paragraph.replaceWith(...Array.from(children));
                 paragraph = container.current.querySelector("p");
             }
+
+            // have embeds actually load instead of displaying as plain text.
             let embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
-            
-            // have embeds actually load instead of displaying as plain text
-            while(embed) {
+            while (embed) {
                 let props: EmbedProps = {
-                    embedderPath: sourcePath,
-                    linkText: embed.getAttribute("src") ?? "",
-                    inline: true
-                }
-                embed.empty()
-                render(<APP_CONTEXT.Provider value={app}>
-                    <Embed {...props}/>
-                </APP_CONTEXT.Provider>, embed)
-                embed.addClass("is-loaded")
-                embed = container.current.querySelector("span.internal-embed:not(.is-loaded)")
+                    link: Link.parseInner(embed.getAttribute("src") ?? ""),
+                    sourcePath,
+                    inline: true,
+                };
+                embed.empty();
+                render(
+                    <APP_CONTEXT.Provider value={app}>
+                        <Embed {...props} />
+                    </APP_CONTEXT.Provider>,
+                    embed
+                );
+                embed.addClass("is-loaded");
+                embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
             }
         });
     }, [content, sourcePath, container.current]);
@@ -182,8 +185,10 @@ export function RawLit({
             else if (dimensions && dimensions.length == 1)
                 return <img alt={value.path} src={resourcePath} width={dimensions[0]} />;
             else return <img alt={value.path} src={resourcePath} />;
-        } else if(value.embed) {
-            return <Embed linkText={value.fileName()} subPath={value.subpath} embedderPath={sourcePath} inline={inline} />
+        } else if (value.embed) {
+            return (
+                <Embed link={value} sourcePath={sourcePath} inline={inline} />
+            );
         }
 
         return <ObsidianLink link={value} sourcePath={sourcePath} />;

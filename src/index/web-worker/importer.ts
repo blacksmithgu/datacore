@@ -90,7 +90,7 @@ export class FileImporter extends Component {
                             type: "pdf",
                             path: file.path,
                             stat: file.stat,
-                            resourceURI: this.vault.getResourcePath(file)
+                            resourceURI: this.vault.getResourcePath(file),
                         } as PDFImport)
                     );
                 default:

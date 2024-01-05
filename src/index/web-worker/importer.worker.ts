@@ -23,7 +23,7 @@ onmessage = async (event) => {
             postMessage(
                 Transferable.transferable({
                     type: "pdf",
-                    result: pdf
+                    result: pdf,
                 } as PdfImportResult)
             );
         } else {

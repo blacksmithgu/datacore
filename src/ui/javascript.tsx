@@ -54,7 +54,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
     }
 
     public onunload(): void {
-        unmountComponentAtNode(this.container);
+        if (this.loaded) unmountComponentAtNode(this.container);
         this.loaded = false;
     }
 }
