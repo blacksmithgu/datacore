@@ -298,6 +298,16 @@ export function SimpleErrorBoundary({
     }
 }
 
+/** Renders a vertical flexbox. */
+export function Stack({ children, className }: PropsWithChildren<{ className?: string }>) {
+    return <div className={`datacore stack ${className ?? ""}`}>{children}</div>;
+}
+
+/** Renders a horizontal flexbox. */
+export function Group({ children, className }: PropsWithChildren<{ className?: string }>) {
+    return <div className={`datacore group ${className ?? ""}`}>{children}</div>;
+}
+
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
 export class ReactRenderer extends MarkdownRenderChild {
     public constructor(

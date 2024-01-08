@@ -42,5 +42,6 @@ export function Embed({ link, inline, sourcePath }: EmbedProps) {
         embedComponent.load();
         embedComponent.loadFile(linkedFile!);
     }, [container.current, link.path, link.subpath]);
-    return <div ref={container}>...</div>;
+
+    return <div className="datacore datacore-embed" ref={container}></div>;
 }

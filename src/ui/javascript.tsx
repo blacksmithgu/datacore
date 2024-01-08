@@ -31,7 +31,6 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 
             const renderableElement = makeRenderableElement(renderable, this.path);
 
-            // Very contextual!
             render(
                 <DatacoreContextProvider
                     app={this.api.app}

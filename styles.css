@@ -1,3 +1,5 @@
+/** Rendering Utilities - stacks & grids & flexboxes. */
+
 /** Responsive Tables. */
 
 .datacore-table {
@@ -131,13 +133,7 @@ textarea.datacore-editable {
     width: 100%;
 }
 
-/*
-
-    ///////////////
-    ///  cards  ///
-    ///////////////
-
-*/
+/** Cards. */
 
 .datacore-card {
     display: flex;

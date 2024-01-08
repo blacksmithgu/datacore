@@ -1,47 +1,13 @@
-import { Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { CURRENT_FILE_CONTEXT, Lit } from "./markdown";
+import { Literal, Literals } from "expression/literal";
+import { CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit, Stack } from "./markdown";
 import { useInterning, useStableCallback } from "./hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 
 import { Fragment, VNode, h, isValidElement } from "preact";
 import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks";
-
-/** Handler for table state updates. If you do not want to handle the event and let the table handle it, just call `next`.  */
-export type TableActionHandler = (action: TableAction, next: Dispatch<TableAction>) => any;
-
-/** All props that can be handed off to the table; provides options for being both controlled and uncontrolled. */
-export interface TableProps<T> {
-    /** Actual data rows to render in the table. */
-    rows: T[];
-
-    /** Initial columns for the table. */
-    initialColumns?: TableColumn<T>[];
-    /** Controlled prop for setting the current table columns. */
-    columns?: TableColumn<T>[];
-
-    /** Whether the table can be sorted. */
-    sortable?: boolean;
-
-    /** Initial sorts for the table. */
-    initialSortOn?: SortOn[];
-    /** Controlled prop for setting the sort. */
-    sortOn?: SortOn[];
-
-    /**
-     * If a boolean, enables/disables paging with the default configuration. If a number, paging will be
-     * enabled with the given number of entries per page.
-     */
-    paging?: number | boolean;
-
-    /** The initial page of the table. */
-    initialPage?: number;
-    /** Controlled prop for setting the page of the table. */
-    page?: number;
-
-    /** If set, state updates will go through this function, which can choose which events to listen to. */
-    onUpdate?: TableActionHandler;
-}
+import { Grouping } from "./grouping";
+import { PagingControl } from "./paging";
 
 /** Contains only the actual relevant state for a table (i.e., excluding initial props). */
 export interface TableState<T> {
@@ -101,6 +67,8 @@ export interface TableColumn<T, V = Literal> {
 
 /** Low level table view which handles state transitions via the given dispatcher. */
 export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispatch: Dispatch<TableAction> }) {
+    const settings = useContext(DATACORE_CONTEXT).settings;
+
     // Cache columns by reference equality of the specific columns. Columns have various function references
     // inside them and so cannot be compared by value equality.
     const columns = useInterning(props.columns, (a, b) => {
@@ -116,10 +84,13 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
 
     const rawGroups = useInterning(props.groupOn, (a, b) => Literals.compare(a, b) == 0);
     const groups = useMemo(() => {
-        return rawGroups?.filter((group) => {
+        return rawGroups?.map((group) => {
             const column = columns.find((col) => col.id == group.id);
-            return column && (column.groupable ?? true);
-        });
+            if (!column) return undefined;
+            if (!column.groupable) return undefined;
+
+            return { column: column, flatten: group.flatten, comparator: column.comparator, value: column.value };
+        }).filter(x => !!x);
     }, [columns, rawGroups]);
 
     // Cache sorts by value equality and filter to only sortable valid fields.
@@ -152,27 +123,53 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
 
     // Then group if grouping is set.
     const groupedRows: Grouping<T> = useMemo(() => {
-        if (groups == undefined || groups.length == 0) return rows;
+        if (groups == undefined || groups.length == 0) return Grouping.leaf(rows);
+
+        return Grouping.groupBy(rows, groups.map(g => ({
+            flatten: g!.flatten,
+            value: g!.value,
+            comparator: g!.comparator ? (a: Literal, b: Literal) => g!.comparator!(g!.value(a as T), g!.value(b as T), a as T, b as T) : undefined
+        })));
     }, [rows, groups]);
 
+    // And finally apply pagination.
+    const pageSize = useMemo(() => {
+        if (!props.paging) return 1;
+        return props.paging === true ? settings.defaultPageSize : props.paging;
+    }, [props.paging, settings.defaultPageSize]);
+
+    const maxPage = useMemo(() => {
+        return Math.max(0, Math.min(props.page ?? 0, Math.ceil(rows.length / pageSize)));
+    }, [pageSize, rows.length]);
+
+    const pagedGroupedRows = useMemo(() => {
+        if (!props.paging) return groupedRows;
+
+        const currentPage = props.page ?? 0;
+        return Grouping.slice(groupedRows, currentPage * pageSize, (currentPage + 1) * pageSize - 1);
+    }, [props.paging, props.page, settings.defaultPageSize]);
+
     return (
-        <table className="datacore-table">
-            <thead>
-                <tr className="datacore-table-header-row">
-                    {visualColumns.map((col) => (
-                        <TableHeaderCell
-                            column={col}
-                            sort={props.sortOn?.find((s) => s.id == col.id)?.direction}
-                            sortable={(props.sortable ?? true) && (col.sortable ?? true)}
-                            dispatch={props.dispatch}
-                        />
-                    ))}
-                </tr>
-            </thead>
-            <tbody>
-                <TableBody level={0} columns={visualColumns} rows={groupedRows} dispatch={props.dispatch} />
-            </tbody>
-        </table>
+        <Stack>
+            <table className="datacore-table">
+                <thead>
+                    <tr className="datacore-table-header-row">
+                        {visualColumns.map((col) => (
+                            <TableHeaderCell
+                                column={col}
+                                sort={props.sortOn?.find((s) => s.id == col.id)?.direction}
+                                sortable={(props.sortable ?? true) && (col.sortable ?? true)}
+                                dispatch={props.dispatch}
+                            />
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    <TableBody level={0} columns={visualColumns} rows={pagedGroupedRows} dispatch={props.dispatch} />
+                </tbody>
+            </table>
+            {props.paging !== false && (<PagingControl maxPage={maxPage} page={props.page ?? 0} setPage={(page) => props.dispatch({ type: "set-page", page })}/>)}
+        </Stack>
     );
 }
 
@@ -221,10 +218,10 @@ export function TableHeaderCell<T>({
 }
 
 export function TableBody<T>({ level, columns, rows, dispatch }: { level: number; columns: TableColumn<T>[]; rows: Grouping<T>; dispatch: Dispatch<TableAction> }) {
-    if (Groupings.isLeaf(rows)) {
+    if (rows.type === "leaf") {
         return (
             <Fragment>
-                {rows.map((row) => (
+                {rows.elements.map((row) => (
                     <TableRow level={level} row={row} columns={columns} />
                 ))}
             </Fragment>
@@ -232,16 +229,21 @@ export function TableBody<T>({ level, columns, rows, dispatch }: { level: number
     } else {
         return (
             <Fragment>
-                <TableGroupHeader level={level}
+                {rows.elements.map((group => (
+                    <Fragment>
+                        <TableGroupHeader level={level} value={group.key} width={columns.length} dispatch={dispatch} />
+                        <TableBody level={level+1} columns={columns} rows={group.value} dispatch={dispatch} />
+                    </Fragment>
+                )))}
             </Fragment>
         )
     }
 }
 
-export function TableGroupHeader<T>({ level, value, width, dispatch }: { level: number; width: number; dispatch: Dispatch<TableAction> }) {
+export function TableGroupHeader<T>({ level, value, width, dispatch }: { level: number; value: Literal; width: number; dispatch: Dispatch<TableAction> }) {
     return (
         <tr className="datacore-table-group-header">
-            <td colSpan={width}
+            <td colSpan={width}></td>
         </tr>
     )
 }
@@ -319,6 +321,7 @@ export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T)
 
 export type TableAction =
     | { type: "reset-all" }
+    | { type: "set-page"; page: number; }
     | { type: "sort-column"; column: string; direction?: "ascending" | "descending" };
 
 /** Central reducer which updates table state predictably. */
@@ -329,6 +332,11 @@ export function tableReducer<T>(state: TableState<T>, action: TableAction): Tabl
                 ...state,
                 sortOn: undefined,
             };
+        case "set-page":
+            return {
+                ...state,
+                page: action.page,
+            }
         case "sort-column":
             if (action.direction == undefined) {
                 return {
@@ -365,6 +373,43 @@ export function useTableDispatch<T>(
 ////////////////////
 // Table Wrappers //
 ////////////////////
+
+/** Handler for table state updates. If you do not want to handle the event and let the table handle it, just call `next`.  */
+export type TableActionHandler = (action: TableAction, next: Dispatch<TableAction>) => any;
+
+/** All props that can be handed off to the table; provides options for being both controlled and uncontrolled. */
+export interface TableProps<T> {
+    /** Actual data rows to render in the table. */
+    rows: T[];
+
+    /** Initial columns for the table. */
+    initialColumns?: TableColumn<T>[];
+    /** Controlled prop for setting the current table columns. */
+    columns?: TableColumn<T>[];
+
+    /** Whether the table can be sorted. */
+    sortable?: boolean;
+
+    /** Initial sorts for the table. */
+    initialSortOn?: SortOn[];
+    /** Controlled prop for setting the sort. */
+    sortOn?: SortOn[];
+
+    /**
+     * If a boolean, enables/disables paging with the default configuration. If a number, paging will be
+     * enabled with the given number of entries per page.
+     */
+    paging?: number | boolean;
+
+    /** The initial page of the table. */
+    initialPage?: number;
+    /** Controlled prop for setting the page of the table. */
+    page?: number;
+
+    /** If set, state updates will go through this function, which can choose which events to listen to. */
+    onUpdate?: TableActionHandler;
+}
+
 
 /** Standard table view which provides the default state implementation. */
 export function TableView<T>(props: TableProps<T>) {
