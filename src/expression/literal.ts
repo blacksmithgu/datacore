@@ -392,6 +392,13 @@ export namespace Groupings {
         return true;
     }
 
+    /** Determines if the given array is a leaf and has no subgroupings. */
+    export function isLeaf<T>(entry: Grouping<T>): entry is T[] {
+        for (let element of entry) if (isElementGroup(element)) return false;
+
+        return true;
+    }
+
     /** Count the total number of elements in a recursive grouping. */
     export function count<T>(elements: Grouping<T>): number {
         if (isGrouping(elements)) {

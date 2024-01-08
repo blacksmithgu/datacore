@@ -10,12 +10,11 @@ import { UseQueryResult, useFileMetadata, useFullQuery, useInterning, useQuery }
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
-import { COMPONENTS } from "./components";
 import { useTableDispatch } from "ui/table";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
-    public constructor(public api: DatacoreApi, public path: string, public container: HTMLElement) {}
+    public constructor(public api: DatacoreApi, public path: string) {}
 
     /** The current file path for the local API. */
     public currentPath(): string {
@@ -50,11 +49,6 @@ export class DatacoreLocalApi {
     /** Central Obsidian app object. */
     get app(): App {
         return this.core.app;
-    }
-
-    /** Provides access to all of the datacore intrinsic react components. */
-    get components(): typeof COMPONENTS {
-        return COMPONENTS;
     }
 
     ///////////////////////
@@ -109,5 +103,5 @@ export class DatacoreLocalApi {
     // Visual element hooks //
     //////////////////////////
 
-    public useTable = useTableDispatch;
+    public useTableDispatch = useTableDispatch;
 }

@@ -28,7 +28,6 @@ export interface CanvasImport {
     stat: FileStats;
 }
 
-
 /** A command to import a canvas file. */
 export interface PDFImport {
     type: "pdf";
@@ -37,7 +36,7 @@ export interface PDFImport {
     path: string;
     /** The stats for the file. */
     stat: FileStats;
-    
+
     resourceURI: string;
 }
 

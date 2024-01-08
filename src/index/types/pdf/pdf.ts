@@ -43,7 +43,7 @@ export class PDF implements File, Indexable, Linkable {
             $mtime: this.$mtime.toMillis(),
             $extension: this.$extension,
             $size: this.$size,
-            $pageCount: this.$pageCount
+            $pageCount: this.$pageCount,
         };
     }
 
@@ -54,7 +54,7 @@ export class PDF implements File, Indexable, Linkable {
             $mtime: DateTime.fromMillis(raw.$mtime),
             $extension: raw.$extension,
             $size: raw.$size,
-            $pageCount: raw.$pageCount
+            $pageCount: raw.$pageCount,
         });
     }
 }
