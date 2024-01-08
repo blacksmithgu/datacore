@@ -186,9 +186,7 @@ export function RawLit({
                 return <img alt={value.path} src={resourcePath} width={dimensions[0]} />;
             else return <img alt={value.path} src={resourcePath} />;
         } else if (value.embed) {
-            return (
-                <Embed link={value} sourcePath={sourcePath} inline={inline} />
-            );
+            return <Embed link={value} sourcePath={sourcePath} inline={inline} />;
         }
 
         return <ObsidianLink link={value} sourcePath={sourcePath} />;

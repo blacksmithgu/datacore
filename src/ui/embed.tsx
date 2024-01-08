@@ -5,12 +5,12 @@ import { Link } from "expression/link";
 
 /** Properties for rendering an Obsidian embed. */
 export interface EmbedProps {
-	/** The link that is being embedded. */
+    /** The link that is being embedded. */
     link: Link;
-	/** Whether the embed should be shown inline with less padding. */
+    /** Whether the embed should be shown inline with less padding. */
     inline: boolean;
-	/** The path which the link will be resolved relative to. */
-	sourcePath: string;
+    /** The path which the link will be resolved relative to. */
+    sourcePath: string;
 }
 
 /** Renders an embed in the canonical Obsidian style. */

@@ -79,18 +79,20 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
     // Filter out any grouping columns, as those will be shown as groups instead.
     const visualColumns = useMemo(() => {
         if (!props.groupOn) return columns;
-        else return columns.filter(col => !props.groupOn!.some(group => group.id == col.id));
+        else return columns.filter((col) => !props.groupOn!.some((group) => group.id == col.id));
     }, [columns, props.groupOn]);
 
     const rawGroups = useInterning(props.groupOn, (a, b) => Literals.compare(a, b) == 0);
     const groups = useMemo(() => {
-        return rawGroups?.map((group) => {
-            const column = columns.find((col) => col.id == group.id);
-            if (!column) return undefined;
-            if (!column.groupable) return undefined;
+        return rawGroups
+            ?.map((group) => {
+                const column = columns.find((col) => col.id == group.id);
+                if (!column) return undefined;
+                if (!column.groupable) return undefined;
 
-            return { column: column, flatten: group.flatten, comparator: column.comparator, value: column.value };
-        }).filter(x => !!x);
+                return { column: column, flatten: group.flatten, comparator: column.comparator, value: column.value };
+            })
+            .filter((x) => !!x);
     }, [columns, rawGroups]);
 
     // Cache sorts by value equality and filter to only sortable valid fields.
@@ -125,11 +127,16 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
     const groupedRows: Grouping<T> = useMemo(() => {
         if (groups == undefined || groups.length == 0) return Grouping.leaf(rows);
 
-        return Grouping.groupBy(rows, groups.map(g => ({
-            flatten: g!.flatten,
-            value: g!.value,
-            comparator: g!.comparator ? (a: Literal, b: Literal) => g!.comparator!(g!.value(a as T), g!.value(b as T), a as T, b as T) : undefined
-        })));
+        return Grouping.groupBy(
+            rows,
+            groups.map((g) => ({
+                flatten: g!.flatten,
+                value: g!.value,
+                comparator: g!.comparator
+                    ? (a: Literal, b: Literal) => g!.comparator!(g!.value(a as T), g!.value(b as T), a as T, b as T)
+                    : undefined,
+            }))
+        );
     }, [rows, groups]);
 
     // And finally apply pagination.
@@ -168,7 +175,13 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
                     <TableBody level={0} columns={visualColumns} rows={pagedGroupedRows} dispatch={props.dispatch} />
                 </tbody>
             </table>
-            {props.paging !== false && (<PagingControl maxPage={maxPage} page={props.page ?? 0} setPage={(page) => props.dispatch({ type: "set-page", page })}/>)}
+            {props.paging !== false && (
+                <PagingControl
+                    maxPage={maxPage}
+                    page={props.page ?? 0}
+                    setPage={(page) => props.dispatch({ type: "set-page", page })}
+                />
+            )}
         </Stack>
     );
 }
@@ -217,7 +230,17 @@ export function TableHeaderCell<T>({
     );
 }
 
-export function TableBody<T>({ level, columns, rows, dispatch }: { level: number; columns: TableColumn<T>[]; rows: Grouping<T>; dispatch: Dispatch<TableAction> }) {
+export function TableBody<T>({
+    level,
+    columns,
+    rows,
+    dispatch,
+}: {
+    level: number;
+    columns: TableColumn<T>[];
+    rows: Grouping<T>;
+    dispatch: Dispatch<TableAction>;
+}) {
     if (rows.type === "leaf") {
         return (
             <Fragment>
@@ -225,33 +248,43 @@ export function TableBody<T>({ level, columns, rows, dispatch }: { level: number
                     <TableRow level={level} row={row} columns={columns} />
                 ))}
             </Fragment>
-        )
+        );
     } else {
         return (
             <Fragment>
-                {rows.elements.map((group => (
+                {rows.elements.map((group) => (
                     <Fragment>
                         <TableGroupHeader level={level} value={group.key} width={columns.length} dispatch={dispatch} />
-                        <TableBody level={level+1} columns={columns} rows={group.value} dispatch={dispatch} />
+                        <TableBody level={level + 1} columns={columns} rows={group.value} dispatch={dispatch} />
                     </Fragment>
-                )))}
+                ))}
             </Fragment>
-        )
+        );
     }
 }
 
-export function TableGroupHeader<T>({ level, value, width, dispatch }: { level: number; value: Literal; width: number; dispatch: Dispatch<TableAction> }) {
+export function TableGroupHeader<T>({
+    level,
+    value,
+    width,
+    dispatch,
+}: {
+    level: number;
+    value: Literal;
+    width: number;
+    dispatch: Dispatch<TableAction>;
+}) {
     return (
         <tr className="datacore-table-group-header">
             <td colSpan={width}></td>
         </tr>
-    )
+    );
 }
 
 /** A single row inside the table. */
 export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: TableColumn<T>[] }) {
     return (
-        <tr className="datacore-table-row" style={level ? `padding-left: ${level*5}px` : undefined}>
+        <tr className="datacore-table-row" style={level ? `padding-left: ${level * 5}px` : undefined}>
             {columns.map((col) => (
                 <TableRowCell row={row} column={col} />
             ))}
@@ -321,7 +354,7 @@ export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T)
 
 export type TableAction =
     | { type: "reset-all" }
-    | { type: "set-page"; page: number; }
+    | { type: "set-page"; page: number }
     | { type: "sort-column"; column: string; direction?: "ascending" | "descending" };
 
 /** Central reducer which updates table state predictably. */
@@ -336,7 +369,7 @@ export function tableReducer<T>(state: TableState<T>, action: TableAction): Tabl
             return {
                 ...state,
                 page: action.page,
-            }
+            };
         case "sort-column":
             if (action.direction == undefined) {
                 return {
@@ -409,7 +442,6 @@ export interface TableProps<T> {
     /** If set, state updates will go through this function, which can choose which events to listen to. */
     onUpdate?: TableActionHandler;
 }
-
 
 /** Standard table view which provides the default state implementation. */
 export function TableView<T>(props: TableProps<T>) {

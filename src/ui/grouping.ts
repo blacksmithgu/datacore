@@ -37,23 +37,34 @@ export namespace Grouping {
     }
 
     /** Group a set of rows recursively by a list of grouping columns. */
-    export function groupBy<T>(rows: T[], groupOn: { value: (v: T) => Literal, comparator?: ArrayComparator<Literal>; flatten?: boolean }[]): Grouping<T> {
+    export function groupBy<T>(
+        rows: T[],
+        groupOn: { value: (v: T) => Literal; comparator?: ArrayComparator<Literal>; flatten?: boolean }[]
+    ): Grouping<T> {
         if (groupOn.length == 0) return leaf(rows);
 
         const { value, comparator, flatten } = groupOn[0];
         return {
             type: "grouped",
             flattened: flatten ?? false,
-            elements: flatten ?
-                DataArray.from(rows)
-                    .flatMap(raw => flattened(value(raw)).map(val => ({ key: val, row: raw })))
-                    .groupBy(raw => raw.key, comparator)
-                    .map(group => ({ key: group.key, value: groupBy(group.rows.map(g => g.row).array(), groupOn.slice(1)), size: group.rows.length }))
-                    .array() : 
-                DataArray.from(rows)
-                    .groupBy(value, comparator)
-                    .map(group => ({ key: group.key, value: groupBy(group.rows.array(), groupOn.slice(1)), size: group.rows.length }))
-                    .array()
+            elements: flatten
+                ? DataArray.from(rows)
+                      .flatMap((raw) => flattened(value(raw)).map((val) => ({ key: val, row: raw })))
+                      .groupBy((raw) => raw.key, comparator)
+                      .map((group) => ({
+                          key: group.key,
+                          value: groupBy(group.rows.map((g) => g.row).array(), groupOn.slice(1)),
+                          size: group.rows.length,
+                      }))
+                      .array()
+                : DataArray.from(rows)
+                      .groupBy(value, comparator)
+                      .map((group) => ({
+                          key: group.key,
+                          value: groupBy(group.rows.array(), groupOn.slice(1)),
+                          size: group.rows.length,
+                      }))
+                      .array(),
         };
     }
 
