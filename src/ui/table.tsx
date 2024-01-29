@@ -299,6 +299,7 @@ export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T
         if (column.render) return column.render(value, row);
         else return value;
     }, [row, column.render, value]);
+    console.log(value);
     const rendered = useAsElement(renderable);
 
     return <td className="datacore-table-cell">{rendered}</td>;

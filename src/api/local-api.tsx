@@ -10,8 +10,12 @@ import { useFileMetadata, useFullQuery, useInterning, useQuery } from "ui/hooks"
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
-import { useTableDispatch } from "ui/table";
 import { DataArray } from "./data-array";
+import { QUERY } from "expression/parser";
+import { Result } from "./result";
+import Parsimmon from "parsimmon";
+import { TableProps, TableView } from "ui/table";
+import { h } from "preact";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -67,6 +71,18 @@ export class DatacoreLocalApi {
         return rawpath;
     }
 
+    public tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string> {
+        if (!(typeof query === "string")) return Result.success(query);
+
+        const result = QUERY.query.parse(query);
+        if (result.status) return Result.success(result.value);
+        else return Result.failure(Parsimmon.formatError(query, result));
+    }
+
+    public parseQuery(query: string | IndexQuery): IndexQuery {
+        return this.tryParseQuery(query).orElseThrow(e => "Failed to parse query: " + e);
+    }
+
     /////////////
     //  Hooks  //
     /////////////
@@ -91,20 +107,32 @@ export class DatacoreLocalApi {
      * Run a query, automatically re-running it whenever the vault changes. Returns more information about the query
      * execution, such as index revision and total search duration.
      */
-    public useFullQuery(query: IndexQuery, settings?: { debounce?: number }): SearchResult<Indexable> {
-        return useFullQuery(this.core, query, settings);
+    public useFullQuery(query: string | IndexQuery, settings?: { debounce?: number }): SearchResult<Indexable> {
+        return useFullQuery(this.core, this.parseQuery(query), settings);
     }
 
     /** Run a query, automatically re-running it whenever the vault changes. */
-    public useQuery(query: IndexQuery, settings?: { debounce?: number }): DataArray<Indexable> {
+    public useQuery(query: string | IndexQuery, settings?: { debounce?: number }): DataArray<Indexable> {
         // Hooks need to be called in a consistent order, so we don't nest the `useQuery` call in the DataArray.wrap _just_ in case.
-        const result = useQuery(this.core, query, settings);
+        const result = useQuery(this.core, this.parseQuery(query), settings);
         return DataArray.wrap(result);
     }
 
-    //////////////////////////
-    // Visual element hooks //
-    //////////////////////////
+    /////////////////////
+    // Visual elements //
+    /////////////////////
 
-    public useTableDispatch = useTableDispatch;
+    /**
+     * Central entry point for creating a raw (p)react DOM element. Allows for raw creation of preact elements.
+     * 
+     * Note: `h` is directly injected into local datacorejs contexts already, so this is just a backup.
+     */
+    public h = preact.h;
+    public createElement = preact.createElement;
+
+    /** Create a responsive table showing the given data. */
+    public table<T>(rows: T[] | DataArray<T>, settings?: TableProps<T>): preact.VNode<TableProps<T>> {
+        const rawRows = DataArray.isDataArray(rows) ? rows.array() : rows;
+        return <TableView<T> rows={rawRows} {...settings} />;
+    }
 }
