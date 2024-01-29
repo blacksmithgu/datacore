@@ -5,6 +5,7 @@ import { Indexable } from "index/types/indexable";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { SearchResult } from "index/datastore";
 import { Literals } from "expression/literal";
+import { Result } from "api/result";
 
 /** Hook that updates the view whenever the revision updates, returning the newest revision. */
 export function useIndexUpdates(datacore: Datacore, settings?: { debounce?: number }): number {
@@ -34,6 +35,7 @@ export function useFileMetadata(
     return useMemo(() => datacore.datastore.load(path), [indexRevision, path]);
 }
 
+/** Settings which control how automatic query reloading should work. */
 export interface UseQuerySettings {
     /**
      * If present, debounce repeated query updates so that an update only occurs every <debounce> milliseconds. This
@@ -42,49 +44,49 @@ export interface UseQuerySettings {
     debounce?: number;
 }
 
-/** The result of using a query. */
-export type UseQueryResult<O> =
-    | { type: "loading" }
-    | { type: "error"; error: string }
-    | { type: "success"; results: O };
-
-/** Perform a live query which updates its results whenever the backing query would change. */
-export function useFullQuery(
+/** Perform a live, synchronous query which updates its results whenever the backing query would change. */
+export function tryUseFullQuery(
     datacore: Datacore,
     query: IndexQuery,
     settings?: UseQuerySettings
-): UseQueryResult<SearchResult<Indexable>> {
+): Result<SearchResult<Indexable>, string> {
     // Track index updates with customizable debouncing.
     const indexRevision = useIndexUpdates(datacore, settings);
 
     // We "intern" the query, meaning we reuse the oldest version if it is semantically equal but just a different object.
-    const internedQuery = useInterning(query, (a, b) => Literals.compare(a, b) == 0);
+    const internedQuery = useInterning(query, Literals.equals);
     // Intern the output as well so react diffing "just works" with the result of useQuery.
-    const internedResult = useRef<UseQueryResult<SearchResult<Indexable>>>({ type: "loading" });
+    const internedResult = useRef<Result<SearchResult<Indexable>, string> | undefined>(undefined);
 
     // On every index revision update, re-run the query and check if it produced meaningfully new values.
     return useMemo(() => {
-        // TODO: When this becomes async later we can add `loading` as an interim state.
-        const maybeNewResult = datacore.datastore.search(query);
-        if (!maybeNewResult.successful) {
-            internedResult.current = { type: "error", error: maybeNewResult.error };
+        const newResult = datacore.datastore.search(query);
+
+        // Set failure if the new request is a failure.
+        if (!newResult.successful) {
+            internedResult.current = Result.failure(newResult.error);
             return internedResult.current;
         }
 
-        // If loading or in error state, always replace with a success.
-        const newResult = maybeNewResult.value;
-        if (internedResult.current.type === "loading" || internedResult.current.type === "error") {
-            return (internedResult.current = { type: "success", results: newResult });
+        // If there is no current interned state, update it and return.
+        if (internedResult.current === undefined) {
+            internedResult.current = Result.success(newResult.value);
+            return internedResult.current;
         }
 
-        // If both are successful, diff the actual results. First do a fast check of revisions, then
-        // a slower check of the actual objects.
+        // At this point, the new request is is successful and the old result is defined. If the old result was an error, update it.
         const oldResult = internedResult.current;
+        if (!oldResult.successful) {
+            internedResult.current = Result.success(newResult.value);
+            return internedResult.current;
+        }
+
+        // Both are successful, check if they are different.
         if (
-            oldResult.results.revision != newResult.revision ||
-            !sameObjects(oldResult.results.results, newResult.results)
+            oldResult.value.revision != newResult.value.revision ||
+            !sameObjects(oldResult.value.results, newResult.value.results)
         ) {
-            return (internedResult.current = { type: "success", results: newResult });
+            return (internedResult.current = Result.success(newResult.value));
         }
 
         // Same revision and same objects, this is the same query result, so return the old object.
@@ -92,25 +94,34 @@ export function useFullQuery(
     }, [internedQuery, indexRevision]);
 }
 
+/** Perform a live, synchronous query which updates its results whenever the backing query would change. */
+export function useFullQuery(
+    datacore: Datacore,
+    query: IndexQuery,
+    settings?: UseQuerySettings
+): SearchResult<Indexable> {
+    return tryUseFullQuery(datacore, query, settings).orElseThrow(e => "Failed to search: " + e);
+}
+
+/** Simplier version of useFullQuery which just directly returns results. */
+export function tryUseQuery(
+    datacore: Datacore,
+    query: IndexQuery,
+    settings?: UseQuerySettings
+): Result<Indexable[], string> {
+    return tryUseFullQuery(datacore, query, settings).map((result) => result.results);
+}
+
 /** Simplier version of useFullQuery which just directly returns results. */
 export function useQuery(
     datacore: Datacore,
     query: IndexQuery,
     settings?: UseQuerySettings
-): UseQueryResult<Indexable[]> {
-    const full = useFullQuery(datacore, query, settings);
-
-    return useMemo(() => {
-        if (full.type === "success") {
-            return {
-                type: "success",
-                results: full.results.results,
-            };
-        } else return full;
-    }, [full]);
+): Indexable[] {
+    return useFullQuery(datacore, query, settings).results;
 }
 
-/** Determines if the two sets of objects are the same. */
+/** Determines if the two sets of objects are the same. Only uses revision comparison for performance. */
 function sameObjects(old: Indexable[], incoming: Indexable[]) {
     if (old.length != incoming.length) return false;
 

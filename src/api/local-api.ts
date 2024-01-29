@@ -6,11 +6,12 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown/markdown";
 import { App } from "obsidian";
-import { UseQueryResult, useFileMetadata, useFullQuery, useInterning, useQuery } from "ui/hooks";
+import { useFileMetadata, useFullQuery, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { useTableDispatch } from "ui/table";
+import { DataArray } from "./data-array";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -90,13 +91,15 @@ export class DatacoreLocalApi {
      * Run a query, automatically re-running it whenever the vault changes. Returns more information about the query
      * execution, such as index revision and total search duration.
      */
-    public useFullQuery(query: IndexQuery, settings?: { debounce?: number }): UseQueryResult<SearchResult<Indexable>> {
+    public useFullQuery(query: IndexQuery, settings?: { debounce?: number }): SearchResult<Indexable> {
         return useFullQuery(this.core, query, settings);
     }
 
     /** Run a query, automatically re-running it whenever the vault changes. */
-    public useQuery(query: IndexQuery, settings?: { debounce?: number }): UseQueryResult<Indexable[]> {
-        return useQuery(this.core, query, settings);
+    public useQuery(query: IndexQuery, settings?: { debounce?: number }): DataArray<Indexable> {
+        // Hooks need to be called in a consistent order, so we don't nest the `useQuery` call in the DataArray.wrap _just_ in case.
+        const result = useQuery(this.core, query, settings);
+        return DataArray.wrap(result);
     }
 
     //////////////////////////
