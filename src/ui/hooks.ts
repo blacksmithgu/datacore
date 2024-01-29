@@ -100,7 +100,7 @@ export function useFullQuery(
     query: IndexQuery,
     settings?: UseQuerySettings
 ): SearchResult<Indexable> {
-    return tryUseFullQuery(datacore, query, settings).orElseThrow(e => "Failed to search: " + e);
+    return tryUseFullQuery(datacore, query, settings).orElseThrow((e) => "Failed to search: " + e);
 }
 
 /** Simplier version of useFullQuery which just directly returns results. */
@@ -113,11 +113,7 @@ export function tryUseQuery(
 }
 
 /** Simplier version of useFullQuery which just directly returns results. */
-export function useQuery(
-    datacore: Datacore,
-    query: IndexQuery,
-    settings?: UseQuerySettings
-): Indexable[] {
+export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): Indexable[] {
     return useFullQuery(datacore, query, settings).results;
 }
 
