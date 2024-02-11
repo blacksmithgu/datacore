@@ -1,9 +1,9 @@
 import { Lit, ErrorMessage, SimpleErrorBoundary, CURRENT_FILE_CONTEXT, DatacoreContextProvider } from "ui/markdown";
 import { MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
-import { JSX, createElement, h, isValidElement, render } from "preact";
-import React from "preact/compat";
+import { JSX, createElement, h, isValidElement, render, Fragment } from "preact";
 import { unmountComponentAtNode } from "preact/compat";
+import { transform } from "sucrase";
 
 /**
  * Renders a script by executing it and handing it the appropriate React context to execute
@@ -16,7 +16,8 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
         public api: DatacoreLocalApi,
         public container: HTMLElement,
         public path: string,
-        public script: string
+        public script: string,
+        public language: "javascript" | "typescript"
     ) {
         super(container);
     }
@@ -26,7 +27,19 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 
         // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
-            const renderable = await asyncEvalInContext(this.script, this.api);
+            // Use sucrase to transpile JSX and TypeScript to JavaScript.
+            const primitiveScript = this.language === "typescript"
+                ? transform(this.script, { transforms: ["typescript", "jsx"], "jsxPragma": "h", "jsxFragmentPragma": "Fragment" }).code
+                : transform(this.script, { transforms: ["jsx"], "jsxPragma": "h", "jsxFragmentPragma": "Fragment" }).code;
+
+            console.log(primitiveScript);
+
+            const renderable = await asyncEvalInContext(primitiveScript, {
+                "dc": this.api,
+                "h": h,
+                "Fragment": Fragment
+            });
+
             if (!this.loaded) return;
 
             const renderableElement = makeRenderableElement(renderable, this.path);
@@ -72,17 +85,21 @@ export function makeRenderableElement(object: any, sourcePath: string): JSX.Elem
 /**
  * Evaluate a script where 'this' for the script is set to the given context. Allows you to define global variables.
  */
-export function evalInContext(script: string, context: any): any {
-    return new Function("dc", "React", script)(context, React);
+export function evalInContext(script: string, variables: Record<string, any>): any {
+    const pairs = Object.entries(variables);
+    const keys = pairs.map(([key, _]) => key);
+    const values = pairs.map(([_, value]) => value);
+
+    return new Function(...keys, script)(...values);
 }
 
 /**
  * Evaluate a script possibly asynchronously, if the script contains `async/await` blocks.
  */
-export async function asyncEvalInContext(script: string, context: any): Promise<any> {
+export async function asyncEvalInContext(script: string, variables: Record<string, any>): Promise<any> {
     if (script.includes("await")) {
-        return evalInContext("return (async () => { " + script + " })()", context) as Promise<any>;
+        return evalInContext("return (async () => { " + script + " })()", variables) as Promise<any>;
     } else {
-        return Promise.resolve(evalInContext(script, context));
+        return Promise.resolve(evalInContext(script, variables));
     }
 }

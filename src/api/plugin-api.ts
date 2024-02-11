@@ -74,7 +74,7 @@ export class DatacoreApi {
         sourcePath: string
     ): MarkdownRenderChild {
         let local = new DatacoreLocalApi(this, sourcePath);
-        const renderer = new DatacoreJSRenderer(local, container, sourcePath, source);
+        const renderer = new DatacoreJSRenderer(local, container, sourcePath, source, "javascript");
         component.addChild(renderer);
 
         return renderer;
