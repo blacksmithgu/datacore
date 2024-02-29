@@ -63,6 +63,12 @@ export interface TableColumn<T, V = Literal> {
 
     /** Enables or disables grouping on this column. */
     groupable?: boolean;
+		
+		/** enables or disables editing on this column. */
+		editable?: boolean;
+
+		/** function which returns a value editor for this column. */
+		editor?: (val: V, obj: T) => VNode
 }
 
 /** Low level table view which handles state transitions via the given dispatcher. */
