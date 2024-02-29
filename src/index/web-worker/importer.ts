@@ -3,7 +3,7 @@
 import { Transferable } from "index/web-worker/transferable";
 import ImportWorker from "index/web-worker/importer.worker";
 import { Component, MetadataCache, TFile, Vault } from "obsidian";
-import { ImportCommand } from "index/web-worker/message";
+import { MarkdownImport, PDFImport } from "index/web-worker/message";
 
 /** Settings for throttling import. */
 export interface ImportThrottle {
@@ -81,17 +81,30 @@ export class FileImporter extends Component {
         const [file, resolve, reject] = this.queue.shift()!;
 
         worker.active = [file, resolve, reject, Date.now()];
-        this.vault.cachedRead(file).then((c) =>
-            worker!.worker.postMessage(
-                Transferable.transferable({
-                    type: "markdown",
-                    path: file.path,
-                    contents: c,
-                    stat: file.stat,
-                    metadata: this.metadataCache.getFileCache(file),
-                } as ImportCommand)
-            )
-        );
+
+        this.vault.cachedRead(file).then((c) => {
+            switch (file.extension) {
+                case "pdf":
+                    worker!.worker.postMessage(
+                        Transferable.transferable({
+                            type: "pdf",
+                            path: file.path,
+                            stat: file.stat,
+                            resourceURI: this.vault.getResourcePath(file),
+                        } as PDFImport)
+                    );
+                default:
+                    worker!.worker.postMessage(
+                        Transferable.transferable({
+                            type: "markdown",
+                            path: file.path,
+                            contents: c,
+                            stat: file.stat,
+                            metadata: this.metadataCache.getFileCache(file),
+                        } as MarkdownImport)
+                    );
+            }
+        });
     }
 
     /** Finish the parsing of a file, potentially queueing a new file. */

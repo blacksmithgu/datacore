@@ -168,12 +168,20 @@ export namespace Literals {
         }
     }
 
+    /** Check if two arbitrary literals are equal. */
+    export function equals(first: Literal | undefined, second: Literal | undefined) {
+        return compare(first, second) == 0;
+    }
+
     /** Compare two arbitrary JavaScript values. Produces a total ordering over ANY possible datacore value. */
     export function compare(
         val1: Literal | undefined,
         val2: Literal | undefined,
         linkNormalizer?: (link: string) => string
     ): number {
+        // Reference equality - short circuit.
+        if (val1 === val2) return 0;
+
         // Handle undefined/nulls first.
         if (val1 === undefined) val1 = null;
         if (val2 === undefined) val2 = null;
@@ -388,6 +396,13 @@ export namespace Groupings {
     /** Determines if the given array is a grouping array. */
     export function isGrouping<T>(entry: Grouping<T>): entry is GroupElement<T>[] {
         for (let element of entry) if (!isElementGroup(element)) return false;
+
+        return true;
+    }
+
+    /** Determines if the given array is a leaf and has no subgroupings. */
+    export function isLeaf<T>(entry: Grouping<T>): entry is T[] {
+        for (let element of entry) if (isElementGroup(element)) return false;
 
         return true;
     }

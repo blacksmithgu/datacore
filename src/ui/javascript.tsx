@@ -31,7 +31,6 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 
             const renderableElement = makeRenderableElement(renderable, this.path);
 
-            // Very contextual!
             render(
                 <DatacoreContextProvider
                     app={this.api.app}
@@ -54,7 +53,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
     }
 
     public onunload(): void {
-        unmountComponentAtNode(this.container);
+        if (this.loaded) unmountComponentAtNode(this.container);
         this.loaded = false;
     }
 }

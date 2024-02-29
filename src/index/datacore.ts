@@ -1,12 +1,13 @@
 import { deferred, Deferred } from "utils/deferred";
 import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
-import { Indexable } from "index/types/indexable";
+import { Indexable, INDEXABLE_EXTENSIONS } from "index/types/indexable";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
 import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
 import { Settings } from "settings";
 import { MarkdownListBlock, MarkdownListItem, MarkdownPage } from "./types/markdown/markdown";
+import { PDF } from "./types/pdf/pdf";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -132,6 +133,12 @@ export class Datacore extends Component {
 
             this.trigger("update", this.revision);
             return parsed;
+        } else if (result.type == "pdf") {
+            let parsed = PDF.from(result.result);
+            this.datastore.store(parsed);
+
+            this.trigger("update", this.revision);
+            return parsed;
         }
 
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);
@@ -161,7 +168,7 @@ export class Datacore extends Component {
 
     /** Trigger an event. */
     private trigger(evt: string, ...args: any[]): void {
-        this.events.trigger(evt, args);
+        this.events.trigger(evt, ...args);
     }
 }
 
@@ -195,7 +202,7 @@ export class DatacoreInitializer extends Component {
         super();
 
         this.active = false;
-        this.queue = this.core.vault.getMarkdownFiles();
+        this.queue = this.core.vault.getFiles();
         this.files = this.queue.length;
         this.start = Date.now();
         this.current = [];
@@ -269,7 +276,8 @@ export class DatacoreInitializer extends Component {
     private async init(file: TFile): Promise<InitializationResult> {
         try {
             const metadata = this.core.metadataCache.getFileCache(file);
-            if (!metadata) return { status: "skipped" };
+            if (!metadata && !INDEXABLE_EXTENSIONS.includes(file.extension.toLocaleLowerCase()))
+                return { status: "skipped" };
 
             await this.core.reload(file);
             return { status: "imported" };
