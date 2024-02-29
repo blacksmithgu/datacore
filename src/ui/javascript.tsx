@@ -76,7 +76,7 @@ export function makeRenderableElement(object: any, sourcePath: string): JSX.Elem
  * Evaluate a script where 'this' for the script is set to the given context. Allows you to define global variables.
  */
 export function evalInContext(script: string, context: any): any {
-    return () => new Function("dc", "React", script)(context, React);
+    return new Function("dc", "React", script)(context, React);
 }
 
 /**
