@@ -12,6 +12,9 @@ import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { useTableDispatch } from "ui/table";
 import { DataArray } from "./data-array";
+import { Result } from "./result";
+import { QUERY } from "expression/parser";
+import Parsimmon from "parsimmon";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -65,6 +68,17 @@ export class DatacoreLocalApi {
         if (absolute) return absolute.path;
 
         return rawpath;
+    }
+    public tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string> {
+        if (!(typeof query === "string")) return Result.success(query);
+
+        const result = QUERY.query.parse(query);
+        if (result.status) return Result.success(result.value);
+        else return Result.failure(Parsimmon.formatError(query, result));
+    }
+
+    public parseQuery(query: string | IndexQuery): IndexQuery {
+        return this.tryParseQuery(query).orElseThrow((e) => "Failed to parse query: " + e);
     }
 
     /////////////
