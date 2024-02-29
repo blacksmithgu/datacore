@@ -12,6 +12,7 @@ import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { useTableDispatch } from "ui/table";
 import { DataArray } from "./data-array";
+import { COMPONENTS } from "./components";
 import { Result } from "./result";
 import { QUERY } from "expression/parser";
 import Parsimmon from "parsimmon";
@@ -53,6 +54,10 @@ export class DatacoreLocalApi {
     /** Central Obsidian app object. */
     get app(): App {
         return this.core.app;
+    }
+
+    get components(): typeof COMPONENTS {
+        return COMPONENTS;
     }
 
     ///////////////////////
