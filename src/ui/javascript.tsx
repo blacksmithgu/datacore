@@ -62,7 +62,10 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 export function makeRenderableElement(object: any, sourcePath: string): JSX.Element {
     if (typeof object === "function") {
         return createElement(object, {});
-    } else if (isValidElement(object)) {
+		}
+		else if(Array.isArray(object)) {
+			return createElement("div", {}, (object as any[]).map(x => makeRenderableElement(x, sourcePath)))
+		} else if (isValidElement(object)) {
         return object;
     } else {
         return <Lit value={object} sourcePath={sourcePath} />;
@@ -73,7 +76,7 @@ export function makeRenderableElement(object: any, sourcePath: string): JSX.Elem
  * Evaluate a script where 'this' for the script is set to the given context. Allows you to define global variables.
  */
 export function evalInContext(script: string, context: any): any {
-    return new Function("dc", "React", script)(context, React);
+    return () => new Function("dc", "React", script)(context, React);
 }
 
 /**
@@ -83,6 +86,6 @@ export async function asyncEvalInContext(script: string, context: any): Promise<
     if (script.includes("await")) {
         return evalInContext("return (async () => { " + script + " })()", context) as Promise<any>;
     } else {
-        return Promise.resolve(evalInContext(script, context));
+        return await Promise.resolve(evalInContext(script, context));
     }
 }
