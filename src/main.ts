@@ -161,5 +161,13 @@ class GeneralSettingsTab extends PluginSettingTab {
                     await this.plugin.updateSettings({ importerUtilization: limited });
                 });
             });
+				new Setting(this.containerEl)
+						.setName("Recursive subtask completion")
+						.setDesc("Whether or not subtasks should be completed along with their parent in datacore task views")
+						.addToggle((tb) => {
+							tb.setValue(this.plugin.settings.recursiveTaskCompletion).onChange(async (val) => {
+								await this.plugin.updateSettings({recursiveTaskCompletion: val})
+							})
+						})
     }
 }
