@@ -73,8 +73,62 @@ export class DatacoreApi {
         component: Component | MarkdownPostProcessorContext,
         sourcePath: string
     ): MarkdownRenderChild {
+        return this._renderJavascript(source, container, component, sourcePath, "js");
+    }
+
+    /**
+     * Similar to `executeJs`, but for JSX scripts. If you are unsure if your input will be JS
+     * or JSX, use this one, as it also supports regular javascript (albeit at at a mild performance
+     * hit to rendering).
+     */
+    public executeJsx(
+        source: string,
+        container: HTMLElement,
+        component: Component | MarkdownPostProcessorContext,
+        sourcePath: string
+    ): MarkdownRenderChild {
+        return this._renderJavascript(source, container, component, sourcePath, "jsx");
+    }
+
+    /**
+     * Similar to `executeJs`, but for TypeScript scripts. Use the TSX variant for TSX supprot.
+     */
+    public executeTs(
+        source: string,
+        container: HTMLElement,
+        component: Component | MarkdownPostProcessorContext,
+        sourcePath: string
+    ): MarkdownRenderChild {
+        return this._renderJavascript(source, container, component, sourcePath, "ts");
+    }
+
+    /**
+     * Similar to `executeTs`, but for TSX scripts. If you are unsure if your input will be TS
+     * or TSX, use this one, as it also supports regular javascript (albeit at at a mild performance
+     * hit to rendering).
+     *
+     * This generally will also work if you are unsure if your input is javascript or typescript,
+     * though beware there are a few niche cases where javascript and typescript diverge in syntax.
+     */
+    public executeTsx(
+        source: string,
+        container: HTMLElement,
+        component: Component | MarkdownPostProcessorContext,
+        sourcePath: string
+    ): MarkdownRenderChild {
+        return this._renderJavascript(source, container, component, sourcePath, "tsx");
+    }
+
+    /** Shared logic for rendering any JS/TS script. */
+    private _renderJavascript(
+        source: string,
+        container: HTMLElement,
+        component: Component | MarkdownPostProcessorContext,
+        sourcePath: string,
+        language: "js" | "ts" | "jsx" | "tsx"
+    ) {
         let local = new DatacoreLocalApi(this, sourcePath);
-        const renderer = new DatacoreJSRenderer(local, container, sourcePath, source, "javascript");
+        const renderer = new DatacoreJSRenderer(local, container, sourcePath, source, language);
         component.addChild(renderer);
 
         return renderer;

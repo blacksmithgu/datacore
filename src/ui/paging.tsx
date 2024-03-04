@@ -57,7 +57,16 @@ function splitPages(page: number, totalPages: number): number[][] {
     else if (page > totalPages - 5)
         return [
             [0, 1],
-            [totalPages - 7, totalPages - 6, totalPages - 5, totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages],
+            [
+                totalPages - 7,
+                totalPages - 6,
+                totalPages - 5,
+                totalPages - 4,
+                totalPages - 3,
+                totalPages - 2,
+                totalPages - 1,
+                totalPages,
+            ],
         ];
     else
         return [

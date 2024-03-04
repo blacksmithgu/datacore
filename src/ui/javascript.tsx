@@ -17,7 +17,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
         public container: HTMLElement,
         public path: string,
         public script: string,
-        public language: "javascript" | "typescript"
+        public language: "js" | "ts" | "jsx" | "tsx"
     ) {
         super(container);
     }
@@ -27,17 +27,12 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 
         // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
-            // Use sucrase to transpile JSX and TypeScript to JavaScript.
-            const primitiveScript = this.language === "typescript"
-                ? transform(this.script, { transforms: ["typescript", "jsx"], "jsxPragma": "h", "jsxFragmentPragma": "Fragment" }).code
-                : transform(this.script, { transforms: ["jsx"], "jsxPragma": "h", "jsxFragmentPragma": "Fragment" }).code;
-
-            console.log(primitiveScript);
+            const primitiveScript = this.convert(this.script, this.language);
 
             const renderable = await asyncEvalInContext(primitiveScript, {
-                "dc": this.api,
-                "h": h,
-                "Fragment": Fragment
+                dc: this.api,
+                h: h,
+                Fragment: Fragment,
             });
 
             if (!this.loaded) return;
@@ -61,13 +56,35 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
             );
         } catch (ex) {
             console.error(ex);
-            render(<ErrorMessage message="Failed to render the datacore script." error={"" + ex} />, this.container);
+            render(
+                <ErrorMessage message="Datacore failed to render the code block." error={"" + ex} />,
+                this.container
+            );
         }
     }
 
     public onunload(): void {
         if (this.loaded) unmountComponentAtNode(this.container);
         this.loaded = false;
+    }
+
+    /** Attempts to convert the script in the given language to plain javascript; will throw an Error on failure. */
+    private convert(script: string, language: "js" | "ts" | "jsx" | "tsx"): string {
+        switch (language) {
+            case "js":
+                return script;
+            case "jsx":
+                return transform(this.script, { transforms: ["jsx"], jsxPragma: "h", jsxFragmentPragma: "Fragment" })
+                    .code;
+            case "ts":
+                return transform(this.script, { transforms: ["typescript"] }).code;
+            case "tsx":
+                return transform(this.script, {
+                    transforms: ["typescript", "jsx"],
+                    jsxPragma: "h",
+                    jsxFragmentPragma: "Fragment",
+                }).code;
+        }
     }
 }
 

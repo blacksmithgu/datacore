@@ -80,7 +80,7 @@ export class DatacoreLocalApi {
     }
 
     public parseQuery(query: string | IndexQuery): IndexQuery {
-        return this.tryParseQuery(query).orElseThrow(e => "Failed to parse query: " + e);
+        return this.tryParseQuery(query).orElseThrow((e) => "Failed to parse query: " + e);
     }
 
     /////////////
@@ -124,7 +124,7 @@ export class DatacoreLocalApi {
 
     /**
      * Central entry point for creating a raw (p)react DOM element. Allows for raw creation of preact elements.
-     * 
+     *
      * Note: `h` is directly injected into local datacorejs contexts already, so this is just a backup.
      */
     public h = preact.h;
