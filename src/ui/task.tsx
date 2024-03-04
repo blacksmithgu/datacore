@@ -166,7 +166,6 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         for (let field in item.$infields) {
           setInlineField(withFields, field, item.$infields[field].raw);
         }
-        await rewriteTask(app.vault, item, item.$status, withFields);
 				completedRef.current && completedRef.current({type: "commit", newValue: val})
       }
     },
@@ -192,10 +191,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         content: fieldValue,
         isEditing: false,
         updater: (val: Literal) => {
-            let withFields = setInlineField(item.$text, ifield.key, val ? Literals.toString(val) : undefined);
-            rewriteTask(app.vault, item, item.$status, withFields).then(() => {
-							taskDispatch({ type: "field-changed", newValue: val, fieldKey: ifield.key });
-						});
+						taskDispatch({ type: "field-changed", newValue: val, fieldKey: ifield.key });
           },
       });
 			if(ifield.key == settings.taskCompletionTextField) {
