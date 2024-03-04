@@ -4,7 +4,6 @@ import { ChangeEvent, useReducer } from "preact/compat";
 import { useStableCallback } from "./hooks";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
 import { Literal, LiteralType, Literals } from "expression/literal";
-import { setInlineField } from "index/import/inline-field";
 import DatePicker from "react-date-picker";
 import { Value as DPickerValue } from "react-date-picker/dist/cjs/shared/types";
 import { DateTime } from "luxon";
@@ -256,9 +255,6 @@ export function EditableListField({
         );
     }
   }, [parent, field, props.content, props.content, props]);
-  const rend = useMemo(() => {
-    return <Lit value={props.content as Literal} sourcePath="" />;
-  }, [props.content]);
 
   return (
     <div className="datacore-field">
