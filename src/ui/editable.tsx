@@ -93,6 +93,7 @@ export function DateEditable({
 	sourcePath,
 	...rest
 }: EditableState<DateTime | string | null> & { sourcePath: string; dispatch: Dispatch<EditableAction<DateTime | string | null>> }) {
+	/** the extra dispatch is _just_ in case... */
 	const [state, o] = useEditableDispatch<DateTime | string | null>(() => ({
     isEditing: false,
     content: rest.content,
