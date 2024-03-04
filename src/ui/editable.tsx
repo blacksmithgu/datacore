@@ -201,3 +201,61 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
 		</span>
 	);
 }
+
+export function EditableListField({
+  props,
+  field,
+  parent,
+  type,
+	dispatch
+}: { props: EditableState<Literal> } & FieldControlProps<Literal> & {
+    parent: MarkdownTaskItem | MarkdownListItem;
+    type: LiteralType;
+    dispatch: Dispatch<EditableAction<Literal>>;
+  }) {
+  const editor = useMemo(() => {
+    switch (type) {
+      case "date":
+        return (
+          <DateEditable
+						dispatch={dispatch}
+            sourcePath={parent.$file}
+            content={props.content as DateTime}
+            updater={props.updater as (val: string | DateTime | null) => any}
+          />
+        );
+      case "boolean":
+        return <BooleanField type={type} value={props.content as boolean} field={field} file={parent.$file} />;
+      case "string":
+        return (
+          <TextEditable
+            sourcePath={parent.$file}
+            isEditing={false}
+            content={props.content as string}
+            updater={props.updater as (val: string) => unknown}
+          />
+        );
+      default:
+        return (
+          <TextEditable
+            sourcePath={parent.$file}
+            isEditing={false}
+            content={Literals.toString(props.content)}
+            updater={props.updater as (val: string) => unknown}
+          />
+        );
+    }
+  }, [parent, field, props.content, props.content, props]);
+  const rend = useMemo(() => {
+    return <Lit value={props.content as Literal} sourcePath="" />;
+  }, [props.content]);
+
+  return (
+    <div className="datacore-field">
+      <span className="field-title">{field.key}</span>
+      <span className="field-value" tabIndex={0}>
+        {editor}
+      </span>
+    </div>
+  );
+}
