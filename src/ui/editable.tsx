@@ -77,6 +77,49 @@ export function Editable<T>({ sourcePath, defaultRender, editor, dispatch, state
 	);
 }
 
+export function DateEditable({
+	dispatch,
+	sourcePath,
+	...rest
+}: EditableState<DateTime | string | null> & { sourcePath: string; dispatch: Dispatch<EditableAction<DateTime | string | null>> }) {
+	const [state, o] = useEditableDispatch<DateTime | string | null>(() => ({
+    isEditing: false,
+    content: rest.content,
+    updater: rest.updater,
+    inline: rest.inline ?? false,
+  }));
+
+  const onChange = (v: DPickerValue) => {
+    dispatch({
+      type: "content-changed",
+      newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
+    });
+    dispatch({
+      type: "commit",
+      newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
+    });
+		o({
+      type: "commit",
+      newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
+    })
+  };
+  const editorNode = (
+    <DatePicker
+      value={
+        (state.content instanceof DateTime
+          ? state.content
+          : typeof state.content == "string" && !!state.content
+          ? DateTime.fromJSDate(new Date(Date.parse(state.content)))
+          : null
+        )?.toJSDate() ?? null
+      }
+      calendarType="gregory"
+      onChange={onChange}
+    />
+  );
+  return <Editable<DateTime | string | null> dispatch={dispatch} state={rest} editor={editorNode} />;
+}
+
 export function TextEditable(props: EditableState<string> & { markdown?: boolean; sourcePath: string }) {
 	const cfc = useContext(CURRENT_FILE_CONTEXT);
 	const [state, dispatch] = useEditableDispatch<string>(() => ({
