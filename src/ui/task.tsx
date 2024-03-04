@@ -1,42 +1,66 @@
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
 import { DefaultListElement, ListState } from "./list";
-import { useStableCallback } from "./hooks";
+import { useIndexUpdates, useStableCallback } from "./hooks";
 import { Fragment, h } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT, Lit } from "./markdown";
 import { JSXInternal } from "preact/src/jsx";
-import { Dispatch, Reducer, useContext, useMemo, useReducer } from "preact/hooks";
+import { Dispatch, Reducer, useContext, useMemo, useReducer, useRef, useState } from "preact/hooks";
 import { rewriteTask, setTaskCompletion } from "./utils";
-import { Literal } from "expression/literal";
+import { Literal, Literals } from "expression/literal";
 import {
   Editable,
   EditableAction,
+  EditableListField,
   EditableState,
   TextEditable,
   editableReducer,
   useEditableDispatch,
 } from "./editable";
 import { InlineField, setInlineField } from "index/import/inline-field";
+import { BaseFieldProps } from "./fields/common-props";
+import { Field } from "expression/field";
+import { DateTime } from "luxon";
 
 export interface TaskProps extends ListState<MarkdownTaskItem | MarkdownListItem> {
   /** task states to cycle through, if specified */
   states?: string[];
+	/** fields to display under each item in this task list */
+  displayedFields?: (BaseFieldProps<Literal> & { key: string })[];
 }
 
-export interface TaskState {
+export interface TaskState extends TaskProps {
   states?: string[];
   status?: string;
+	fields: Record<string, InlineField>;
 }
 
-export type TaskAction = {
-  type: "checked-changed";
-  oldStatus: any;
-  newStatus: string;
-};
+export type TaskAction =
+  | {
+      type: "checked-changed";
+      oldStatus: any;
+      newStatus: string;
+    }
+  | {
+      type: "field-changed";
+			fieldKey: string;
+      callback?: (val: Literal) => unknown;
+      newValue: Literal;
+    };
 
 export function taskReducer(state: TaskState, action: TaskAction) {
   switch (action.type) {
     case "checked-changed":
       return { ...state, status: action.newStatus };
+    case "field-changed":
+      action.callback && action.callback(action.newValue);
+			let newFields = {
+				...state.fields,
+				[action.fieldKey]: {
+					key: action.fieldKey,
+					value: action.newValue
+				}
+			} as Record<string, Field>;
+			return {...state, fields: newFields}
   }
 }
 
@@ -44,8 +68,6 @@ export function useTaskDispatch(initial: TaskState | (() => TaskState)): [TaskSt
   const init = useMemo(() => (typeof initial == "function" ? initial() : initial), [initial]);
   return useReducer(taskReducer as Reducer<TaskState, TaskAction>, init, (s) => init);
 }
-
-
 
 export function TaskList({
   rows: items,
@@ -67,10 +89,13 @@ export function TaskList({
 
 export function Task({ item, state: props }: { item: MarkdownTaskItem; state: TaskProps }) {
   const app = useContext(APP_CONTEXT);
-  const { settings } = useContext(DATACORE_CONTEXT);
+  const core = useContext(DATACORE_CONTEXT);
+	const {settings} = core;
   const [state, taskDispatch] = useTaskDispatch({
+    ...props,
     status: item.$status,
     states: props.states,
+		fields: item.$infields,
   });
   const nextState = useMemo(() => {
     if (props.states && props.states?.length > 0) {
@@ -85,8 +110,9 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     }
   }, [state.states, item, item.$status, item.$completed]);
 
+	const completedRef = useRef<Dispatch<EditableAction<Literal>>>(null)
   const onChecked = useStableCallback(
-    (evt: JSXInternal.TargetedMouseEvent<HTMLInputElement>) => {
+    async (evt: JSXInternal.TargetedMouseEvent<HTMLInputElement>) => {
       // evt.stopPropagation();
       const completed = evt.currentTarget.checked;
       const oldStatus = item.$status;
@@ -104,11 +130,13 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
           task.$text,
           // TODO: replace these next three arguments with proper settings
           false,
-          "completed",
+          settings.taskCompletionTextField,
           settings.defaultDateFormat,
           newStatus?.toLowerCase() === "x"
         );
         await rewriteTask(app.vault, task, newStatus, newText);
+				taskDispatch({ type: "checked-changed", oldStatus, newStatus });
+				taskDispatch({type: "field-changed", newValue: DateTime.now().toFormat(settings.defaultDateFormat), fieldKey: settings.taskCompletionTextField, })
       }
       if (settings.recursiveTaskCompletion) {
         let flatted: MarkdownTaskItem[] = [item];
@@ -124,10 +152,10 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
           await rewr(iitem);
         }
       } else {
-        rewr(item).then(() => {
-          taskDispatch({ type: "checked-changed", oldStatus, newStatus });
-        });
+        await rewr(item);
       }
+			const nv = completed ? DateTime.now().toFormat(settings.defaultDateFormat) : null
+			completedRef.current && completedRef.current({type: "commit", newValue: nv})
     },
     [props.rows]
   );
@@ -139,6 +167,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
           setInlineField(withFields, field, item.$infields[field].raw);
         }
         await rewriteTask(app.vault, item, item.$status, withFields);
+				completedRef.current && completedRef.current({type: "commit", newValue: val})
       }
     },
     [item]
@@ -152,11 +181,48 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     } as EditableState<string>;
   }, [item, props.rows]);
   const theElement = useMemo(() => <TextEditable sourcePath={item.$file} {...eState} />, [eState, item, props.rows]);
+  const editableFields = (state.displayedFields || []).map((ifield) => {
+      let defField: Field = {
+        key: ifield.key,
+        value: ifield.defaultValue!,
+        raw: Literals.toString(ifield.defaultValue),
+      };
+      const [fieldValue, setFieldValue] = useState<Literal>(item.$infields[ifield?.key]?.value || ifield.defaultValue!);
+      const [state2, dispatch] = useEditableDispatch<Literal>({
+        content: fieldValue,
+        isEditing: false,
+        updater: (val: Literal) => {
+            let withFields = setInlineField(item.$text, ifield.key, val ? Literals.toString(val) : undefined);
+            rewriteTask(app.vault, item, item.$status, withFields).then(() => {
+							taskDispatch({ type: "field-changed", newValue: val, fieldKey: ifield.key });
+						});
+          },
+      });
+			if(ifield.key == settings.taskCompletionTextField) {
+				//@ts-ignore huh?
+				completedRef.current = dispatch
+			}
+      return (
+        <EditableListField
+          props={state2}
+          dispatch={dispatch}
+          type={ifield.type || Literals.wrapValue(fieldValue)!.type}
+          file={item.$file}
+          field={item.$infields[ifield.key] || defField}
+          parent={item}
+          updater={state2.updater}
+          value={fieldValue}
+        />
+      );
+    });
+
   return (
     <li class={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={state.status}>
       <input class="datacore task-list-item-checkbox" type="checkbox" checked={checked} onClick={onChecked} />
-      {/* {item.$strippedText}<hr/> */}
-      {theElement}
+      <div>
+        {theElement}
+        {editableFields}
+      </div>
       {item.$elements.length > 0 && <TaskList {...props} rows={item.$elements} />}
     </li>
   );
