@@ -94,7 +94,7 @@ export function DateEditable({
 }: EditableState<DateTime | string | null> & { sourcePath: string; dispatch: Dispatch<EditableAction<DateTime | string | null>> }) {
 	/** the extra dispatch is _just_ in case... */
 	const [state, o] = useEditableDispatch<DateTime | string | null>(() => ({
-    isEditing: false,
+    isEditing: rest.isEditing,
     content: rest.content,
     updater: rest.updater,
     inline: rest.inline ?? false,
@@ -114,15 +114,18 @@ export function DateEditable({
       newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
     })
   };
+	const jsDate = useMemo(() => {
+		return (state.content instanceof DateTime
+			? state.content
+			: typeof state.content == "string" && !!state.content
+			? DateTime.fromJSDate(new Date(Date.parse(state.content)))
+			: null
+		)?.toJSDate()
+	}, [state.content])
   const editorNode = (
     <DatePicker
       value={
-        (state.content instanceof DateTime
-          ? state.content
-          : typeof state.content == "string" && !!state.content
-          ? DateTime.fromJSDate(new Date(Date.parse(state.content)))
-          : null
-        )?.toJSDate() ?? null
+        jsDate ?? null
       }
       calendarType="gregory"
       onChange={onChange}
