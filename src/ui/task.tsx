@@ -81,6 +81,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
       parent?.setAttribute("data-task", newStatus);
       async function rewr(task: MarkdownTaskItem) {
         let newText = setTaskCompletion(
+					task,
           task.$text,
           // TODO: replace these next three arguments with proper settings
           false,
