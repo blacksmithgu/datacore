@@ -14,5 +14,8 @@ export interface BaseFieldProps<T> {
 		value: T
 	}[]
 	type: LiteralType;
-	defaultValue?: T;
+	defaultValue?: T | (() => T);
+	renderNumberAs?: "progress" | "rating" | "select" | "raw";
+	// TODO: type this better
+	additionalConfig?: Record<string, any>
 }
