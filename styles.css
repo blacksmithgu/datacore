@@ -276,6 +276,19 @@ textarea.datacore-editable {
     flex-shrink: 1;
 }
 
+
+/** tasks and lists */
+
+.datacore-list-item-content {
+	display: inline-flex;
+}
+
+.datacore-list-item-content {
+	display: inline-flex;
+	justify-content: space-between;
+  width: -webkit-fill-available;
+}
+
 input.datacore.task-list-item-checkbox {
     float: left !important;
 }
@@ -283,5 +296,6 @@ input.datacore.task-list-item-checkbox {
 li.datacore.task-list-item > *:nth-child(2) {
     display: flow-root !important;
     top: -5px;
+		padding-left: 0.5em;
     position: relative;
 }
