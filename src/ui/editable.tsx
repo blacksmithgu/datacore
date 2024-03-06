@@ -311,9 +311,9 @@ export function EditableListField({
 						return (
 								<ProgressEditable
 									dispatch={dispatch}
-									isEditing={state.isEditing}
-									content={state.content as number} 
-									updater={state.updater} 
+									isEditing={props.isEditing}
+									content={props.content as number} 
+									updater={props.updater} 
 									max={config?.max || 100} 
 									sourcePath={parent.$file}
 									step={config?.step || 0.1}
@@ -323,8 +323,8 @@ export function EditableListField({
 					default:
 						return (
 								<NumberEditable
-									content={state.content as number}
-									updater={state.updater} 
+									content={props.content as number}
+									updater={props.updater} 
 								/>
 							)
 				}
@@ -339,10 +339,12 @@ export function EditableListField({
         );
     }
   }, [parent, field, props.content, props.content, props]);
-
+	const dblclick = useStableCallback((evt: MouseEvent) => {
+		dispatch({type: "editing-toggled", newValue: !props.isEditing})
+	}, [props.isEditing]);
   return (
-    <div className="datacore-field">
-      <span className="field-title">{field.key}</span>
+    <div className="datacore-field" onDblClick={dblclick}>
+      <span className="field-title" onDblClick={dblclick}>{field.key}</span>
       <span className="field-value" tabIndex={0}>
         {editor}
       </span>
