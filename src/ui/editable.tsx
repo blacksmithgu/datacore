@@ -10,6 +10,7 @@ import { DateTime } from "luxon";
 import { FieldControlProps } from "./fields/common-props";
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
 import { BooleanField } from "./fields/boolean-field";
+import { ProgressEditable } from "./fields/progress-field";
 
 export interface EditableState<T> {
   isEditing?: boolean;
@@ -134,6 +135,61 @@ export function DateEditable({
   return <Editable<DateTime | string | null> dispatch={dispatch} state={rest} editor={editorNode} />;
 }
 
+export function NumberEditable(props: EditableState<number>) {
+  const cfc = useContext(CURRENT_FILE_CONTEXT);
+
+	const [state, dispatch] = useEditableDispatch<number>(() => ({
+    isEditing: false,
+    content: props.content,
+    updater: props.updater,
+    inline: true,
+  }));
+	const value = useRef(props.content);
+	const onChangeCb = useStableCallback(
+    async (evt: ChangeEvent) => {
+      value.current = parseFloat((evt.currentTarget as HTMLTextAreaElement).value);
+    },
+    [value.current, state.content, state.updater, state.isEditing]
+  );
+	const finalize = async () => {
+    dispatch({
+      type: "commit",
+      newValue: value.current,
+    });
+    dispatch({
+      type: "editing-toggled",
+      newValue: false,
+    });
+  };
+  const onInput = useStableCallback(
+    async (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+				await finalize();
+			}
+		},
+    [value.current, state.updater, state.content, state.isEditing]
+  );
+
+  const dblClick = useStableCallback(
+    (e: MouseEvent) => {
+      dispatch({
+        type: "editing-toggled",
+        newValue: true,
+      });
+    },
+    [value.current, state.updater, state.isEditing, state.content]
+  );
+  const readonlyEl = (
+		<Lit inline={false} sourcePath={cfc} value={value.current as Literal} />
+  );
+	const editor = (
+    <input className="datacore-editable" type="number" onChange={onChangeCb} onKeyUp={onInput} />
+  )
+	return (<span className="has-texteditable" onDblClick={dblClick}>
+      <Editable<number> dispatch={dispatch} editor={editor} defaultRender={readonlyEl} state={state} />
+  </span>)
+}
+
 export function TextEditable(props: EditableState<string> & { markdown?: boolean; sourcePath: string }) {
   const cfc = useContext(CURRENT_FILE_CONTEXT);
   const [state, dispatch] = useEditableDispatch<string>(() => ({
@@ -219,7 +275,9 @@ export function EditableListField({
   field,
   parent,
   type,
-	dispatch
+	dispatch,
+	renderNumberAs,
+	additionalConfig: config
 }: { props: EditableState<Literal> } & FieldControlProps<Literal> & {
     parent: MarkdownTaskItem | MarkdownListItem;
     type: LiteralType;
@@ -247,6 +305,29 @@ export function EditableListField({
             updater={props.updater as (val: string) => unknown}
           />
         );
+			case "number":
+				switch(renderNumberAs) {
+					case "progress":
+						return (
+								<ProgressEditable
+									dispatch={dispatch}
+									isEditing={state.isEditing}
+									content={state.content as number} 
+									updater={state.updater} 
+									max={config?.max || 100} 
+									sourcePath={parent.$file}
+									step={config?.step || 0.1}
+									min={config?.min || 0}
+								/>
+							)
+					default:
+						return (
+								<NumberEditable
+									content={state.content as number}
+									updater={state.updater} 
+								/>
+							)
+				}
       default:
         return (
           <TextEditable
