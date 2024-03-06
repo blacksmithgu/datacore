@@ -13,7 +13,7 @@
 }
 
 .datacore-table > tbody > tr:hover {
-    background-color: var(--text-selection) !important;
+    background-color: var(--background-secondary) !important;
 }
 
 .datacore-table > thead > tr > th {
@@ -203,14 +203,78 @@ textarea.datacore-editable {
     padding: 0;
 }
 
-/** Error Messages. */
 
-.datacore-error-retry {
-    margin-top: 1em;
-    text-align: center;
+/** fields */
+.datacore-list-item-fields {
+	color: var(--text-normal) !important;
+}
+.datacore-list-item-fields > .datacore-field + .datacore-field {
+	margin-left: 0.4em;
 }
 
-/** Tasks */
+.datacore-field {
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	border-radius: 0.25em;
+	font-size: 0.85em;
+	align-items: center;
+}
+.datacore-field .field-title {
+	flex-grow: 0;
+	font-weight: bold;
+	height: inherit;
+	display: inline-block;
+	background: var(--color-base-25);
+	border-right: 2px solid var(--text-accent);
+	margin-right: 0.3em;
+	padding: 0.2em 0.5em;
+	border-top-left-radius: inherit;
+	border-bottom-left-radius: inherit;
+	user-select: none;
+}
+.datacore-field .field-value {
+	display: inline-block;
+}
+.datacore-field .field-value .checkbox-container {
+	top: 3px;
+}
+.datacore-field .field-value input {
+	height: unset !important;
+}
+.datacore-rating-star.filled {
+	color: var(--text-accent)
+}
+.datacore-rating-star {
+	user-select: none;
+	font-size: 1.3rem;
+}
+
+/** groups */
+
+.datacore-group-holder {
+    display: grid;
+    gap: 0.5em;
+    grid-template-rows: auto;
+    overflow-x: scroll;
+}
+.datacore-group {
+    display: flex;
+    flex-direction: column;
+}
+.datacore-group-content {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+
+}
+.datacore-group-content > *:not(.is-collapsed) {
+    flex-grow: 1;
+}
+.datacore-group-content > h1 {
+    flex-grow: 0 !important;
+    flex-shrink: 1;
+}
 
 input.datacore.task-list-item-checkbox {
     float: left !important;
