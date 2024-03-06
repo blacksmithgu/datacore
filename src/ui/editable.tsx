@@ -277,8 +277,8 @@ export function EditableListField({
   parent,
   type,
 	dispatch,
-	renderNumberAs,
-	additionalConfig: config
+	renderAs,
+	config
 }: { props: EditableState<Literal> } & FieldControlProps<Literal> & {
     parent: MarkdownTaskItem | MarkdownListItem;
     type: LiteralType;

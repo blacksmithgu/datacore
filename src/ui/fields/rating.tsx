@@ -7,7 +7,7 @@ import { useSetInlineField } from "ui/utils";
 
 
 
-export function Rating({value, updater, additionalConfig: config, field, file, defaultValue}: FieldControlProps<number | string>) {
+export function Rating({value, updater, config: config, field, file, defaultValue}: FieldControlProps<number | string>) {
 	const [state, dispatch] = useEditableDispatch<number | string>({
 		content: value ?? defaultValue,
 		updater: updater ? updater : (val) => useSetInlineField(field, file, val)

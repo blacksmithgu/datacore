@@ -8,14 +8,9 @@ export interface FieldControlProps<T> extends BaseFieldProps<T> {
 	updater?: (val: T) => unknown
 }
 export interface BaseFieldProps<T> {
-	/** only read if the field is rendered as a dropdown */
-	enumValues?: {
-		label: string;
-		value: T
-	}[]
 	type: LiteralType;
 	defaultValue?: T | (() => T);
-	renderNumberAs?: "progress" | "rating" | "select" | "raw";
+	renderAs?: "progress" | "rating" | "select" | "raw";
 	// TODO: type this better
-	additionalConfig?: Record<string, any>
+	config?: Record<string, any>
 }
