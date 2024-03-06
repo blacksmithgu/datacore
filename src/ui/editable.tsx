@@ -11,6 +11,7 @@ import { FieldControlProps } from "./fields/common-props";
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
 import { BooleanField } from "./fields/boolean-field";
 import { ProgressEditable } from "./fields/progress-field";
+import { Rating } from "./fields/rating";
 
 export interface EditableState<T> {
   isEditing?: boolean;
@@ -318,6 +319,17 @@ export function EditableListField({
 									sourcePath={parent.$file}
 									step={config?.step || 0.1}
 									min={config?.min || 0}
+								/>
+							)
+						case "rating":
+							return (
+								<Rating 
+									field={field}
+									file={parent.$file}
+									type={type}
+									additionalConfig={config} 
+									value={props.content as (string | number)} 
+									updater={props.updater}
 								/>
 							)
 					default:
