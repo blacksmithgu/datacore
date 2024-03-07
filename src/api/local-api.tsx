@@ -14,7 +14,6 @@ import { DataArray } from "./data-array";
 import { COMPONENTS } from "./components";
 import { PRIMITIVES, QUERY } from "expression/parser";
 import { Result } from "./result";
-import { QUERY } from "expression/parser";
 import Parsimmon from "parsimmon";
 import { TableProps, TableView } from "ui/table";
 import { h } from "preact";
