@@ -6,9 +6,8 @@
     "module": "ESNext",
     "target": "es2018",
     "allowJs": false,
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
+    "jsx": "react-jsx",
+		"jsxImportSource": "preact",
     "noImplicitAny": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
@@ -20,6 +19,10 @@
     "downlevelIteration": true,
     "esModuleInterop": true,
     "lib": ["dom", "es5", "scripthost", "es2018", "DOM.Iterable"],
+		"paths": {
+      "react": ["../node_modules/preact/compat/"],
+      "react-dom": ["../node_modules/preact/compat/"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["lib/**/*"]

@@ -112,10 +112,10 @@ export function SelectableEditable({
 		}
 		
 	}, [config, content, updater, isEditing]);
-	const editor = useMemo(() => {
+	const editor: VNode = useMemo(() => {
 		return <Select 
-		classNamePrefix="datacore-selectable"
-			onChange={onChange} unstyled isMulti={config?.multi ?? false} options={config?.options ?? []}
+			classNamePrefix="datacore-selectable"
+			onChange={onChange} unstyled isMulti={config?.multi ?? false} options={(config?.options ?? [])}
 			menuPortalTarget={document.body}  
 			classNames={{
 				input(props) {
