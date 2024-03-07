@@ -32,7 +32,7 @@ export function TaskList({
   renderer: listRenderer = (item, index) => <DefaultListElement element={item} />,
   ...rest
 }: TaskProps) {
-	
+
   const core = useContext(DATACORE_CONTEXT);
 	useIndexUpdates(core, {debounce: 0});
   const content = useMemo(() => {
@@ -70,7 +70,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     async (evt: JSXInternal.TargetedMouseEvent<HTMLInputElement>) => {
       // evt.stopPropagation();
       const completed = evt.currentTarget.checked;
-			
+
       let newStatus: string;
       if (evt.shiftKey) {
         newStatus = nextState!;
@@ -131,25 +131,25 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
       updater: onChanger,
       content: item.$strippedText,
       inline: false,
+	    isEditing: false
     } as EditableState<string>;
   }, [item, props.rows, iu]);
   const theElement = useMemo(() => <TextEditable sourcePath={item.$file} {...eState} />, [eState, item, props.rows, iu]);
 
-  const editableFields = useMemo(() => {
-		return (props.displayedFields || []).map((ifield) => {
+  const editableFields = (props.displayedFields || []).map((ifield) => {
 			let defVal = typeof ifield.defaultValue == "function" ? ifield.defaultValue() : ifield.defaultValue;
       let defField: Field = {
         key: ifield.key,
         value: defVal,
         raw: Literals.toString(defVal),
       };
-      const [fieldValue, setFieldValue] = useState<Literal>(item.$infields[ifield?.key]?.value || defField.value!);
+      const [fieldValue] = useState<Literal>(item.$infields[ifield?.key]?.value || defField.value!);
       const [state2, dispatch] = useEditableDispatch<Literal>({
         content: fieldValue,
-				isEditing: false,
+	      isEditing: false,
         updater: useStableCallback((val: Literal) => {
 					const dateString = (v: Literal) => v instanceof DateTime ? v.toFormat(settings.defaultDateFormat) : v !=  null ? Literals.toString(v) : undefined
-					
+
 					let withFields = setInlineField(item.$text, ifield.key, dateString(val));
 					if(item.$infields[ifield.key]) item.$infields[ifield.key].value = dateString(val)!;
 					for (let field in item.$infields) {
@@ -176,8 +176,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 					renderAs={ifield.renderAs}
         />
       );
-    })
-	}, [props.rows, item]);
+    });
 
   return (
     <li class={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={item.$status}>
