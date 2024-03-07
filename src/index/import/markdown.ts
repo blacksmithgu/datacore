@@ -195,11 +195,23 @@ export function markdownImport(
     const listItems = new BTree<number, JsonMarkdownListItem>(undefined, (a, b) => a - b);
     for (const list of metadata.listItems || []) {
         const item = convertListItem(list);
+        let content = lines
+            .slice(item.$position.start, (item.$position.end) + 1).join("\n")
+            /** strip inline fields maybe */
+        let marker = content.split("\n")[0].replace(/>|\t/g, "").trim().slice(0, 1)
+        item.$symbol = marker;
+        item.$text = content.replace(/[\-+\*]\s\[.\]\s/, "");
         listItems.set(item.$position.start, item);
     }
 
     // In the second list pass, actually construct the list heirarchy.
     for (const item of listItems.values()) {
+        let content = lines
+            .slice(item.$position.start, (item.$position.end) + 1).join("\n")
+            .replace(/^[\t\f\v ]+|[\-*+]\s/gm, "")
+            /** strip inline fields maybe */
+            // .replace(/[\[\(].*?::\s*.*?[\]\)]/gm, "")
+        item.$text = content;
         if (item.$parentLine < 0) {
             const listBlock = blocks.get(-item.$parentLine);
             if (!listBlock || !(listBlock.$type === "list")) continue;

@@ -552,6 +552,11 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
      */
     $parentLine: number;
 
+    /** the contents of the list item */
+    $text: string;
+
+    $symbol: string;
+
     /** Create a list item from a serialized object. */
     static from(
         object: JsonMarkdownListItem,
@@ -572,6 +577,8 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $links: object.$links.map(normalizer),
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
+            $text: object.$text,
+            $symbol: object.$symbol!
         });
     }
 
@@ -594,6 +601,10 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
         return MarkdownListItem.FIELD_DEF(this);
     }
 
+    /** return text without annotations + indentation */
+    get $strippedText() {
+        return this.$text.replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1").replace(/^[\t\f\v\s]+|[\-*+]\s(\[.\])?/gm, "").trimEnd()//.replace(/^$/gm, "")
+    }
     /** Fetch a specific field by key. */
     public field(key: string) {
         return MarkdownListItem.FIELD_DEF(this, key)?.[0];
@@ -651,6 +662,8 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
             $status: object.$status,
+            $text: object.$text,
+            $symbol: object.$symbol!
         });
     }
 
