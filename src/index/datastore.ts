@@ -3,7 +3,7 @@ import { Filter, Filters } from "expression/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery, IndexSource } from "index/types/index-query";
-import { INDEX_FIELDS, Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
+import { INDEX_FIELDS, Indexable, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
 import { MarkdownPage } from "./types/markdown/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";
@@ -212,7 +212,7 @@ export class Datastore {
             this.tags.delete(object.$id, extractSubtags(tags));
         }
 
-        if (object.$types.contains(LINKABLE_TYPE) && iterableExists(object, "$links")) {
+        if (object.$types.contains(LINKBEARING_TYPE) && iterableExists(object, "$links")) {
             // Assume links are normalized when deleting them. Could be broken but I hope not. We can always use a 2-way index to
             // fix this if we encounter non-normalized links.
             this.links.delete(

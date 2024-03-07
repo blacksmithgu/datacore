@@ -10,6 +10,7 @@ import { extractImageDimensions, isImageEmbed } from "utils/media";
 import { h, createContext, Fragment, VNode, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
+import { Embed, EmbedProps } from "./embed";
 
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
@@ -92,12 +93,13 @@ export function RawMarkdown({
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);
+    const app = useContext(APP_CONTEXT);
 
     useEffect(() => {
         if (!container.current) return;
 
         container.current.innerHTML = "";
-        MarkdownRenderer.renderMarkdown(content, container.current, sourcePath, component).then(() => {
+        MarkdownRenderer.render(app, content, container.current, sourcePath, component).then(() => {
             if (!container.current || !inline) return;
 
             // Unwrap any created paragraph elements if we are inline.
@@ -106,6 +108,25 @@ export function RawMarkdown({
                 let children = paragraph.childNodes;
                 paragraph.replaceWith(...Array.from(children));
                 paragraph = container.current.querySelector("p");
+            }
+
+            // have embeds actually load instead of displaying as plain text.
+            let embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
+            while (embed) {
+                let props: EmbedProps = {
+                    link: Link.parseInner(embed.getAttribute("src") ?? ""),
+                    sourcePath,
+                    inline: true,
+                };
+                embed.empty();
+                render(
+                    <APP_CONTEXT.Provider value={app}>
+                        <Embed {...props} />
+                    </APP_CONTEXT.Provider>,
+                    embed
+                );
+                embed.addClass("is-loaded");
+                embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
             }
         });
     }, [content, sourcePath, container.current]);
@@ -164,6 +185,8 @@ export function RawLit({
             else if (dimensions && dimensions.length == 1)
                 return <img alt={value.path} src={resourcePath} width={dimensions[0]} />;
             else return <img alt={value.path} src={resourcePath} />;
+        } else if (value.embed) {
+            return <Embed link={value} sourcePath={sourcePath} inline={inline} />;
         }
 
         return <ObsidianLink link={value} sourcePath={sourcePath} />;
@@ -271,6 +294,16 @@ export function SimpleErrorBoundary({
     } else {
         return <Fragment>{children}</Fragment>;
     }
+}
+
+/** Renders a vertical flexbox. */
+export function Stack({ children, className }: PropsWithChildren<{ className?: string }>) {
+    return <div className={`datacore stack ${className ?? ""}`}>{children}</div>;
+}
+
+/** Renders a horizontal flexbox. */
+export function Group({ children, className }: PropsWithChildren<{ className?: string }>) {
+    return <div className={`datacore group ${className ?? ""}`}>{children}</div>;
 }
 
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */

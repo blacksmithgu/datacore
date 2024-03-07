@@ -31,6 +31,7 @@ async function build(prod) {
 			'@lezer/common',
 			'@lezer/highlight',
 			'@lezer/lr',
+			"pdfjs-dist",
 			...builtins],
 			alias: {
 				"react": "preact/compat"

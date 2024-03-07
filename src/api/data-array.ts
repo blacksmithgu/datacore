@@ -22,6 +22,9 @@ export interface DataArray<T> {
     /** The total number of elements in the array. */
     length: number;
 
+    /** Applies the given function to the entire data array. Allows using function chaining while applying an arbitrary intermediate function. */
+    chain<U>(op: (arr: DataArray<T>) => DataArray<U>): DataArray<U>;
+
     /** Filter the data array down to just elements which match the given predicate. */
     where(predicate: ArrayFunc<T, boolean>): DataArray<T>;
     /** Alias for 'where' for people who want array semantics. */
@@ -129,6 +132,7 @@ export interface DataArray<T> {
 /** Implementation of DataArray, minus the dynamic variable access, which is implemented via proxy. */
 class DataArrayImpl<T> implements DataArray<T> {
     private static ARRAY_FUNCTIONS: Set<string> = new Set([
+        "chain",
         "where",
         "filter",
         "map",
@@ -190,6 +194,10 @@ class DataArrayImpl<T> implements DataArray<T> {
 
     private lwrap<U>(values: U[]): DataArray<U> {
         return DataArrayImpl.wrap(values, this.defaultComparator);
+    }
+
+    public chain<U>(op: (arr: DataArray<T>) => DataArray<U>): DataArray<U> {
+        return op(this);
     }
 
     public where(predicate: ArrayFunc<T, boolean>): DataArray<T> {
