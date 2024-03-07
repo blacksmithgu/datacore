@@ -250,6 +250,41 @@ textarea.datacore-editable {
 	font-size: 1.3rem;
 }
 
+.datacore-editable-outer .prompt-input {
+	display: inline-block !important;
+}
+
+.datacore-selectable__menu {
+	z-index: 99999 !important;
+	top: 0 !important;
+}
+
+.datacore-editable-outer > div {
+	/* position: relative; */
+}
+
+.datacore-editable-outer .prompt-input input:after {
+	content: none !important;
+}
+
+.datacore-editable-outer > .suggestion-container:has(.datacore-selectable__control--menu-is-open) {
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+.datacore-selectable__menu {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	border-top: none;
+}
+
+.datacore-editable-outer > .suggestion-container {
+	box-shadow: none;
+}
+.datacore-selectable__menu-list .suggestion-item:hover {
+	background-color: var(--text-normal);
+	color: var(--text-on-accent-inverted)
+}
+
 /** groups */
 
 .datacore-group-holder {
