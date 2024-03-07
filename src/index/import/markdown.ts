@@ -16,10 +16,13 @@ import {
     JsonMarkdownSection,
     JsonMarkdownTaskItem,
     JsonMarkdownDatablock,
+    JsonMarkdownCodeblock,
 } from "index/types/markdown/json";
 
 /** Matches yaml datablocks, which show up as independent objects in the datacore index. */
 const YAML_DATA_REGEX = /```yaml:data/i;
+/** Matches the start of any codeblock fence. */
+const CODEBLOCK_FENCE_REGEX = /(?:```)|(?:~~~)(.*?)$/;
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -132,6 +135,36 @@ export function markdownImport(
                 $data: split,
                 $links: [],
             } as JsonMarkdownDatablock);
+        } else if (block.type === "code") {
+            // Check if the block is fenced.
+            const match = startLine.match(CODEBLOCK_FENCE_REGEX);
+            if (!match) {
+                // This is an indented-style codeblock.
+                blocks.set(start, {
+                    $ordinal: blockOrdinal++,
+                    $position: { start, end },
+                    $tags: [],
+                    $infields: {},
+                    $type: "codeblock",
+                    $links: [],
+                    $languages: [],
+                    $contentPosition: { start, end },
+                    $style: "indent",
+                } as JsonMarkdownCodeblock);
+            } else {
+                const languages = match.length > 1 ? match[1].split(",") : [];
+                blocks.set(start, {
+                    $ordinal: blockOrdinal++,
+                    $position: { start, end },
+                    $tags: [],
+                    $infields: {},
+                    $type: "codeblock",
+                    $links: [],
+                    $languages: languages,
+                    $contentPosition: { start: start + 1, end: end - 1 },
+                    $style: "fenced",
+                } as JsonMarkdownCodeblock);
+            }
         } else {
             blocks.set(start, {
                 $ordinal: blockOrdinal++,

@@ -102,6 +102,17 @@ export interface JsonMarkdownDatablock extends JsonMarkdownBlock {
     $type: "datablock";
 }
 
+export interface JsonMarkdownCodeblock extends JsonMarkdownBlock {
+    /** The language of the code block. May be empty. */
+    $languages: string[];
+    /** The start and end line of codeblock. */
+    $contentPosition: { start: number; end: number; };
+    /** Whether the codeblock is defined via ``` fences or a 4-character indent. */
+    $style: "indent" | "fenced";
+
+    $type: "codeblock";
+}
+
 export interface JsonMarkdownListItem {
     /** The position of the list item in the file. */
     $position: LineSpan;
