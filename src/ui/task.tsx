@@ -116,7 +116,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
   const onChanger = useStableCallback(
     async (val: Literal) => {
       if (typeof val === "string") {
-        let withFields = val;
+        let withFields = `${val}${Object.keys(item.$infields).length ? " " : ""}`
         for (let field in item.$infields) {
           withFields = setInlineField(withFields, field, item.$infields[field].raw);
         }
@@ -148,10 +148,10 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         content: fieldValue,
 				isEditing: false,
         updater: useStableCallback((val: Literal) => {
-					const dateString = (v: Literal) => v instanceof DateTime ? v.toFormat(settings.defaultDateFormat) : !!v ? Literals.toString(v) : undefined
+					const dateString = (v: Literal) => v instanceof DateTime ? v.toFormat(settings.defaultDateFormat) : v !=  null ? Literals.toString(v) : undefined
 					
 					let withFields = setInlineField(item.$text, ifield.key, dateString(val));
-					item.$infields[ifield.key].value = val;
+					if(item.$infields[ifield.key]) item.$infields[ifield.key].value = dateString(val)!;
 					for (let field in item.$infields) {
 						withFields = setInlineField(withFields, field, dateString(item.$infields[field]?.value));
 					}
