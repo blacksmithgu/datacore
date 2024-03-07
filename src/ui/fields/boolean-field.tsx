@@ -1,6 +1,5 @@
 import { useEditableDispatch } from "ui/editable";
 import { FieldControlProps } from "./common-props";
-import { useSetInlineField } from "ui/utils";
 import { TargetedEvent } from "preact/compat";
 import { useStableCallback } from "ui/hooks";
 

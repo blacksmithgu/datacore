@@ -3,14 +3,13 @@ import { useMemo } from "preact/hooks";
 import { useStableCallback } from "ui/hooks";
 import { FieldControlProps } from "./common-props";
 import { useEditableDispatch } from "ui/editable";
-import { useSetInlineField } from "ui/utils";
 
 
 
 export function Rating({value, updater, config: config, field, file, defaultValue}: FieldControlProps<number | string>) {
 	const [state, dispatch] = useEditableDispatch<number | string>({
 		content: value ?? defaultValue,
-		updater: updater ? updater : (val) => useSetInlineField(field, file, val)
+		updater: updater!
 	})
 	const parsedValue = useMemo(() => {
 		if(typeof state.content == "string") {
