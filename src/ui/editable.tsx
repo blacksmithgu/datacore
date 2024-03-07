@@ -1,5 +1,5 @@
-import { Fragment, VNode, h } from "preact";
-import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { Fragment, VNode } from "preact";
+import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { ChangeEvent, useReducer } from "preact/compat";
 import { useStableCallback } from "./hooks";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
@@ -16,7 +16,7 @@ import { Rating } from "./fields/rating";
 export interface EditableState<T> {
   isEditing?: boolean;
   content: T;
-  updater: (val: T) => any;
+  updater: (val: T) => unknown;
   inline?: boolean;
 }
 
@@ -307,7 +307,7 @@ export function EditableListField({
           />
         );
 			case "number":
-				switch(renderNumberAs) {
+				switch(renderAs) {
 					case "progress":
 						return (
 								<ProgressEditable
@@ -327,7 +327,7 @@ export function EditableListField({
 									field={field}
 									file={parent.$file}
 									type={type}
-									additionalConfig={config} 
+									config={config} 
 									value={props.content as (string | number)} 
 									updater={props.updater}
 								/>
@@ -344,13 +344,13 @@ export function EditableListField({
         return (
           <TextEditable
             sourcePath={parent.$file}
-            isEditing={false}
+            isEditing={props.isEditing}
             content={Literals.toString(props.content)}
             updater={props.updater as (val: string) => unknown}
           />
         );
     }
-  }, [parent, field, props.content, props.content, props]);
+  }, [parent, field, props.content, props.content, props, config, renderAs]);
 	const dblclick = useStableCallback((evt: MouseEvent) => {
 		dispatch({type: "editing-toggled", newValue: !props.isEditing})
 	}, [props.isEditing]);
