@@ -284,6 +284,36 @@ export function EditableListField({
     type: LiteralType;
     dispatch: Dispatch<EditableAction<Literal>>;
   }) {
+	const subEditor = useMemo(() => {
+		switch(renderAs) {
+			case "progress":
+				return (
+						<ProgressEditable
+							dispatch={dispatch}
+							isEditing={props.isEditing}
+							content={props.content as number} 
+							updater={props.updater} 
+							max={config?.max || 100} 
+							sourcePath={parent.$file}
+							step={config?.step || 0.1}
+							min={config?.min || 0}
+						/>
+					)
+				case "rating":
+					return (
+						<Rating 
+							field={field}
+							file={parent.$file}
+							type={type}
+							config={config} 
+							value={props.content as (string | number)} 
+							updater={props.updater}
+						/>
+					)
+			default:
+				return null
+		}
+	}, [parent, field, props.content, props.content, props, config, renderAs])
   const editor = useMemo(() => {
     switch (type) {
       case "date":
@@ -299,47 +329,25 @@ export function EditableListField({
         return <BooleanField type={type} value={props.content as boolean} field={field} file={parent.$file} />;
       case "string":
         return (
-          <TextEditable
-            sourcePath={parent.$file}
-            isEditing={false}
-            content={props.content as string}
-            updater={props.updater as (val: string) => unknown}
-          />
+          <>
+						{subEditor ?? (
+							<TextEditable
+							sourcePath={parent.$file}
+							isEditing={false}
+							content={props.content as string}
+							updater={props.updater as (val: string) => unknown}
+						/>)}
+					</>
         );
 			case "number":
-				switch(renderAs) {
-					case "progress":
-						return (
-								<ProgressEditable
-									dispatch={dispatch}
-									isEditing={props.isEditing}
-									content={props.content as number} 
-									updater={props.updater} 
-									max={config?.max || 100} 
-									sourcePath={parent.$file}
-									step={config?.step || 0.1}
-									min={config?.min || 0}
-								/>
-							)
-						case "rating":
-							return (
-								<Rating 
-									field={field}
-									file={parent.$file}
-									type={type}
-									config={config} 
-									value={props.content as (string | number)} 
-									updater={props.updater}
-								/>
-							)
-					default:
-						return (
-								<NumberEditable
-									content={props.content as number}
-									updater={props.updater} 
-								/>
-							)
-				}
+				return <>
+					{subEditor ?? (
+						<NumberEditable
+							content={props.content as number}
+							updater={props.updater} 
+						/>
+					)}
+				</>
       default:
         return (
           <TextEditable
