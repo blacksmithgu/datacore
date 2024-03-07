@@ -59,7 +59,7 @@ export class DatacoreLocalApi {
     //////////////////////////////
     // Script loading utilities //
     //////////////////////////////
-    
+
     // Note: Script loading is a bit jank, since it has to be asynchronous due to IO (unless of course we wanted to cache
     // every single script in the vault in memory, which seems terrible for performance). It functions by essentially
     // returning a lazy proxy.
@@ -67,11 +67,9 @@ export class DatacoreLocalApi {
     /**
      * Asynchronously load a javascript block from the given path or link; this method supports loading code blocks
      * from markdown files via the link option
-     * 
+     *
      */
-    public async require(path: string | Link): Promise<any> {
-
-    }
+    public async require(path: string | Link): Promise<any> {}
 
     ///////////////////////
     // General utilities //

@@ -106,7 +106,7 @@ export interface JsonMarkdownCodeblock extends JsonMarkdownBlock {
     /** The language of the code block. May be empty. */
     $languages: string[];
     /** The start and end line of codeblock. */
-    $contentPosition: { start: number; end: number; };
+    $contentPosition: { start: number; end: number };
     /** Whether the codeblock is defined via ``` fences or a 4-character indent. */
     $style: "indent" | "fenced";
 

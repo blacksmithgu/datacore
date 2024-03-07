@@ -22,7 +22,7 @@ import {
 /** Matches yaml datablocks, which show up as independent objects in the datacore index. */
 const YAML_DATA_REGEX = /```yaml:data/i;
 /** Matches the start of any codeblock fence. */
-const CODEBLOCK_FENCE_REGEX = /(?:```)|(?:~~~)(.*?)$/;
+const CODEBLOCK_FENCE_REGEX = /^(?:```|~~~)(.*)$/im;
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -152,7 +152,7 @@ export function markdownImport(
                     $style: "indent",
                 } as JsonMarkdownCodeblock);
             } else {
-                const languages = match.length > 1 ? match[1].split(",") : [];
+                const languages = match.length > 1 && match[1] ? match[1].split(",") : [];
                 blocks.set(start, {
                     $ordinal: blockOrdinal++,
                     $position: { start, end },

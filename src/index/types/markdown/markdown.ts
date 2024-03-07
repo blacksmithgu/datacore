@@ -398,7 +398,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
 
     $types: string[] = MarkdownCodeblock.TYPES;
     $languages: string[];
-    $contentPosition: { start: number; end: number; };
+    $contentPosition: { start: number; end: number };
     $style: "fenced" | "indent";
 
     public constructor(init: Partial<MarkdownCodeblock>) {
@@ -436,9 +436,9 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
 
     public partial(): JsonMarkdownCodeblock {
         return Object.assign(super.partial(), {
-            "$languages": this.$languages,
-            "$contentPosition": this.$contentPosition,
-            "$style": this.$style,
+            $languages: this.$languages,
+            $contentPosition: this.$contentPosition,
+            $style: this.$style,
         }) as JsonMarkdownCodeblock;
     }
 
@@ -447,7 +447,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
     }
 
     static SUB_FIELD_DEF: FieldExtractor<MarkdownCodeblock> = Extractors.merge<MarkdownCodeblock>(
-        MarkdownBlock.FIELD_DEF,
+        MarkdownBlock.FIELD_DEF
     );
 }
 
