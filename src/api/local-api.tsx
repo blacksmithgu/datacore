@@ -11,7 +11,8 @@ import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { DataArray } from "./data-array";
-import { QUERY } from "expression/parser";
+import { COMPONENTS } from "./components";
+import { PRIMITIVES, QUERY } from "expression/parser";
 import { Result } from "./result";
 import Parsimmon from "parsimmon";
 import { TableProps, TableView } from "ui/table";
@@ -56,6 +57,25 @@ export class DatacoreLocalApi {
         return this.core.app;
     }
 
+    get components(): typeof COMPONENTS {
+        return COMPONENTS;
+    }
+
+    //////////////////////////////
+    // Script loading utilities //
+    //////////////////////////////
+
+    // Note: Script loading is a bit jank, since it has to be asynchronous due to IO (unless of course we wanted to cache
+    // every single script in the vault in memory, which seems terrible for performance). It functions by essentially
+    // returning a lazy proxy.
+
+    /**
+     * Asynchronously load a javascript block from the given path or link; this method supports loading code blocks
+     * from markdown files via the link option
+     *
+     */
+    public async require(path: string | Link): Promise<any> {}
+
     ///////////////////////
     // General utilities //
     ///////////////////////
@@ -71,6 +91,7 @@ export class DatacoreLocalApi {
         return rawpath;
     }
 
+    /** Try to parse the given query, returning a monadic success/failure result. */
     public tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string> {
         if (!(typeof query === "string")) return Result.success(query);
 
@@ -79,8 +100,27 @@ export class DatacoreLocalApi {
         else return Result.failure(Parsimmon.formatError(query, result));
     }
 
+    /** Try to parse the given query, throwing an error if it is invalid. */
     public parseQuery(query: string | IndexQuery): IndexQuery {
         return this.tryParseQuery(query).orElseThrow((e) => "Failed to parse query: " + e);
+    }
+
+    /** Create a file link pointing to the given path. */
+    public fileLink(path: string): Link {
+        return Link.file(path);
+    }
+
+    /** Try to parse the given link, throwing an error if it is invalid. */
+    public parseLink(linktext: string): Link {
+        return this.tryParseLink(linktext).orElseThrow((e) => "Failed to parse link: " + e);
+    }
+
+    /** Try to parse a link, returning a monadic success/failure result. */
+    public tryParseLink(linktext: string): Result<Link, string> {
+        const parsed = PRIMITIVES.embedLink.parse(linktext);
+        if (!parsed.status) return Result.failure(Parsimmon.formatError(linktext, parsed));
+
+        return Result.success(parsed.value);
     }
 
     /////////////

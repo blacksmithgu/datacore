@@ -203,6 +203,27 @@ textarea.datacore-editable {
     padding: 0;
 }
 
+/** Error Messages. */
+
+
+/** scroll */
+
+.block-language-datacore,
+.block-language-datacorejs {
+    max-height: 100vh;
+		padding-right: 2em;
+		overflow-y: scroll;
+}
+
+
+/** scroll */
+
+.block-language-datacore,
+.block-language-datacorejs {
+    max-height: 100vh;
+    padding-right: 2em;
+    overflow-y: scroll;
+}
 
 /** fields */
 .datacore-list-item-fields {
@@ -285,41 +306,6 @@ textarea.datacore-editable {
 	color: var(--text-on-accent-inverted)
 }
 
-/** groups */
-
-.datacore-group-holder {
-    display: grid;
-    gap: 0.5em;
-    grid-template-rows: auto;
-    overflow-x: scroll;
-}
-.datacore-group {
-    display: flex;
-    flex-direction: column;
-}
-.datacore-group-content {
-    display: flex;
-    flex-grow: 1;
-    flex-direction: column;
-
-}
-.datacore-group-content > *:not(.is-collapsed) {
-    flex-grow: 1;
-}
-.datacore-group-content > h1 {
-    flex-grow: 0 !important;
-    flex-shrink: 1;
-}
-
-
-/** scroll */
-
-.block-language-datacore, 
-.block-language-datacorejs {
-    max-height: 100vh;
-		padding-right: 2em;
-		overflow-y: scroll;
-}
 
 
 /** tasks and lists */
