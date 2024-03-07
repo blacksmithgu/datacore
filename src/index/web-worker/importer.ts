@@ -1,6 +1,5 @@
 /** Controls and creates Dataview file importers, allowing for asynchronous loading and parsing of files. */
 
-import { Transferable } from "index/web-worker/transferable";
 import ImportWorker from "index/web-worker/importer.worker";
 import { Component, MetadataCache, TFile, Vault } from "obsidian";
 import { MarkdownImport, PDFImport } from "index/web-worker/message";
@@ -84,26 +83,22 @@ export class FileImporter extends Component {
         try {
             switch (file.extension) {
                 case "pdf":
-                    worker!.worker.postMessage(
-                        Transferable.transferable({
-                            type: "pdf",
-                            path: file.path,
-                            stat: file.stat,
-                            resourceURI: this.vault.getResourcePath(file),
-                        } as PDFImport)
-                    );
+                    worker!.worker.postMessage({
+                        type: "pdf",
+                        path: file.path,
+                        stat: file.stat,
+                        resourceURI: this.vault.getResourcePath(file),
+                    } as PDFImport);
                     break;
                 default:
                     const contents = await this.vault.cachedRead(file);
-                    worker!.worker.postMessage(
-                        Transferable.transferable({
-                            type: "markdown",
-                            path: file.path,
-                            contents: contents,
-                            stat: file.stat,
-                            metadata: this.metadataCache.getFileCache(file),
-                        } as MarkdownImport)
-                    );
+                    worker!.worker.postMessage({
+                        type: "markdown",
+                        path: file.path,
+                        contents: contents,
+                        stat: file.stat,
+                        metadata: this.metadataCache.getFileCache(file),
+                    } as MarkdownImport);
             }
         } catch (ex) {
             console.log("Datacore: Background file reloading failed. " + ex);
@@ -183,7 +178,7 @@ export class FileImporter extends Component {
             worker: new ImportWorker(),
         };
 
-        worker.worker.onmessage = (evt) => this.finish(worker, Transferable.value(evt.data));
+        worker.worker.onmessage = (evt) => this.finish(worker, evt.data);
         return worker;
     }
 
