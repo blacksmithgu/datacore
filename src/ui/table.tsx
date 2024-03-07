@@ -1,5 +1,5 @@
 import { Literal, Literals } from "expression/literal";
-import { CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit, Stack } from "./markdown";
+import { CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit } from "./markdown";
 import { useInterning, useStableCallback } from "./hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
@@ -146,49 +146,49 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
     }, [rows, groups]);
 
     // And finally apply pagination.
-    const pageSize = useMemo(() => {
-        if (!props.paging) return 1;
-        return props.paging === true ? settings.defaultPageSize : props.paging;
-    }, [props.paging, settings.defaultPageSize]);
+    const pageSize = typeof props.paging === "number" ? props.paging : settings.defaultPageSize;
+    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
 
-    const maxPage = useMemo(() => {
-        return Math.max(0, Math.min(props.page ?? 0, Math.ceil(rows.length / pageSize)));
-    }, [pageSize, rows.length]);
-
+    // Slice the groups to respect paging.
     const pagedGroupedRows = useMemo(() => {
         if (!props.paging) return groupedRows;
 
         const currentPage = props.page ?? 0;
-        return Grouping.slice(groupedRows, currentPage * pageSize, (currentPage + 1) * pageSize - 1);
-    }, [props.paging, props.page, settings.defaultPageSize]);
+        return Grouping.slice(groupedRows, currentPage * pageSize, (currentPage + 1) * pageSize);
+    }, [props.paging, props.page, pageSize, groupedRows]);
 
     return (
-        <Stack>
-            <table className="datacore-table">
-                <thead>
-                    <tr className="datacore-table-header-row">
-                        {visualColumns.map((col) => (
-                            <TableHeaderCell
-                                column={col}
-                                sort={props.sortOn?.find((s) => s.id == col.id)?.direction}
-                                sortable={(props.sortable ?? true) && (col.sortable ?? true)}
-                                dispatch={props.dispatch}
-                            />
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    <TableBody level={0} columns={visualColumns} rows={pagedGroupedRows} dispatch={props.dispatch} />
-                </tbody>
-            </table>
+        <table className="datacore-table">
+            <thead>
+                <tr className="datacore-table-header-row">
+                    {visualColumns.map((col) => (
+                        <TableHeaderCell
+                            column={col}
+                            sort={props.sortOn?.find((s) => s.id == col.id)?.direction}
+                            sortable={(props.sortable ?? true) && (col.sortable ?? true)}
+                            dispatch={props.dispatch}
+                        />
+                    ))}
+                </tr>
+            </thead>
+            <tbody>
+                <TableBody level={0} columns={visualColumns} rows={pagedGroupedRows} dispatch={props.dispatch} />
+            </tbody>
+            {/* Lowermost table footer contains paging. */}
             {props.paging !== false && (
-                <PagingControl
-                    maxPage={maxPage}
-                    page={props.page ?? 0}
-                    setPage={(page) => props.dispatch({ type: "set-page", page })}
-                />
+                <tfoot>
+                    <tr>
+                        <td colSpan={visualColumns.length}>
+                            <PagingControl
+                                totalPages={totalPages}
+                                page={props.page ?? 0}
+                                setPage={(page) => props.dispatch({ type: "set-page", page })}
+                            />
+                        </td>
+                    </tr>
+                </tfoot>
             )}
-        </Stack>
+        </table>
     );
 }
 
@@ -280,9 +280,12 @@ export function TableGroupHeader<T>({
     width: number;
     dispatch: Dispatch<TableAction>;
 }) {
+    const sourcePath = useContext(CURRENT_FILE_CONTEXT);
     return (
         <tr className="datacore-table-group-header">
-            <td colSpan={width}></td>
+            <td colSpan={width}>
+                <Lit sourcePath={sourcePath} inline={true} value={value} />
+            </td>
         </tr>
     );
 }
@@ -349,10 +352,6 @@ function useAsElement(element: VNode | Literal): VNode {
 /** Default comparator for sorting on a table column. */
 export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
     Literals.compare(a, b);
-
-////////////////////////////////
-// Grouping Utility Functions //
-////////////////////////////////
 
 /////////////////
 // Table Hooks //

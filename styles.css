@@ -202,3 +202,10 @@ textarea.datacore-editable {
     text-align: right;
     padding: 0;
 }
+
+/** Error Messages. */
+
+.datacore-error-retry {
+    margin-top: 1em;
+    text-align: center;
+}

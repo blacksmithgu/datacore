@@ -70,13 +70,16 @@ export namespace Grouping {
 
     /** Recursively slice a grouping, returning the grouping containing the absolute elements [start..end]. */
     export function slice<T>(grouping: Grouping<T>, start: number, end: number): Grouping<T> {
-        if (grouping.type == "leaf") {
-            return leaf(grouping.elements.slice(start, end));
-        }
+        if (end <= start) return leaf([]);
+        if (grouping.type == "leaf") return leaf(grouping.elements.slice(start, end));
 
+        // Find the first group that contains index `start`.
         let index = 0;
         let seen = 0;
-        while (index < grouping.elements.length && seen + grouping.elements[index].size < start) index++;
+        while (index < grouping.elements.length && seen + grouping.elements[index].size <= start) {
+            seen += grouping.elements[index].size;
+            index++;
+        }
 
         // start was greater than the entire length of the groupings.
         if (index >= grouping.elements.length) return leaf([]);
