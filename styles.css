@@ -312,6 +312,16 @@ textarea.datacore-editable {
 }
 
 
+/** scroll */
+
+.block-language-datacore, 
+.block-language-datacorejs {
+    max-height: 100vh;
+		padding-right: 2em;
+		overflow-y: scroll;
+}
+
+
 /** tasks and lists */
 
 .datacore-list-item-content {
