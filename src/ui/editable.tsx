@@ -1,4 +1,4 @@
-import { Fragment, VNode, h } from "preact";
+import { Fragment, VNode } from "preact";
 import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { ChangeEvent, useReducer } from "preact/compat";
 import Select, { ActionMeta } from "react-select";
@@ -42,18 +42,18 @@ export type EditableAction<T> =
       newValue: T;
     };
 
-export function editableReducer<T>(state: EditableState<T>, action: EditableAction<T>): EditableState<T> {
+export function editableReducer<T>({content, updater, ...rest}: EditableState<T>, action: EditableAction<T>): EditableState<T> {
   switch (action.type) {
     case "commit":
-      state.updater(action.newValue);
-      return { ...state, content: action.newValue };
+      updater(action.newValue);
+      return { ...rest, updater, content: action.newValue };
     case "editing-toggled":
-      state.updater(state.content);
-      return { ...state, isEditing: action.newValue };
+      !action.newValue && updater(content);
+      return { ...rest, updater, content, isEditing: action.newValue };
     case "content-changed":
-      return { ...state, content: action.newValue };
+      return { ...rest, updater, content: action.newValue };
     default:
-      return state;
+      return {content, updater, ...rest};
   }
 }
 
@@ -110,13 +110,13 @@ export function SelectableEditable({
 				newValue: newValue.value as SelectableType
 			})
 		}
-		
+
 	}, [config, content, updater, isEditing]);
-	const editor: VNode = useMemo(() => {
-		return <Select 
-			classNamePrefix="datacore-selectable"
-			onChange={onChange} unstyled isMulti={config?.multi ?? false} options={(config?.options ?? [])}
-			menuPortalTarget={document.body}  
+	const editor = useMemo(() => {
+		return <Select
+		classNamePrefix="datacore-selectable"
+			onChange={onChange} unstyled isMulti={config?.multi ?? false} options={config?.options ?? []}
+			menuPortalTarget={document.body}
 			classNames={{
 				input(props) {
 						return "prompt-input"
@@ -160,11 +160,11 @@ export function DateEditable({
     let v = new Date(Date.parse(evt.currentTarget.value));
     dispatch({
       type: "content-changed",
-      newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
+      newValue: !!v ? DateTime.fromJSDate(v).toFormat(settings.defaultDateFormat) : null,
     });
     dispatch({
       type: "commit",
-      newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
+      newValue: !!v ? DateTime.fromJSDate(v).toFormat(settings.defaultDateFormat) : null,
     });
     o({
       type: "commit",
@@ -238,7 +238,7 @@ export function NumberEditable(props: EditableState<number>) {
 export function TextEditable(props: EditableState<string> & { markdown?: boolean; sourcePath: string }) {
   const cfc = useContext(CURRENT_FILE_CONTEXT);
   const [state, dispatch] = useEditableDispatch<string>(() => ({
-    isEditing: false,
+    isEditing: props.isEditing,
     content: props.content,
     updater: props.updater,
     inline: props.inline ?? false,
@@ -356,7 +356,7 @@ export function EditableListField({
         );
 			case "select":
 				return (
-					<SelectableEditable isEditing={props.isEditing} dispatch={dispatch} config={config} updater={props.updater} type={type} content={props.content as SelectableType} />	
+					<SelectableEditable isEditing={props.isEditing} dispatch={dispatch} config={config} updater={props.updater} type={type} content={props.content as SelectableType} />
 				)
       default:
         return null;
