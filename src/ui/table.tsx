@@ -66,9 +66,8 @@ export interface TableColumn<T, V = Literal> {
 		
 		/** enables or disables editing on this column. */
 		editable?: boolean;
-
-		/** function which returns a value editor for this column. */
-		editor?: (val: V, obj: T) => VNode
+    /** called when the value is updated via editing */
+    update?: (value: V) => any;
 }
 
 /** Low level table view which handles state transitions via the given dispatcher. */
