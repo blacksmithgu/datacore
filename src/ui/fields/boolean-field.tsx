@@ -7,7 +7,7 @@ import { useStableCallback } from "ui/hooks";
 export function BooleanField(props: FieldControlProps<boolean>) {
 	const [state, dispatch] = useEditableDispatch<boolean>({
 		content: props.value ?? props.defaultValue,
-		updater: (val) => useSetInlineField(props.field, props.file, val)
+		updater: props.updater!
 	})
 	const onChange = useStableCallback((evt: TargetedEvent<HTMLInputElement> & MouseEvent) => {
 		let newValue = !evt.currentTarget.hasClass("is-enabled")
