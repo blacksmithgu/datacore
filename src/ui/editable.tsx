@@ -1,12 +1,10 @@
-import { Fragment, VNode } from "preact";
+import { Fragment, VNode, h } from "preact";
 import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { ChangeEvent, useReducer } from "preact/compat";
 import Select, { ActionMeta } from "react-select";
 import { useStableCallback } from "./hooks";
-import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
+import { CURRENT_FILE_CONTEXT, Lit, Markdown, SETTINGS_CONTEXT } from "./markdown";
 import { Literal, LiteralType, Literals } from "expression/literal";
-import DatePicker from "react-date-picker";
-import { Value as DPickerValue } from "react-date-picker/dist/cjs/shared/types";
 import { DateTime } from "luxon";
 import { BaseFieldProps, FieldControlProps } from "./fields/common-props";
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
@@ -142,19 +140,24 @@ export function SelectableEditable({
 }
 
 export function DateEditable({
-	dispatch,
-	sourcePath,
-	...rest
-}: EditableState<DateTime | string | null> & { sourcePath: string; dispatch: Dispatch<EditableAction<DateTime | string | null>> }) {
-	/** the extra dispatch is _just_ in case... */
-	const [state, o] = useEditableDispatch<DateTime | string | null>(() => ({
+  dispatch,
+  sourcePath,
+  ...rest
+}: EditableState<DateTime | string | null> & {
+  sourcePath: string;
+  dispatch: Dispatch<EditableAction<DateTime | string | null>>;
+}) {
+  /** the extra dispatch is _just_ in case... */
+  const [state, o] = useEditableDispatch<DateTime | string | null>(() => ({
     isEditing: rest.isEditing,
     content: rest.content,
     updater: rest.updater,
     inline: rest.inline ?? false,
   }));
+  const settings = useContext(SETTINGS_CONTEXT);
 
-  const onChange = (v: DPickerValue) => {
+  const onChange = (evt: ChangeEvent<HTMLInputElement>) => {
+    let v = new Date(Date.parse(evt.currentTarget.value));
     dispatch({
       type: "content-changed",
       newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
@@ -163,48 +166,39 @@ export function DateEditable({
       type: "commit",
       newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
     });
-		o({
+    o({
       type: "commit",
-      newValue: !!v ? DateTime.fromJSDate(v as Date) : null,
-    })
+      newValue: !!v ? DateTime.fromJSDate(v).toFormat(settings.defaultDateFormat) : null,
+    });
   };
-	const jsDate = useMemo(() => {
-		return (state.content instanceof DateTime
-			? state.content
-			: typeof state.content == "string" && !!state.content
-			? DateTime.fromJSDate(new Date(Date.parse(state.content)))
-			: null
-		)?.toJSDate()
-	}, [state.content])
-  const editorNode = (
-    <DatePicker
-      value={
-        jsDate ?? null
-      }
-      calendarType="gregory"
-      onChange={onChange}
-    />
-  );
+  const jsDate = useMemo(() => {
+    return state.content instanceof DateTime
+      ? state.content
+      : typeof state.content == "string" && !!state.content
+      ? DateTime.fromJSDate(new Date(Date.parse(state.content)))
+      : null;
+  }, [state.content]);
+  const editorNode = <input type="date" onChange={onChange} value={jsDate?.toFormat("yyyy-MM-dd")} />;
   return <Editable<DateTime | string | null> dispatch={dispatch} state={rest} editor={editorNode} />;
 }
 
 export function NumberEditable(props: EditableState<number>) {
   const cfc = useContext(CURRENT_FILE_CONTEXT);
 
-	const [state, dispatch] = useEditableDispatch<number>(() => ({
+  const [state, dispatch] = useEditableDispatch<number>(() => ({
     isEditing: false,
     content: props.content,
     updater: props.updater,
     inline: true,
   }));
-	const value = useRef(props.content);
-	const onChangeCb = useStableCallback(
+  const value = useRef(props.content);
+  const onChangeCb = useStableCallback(
     async (evt: ChangeEvent) => {
       value.current = parseFloat((evt.currentTarget as HTMLTextAreaElement).value);
     },
     [value.current, state.content, state.updater, state.isEditing]
   );
-	const finalize = async () => {
+  const finalize = async () => {
     dispatch({
       type: "commit",
       newValue: value.current,
@@ -217,9 +211,9 @@ export function NumberEditable(props: EditableState<number>) {
   const onInput = useStableCallback(
     async (e: KeyboardEvent) => {
       if (e.key === "Enter") {
-				await finalize();
-			}
-		},
+        await finalize();
+      }
+    },
     [value.current, state.updater, state.content, state.isEditing]
   );
 
@@ -232,15 +226,13 @@ export function NumberEditable(props: EditableState<number>) {
     },
     [value.current, state.updater, state.isEditing, state.content]
   );
-  const readonlyEl = (
-		<Lit inline={false} sourcePath={cfc} value={value.current as Literal} />
-  );
-	const editor = (
-    <input className="datacore-editable" type="number" onChange={onChangeCb} onKeyUp={onInput} />
-  )
-	return (<span className="has-texteditable" onDblClick={dblClick}>
+  const readonlyEl = <Lit inline={false} sourcePath={cfc} value={value.current as Literal} />;
+  const editor = <input className="datacore-editable" type="number" onChange={onChangeCb} onKeyUp={onInput} />;
+  return (
+    <span className="has-texteditable" onDblClick={dblClick}>
       <Editable<number> dispatch={dispatch} editor={editor} defaultRender={readonlyEl} state={state} />
-  </span>)
+    </span>
+  );
 }
 
 export function TextEditable(props: EditableState<string> & { markdown?: boolean; sourcePath: string }) {
@@ -328,81 +320,77 @@ export function EditableListField({
   field,
   parent,
   type,
-	dispatch,
-	renderAs,
-	config
+  dispatch,
+  renderAs,
+  config
 }: { props: EditableState<Literal> } & FieldControlProps<Literal> & {
     parent: MarkdownTaskItem | MarkdownListItem;
     type: LiteralType;
     dispatch: Dispatch<EditableAction<Literal>>;
   }) {
-	const subEditor = useMemo(() => {
-		switch(renderAs) {
-			case "progress":
-				return (
-						<ProgressEditable
-							dispatch={dispatch}
-							isEditing={props.isEditing}
-							content={props.content as number} 
-							updater={props.updater} 
-							max={config?.max || 100} 
-							sourcePath={parent.$file}
-							step={config?.step || 0.1}
-							min={config?.min || 0}
-						/>
-					)
-				case "rating":
-					return (
-						<Rating 
-							field={field}
-							file={parent.$file}
-							type={type}
-							config={config} 
-							value={props.content as (string | number)} 
-							updater={props.updater}
-						/>
+  const subEditor = useMemo(() => {
+    switch (renderAs) {
+      case "progress":
+        return type == "number" ? (
+          <ProgressEditable
+            dispatch={dispatch}
+            isEditing={props.isEditing}
+            content={props.content as number}
+            updater={props.updater}
+            max={config?.max || 100}
+            sourcePath={parent.$file}
+            step={config?.step || 0.1}
+            min={config?.min || 0}
+          />
+        ) : null;
+      case "rating":
+        return (
+          <Rating
+            field={field}
+            file={parent.$file}
+            type={type}
+            config={config}
+            value={props.content as string | number}
+            updater={props.updater}
+          />
+        );
 			case "select":
 				return (
 					<SelectableEditable isEditing={props.isEditing} dispatch={dispatch} config={config} updater={props.updater} type={type} content={props.content as SelectableType} />	
 				)
-			default:
-				return null
-		}
-	}, [parent, field, props.content, props.content, props, config, renderAs])
+      default:
+        return null;
+    }
+  }, [parent, field, props.content, props.content, props, config, renderAs]);
   const editor = useMemo(() => {
     switch (type) {
       case "date":
         return (
           <DateEditable
-						dispatch={dispatch}
+            dispatch={dispatch}
             sourcePath={parent.$file}
+            isEditing={props.isEditing}
             content={props.content as DateTime}
             updater={props.updater as (val: string | DateTime | null) => any}
           />
         );
       case "boolean":
-        return <BooleanField type={type} value={props.content as boolean} field={field} file={parent.$file} />;
+        return <BooleanField updater={props.updater} type={type} value={props.content as boolean} field={field} file={parent.$file} />;
       case "string":
         return (
           <>
-						{subEditor ?? (
-							<TextEditable
-							sourcePath={parent.$file}
-							isEditing={false}
-							content={props.content as string}
-							updater={props.updater as (val: string) => unknown}
-						/>)}
-					</>
+            {subEditor ?? (
+              <TextEditable
+                sourcePath={parent.$file}
+                isEditing={false}
+                content={props.content as string}
+                updater={props.updater as (val: string) => unknown}
+              />
+            )}
+          </>
         );
-			case "number":
-				return <>
-					{subEditor ?? (
-						<NumberEditable
-							content={props.content as number}
-							updater={props.updater} 
-						/>
-					)}
-				</>
+      case "number":
+        return <>{subEditor ?? <NumberEditable content={props.content as number} updater={props.updater} />}</>;
       default:
         return (
           <TextEditable
@@ -413,13 +401,19 @@ export function EditableListField({
           />
         );
     }
-  }, [parent, field, props.content, props.content, props, config, renderAs]);
-	const dblclick = useStableCallback((evt: MouseEvent) => {
-		dispatch({type: "editing-toggled", newValue: !props.isEditing})
-	}, [props.isEditing]);
+  }, [parent, field, props.content, props.content, props, config, renderAs, subEditor]);
+  const dblclick = useStableCallback(
+    (evt: MouseEvent) => {
+			evt.stopPropagation();
+      dispatch({ type: "editing-toggled", newValue: !props.isEditing });
+    },
+    [props.isEditing]
+  );
   return (
-    <div className="datacore-field" onDblClick={dblclick}>
-      <span className="field-title" onDblClick={dblclick}>{field.key}</span>
+    <div className="datacore-field">
+      <span className="field-title" onDblClick={dblclick}>
+        {field.key}
+      </span>
       <span className="field-value" tabIndex={0}>
         {editor}
       </span>
