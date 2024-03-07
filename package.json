@@ -51,7 +51,7 @@
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
     "preact": "^10.17.1",
-    "react-paginate": "^8.2.0",
+    "react-select": "^5.8.0",
     "sorted-btree": "^1.8.1",
     "yaml": "^2.3.3",
     "sucrase": "3.35.0"
