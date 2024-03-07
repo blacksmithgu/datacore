@@ -1,13 +1,14 @@
 import { Fragment, VNode } from "preact";
 import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { ChangeEvent, useReducer } from "preact/compat";
+import Select, { ActionMeta } from "react-select";
 import { useStableCallback } from "./hooks";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "./markdown";
 import { Literal, LiteralType, Literals } from "expression/literal";
 import DatePicker from "react-date-picker";
 import { Value as DPickerValue } from "react-date-picker/dist/cjs/shared/types";
 import { DateTime } from "luxon";
-import { FieldControlProps } from "./fields/common-props";
+import { BaseFieldProps, FieldControlProps } from "./fields/common-props";
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
 import { BooleanField } from "./fields/boolean-field";
 import { ProgressEditable } from "./fields/progress-field";
@@ -87,6 +88,60 @@ export function Editable<T>({ sourcePath, defaultRender, editor, dispatch, state
       {element}
     </span>
   );
+}
+
+type SelectableBase = string | number;
+type SelectableType = SelectableBase | SelectableBase[]
+
+export function SelectableEditable({
+  isEditing,
+  content,
+  updater,
+	config,
+	dispatch
+}: EditableState<SelectableType> & BaseFieldProps<SelectableType> & {
+	dispatch: Dispatch<EditableAction<SelectableType>>
+}) {
+  const onChange = useStableCallback((newValue: any, actionMeta: ActionMeta<SelectableType>) => {
+		console.log(newValue)
+		if(Array.isArray(newValue)) {
+			dispatch({
+				type: "content-changed",
+				newValue: newValue.map(x => x.value) as SelectableType
+			})
+		} else {
+			dispatch({
+				type: "content-changed",
+				newValue: newValue.value as SelectableType
+			})
+		}
+		
+	}, [config, content, updater, isEditing]);
+	const editor = useMemo(() => {
+		return <Select 
+		classNamePrefix="datacore-selectable"
+			onChange={onChange} unstyled isMulti={config?.multi ?? false} options={config?.options ?? []}
+			menuPortalTarget={document.body}  
+			classNames={{
+				input(props) {
+						return "prompt-input"
+				},
+				valueContainer(props) {
+						return `suggestion-item value-container`
+				},
+				container(props) {
+						return "suggestion-container"
+				},
+				menu(props) {
+						return "suggestion-content suggestion-container"
+				},
+				option(props) {
+					return `suggestion-item${props.isSelected ? " is-selected" : ""}`
+				}
+			}}
+		/>
+	}, [content, updater, isEditing, config]);
+	return <Editable editor={editor} dispatch={dispatch} state={{isEditing, content, updater}}/>
 }
 
 export function DateEditable({
@@ -309,7 +364,10 @@ export function EditableListField({
 							value={props.content as (string | number)} 
 							updater={props.updater}
 						/>
-					)
+			case "select":
+				return (
+					<SelectableEditable isEditing={props.isEditing} dispatch={dispatch} config={config} updater={props.updater} type={type} content={props.content as SelectableType} />	
+				)
 			default:
 				return null
 		}
