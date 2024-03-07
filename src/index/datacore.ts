@@ -8,6 +8,8 @@ import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, 
 import { Settings } from "settings";
 import { MarkdownListBlock, MarkdownListItem, MarkdownPage } from "./types/markdown/markdown";
 import { PDF } from "./types/pdf/pdf";
+import { GenericFile } from "./types/files";
+import { DateTime } from "luxon";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -106,6 +108,19 @@ export class Datacore extends Component {
 
     /** Queue a file for reloading; this is done asynchronously in the background and may take a few seconds. */
     public async reload(file: TFile): Promise<Indexable> {
+        // Filter files by file extensions.
+        if (!INDEXABLE_EXTENSIONS.contains(file.extension)) {
+            const result = new GenericFile(
+                file.path,
+                DateTime.fromMillis(file.stat.ctime),
+                DateTime.fromMillis(file.stat.mtime),
+                file.stat.size
+            );
+
+            this.datastore.store(result);
+            return result;
+        }
+
         const result = await this.importer.import<ImportResult>(file);
 
         if (result.type === "error") {
@@ -275,9 +290,7 @@ export class DatacoreInitializer extends Component {
     /** Initialize a specific file. */
     private async init(file: TFile): Promise<InitializationResult> {
         try {
-            const metadata = this.core.metadataCache.getFileCache(file);
-            if (!metadata && !INDEXABLE_EXTENSIONS.includes(file.extension.toLocaleLowerCase()))
-                return { status: "skipped" };
+            // TODO: Implement initial cache loading here.
 
             await this.core.reload(file);
             return { status: "imported" };
