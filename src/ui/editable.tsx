@@ -80,11 +80,8 @@ export function Editable<T>({ sourcePath, defaultRender, editor, dispatch, state
   useEffect(() => {
     dispatch && dispatch({ type: "content-changed", newValue: state.content });
   }, [state.content, state.isEditing]);
-  const dblclick = useStableCallback((evt: MouseEvent) => {
-    dispatch({ type: "editing-toggled", newValue: !state.isEditing });
-  }, []);
   return (
-    <span onDblClick={dblclick} className="datacore-editable-outer" ref={currentRef}>
+    <span className="datacore-editable-outer" ref={currentRef}>
       {element}
     </span>
   );
