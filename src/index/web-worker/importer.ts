@@ -25,7 +25,7 @@ export class FileImporter extends Component {
     workers: Map<number, PoolWorker>;
     /** The next worker ID to hand out. */
     nextWorkerId: number;
-    /** Is the importer active? */
+    /** If true, the importer is now inactive and will not process further files. */
     shutdown: boolean;
 
     /** List of files which have been queued for a reload. */
@@ -72,17 +72,16 @@ export class FileImporter extends Component {
     }
 
     /** Poll from the queue and execute if there is an available worker. */
-    private schedule() {
+    private async schedule() {
         if (this.queue.length == 0 || this.shutdown) return;
 
         const worker = this.availableWorker();
         if (!worker) return;
 
         const [file, resolve, reject] = this.queue.shift()!;
-
         worker.active = [file, resolve, reject, Date.now()];
 
-        this.vault.cachedRead(file).then((c) => {
+        try {
             switch (file.extension) {
                 case "pdf":
                     worker!.worker.postMessage(
@@ -93,22 +92,34 @@ export class FileImporter extends Component {
                             resourceURI: this.vault.getResourcePath(file),
                         } as PDFImport)
                     );
+                    break;
                 default:
+                    const contents = await this.vault.cachedRead(file);
                     worker!.worker.postMessage(
                         Transferable.transferable({
                             type: "markdown",
                             path: file.path,
-                            contents: c,
+                            contents: contents,
                             stat: file.stat,
                             metadata: this.metadataCache.getFileCache(file),
                         } as MarkdownImport)
                     );
             }
-        });
+        } catch (ex) {
+            console.log("Datacore: Background file reloading failed. " + ex);
+
+            // Message failed, release this worker.
+            worker.active = undefined;
+        }
     }
 
     /** Finish the parsing of a file, potentially queueing a new file. */
     private finish(worker: PoolWorker, data: any) {
+        if (!worker.active) {
+            console.log("Datacore: Received a stale worker message. Ignoring.", data);
+            return;
+        }
+
         let [file, resolve, reject] = worker.active!;
 
         // Resolve promises to let users know this file has finished.

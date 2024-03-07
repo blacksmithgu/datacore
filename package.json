@@ -52,6 +52,7 @@
     "parsimmon": "^1.18.0",
     "preact": "^10.17.1",
     "sorted-btree": "^1.8.1",
-    "yaml": "^2.3.3"
+    "yaml": "^2.3.3",
+    "sucrase": "3.35.0"
   }
 }
