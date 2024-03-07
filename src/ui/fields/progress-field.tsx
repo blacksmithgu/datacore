@@ -1,6 +1,7 @@
+import { h } from "preact";
 import { ChangeEvent } from "preact/compat";
 import { Dispatch, useEffect, useRef } from "preact/hooks";
-import { Editable, EditableAction, EditableState, useEditableDispatch } from "ui/editable";
+import { Editable, EditableAction, EditableState } from "ui/editable";
 import { useStableCallback } from "ui/hooks";
 
 export function ProgressEditable(props: EditableState<number> & {
