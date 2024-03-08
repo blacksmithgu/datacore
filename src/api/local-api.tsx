@@ -1,4 +1,4 @@
-import { DatacoreApi } from "api/plugin-api";
+import { DatacoreApi } from "api/api";
 import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
 import { Datastore, SearchResult } from "index/datastore";
