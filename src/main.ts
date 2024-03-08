@@ -1,6 +1,6 @@
 import { DatacoreApi } from "api/api";
 import { Datacore } from "index/datacore";
-import { App, MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { IndexStatusBar } from "ui/index-status";

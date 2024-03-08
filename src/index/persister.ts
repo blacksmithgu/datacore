@@ -36,7 +36,7 @@ export class LocalStorageCache {
     /** Load file metadata by path. */
     public async loadFile(path: string): Promise<Cached<Partial<any>> | null | undefined> {
         return this.persister.getItem(this.fileKey(path)).then((raw) => {
-            return (raw as any as Cached<Partial<any>>);
+            return raw as any as Cached<Partial<any>>;
         });
     }
 

@@ -46,7 +46,7 @@ async function build(prod) {
 
 	// Copy the manifest and styles.
 	fs.copyFileSync("manifest.json", "build/plugin/manifest.json");
-	fs.copyFileSync("styles.css", "build/plugin/styles.css");
+	fs.renameSync("build/plugin/main.css", "build/plugin/styles.css");
 	fs.writeFileSync("build/meta.json", JSON.stringify(result.metafile));
 }
 

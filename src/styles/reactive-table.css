@@ -1,0 +1,55 @@
+.datacore-table {
+    width: 100%;
+}
+
+.datacore-table > thead > tr,
+.datacore-table > tbody > tr {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    text-align: left;
+}
+
+.datacore-table > tbody > tr:hover {
+    background-color: var(--text-selection) !important;
+}
+
+.datacore-table > thead > tr > th {
+    font-weight: 700;
+    font-size: larger;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: solid;
+
+    max-width: 100%;
+}
+
+.datacore-table > tbody > tr > td {
+    text-align: left;
+    border: none;
+    font-weight: 400;
+    max-width: 100%;
+}
+
+.datacore-table ul,
+.datacore-table ol {
+    margin-block-start: 0.2em !important;
+    margin-block-end: 0.2em !important;
+}
+
+.datacore-table-header-cell-content {
+    width: auto;
+    display: inline-flex;
+    flex-direction: row;
+}
+
+.datacore-table-sort {
+    flex-grow: 0;
+    margin-right: 0.25em;
+    align-items: center;
+}
+
+.datacore-table-header-title {
+    align-items: center;
+    flex-grow: 1;
+}

@@ -2,6 +2,8 @@ import { Literal } from "expression/literal";
 import { VNode, h } from "preact";
 import { useMemo } from "preact/hooks";
 
+import "styles/cards.css";
+
 export interface CardProps<T> {
     /** the actual value held in this card. */
     value: T;

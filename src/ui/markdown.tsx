@@ -12,6 +12,8 @@ import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary }
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
 import { Embed, EmbedProps } from "./embed";
 
+import "styles/errors.css";
+
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
 export const DATACORE_CONTEXT = createContext<Datacore>(undefined!);
