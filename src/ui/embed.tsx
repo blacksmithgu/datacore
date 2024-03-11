@@ -1,5 +1,5 @@
-import { useContext, useEffect, useRef } from "preact/hooks";
-import { APP_CONTEXT } from "./markdown";
+import { useContext, useEffect, useMemo, useRef } from "preact/hooks";
+import { APP_CONTEXT, COMPONENT_CONTEXT } from "./markdown";
 import { h } from "preact";
 import { Link } from "expression/link";
 
@@ -16,16 +16,16 @@ export interface EmbedProps {
 /** Renders an embed in the canonical Obsidian style. */
 export function Embed({ link, inline, sourcePath }: EmbedProps) {
     const app = useContext(APP_CONTEXT);
+    const component = useContext(COMPONENT_CONTEXT);
     const container = useRef<HTMLDivElement | null>(null);
+    const linkedFile = useMemo(() => app.metadataCache.getFirstLinkpathDest(link.path, sourcePath), [link.path, sourcePath]);
 
-    const linkedFile = app.metadataCache.getFirstLinkpathDest(link.path, sourcePath);
     useEffect(() => {
         if (!container.current) return;
 
         container.current.innerHTML = "";
 
-        // @ts-ignore
-        let creator = app.embedRegistry.getEmbedCreator(linkedFile!);
+        const creator = app.embedRegistry.getEmbedCreator(linkedFile!);
         let embedComponent = new creator(
             {
                 linktext: link.path,
@@ -39,9 +39,12 @@ export function Embed({ link, inline, sourcePath }: EmbedProps) {
             linkedFile!,
             link.subpath
         );
-        embedComponent.load();
+
+        component.addChild(embedComponent);
         embedComponent.loadFile(linkedFile!);
+
+        return () => component.removeChild(embedComponent);
     }, [container.current, link.path, link.subpath]);
 
-    return <div className="datacore datacore-embed" ref={container}></div>;
+    return <div className="dc-embed" ref={container}></div>;
 }

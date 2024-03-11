@@ -97,9 +97,14 @@ export class DatacoreLocalApi {
     public useRef = hooks.useRef;
     public useInterning = useInterning;
 
-    /** Use the file metadata for the current file. */
+    /** Use the file metadata for the current file. Automatically updates the view when the current file metadata changes. */
     public useCurrentFile(settings?: { debounce?: number }): MarkdownPage {
         return useFileMetadata(this.core, this.path, settings) as MarkdownPage;
+    }
+
+    /** Use the file metadata for a specific file. Automatically updates the view when the file changes. */
+    public useFile(path: string, settings?: { debounce?: number }): Indexable | undefined {
+        return useFileMetadata(this.core, path, settings)!;
     }
 
     /** Automatically refresh the view whenever the index updates; returns the latest index revision ID. */
