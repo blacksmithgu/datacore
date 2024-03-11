@@ -292,7 +292,7 @@ export function SimpleErrorBoundary({
     const [error, reset] = useErrorBoundary();
 
     if (error) {
-        return <ErrorMessage title={title} message={message} error={error.message} reset={reset} />;
+        return <ErrorMessage title={title} message={message} error={error.stack} reset={reset} />;
     } else {
         return <Fragment>{children}</Fragment>;
     }
