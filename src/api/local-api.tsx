@@ -1,7 +1,7 @@
 import { DatacoreApi } from "api/api";
 import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
-import { Datastore, SearchResult } from "index/datastore";
+import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown/markdown";
@@ -11,11 +11,8 @@ import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { DataArray } from "./data-array";
-import { PRIMITIVES, QUERY } from "expression/parser";
 import { Result } from "./result";
-import Parsimmon from "parsimmon";
-import { TableProps, TableView } from "ui/table";
-import { h } from "preact";
+import { Group, Stack } from "./ui/layout";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -41,35 +38,15 @@ export class DatacoreLocalApi {
         return preact;
     }
 
-    /** The internal plugin central datastructure. */
-    get core(): Datacore {
-        return this.api.core;
-    }
-
-    /** Internal data indices and query engine. */
-    get store(): Datastore {
-        return this.core.datastore;
-    }
-
     /** Central Obsidian app object. */
     get app(): App {
         return this.core.app;
     }
 
-    //////////////////////////////
-    // Script loading utilities //
-    //////////////////////////////
-
-    // Note: Script loading is a bit jank, since it has to be asynchronous due to IO (unless of course we wanted to cache
-    // every single script in the vault in memory, which seems terrible for performance). It functions by essentially
-    // returning a lazy proxy.
-
-    /**
-     * Asynchronously load a javascript block from the given path or link; this method supports loading code blocks
-     * from markdown files via the link option
-     *
-     */
-    public async require(path: string | Link): Promise<any> {}
+    /** The internal plugin central datastructure. */
+    get core(): Datacore {
+        return this.api.core;
+    }
 
     ///////////////////////
     // General utilities //
@@ -77,22 +54,12 @@ export class DatacoreLocalApi {
 
     /** Resolve a local or absolute path or link to an absolute path. */
     public resolvePath(path: string | Link): string {
-        const rawpath = path instanceof Link ? path.path : path;
-        if (rawpath.startsWith("/")) return rawpath.substring(1);
-
-        const absolute = this.app.metadataCache.getFirstLinkpathDest(rawpath, this.path);
-        if (absolute) return absolute.path;
-
-        return rawpath;
+        return this.api.resolvePath(path, this.path);
     }
 
     /** Try to parse the given query, returning a monadic success/failure result. */
     public tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string> {
-        if (!(typeof query === "string")) return Result.success(query);
-
-        const result = QUERY.query.parse(query);
-        if (result.status) return Result.success(result.value);
-        else return Result.failure(Parsimmon.formatError(query, result));
+        return this.api.tryParseQuery(query);
     }
 
     /** Try to parse the given query, throwing an error if it is invalid. */
@@ -107,15 +74,12 @@ export class DatacoreLocalApi {
 
     /** Try to parse the given link, throwing an error if it is invalid. */
     public parseLink(linktext: string): Link {
-        return this.tryParseLink(linktext).orElseThrow((e) => "Failed to parse link: " + e);
+        return this.api.parseLink(linktext);
     }
 
     /** Try to parse a link, returning a monadic success/failure result. */
     public tryParseLink(linktext: string): Result<Link, string> {
-        const parsed = PRIMITIVES.embedLink.parse(linktext);
-        if (!parsed.status) return Result.failure(Parsimmon.formatError(linktext, parsed));
-
-        return Result.success(parsed.value);
+        return this.api.tryParseLink(linktext);
     }
 
     /////////////
@@ -138,6 +102,11 @@ export class DatacoreLocalApi {
         return useFileMetadata(this.core, this.path, settings) as MarkdownPage;
     }
 
+    /** Automatically refresh the view whenever the index updates; returns the latest index revision ID. */
+    public useIndexUpdates(settings?: { debounce?: number }): number {
+        return this.useIndexUpdates(settings);
+    }
+
     /**
      * Run a query, automatically re-running it whenever the vault changes. Returns more information about the query
      * execution, such as index revision and total search duration.
@@ -154,20 +123,11 @@ export class DatacoreLocalApi {
     }
 
     /////////////////////
-    // Visual elements //
+    // Visual Elements //
     /////////////////////
 
-    /**
-     * Central entry point for creating a raw (p)react DOM element. Allows for raw creation of preact elements.
-     *
-     * Note: `h` is directly injected into local datacorejs contexts already, so this is just a backup.
-     */
-    public h = preact.h;
-    public createElement = preact.createElement;
-
-    /** Create a responsive table showing the given data. */
-    public table<T>(rows: T[] | DataArray<T>, settings?: TableProps<T>): preact.VNode<TableProps<T>> {
-        const rawRows = DataArray.isDataArray(rows) ? rows.array() : rows;
-        return <TableView<T> rows={rawRows} {...settings} />;
-    }
+    /** Vertical flexbox container; good for putting items together in a column. */
+    public Stack = Stack;
+    /** Horizontal flexbox container; good for putting items together in a row. */
+    public Group = Group;
 }

@@ -9,12 +9,14 @@ import { HTMLAttributes, useMemo } from "preact/compat";
 import "api/styles/layout.css";
 
 /** Creates a vertical flexbox "stack" of elements. */
-export function Stack(props: HTMLAttributes<HTMLDivElement> & {
-    className?: string;
-    justify?: string;
-    align?: string;
-    style?: string;
-}) {
+export function Stack(
+    props: HTMLAttributes<HTMLDivElement> & {
+        className?: string;
+        justify?: string;
+        align?: string;
+        style?: string;
+    }
+) {
     const { className, justify, align, style, children, ...rest } = props;
     const extraStyle = useMemo(() => {
         let style = "";
@@ -28,19 +30,22 @@ export function Stack(props: HTMLAttributes<HTMLDivElement> & {
         <div
             className={className ? className + " dc-stack" : "dc-stack"}
             style={style ? extraStyle + style : extraStyle}
-            {...rest}>
+            {...rest}
+        >
             {children}
         </div>
     );
 }
 
 /** Creates a horizontal flexbox "grouping" of elements. */
-export function Group(props: HTMLAttributes<HTMLDivElement> & {
-    className?: string;
-    justify?: string;
-    align?: string;
-    style?: string;
-}) {
+export function Group(
+    props: HTMLAttributes<HTMLDivElement> & {
+        className?: string;
+        justify?: string;
+        align?: string;
+        style?: string;
+    }
+) {
     const { className, justify, align, style, children, ...rest } = props;
     const extraStyle = useMemo(() => {
         let style = "";
@@ -54,7 +59,8 @@ export function Group(props: HTMLAttributes<HTMLDivElement> & {
         <div
             className={className ? className + " dc-group" : "dc-group"}
             style={style ? extraStyle + style : extraStyle}
-            {...rest}>
+            {...rest}
+        >
             {children}
         </div>
     );
