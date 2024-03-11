@@ -13,6 +13,8 @@ import * as hooks from "preact/hooks";
 import { DataArray } from "./data-array";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
+import { Embed } from "ui/embed";
+import { h } from "preact";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -135,4 +137,10 @@ export class DatacoreLocalApi {
     public Stack = Stack;
     /** Horizontal flexbox container; good for putting items together in a row. */
     public Group = Group;
+
+    /** Create a vanilla Obsidian embed for the given link. */
+    public Embed({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) {
+        const realLink = hooks.useMemo(() => (typeof link === "string" ? Link.file(link) : link), [link]);
+        return <Embed link={realLink} inline={inline ?? false} sourcePath={sourcePath ?? this.path} />;
+    }
 }
