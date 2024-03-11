@@ -1,3 +1,4 @@
+import { Transferable } from "index/web-worker/transferable";
 import localforage from "localforage";
 
 /** A piece of data that has been cached for a specific version and time. */
@@ -36,7 +37,9 @@ export class LocalStorageCache {
     /** Load file metadata by path. */
     public async loadFile(path: string): Promise<Cached<Partial<any>> | null | undefined> {
         return this.persister.getItem(this.fileKey(path)).then((raw) => {
-            return raw as any as Cached<Partial<any>>;
+            let result = raw as any as Cached<Partial<any>>;
+            if (result) result.data = Transferable.value(result.data);
+            return result;
         });
     }
 
@@ -45,7 +48,7 @@ export class LocalStorageCache {
         await this.persister.setItem(this.fileKey(path), {
             version: this.version,
             time: Date.now(),
-            data: data,
+            data: Transferable.transferable(data),
         });
     }
 
