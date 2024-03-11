@@ -250,7 +250,9 @@ export class Datastore {
     }
 
     /** Find the corresponding object for a given link. */
-    public resolveLink(link: Link, sourcePath?: string): Indexable | undefined {
+    public resolveLink(rawLink: string | Link, sourcePath?: string): Indexable | undefined {
+        let link = typeof rawLink === "string" ? Link.parseInner(rawLink) : rawLink;
+
         if (sourcePath) {
             const linkdest = this.metadataCache.getFirstLinkpathDest(link.path, sourcePath);
             if (linkdest) link = link.withPath(linkdest.path);

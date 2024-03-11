@@ -24,6 +24,7 @@ import {
     JsonMarkdownListItem,
     JsonMarkdownTaskItem,
     JsonMarkdownDatablock as JsonMarkdownDatablock,
+    JsonMarkdownCodeblock,
 } from "./json";
 
 /** A link normalizer which takes in a raw link and produces a normalized link. */
@@ -284,6 +285,8 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
             return MarkdownListBlock.from(object as JsonMarkdownListBlock, file, normalizer);
         } else if (object.$type === "datablock") {
             return MarkdownDatablock.from(object as JsonMarkdownDatablock, file, normalizer);
+        } else if (object.$type === "codeblock") {
+            return MarkdownCodeblock.from(object as JsonMarkdownCodeblock, file);
         }
 
         return new MarkdownBlock({
@@ -378,15 +381,74 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
         });
     }
 
-    public partial(): JsonMarkdownBlock {
+    public partial(): JsonMarkdownListBlock {
         return Object.assign(super.partial(), {
             $elements: this.$elements.map((elem) => elem.partial()),
-        });
+        }) as JsonMarkdownListBlock;
     }
 
     public constructor(init: Partial<MarkdownListBlock>) {
         super(init);
     }
+}
+
+/** A block containing markdown code. */
+export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
+    static TYPES = ["markdown", "block", "codeblock", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
+
+    $types: string[] = MarkdownCodeblock.TYPES;
+    $languages: string[];
+    $contentPosition: { start: number; end: number };
+    $style: "fenced" | "indent";
+
+    public constructor(init: Partial<MarkdownCodeblock>) {
+        super(init);
+    }
+
+    static from(object: JsonMarkdownCodeblock, file: string): MarkdownCodeblock {
+        return new MarkdownCodeblock({
+            $file: file,
+            $id: MarkdownCodeblock.readableId(file, object.$position.start),
+            $position: object.$position,
+            $ordinal: object.$ordinal,
+            $typename: "Codeblock",
+            $type: "codeblock",
+            $blockId: object.$blockId,
+            $languages: object.$languages,
+            $contentPosition: object.$contentPosition,
+            $style: object.$style,
+        });
+    }
+
+    /** All of the indexed fields in this object. */
+    get fields() {
+        return MarkdownCodeblock.SUB_FIELD_DEF(this);
+    }
+
+    /** Fetch a specific field by key. */
+    public field(key: string) {
+        return MarkdownCodeblock.SUB_FIELD_DEF(this, key)?.[0];
+    }
+
+    public value(key: string): Literal | undefined {
+        return this.field(key)?.value;
+    }
+
+    public partial(): JsonMarkdownCodeblock {
+        return Object.assign(super.partial(), {
+            $languages: this.$languages,
+            $contentPosition: this.$contentPosition,
+            $style: this.$style,
+        }) as JsonMarkdownCodeblock;
+    }
+
+    static readableId(file: string, line: number): string {
+        return `${file}/codeblock${line}`;
+    }
+
+    static SUB_FIELD_DEF: FieldExtractor<MarkdownCodeblock> = Extractors.merge<MarkdownCodeblock>(
+        MarkdownBlock.FIELD_DEF
+    );
 }
 
 /** A data-annotated YAML codeblock. */
@@ -440,10 +502,10 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
         return this.field(key)?.value;
     }
 
-    public partial(): JsonMarkdownBlock {
+    public partial(): JsonMarkdownDatablock {
         return Object.assign(super.partial(), {
             $data: this.$data,
-        });
+        }) as JsonMarkdownDatablock;
     }
 
     static readableId(file: string, line: number): string {

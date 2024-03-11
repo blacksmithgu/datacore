@@ -1,7 +1,7 @@
-import { DatacoreApi } from "api/plugin-api";
+import { DatacoreApi } from "api/api";
 import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
-import { Datastore, SearchResult } from "index/datastore";
+import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown/markdown";
@@ -11,10 +11,9 @@ import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { DataArray } from "./data-array";
-import { QUERY } from "expression/parser";
 import { Result } from "./result";
-import Parsimmon from "parsimmon";
-import { TableProps, TableView } from "ui/table";
+import { Group, Stack } from "./ui/layout";
+import { Embed } from "ui/embed";
 import { h } from "preact";
 
 /** Local API provided to specific codeblocks when they are executing. */
@@ -41,19 +40,14 @@ export class DatacoreLocalApi {
         return preact;
     }
 
-    /** The internal plugin central datastructure. */
-    get core(): Datacore {
-        return this.api.core;
-    }
-
-    /** Internal data indices and query engine. */
-    get store(): Datastore {
-        return this.core.datastore;
-    }
-
     /** Central Obsidian app object. */
     get app(): App {
         return this.core.app;
+    }
+
+    /** The internal plugin central datastructure. */
+    get core(): Datacore {
+        return this.api.core;
     }
 
     ///////////////////////
@@ -62,25 +56,32 @@ export class DatacoreLocalApi {
 
     /** Resolve a local or absolute path or link to an absolute path. */
     public resolvePath(path: string | Link): string {
-        const rawpath = path instanceof Link ? path.path : path;
-        if (rawpath.startsWith("/")) return rawpath.substring(1);
-
-        const absolute = this.app.metadataCache.getFirstLinkpathDest(rawpath, this.path);
-        if (absolute) return absolute.path;
-
-        return rawpath;
+        return this.api.resolvePath(path, this.path);
     }
 
+    /** Try to parse the given query, returning a monadic success/failure result. */
     public tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string> {
-        if (!(typeof query === "string")) return Result.success(query);
-
-        const result = QUERY.query.parse(query);
-        if (result.status) return Result.success(result.value);
-        else return Result.failure(Parsimmon.formatError(query, result));
+        return this.api.tryParseQuery(query);
     }
 
+    /** Try to parse the given query, throwing an error if it is invalid. */
     public parseQuery(query: string | IndexQuery): IndexQuery {
         return this.tryParseQuery(query).orElseThrow((e) => "Failed to parse query: " + e);
+    }
+
+    /** Create a file link pointing to the given path. */
+    public fileLink(path: string): Link {
+        return Link.file(path);
+    }
+
+    /** Try to parse the given link, throwing an error if it is invalid. */
+    public parseLink(linktext: string): Link {
+        return this.api.parseLink(linktext);
+    }
+
+    /** Try to parse a link, returning a monadic success/failure result. */
+    public tryParseLink(linktext: string): Result<Link, string> {
+        return this.api.tryParseLink(linktext);
     }
 
     /////////////
@@ -98,9 +99,19 @@ export class DatacoreLocalApi {
     public useRef = hooks.useRef;
     public useInterning = useInterning;
 
-    /** Use the file metadata for the current file. */
+    /** Use the file metadata for the current file. Automatically updates the view when the current file metadata changes. */
     public useCurrentFile(settings?: { debounce?: number }): MarkdownPage {
         return useFileMetadata(this.core, this.path, settings) as MarkdownPage;
+    }
+
+    /** Use the file metadata for a specific file. Automatically updates the view when the file changes. */
+    public useFile(path: string, settings?: { debounce?: number }): Indexable | undefined {
+        return useFileMetadata(this.core, path, settings)!;
+    }
+
+    /** Automatically refresh the view whenever the index updates; returns the latest index revision ID. */
+    public useIndexUpdates(settings?: { debounce?: number }): number {
+        return this.useIndexUpdates(settings);
     }
 
     /**
@@ -119,20 +130,17 @@ export class DatacoreLocalApi {
     }
 
     /////////////////////
-    // Visual elements //
+    // Visual Elements //
     /////////////////////
 
-    /**
-     * Central entry point for creating a raw (p)react DOM element. Allows for raw creation of preact elements.
-     *
-     * Note: `h` is directly injected into local datacorejs contexts already, so this is just a backup.
-     */
-    public h = preact.h;
-    public createElement = preact.createElement;
+    /** Vertical flexbox container; good for putting items together in a column. */
+    public Stack = Stack;
+    /** Horizontal flexbox container; good for putting items together in a row. */
+    public Group = Group;
 
-    /** Create a responsive table showing the given data. */
-    public table<T>(rows: T[] | DataArray<T>, settings?: TableProps<T>): preact.VNode<TableProps<T>> {
-        const rawRows = DataArray.isDataArray(rows) ? rows.array() : rows;
-        return <TableView<T> rows={rawRows} {...settings} />;
+    /** Create a vanilla Obsidian embed for the given link. */
+    public Embed({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) {
+        const realLink = hooks.useMemo(() => (typeof link === "string" ? Link.file(link) : link), [link]);
+        return <Embed link={realLink} inline={inline ?? false} sourcePath={sourcePath ?? this.path} />;
     }
 }

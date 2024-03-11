@@ -1,0 +1,71 @@
+.datacore-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.2rem;
+    border-radius: 0.5em;
+    background-color: var(--background-secondary);
+    min-width: 89%;
+    border: 2px solid var(--table-border-color);
+    overflow-y: scroll;
+}
+
+.datacore-card-title {
+    margin-bottom: 0.6em;
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.8em;
+}
+
+.datacore-card-title.centered {
+    justify-content: center !important;
+}
+
+.datacore-card-content,
+.datacore-card-inner,
+.datacore-card {
+    transition: all 0.3s cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+.datacore-card-inner {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    max-height: 500px;
+}
+
+.datacore-card .datacore-card-collapser,
+.datacore-card.is-collapsed .datacore-card-collapser {
+    transition: all 0.5s cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+
+.datacore-card-content {
+    flex-grow: 1;
+}
+
+.datacore-card-inner {
+    display: flex;
+}
+
+.datacore-card:not(.datacore-card.is-collapsed) .datacore-card-collapser {
+    transform: rotate(180deg);
+}
+
+.datacore-card.is-collapsed .datacore-card-collapser {
+    transform: rotate(0deg) !important;
+}
+
+.datacore-card-collapse,
+.datacore-card-collapser svg {
+    min-width: 1em;
+    min-height: 1em;
+    fill: currentColor;
+    vertical-align: middle;
+}
+
+.datacore-card.is-collapsed .datacore-card-collapser {
+    transform: rotate(0deg);
+}
+
+.datacore-card .datacore-card-footer {
+    font-size: 0.7em;
+    text-align: right;
+    padding: 0;
+}

@@ -12,6 +12,8 @@ import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary }
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
 import { Embed, EmbedProps } from "./embed";
 
+import "styles/errors.css";
+
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
 export const DATACORE_CONTEXT = createContext<Datacore>(undefined!);
@@ -290,20 +292,10 @@ export function SimpleErrorBoundary({
     const [error, reset] = useErrorBoundary();
 
     if (error) {
-        return <ErrorMessage title={title} message={message} error={error.message} reset={reset} />;
+        return <ErrorMessage title={title} message={message} error={error.stack} reset={reset} />;
     } else {
         return <Fragment>{children}</Fragment>;
     }
-}
-
-/** Renders a vertical flexbox. */
-export function Stack({ children, className }: PropsWithChildren<{ className?: string }>) {
-    return <div className={`datacore stack ${className ?? ""}`}>{children}</div>;
-}
-
-/** Renders a horizontal flexbox. */
-export function Group({ children, className }: PropsWithChildren<{ className?: string }>) {
-    return <div className={`datacore group ${className ?? ""}`}>{children}</div>;
 }
 
 /** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
