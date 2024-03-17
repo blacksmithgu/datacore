@@ -1,0 +1,15 @@
+/** Stacks are just vertical flex boxes. */
+.dc-stack {
+    display: flex;
+    flex-direction: column;
+
+    margin: 4px;
+}
+
+/** Groups are horizonal flex boxes. */
+.dc-group {
+    display: flex;
+    flex-direction: row;
+
+    margin: 4px;
+}

@@ -1,4 +1,4 @@
-import type { DatacoreApi } from "api/plugin-api";
+import type { DatacoreApi } from "api/api";
 import "obsidian";
 
 declare module "obsidian" {

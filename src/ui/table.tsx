@@ -9,6 +9,8 @@ import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks
 import { Grouping } from "./grouping";
 import { PagingControl } from "./paging";
 
+import "styles/reactive-table.css";
+
 /** Contains only the actual relevant state for a table (i.e., excluding initial props). */
 export interface TableState<T> {
     /** The columns in the table; they will be rendered in the order they show up in the array. */

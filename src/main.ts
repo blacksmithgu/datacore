@@ -1,6 +1,6 @@
-import { DatacoreApi } from "api/plugin-api";
+import { DatacoreApi } from "api/api";
 import { Datacore } from "index/datacore";
-import { App, MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { IndexStatusBar } from "ui/index-status";
@@ -29,7 +29,25 @@ export default class DatacorePlugin extends Plugin {
         // Primary visual elements (DatacoreJS and Datacore blocks).
         this.registerMarkdownCodeBlockProcessor(
             "datacorejs",
-            async (source: string, el, ctx) => this.renderJavascript(source, el, ctx),
+            async (source: string, el, ctx) => this.api.executeJs(source, el, ctx, ctx.sourcePath),
+            -100
+        );
+
+        this.registerMarkdownCodeBlockProcessor(
+            "datacorejsx",
+            async (source: string, el, ctx) => this.api.executeJsx(source, el, ctx, ctx.sourcePath),
+            -100
+        );
+
+        this.registerMarkdownCodeBlockProcessor(
+            "datacorets",
+            async (source: string, el, ctx) => this.api.executeTs(source, el, ctx, ctx.sourcePath),
+            -100
+        );
+
+        this.registerMarkdownCodeBlockProcessor(
+            "datacoretsx",
+            async (source: string, el, ctx) => this.api.executeTsx(source, el, ctx, ctx.sourcePath),
             -100
         );
 
@@ -49,11 +67,6 @@ export default class DatacorePlugin extends Plugin {
 
     onunload() {
         console.log(`Datacore: version ${this.manifest.version} unloaded.`);
-    }
-
-    /** Execute a javascript datacore script and render it into the given element. */
-    public async renderJavascript(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-        this.api.executeJs(source, el, ctx, ctx.sourcePath);
     }
 
     /** Update the given settings to new values. */
