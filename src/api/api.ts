@@ -1,7 +1,7 @@
 import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
-import { QUERY } from "expression/parser";
+import { PRIMITIVES, QUERY } from "expression/parser";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown/markdown";
@@ -9,6 +9,7 @@ import { Result } from "./result";
 import { Component, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
 import { DatacoreJSRenderer } from "ui/javascript";
 import { DatacoreLocalApi } from "./local-api";
+import Parsimmon from "parsimmon";
 
 /** Exterally visible API for datacore. */
 export class DatacoreApi {
@@ -23,17 +24,6 @@ export class DatacoreApi {
         const realPath = path instanceof Link ? path.path : path;
 
         return this.core.datastore.load(realPath) as MarkdownPage | undefined;
-    }
-
-    /** Resolve a local or absolute path or link to an absolute path. */
-    public resolvePath(path: string | Link, sourcePath?: string): string {
-        const rawpath = path instanceof Link ? path.path : path;
-        if (rawpath.startsWith("/")) return rawpath.substring(1);
-
-        const absolute = this.core.metadataCache.getFirstLinkpathDest(rawpath, sourcePath ?? "");
-        if (absolute) return absolute.path;
-
-        return rawpath;
     }
 
     /** Execute a textual or typed index query, returning all results. */
@@ -55,6 +45,53 @@ export class DatacoreApi {
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         const parsedQuery = typeof query === "string" ? QUERY.query.tryParse(query) : query;
         return this.core.datastore.search(parsedQuery);
+    }
+
+    ///////////////////////
+    // General utilities //
+    ///////////////////////
+
+    /** Resolve a local or absolute path or link to an absolute path. */
+    public resolvePath(path: string | Link, sourcePath?: string): string {
+        const rawpath = path instanceof Link ? path.path : path;
+        if (rawpath.startsWith("/")) return rawpath.substring(1);
+
+        const absolute = this.core.metadataCache.getFirstLinkpathDest(rawpath, sourcePath ?? "");
+        if (absolute) return absolute.path;
+
+        return rawpath;
+    }
+
+    /** Try to parse the given query, returning a monadic success/failure result. */
+    public tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string> {
+        if (!(typeof query === "string")) return Result.success(query);
+
+        const result = QUERY.query.parse(query);
+        if (result.status) return Result.success(result.value);
+        else return Result.failure(Parsimmon.formatError(query, result));
+    }
+
+    /** Try to parse the given query, throwing an error if it is invalid. */
+    public parseQuery(query: string | IndexQuery): IndexQuery {
+        return this.tryParseQuery(query).orElseThrow((e) => "Failed to parse query: " + e);
+    }
+
+    /** Create a file link pointing to the given path. */
+    public fileLink(path: string): Link {
+        return Link.file(path);
+    }
+
+    /** Try to parse the given link, throwing an error if it is invalid. */
+    public parseLink(linktext: string): Link {
+        return this.tryParseLink(linktext).orElseThrow((e) => "Failed to parse link: " + e);
+    }
+
+    /** Try to parse a link, returning a monadic success/failure result. */
+    public tryParseLink(linktext: string): Result<Link, string> {
+        const parsed = PRIMITIVES.embedLink.parse(linktext);
+        if (!parsed.status) return Result.failure(Parsimmon.formatError(linktext, parsed));
+
+        return Result.success(parsed.value);
     }
 
     /////////////////////
