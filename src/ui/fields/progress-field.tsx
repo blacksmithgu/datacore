@@ -3,6 +3,7 @@ import { ChangeEvent } from "preact/compat";
 import { Dispatch, useEffect, useRef } from "preact/hooks";
 import { Editable, EditableAction, EditableState } from "ui/editable";
 import { useStableCallback } from "ui/hooks";
+import "styles/fields.css";
 
 export function ProgressEditable(props: EditableState<number> & {
 	sourcePath: string;

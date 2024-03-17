@@ -11,6 +11,7 @@ import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdow
 import { BooleanField } from "./fields/boolean-field";
 import { ProgressEditable } from "./fields/progress-field";
 import { Rating } from "./fields/rating";
+import "styles/fields.css";
 
 export interface EditableState<T> {
   isEditing?: boolean;
