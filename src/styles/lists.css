@@ -1,0 +1,24 @@
+.datacore-list-item-content {
+	display: inline-flex;
+}
+
+.datacore-list-item-content {
+	display: inline-flex;
+	justify-content: space-between;
+  width: -webkit-fill-available;
+}
+
+:is(ul, ol) li:not(:first-of-type) p:first-of-type {
+	 margin-block-start: unset !important;
+}
+
+input.datacore.task-list-item-checkbox {
+    float: left !important;
+}
+
+li.datacore.task-list-item > *:nth-child(2) {
+    display: flow-root !important;
+    top: -5px;
+		padding-left: 0.5em;
+    position: relative;
+}
