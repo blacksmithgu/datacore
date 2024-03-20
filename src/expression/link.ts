@@ -146,7 +146,7 @@ export class Link {
         return result;
     }
 
-    /** Obtain the display for this link, or return a simple default display. */
+    /** Obtain the display for this link if present, or return a simple default display. */
     public displayOrDefault() {
         if (this.display) {
             return this.display;

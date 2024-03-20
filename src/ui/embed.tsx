@@ -21,7 +21,10 @@ export function Embed({ link, inline, sourcePath: maybeSourcePath }: EmbedProps)
     const sourcePath = maybeSourcePath ?? currentFile ?? "";
 
     const container = useRef<HTMLDivElement | null>(null);
-    const linkedFile = useMemo(() => app.metadataCache.getFirstLinkpathDest(link.path, sourcePath), [link.path, sourcePath]);
+    const linkedFile = useMemo(
+        () => app.metadataCache.getFirstLinkpathDest(link.path, sourcePath),
+        [link.path, sourcePath]
+    );
 
     useEffect(() => {
         if (!container.current) return;

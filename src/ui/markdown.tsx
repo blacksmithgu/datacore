@@ -54,7 +54,6 @@ export function RawLink({ link, sourcePath }: { link: Link | string; sourcePath:
     const onClick = useCallback(
         (event: MouseEvent) => {
             const newtab = event.shiftKey;
-            console.log(parsed.obsidianLink(), sourcePath);
             workspace.openLinkText(parsed.obsidianLink(), sourcePath, newtab);
         },
         [parsed, sourcePath]
@@ -131,7 +130,7 @@ export function RawMarkdown({
                 embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
             }
         });
-    }, [content, sourcePath, container.current]);
+    }, [content, sourcePath, inline, container.current]);
 
     return <span ref={container} style={style} className={cls} onClick={onClick}></span>;
 }
