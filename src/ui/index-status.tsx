@@ -1,6 +1,5 @@
 import { Datacore } from "index/datacore";
 import { useIndexUpdates } from "ui/hooks";
-import { h } from "preact";
 
 /** Render a helpful status indicator in the status bar of how the import is going. */
 export function IndexStatusBar({ datacore }: { datacore: Datacore }) {

@@ -1,4 +1,4 @@
-import { useEditableDispatch } from "ui/editable";
+import { useEditableDispatch } from "ui/fields/editable";
 import { FieldControlProps } from "./common-props";
 import { TargetedEvent } from "preact/compat";
 import { useStableCallback } from "ui/hooks";

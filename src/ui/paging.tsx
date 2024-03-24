@@ -1,5 +1,5 @@
 import { useMemo } from "preact/hooks";
-import { Fragment, h } from "preact";
+import { Fragment } from "preact";
 import React from "preact/compat";
 
 /** 0-indexed page control. `page` should be the current 0-indexed page, while `maxPage` is the maximum page (inclusive). */

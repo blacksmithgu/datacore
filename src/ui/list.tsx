@@ -1,7 +1,7 @@
 import { Literal } from "expression/literal";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 
-import { VNode, h, isValidElement } from "preact";
+import { VNode, isValidElement } from "preact";
 import { useContext } from "preact/hooks";
 
 export interface ListState<T> {

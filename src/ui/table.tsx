@@ -4,7 +4,7 @@ import { useInterning, useStableCallback } from "./hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 
-import { Fragment, VNode, h, isValidElement } from "preact";
+import { Fragment, VNode, isValidElement } from "preact";
 import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks";
 import { Grouping } from "./grouping";
 import { PagingControl } from "./paging";

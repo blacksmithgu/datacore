@@ -1,6 +1,5 @@
 import { useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, ErrorMessage } from "./markdown";
-import { h } from "preact";
 import { Link } from "expression/link";
 
 /** Properties for rendering an Obsidian embed. */

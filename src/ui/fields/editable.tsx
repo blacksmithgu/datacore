@@ -2,32 +2,43 @@ import { Fragment, VNode } from "preact";
 import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { ChangeEvent, useReducer } from "preact/compat";
 import Select, { ActionMeta } from "react-select";
-import { useStableCallback } from "./hooks";
-import { CURRENT_FILE_CONTEXT, Lit, Markdown, SETTINGS_CONTEXT } from "./markdown";
+import { useStableCallback } from "../hooks";
+import { CURRENT_FILE_CONTEXT, Lit, Markdown, SETTINGS_CONTEXT } from "../markdown";
 import { Literal, LiteralType, Literals } from "expression/literal";
 import { DateTime } from "luxon";
-import { BaseFieldProps, FieldControlProps } from "./fields/common-props";
+import { BaseFieldProps, FieldControlProps } from "./common-props";
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
-import { BooleanEditable } from "./fields/boolean-field";
-import { ProgressEditable } from "./fields/progress-field";
-import { RatingEditable } from "./fields/rating";
+import { BooleanEditable } from "./boolean-field";
+import { ProgressEditable } from "./progress-field";
+import { RatingEditable } from "./rating";
 import "styles/fields.css";
 
+/** Core state for tracking an editable object. */
 export interface EditableState<T> {
+    /** Whether the value is currently being edited. */
     isEditing?: boolean;
+    /** The current (arbitrary) content of the editable. */
     content: T;
+    /** Callback whenever the editable value is changed. */
     updater: (val: T) => unknown;
+    /** Whether the editor is being rendered inline in a paragraph or not. */
     inline?: boolean;
 }
 
 export interface EditableProps<T> {
+    /** Source file from which the editable value originates. */
     sourcePath?: string;
+    /** Backup default renderer for this object. */
     defaultRender?: VNode;
+    /** Node which points to the actual editor. */
     editor: React.ReactNode;
+    /** Dispatcher for controlling the edit state, tracking updates, commits, and so on. */
     dispatch: Dispatch<EditableAction<T>>;
+    /** The current state of the editor. */
     state: EditableState<T>;
 }
 
+/** Actions which update/change the state of an editable. */
 export type EditableAction<T> =
     | {
           type: "commit";
@@ -43,6 +54,7 @@ export type EditableAction<T> =
           newValue: T;
       };
 
+/** Default reducer for applying actions to the editable state. */
 export function editableReducer<T>(
     { content, updater, ...rest }: EditableState<T>,
     action: EditableAction<T>
@@ -61,6 +73,7 @@ export function editableReducer<T>(
     }
 }
 
+/** Provides state management for an editable field. */
 export function useEditableDispatch<T>(
     initial: EditableState<T> | (() => EditableState<T>)
 ): [EditableState<T>, Dispatch<EditableAction<T>>] {
@@ -79,9 +92,11 @@ export function Editable<T>({ sourcePath, defaultRender, editor, dispatch, state
             else return <Lit value={state.content as Literal} inline={true} sourcePath="" />;
         }
     }, [state.isEditing, state.content, sourcePath, defaultRender]);
+
     useEffect(() => {
         dispatch && dispatch({ type: "content-changed", newValue: state.content });
     }, [state.content, state.isEditing]);
+
     return (
         <span className="datacore-editable-outer" ref={currentRef}>
             {element}
@@ -92,6 +107,7 @@ export function Editable<T>({ sourcePath, defaultRender, editor, dispatch, state
 type SelectableBase = string | number;
 type SelectableType = SelectableBase | SelectableBase[];
 
+/** Editable which allows for selection from a list of options. */
 export function SelectableEditable({
     isEditing,
     content,
@@ -119,6 +135,7 @@ export function SelectableEditable({
         },
         [config, content, updater, isEditing]
     );
+
     const editor = useMemo(() => {
         return (
             <Select
@@ -142,6 +159,7 @@ export function SelectableEditable({
     return <Editable editor={editor} dispatch={dispatch} state={{ isEditing, content, updater }} />;
 }
 
+/** Editable which allows for selecting a date. */
 export function DateEditable({
     dispatch,
     sourcePath,
@@ -174,6 +192,7 @@ export function DateEditable({
             newValue: !!v ? DateTime.fromJSDate(v).toFormat(settings.defaultDateFormat) : null,
         });
     };
+
     const jsDate = useMemo(() => {
         return state.content instanceof DateTime
             ? state.content
@@ -181,10 +200,12 @@ export function DateEditable({
             ? DateTime.fromJSDate(new Date(Date.parse(state.content)))
             : null;
     }, [state.content]);
+
     const editorNode = <input type="date" onChange={onChange} value={jsDate?.toFormat("yyyy-MM-dd")} />;
     return <Editable<DateTime | string | null> dispatch={dispatch} state={rest} editor={editorNode} />;
 }
 
+/** An editor which allows selecting a numneric value. */
 export function NumberEditable(props: EditableState<number>) {
     const cfc = useContext(CURRENT_FILE_CONTEXT);
 
@@ -195,12 +216,14 @@ export function NumberEditable(props: EditableState<number>) {
         inline: true,
     }));
     const value = useRef(props.content);
+
     const onChangeCb = useStableCallback(
         async (evt: ChangeEvent) => {
             value.current = parseFloat((evt.currentTarget as HTMLTextAreaElement).value);
         },
         [value.current, state.content, state.updater, state.isEditing]
     );
+
     const finalize = async () => {
         dispatch({
             type: "commit",
@@ -211,6 +234,7 @@ export function NumberEditable(props: EditableState<number>) {
             newValue: false,
         });
     };
+
     const onInput = useStableCallback(
         async (e: KeyboardEvent) => {
             if (e.key === "Enter") {
@@ -229,6 +253,7 @@ export function NumberEditable(props: EditableState<number>) {
         },
         [value.current, state.updater, state.isEditing, state.content]
     );
+
     const readonlyEl = <Lit inline={false} sourcePath={cfc} value={value.current as Literal} />;
     const editor = <input className="datacore-editable" type="number" onChange={onChangeCb} onKeyUp={onInput} />;
     return (
@@ -238,6 +263,7 @@ export function NumberEditable(props: EditableState<number>) {
     );
 }
 
+/** Editor which supports multi-line text editing; note this is a very simple input and does not support most markdown metadata. */
 export function TextEditable(props: EditableState<string> & { markdown?: boolean; sourcePath: string }) {
     const cfc = useContext(CURRENT_FILE_CONTEXT);
     const [state, dispatch] = useEditableDispatch<string>(() => ({
@@ -318,6 +344,7 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
     );
 }
 
+/** An editable list of items. */
 export function EditableListField({
     props,
     field,
@@ -420,6 +447,7 @@ export function EditableListField({
                 );
         }
     }, [parent, field, props.content, props.content, props, config, renderAs, subEditor]);
+
     const dblclick = useStableCallback(
         (evt: MouseEvent) => {
             evt.stopPropagation();
@@ -427,6 +455,7 @@ export function EditableListField({
         },
         [props.isEditing]
     );
+
     return (
         <div className="datacore-field">
             <span className="field-title" onDblClick={dblclick}>

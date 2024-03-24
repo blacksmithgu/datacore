@@ -7,7 +7,7 @@ import { Settings } from "settings";
 import { currentLocale, renderMinimalDate, renderMinimalDuration } from "utils/normalizers";
 import { extractImageDimensions, isImageEmbed } from "utils/media";
 
-import { h, createContext, Fragment, VNode, render } from "preact";
+import { createContext, Fragment, VNode, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
 import { Embed, EmbedProps } from "./embed";

@@ -3,7 +3,6 @@
  * changed without breaking the API.
  */
 
-import { h } from "preact";
 import { HTMLAttributes, useMemo } from "preact/compat";
 
 import "api/styles/layout.css";
