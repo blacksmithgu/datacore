@@ -53,7 +53,7 @@
     "preact": "^10.17.1",
     "react-select": "^5.8.0",
     "sorted-btree": "^1.8.1",
-    "yaml": "^2.3.3",
-    "sucrase": "3.35.0"
+    "sucrase": "3.35.0",
+    "yaml": "^2.3.3"
   }
 }
