@@ -11,12 +11,9 @@ import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { DataArray } from "./data-array";
-import { COMPONENTS } from "./components";
-import { PRIMITIVES, QUERY } from "expression/parser";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed } from "ui/embed";
-import { h } from "preact";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -47,24 +44,6 @@ export class DatacoreLocalApi {
         return this.core.app;
     }
 
-    get components(): typeof COMPONENTS {
-        return COMPONENTS;
-    }
-
-    //////////////////////////////
-    // Script loading utilities //
-    //////////////////////////////
-
-    // Note: Script loading is a bit jank, since it has to be asynchronous due to IO (unless of course we wanted to cache
-    // every single script in the vault in memory, which seems terrible for performance). It functions by essentially
-    // returning a lazy proxy.
-
-    /**
-     * Asynchronously load a javascript block from the given path or link; this method supports loading code blocks
-     * from markdown files via the link option
-     *
-     */
-    public async require(path: string | Link): Promise<any> {}
     /** The internal plugin central datastructure. */
     get core(): Datacore {
         return this.api.core;

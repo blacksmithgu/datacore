@@ -65,9 +65,9 @@ export interface TableColumn<T, V = Literal> {
 
     /** Enables or disables grouping on this column. */
     groupable?: boolean;
-		
-		/** enables or disables editing on this column. */
-		editable?: boolean;
+
+    /** enables or disables editing on this column. */
+    editable?: boolean;
     /** called when the value is updated via editing */
     update?: (value: V) => any;
 }
