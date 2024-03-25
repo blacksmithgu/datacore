@@ -14,6 +14,9 @@ import { DataArray } from "./data-array";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed } from "ui/embed";
+import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "ui/markdown";
+import { CSSProperties } from "preact/compat";
+import { Literal } from "expression/literal";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -137,9 +140,48 @@ export class DatacoreLocalApi {
     /** Horizontal flexbox container; good for putting items together in a row. */
     public Group = Group;
 
+    /** Renders a literal value in a pretty way that respects settings. */
+    public Literal({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) {
+        const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
+        return <Lit value={value} sourcePath={sourcePath ?? implicitSourcePath ?? this.path} inline={inline} />;
+    }
+
+    /** Renders markdown using the Obsidian markdown renderer, optionally attaching additional styles. */
+    public Markdown({
+        content,
+        sourcePath,
+        inline,
+        style,
+        className,
+    }: {
+        content: string;
+        sourcePath?: string;
+        inline?: boolean;
+        style?: CSSProperties;
+        className?: string;
+    }) {
+        const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
+        return (
+            <Markdown
+                content={content}
+                sourcePath={sourcePath ?? implicitSourcePath ?? this.path}
+                inline={inline}
+                style={style}
+                cls={className}
+            />
+        );
+    }
+
     /** Create a vanilla Obsidian embed for the given link. */
     public Embed({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) {
         const realLink = hooks.useMemo(() => (typeof link === "string" ? Link.file(link) : link), [link]);
-        return <Embed link={realLink} inline={inline ?? false} sourcePath={sourcePath ?? this.path} />;
+        const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
+        return (
+            <Embed
+                link={realLink}
+                inline={inline ?? false}
+                sourcePath={sourcePath ?? implicitSourcePath ?? this.path}
+            />
+        );
     }
 }

@@ -12,8 +12,8 @@ export function IndexStatusBar({ datacore }: { datacore: Datacore }) {
                 Scanning {datacore.initializer.initialized} of {datacore.initializer.files} files
             </span>
         );
-    } else if (datacore.importer.queue.length > 0) {
-        return <span>Updating {datacore.importer.queue.length} files</span>;
+    } else if (datacore.importer.queue.size() > 0) {
+        return <span>Updating {datacore.importer.queue.size()} files</span>;
     } else {
         return <span>{datacore.datastore.size} objects</span>;
     }

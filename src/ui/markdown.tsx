@@ -37,9 +37,7 @@ export function DatacoreContextProvider({
         <COMPONENT_CONTEXT.Provider value={component}>
             <APP_CONTEXT.Provider value={app}>
                 <DATACORE_CONTEXT.Provider value={datacore}>
-                    <CURRENT_FILE_CONTEXT.Provider value={""}>
-                        <SETTINGS_CONTEXT.Provider value={settings}>{children}</SETTINGS_CONTEXT.Provider>
-                    </CURRENT_FILE_CONTEXT.Provider>
+                    <SETTINGS_CONTEXT.Provider value={settings}>{children}</SETTINGS_CONTEXT.Provider>
                 </DATACORE_CONTEXT.Provider>
             </APP_CONTEXT.Provider>
         </COMPONENT_CONTEXT.Provider>
@@ -317,7 +315,7 @@ export class ReactRenderer extends MarkdownRenderChild {
                 datacore={this.datacore}
                 settings={this.datacore.settings}
             >
-                {this.element}
+                <CURRENT_FILE_CONTEXT.Provider value={this.sourcePath}>{this.element}</CURRENT_FILE_CONTEXT.Provider>
             </DatacoreContextProvider>,
             this.container
         );

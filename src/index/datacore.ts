@@ -10,6 +10,7 @@ import { MarkdownListBlock, MarkdownListItem, MarkdownPage } from "./types/markd
 import { PDF } from "./types/pdf/pdf";
 import { GenericFile } from "./types/files";
 import { DateTime } from "luxon";
+import { EmbedQueue } from "./embed-queue";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -24,6 +25,8 @@ export class Datacore extends Component {
     datastore: Datastore;
     /** Asynchronous multi-threaded file importer with throttling. */
     importer: FileImporter;
+    /** Queue of asynchronous read requests; ensures we limit the maximum number of concurrent file loads. */
+    reads: EmbedQueue;
     /** Local-storage backed cache of metadata objects. */
     persister: LocalStorageCache;
     /** Only set when datacore is in the midst of initialization; tracks current progress. */
@@ -50,6 +53,9 @@ export class Datacore extends Component {
                 } as ImportThrottle;
             }))
         );
+
+        // TODO (blacksmithgu): Add a new setting for embed queue concurrency.
+        this.addChild((this.reads = new EmbedQueue(app.vault, () => 8)));
     }
 
     /** Obtain the current index revision, for determining if anything has changed. */
@@ -104,6 +110,14 @@ export class Datacore extends Component {
         // (for sections, tasks, etc to refer to their parent file) and it requires some finesse to fix.
         this.datastore.delete(oldPath);
         this.reload(file);
+    }
+
+    /**
+     * Read a file from the Obsidian cache efficiently, limiting the number of concurrent request and debouncing
+     * multiple requests for the same file.
+     */
+    public async read(file: TFile): Promise<string> {
+        return this.reads.read(file);
     }
 
     /** Queue a file for reloading; this is done asynchronously in the background and may take a few seconds. */
