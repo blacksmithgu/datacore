@@ -1,19 +1,21 @@
-import { useContext, useEffect, useMemo, useRef } from "preact/hooks";
-import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, ErrorMessage } from "./markdown";
+import { useContext, useEffect, useMemo, useReducer, useRef } from "preact/hooks";
+import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, ErrorMessage, Markdown } from "./markdown";
 import { Link } from "expression/link";
+import { lineRange } from "utils/normalizers";
 
-/** Properties for rendering an Obsidian embed. */
-export interface EmbedProps {
+/** Renders an embed in the canonical Obsidian style. */
+export function Embed({
+    link,
+    inline,
+    sourcePath: maybeSourcePath,
+}: {
     /** The link that is being embedded. */
     link: Link;
     /** Whether the embed should be shown inline with less padding. */
     inline: boolean;
     /** The path which the link will be resolved relative to. */
     sourcePath?: string;
-}
-
-/** Renders an embed in the canonical Obsidian style. */
-export function Embed({ link, inline, sourcePath: maybeSourcePath }: EmbedProps) {
+}) {
     const app = useContext(APP_CONTEXT);
     const component = useContext(COMPONENT_CONTEXT);
     const currentFile = useContext(CURRENT_FILE_CONTEXT);
@@ -57,4 +59,73 @@ export function Embed({ link, inline, sourcePath: maybeSourcePath }: EmbedProps)
     } else {
         return <div className="dc-embed" ref={container}></div>;
     }
+}
+
+/**
+ * An embed of an arbitrary span of lines in a Markdown file. Operates by asynchronously loading the file and pulling
+ * out the given [start, end] line span.
+ *
+ * Note that it's possible for the file on disk to be different than it was when you first loaded the [start, end] line span
+ * - generally, datacore will asynchronously reload these files in the background and fix it's index, but you may have some
+ * strange artifacts otherwise.
+ */
+export function LineSpanEmbed({ path, start, end }: { path: string; start: number; end: number }) {
+    const content = useLineSpan(path, start, end);
+
+    switch (content.type) {
+        case "loading":
+            return <div>Loading...</div>;
+        case "file-not-found":
+            return <ErrorMessage message={`Could not find a file at path: ${content.path}`} />;
+        case "error":
+            return <ErrorMessage message={content.message} />;
+        case "loaded":
+            return (
+                <div className="datacore-embed">
+                    <Markdown content={content.content} inline={false} />
+                </div>
+            );
+    }
+}
+
+/** State tracking for loading a line span asynchronously. */
+export type LineSpanContent =
+    | { type: "loading" }
+    | { type: "file-not-found"; path: string }
+    | { type: "error"; message: string }
+    | { type: "loaded"; content: string };
+
+/** Utility hook which loads path[start..end] as long as the target file exists. */
+export function useLineSpan(path: string, start: number, end: number): LineSpanContent {
+    const app = useContext(APP_CONTEXT);
+
+    const [state, update] = useReducer<LineSpanContent, LineSpanContent>(
+        (state, event) => {
+            // Ignore an error update that would override a valid current state; otherwise, update to the new state.
+            if (state.type == "loaded" && event.type !== "loaded") return state;
+            else return event;
+        },
+        { type: "loading" }
+    );
+
+    useEffect(() => {
+        // Resolve the current path to see if it points to a valid file.
+        const file = app.vault.getFileByPath(path);
+        if (file == null) {
+            update({ type: "file-not-found", path: path });
+            return;
+        }
+
+        // Try to load the file asynchronously.
+        app.vault
+            .cachedRead(file)
+            .then((content) => {
+                update({ type: "loaded", content: lineRange(content, start, end) });
+            })
+            .catch((error) => {
+                update({ type: "error", message: error.message });
+            });
+    }, [path, start, end]);
+
+    return state;
 }

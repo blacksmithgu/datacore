@@ -166,3 +166,34 @@ export function setsEqual<T>(first: Set<T>, second: Set<T>): boolean {
 
     return true;
 }
+
+// Fast extraction of line ranges from large pieces of text.
+
+/** Extract the lines in the range [start, end). Start is inclusive, end is exclusive. */
+export function lineRange(text: string, start: number, end: number): string {
+    if (start >= end) return "";
+
+    start = Math.max(start, 0);
+    end = Math.max(end, 0);
+
+    // Start by finding the starting line offset.
+    const startOffset = skipNewlines(text, 0, start);
+    if (startOffset == -1) return "";
+
+    const endOffset = skipNewlines(text, startOffset, end - start);
+    if (endOffset == -1) return text.substring(startOffset);
+    else return text.substring(startOffset, endOffset - 1);
+}
+
+/** Skip {count} total newlines, returning the positional offset of the */
+function skipNewlines(text: string, start: number, count: number): number {
+    let position = start;
+    while (count > 0) {
+        position = text.indexOf("\n", position + 1);
+        if (position == -1) return -1;
+
+        count--;
+    }
+
+    return position + 1;
+}

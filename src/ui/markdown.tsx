@@ -10,7 +10,7 @@ import { extractImageDimensions, isImageEmbed } from "utils/media";
 import { createContext, Fragment, VNode, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
-import { Embed, EmbedProps } from "./embed";
+import { Embed } from "./embed";
 
 import "styles/errors.css";
 
@@ -18,7 +18,7 @@ export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
 export const DATACORE_CONTEXT = createContext<Datacore>(undefined!);
 export const SETTINGS_CONTEXT = createContext<Settings>(undefined!);
-export const CURRENT_FILE_CONTEXT = createContext<string>(undefined!);
+export const CURRENT_FILE_CONTEXT = createContext<string>("");
 
 /** More compact provider for all of the datacore react contexts. */
 export function DatacoreContextProvider({
@@ -77,14 +77,14 @@ export const ObsidianLink = memo(RawLink);
 /** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export function RawMarkdown({
     content,
-    sourcePath,
+    sourcePath: maybeSourcePath,
     inline = true,
     style,
     cls,
     onClick,
 }: {
     content: string;
-    sourcePath: string;
+    sourcePath?: string;
     inline?: boolean;
     style?: CSSProperties;
     cls?: string;
@@ -92,7 +92,10 @@ export function RawMarkdown({
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);
+    const defaultPath = useContext(CURRENT_FILE_CONTEXT);
     const app = useContext(APP_CONTEXT);
+
+    const sourcePath = maybeSourcePath ?? defaultPath;
 
     useEffect(() => {
         if (!container.current) return;
@@ -112,15 +115,14 @@ export function RawMarkdown({
             // have embeds actually load instead of displaying as plain text.
             let embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
             while (embed) {
-                let props: EmbedProps = {
-                    link: Link.parseInner(embed.getAttribute("src") ?? ""),
-                    sourcePath,
-                    inline: true,
-                };
                 embed.empty();
                 render(
                     <APP_CONTEXT.Provider value={app}>
-                        <Embed {...props} />
+                        <Embed
+                            link={Link.parseInner(embed.getAttribute("src") ?? "")}
+                            sourcePath={sourcePath}
+                            inline={true}
+                        />
                     </APP_CONTEXT.Provider>,
                     embed
                 );
@@ -139,17 +141,20 @@ export const Markdown = memo(RawMarkdown);
 /** Intelligently render an arbitrary literal value. */
 export function RawLit({
     value,
-    sourcePath,
+    sourcePath: maybeSourcePath,
     inline = false,
     depth = 0,
 }: PropsWithChildren<{
     value: Literal | undefined;
-    sourcePath: string;
+    sourcePath?: string;
     inline?: boolean;
     depth?: number;
 }>) {
     const settings = useContext(SETTINGS_CONTEXT);
     const app = useContext(APP_CONTEXT);
+    const defaultPath = useContext(CURRENT_FILE_CONTEXT);
+
+    const sourcePath = maybeSourcePath ?? defaultPath;
 
     // Short-circuit if beyond the maximum render depth.
     if (depth >= settings.maxRecursiveRenderDepth) return <Fragment>...</Fragment>;
