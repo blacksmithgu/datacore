@@ -5,7 +5,7 @@
 
 import { HTMLAttributes, useMemo } from "preact/compat";
 
-import "api/styles/layout.css";
+import "api/ui/layout.css";
 
 /** Creates a vertical flexbox "stack" of elements. */
 export function Stack(
