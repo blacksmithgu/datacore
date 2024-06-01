@@ -35,10 +35,10 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
                 Fragment: Fragment,
             });
 
+            // Early return in case state changes during the async call above.
             if (!this.loaded) return;
 
             const renderableElement = makeRenderableElement(renderable, this.path);
-
             render(
                 <DatacoreContextProvider
                     app={this.api.app}
