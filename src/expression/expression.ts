@@ -80,7 +80,7 @@ export interface NegatedExpression {
 
 export namespace Expressions {
     /** The implicit field referencing the current field. */
-    export const ROW: string = "row";
+    export const ROW: string = "$row";
 
     export function variable(name: string): VariableExpression {
         return { type: "variable", name };
