@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useReducer, useRef } from "preact/hooks";
-import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, ErrorMessage, Markdown } from "./markdown";
+import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, ErrorMessage, Markdown } from "./markdown";
 import { Link } from "expression/link";
 import { lineRange } from "utils/normalizers";
 
@@ -98,6 +98,7 @@ export type LineSpanContent =
 /** Utility hook which loads path[start..end] as long as the target file exists. */
 export function useLineSpan(path: string, start: number, end: number): LineSpanContent {
     const app = useContext(APP_CONTEXT);
+    const datacore = useContext(DATACORE_CONTEXT);
 
     const [state, update] = useReducer<LineSpanContent, LineSpanContent>(
         (state, event) => {
@@ -117,8 +118,7 @@ export function useLineSpan(path: string, start: number, end: number): LineSpanC
         }
 
         // Try to load the file asynchronously.
-        app.vault
-            .cachedRead(file)
+        datacore.read(file)
             .then((content) => {
                 update({ type: "loaded", content: lineRange(content, start, end) });
             })
