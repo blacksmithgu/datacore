@@ -1,7 +1,11 @@
 import { Link, Literals } from "expression/literal";
-import { DateTime, Duration, SystemZone } from "luxon";
+import { DateTime, Duration } from "luxon";
 
-/** Simplifies passing complex values across the JS web worker barrier. */
+/**
+ * Simplifies passing complex values across the JS web worker barrier and to/from files.
+ * The main goal is to allow for Datacore types to hold common collection primitives -
+ * sets, maps, links, and so on - without needing to write too much explicit serialization code.
+ */
 export namespace Transferable {
     /** Convert a literal value to a serializer-friendly transferable value. */
     export function transferable(value: any): any {
@@ -28,22 +32,19 @@ export namespace Transferable {
             case "date":
                 return {
                     "$transfer-type": "date",
-                    value: transferable(wrapped.value.toObject()),
-                    options: {
-                        zone: wrapped.value.zone.equals(SystemZone.instance) ? undefined : wrapped.value.zoneName,
-                    },
+                    value: wrapped.value.toISO({ includeOffset: true, extendedZone: true }),
                 };
             case "duration":
                 return {
                     "$transfer-type": "duration",
-                    value: transferable(wrapped.value.toObject()),
+                    value: wrapped.value.toObject()
                 };
             case "array":
                 return wrapped.value.map((v) => transferable(v));
             case "link":
                 return {
                     "$transfer-type": "link",
-                    value: transferable(wrapped.value.toObject()),
+                    value: wrapped.value.toObject()
                 };
             case "object":
                 let result: Record<string, any> = {};
@@ -75,14 +76,11 @@ export namespace Transferable {
             if ("$transfer-type" in transferable) {
                 switch (transferable["$transfer-type"]) {
                     case "date":
-                        let dateOpts = value(transferable.options);
-                        let dateData = value(transferable.value) as any;
-
-                        return DateTime.fromObject(dateData, { zone: dateOpts.zone });
+                        return DateTime.fromISO(transferable.value);
                     case "duration":
-                        return Duration.fromObject(value(transferable.value));
+                        return Duration.fromObject(transferable.value);
                     case "link":
-                        return Link.fromObject(value(transferable.value));
+                        return Link.fromObject(transferable.value);
                     default:
                         throw Error(`Unrecognized transfer type '${transferable["$transfer-type"]}'`);
                 }
