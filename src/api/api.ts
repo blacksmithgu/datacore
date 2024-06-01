@@ -4,7 +4,7 @@ import { SearchResult } from "index/datastore";
 import { PRIMITIVES, QUERY } from "expression/parser";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown/markdown";
+import { MarkdownPage } from "index/types/markdown";
 import { Result } from "./result";
 import { Component, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
 import { DatacoreJSRenderer } from "ui/javascript";

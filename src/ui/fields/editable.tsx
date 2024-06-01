@@ -7,7 +7,7 @@ import { CURRENT_FILE_CONTEXT, Lit, Markdown, SETTINGS_CONTEXT } from "../markdo
 import { Literal, LiteralType, Literals } from "expression/literal";
 import { DateTime } from "luxon";
 import { BaseFieldProps, FieldControlProps } from "./common-props";
-import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
+import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { BooleanEditable } from "./boolean-field";
 import { ProgressEditable } from "./progress-field";
 import { RatingEditable } from "./rating";

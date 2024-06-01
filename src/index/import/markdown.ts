@@ -17,7 +17,7 @@ import {
     JsonMarkdownTaskItem,
     JsonMarkdownDatablock,
     JsonMarkdownCodeblock,
-} from "index/types/markdown/json";
+} from "index/types/json/markdown";
 
 /** Matches yaml datablocks, which show up as independent objects in the datacore index. */
 const YAML_DATA_REGEX = /```yaml:data/i;

@@ -1,6 +1,5 @@
-import { JsonPDF } from "index/types/pdf/json";
+import { JsonPDF } from "index/types/json/pdf";
 import { PDFImport } from "index/web-worker/message";
-import { document } from "index/web-worker/polyfill";
 
 export async function pdfImport({ path, resourceURI, stat: stats }: PDFImport): Promise<JsonPDF> {
     /** dear reader, i know there is no good explanation for any of the following code... */

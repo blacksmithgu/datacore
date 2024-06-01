@@ -1,5 +1,7 @@
 //! Note: These are "serialization" types for datacore metadata, which contain
 // the absolute minimum information needed to save and load datacore data.
+// They only reference natively serializable JSON types - lists, maps/records, numbers,
+// and strings.
 
 import { Link, Literal } from "expression/literal";
 import { InlineField } from "index/import/inline-field";
@@ -52,6 +54,7 @@ export interface JsonMarkdownPage {
     $sections: JsonMarkdownSection[];
 }
 
+/** Minimal information required for markdown sections. */
 export interface JsonMarkdownSection {
     /** The index of this section in the file. */
     $ordinal: number;

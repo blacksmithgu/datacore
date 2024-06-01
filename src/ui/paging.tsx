@@ -2,7 +2,7 @@ import { useMemo } from "preact/hooks";
 import { Fragment } from "preact";
 import React from "preact/compat";
 
-/** 0-indexed page control. `page` should be the current 0-indexed page, while `maxPage` is the maximum page (inclusive). */
+/** 0-indexed page control. `page` should be the current 0-indexed page, while `totalPages` is the total number of pages. */
 function RawPagingControl({
     page,
     setPage,
@@ -19,14 +19,14 @@ function RawPagingControl({
     const visiblePages = useMemo(() => splitPages(realPage, totalPages), [realPage, totalPages]);
 
     return (
-        <div className="datacore paging-control">
+        <div className="dc-paging-control">
             {visiblePages.map((pages, i) => (
                 <Fragment>
-                    {i > 0 && <button className="datacore paging-control-separator">...</button>}
+                    {i > 0 && <button className="dc-paging-control-separator">...</button>}
                     {pages.map((p) => (
                         <button
-                            className={`datacore paging-control-page ${
-                                p === realPage ? " paging-control-page-active" : ""
+                            className={`dc-paging-control-page ${
+                                p === realPage ? " dc-paging-control-page-active" : ""
                             }`}
                             onClick={() => setPage(p)}
                         >
