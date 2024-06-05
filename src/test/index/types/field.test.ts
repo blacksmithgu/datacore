@@ -1,7 +1,7 @@
 import { InlineField } from "index/import/inline-field";
 import { Extractors, INTRINSIC_PROVENANCE } from "expression/field";
 import { Indexable } from "index/types/indexable";
-import { FrontmatterEntry } from "index/types/json/markdown";
+import { FrontmatterEntry } from "index/types/markdown";
 
 class DummyFields {
     public constructor(public $text: string, public $value: number, public $size: number) {}

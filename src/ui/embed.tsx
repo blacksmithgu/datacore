@@ -1,5 +1,12 @@
 import { useContext, useEffect, useMemo, useReducer, useRef } from "preact/hooks";
-import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, ErrorMessage, Markdown } from "./markdown";
+import {
+    APP_CONTEXT,
+    COMPONENT_CONTEXT,
+    CURRENT_FILE_CONTEXT,
+    DATACORE_CONTEXT,
+    ErrorMessage,
+    Markdown,
+} from "./markdown";
 import { Link } from "expression/link";
 import { lineRange } from "utils/normalizers";
 
@@ -118,7 +125,8 @@ export function useLineSpan(path: string, start: number, end: number): LineSpanC
         }
 
         // Try to load the file asynchronously.
-        datacore.read(file)
+        datacore
+            .read(file)
             .then((content) => {
                 update({ type: "loaded", content: lineRange(content, start, end) });
             })

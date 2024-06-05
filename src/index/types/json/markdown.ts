@@ -3,15 +3,16 @@
 // They only reference natively serializable JSON types - lists, maps/records, numbers,
 // and strings.
 
-import { Link, Literal } from "expression/literal";
-import { InlineField } from "index/import/inline-field";
+import { JsonInlineField } from "index/import/inline-field";
+import { JsonLiteral } from "./common";
+import { JsonLink } from "expression/link";
 
 /** An entry in the frontmatter; includes the raw value, parsed value, and raw key (before lower-casing). */
-export interface FrontmatterEntry {
+export interface JsonFrontmatterEntry {
     /** The actual string in frontmatter with exact casing. */
     key: string;
     /** The parsed value of the frontmatter entry (date, duration, etc.). */
-    value: Literal;
+    value: JsonLiteral;
     /** The raw value of the frontmatter entry before parsing; generally a string or number. */
     raw: string;
 }
@@ -20,17 +21,12 @@ export interface FrontmatterEntry {
 export interface LineSpan {
     /** The inclusive start line. */
     start: number;
-    /** The inclusive end line. */
+    /** The exclusive end line. */
     end: number;
 }
 
 /** Stores just the minimal information needed to create a markdown file; used for saving and loading these files. */
 export interface JsonMarkdownPage {
-    /** Frontmatter values in the file, if present. Maps lower case frontmatter key -> entry. */
-    $frontmatter?: Record<string, FrontmatterEntry>;
-    /** Map of all distinct inline fields in the document. Maps lower case key name -> full metadata. */
-    $infields: Record<string, InlineField>;
-
     /** The path this file exists at. */
     $path: string;
     /** Obsidian-provided date this page was created. */
@@ -46,7 +42,12 @@ export interface JsonMarkdownPage {
     /** The exact tags in the file. */
     $tags: string[];
     /** All links in the file. */
-    $links: Link[];
+    $links: JsonLink[];
+    /** Frontmatter values in the file, if present. Maps lower case frontmatter key -> entry. */
+    $frontmatter?: Record<string, JsonFrontmatterEntry>;
+    /** Map of all distinct inline fields in the document. Maps lower case key name -> full metadata. */
+    $infields: Record<string, JsonInlineField>;
+
     /**
      * All child markdown sections of this markdown file. The initial section before any content is special and is
      * named with the title of the file.
@@ -67,11 +68,11 @@ export interface JsonMarkdownSection {
     /** All tags on the file. */
     $tags: string[];
     /** All links in the file. */
-    $links: Link[];
+    $links: JsonLink[];
     /** All of the markdown blocks in this section. */
     $blocks: JsonMarkdownBlock[];
     /** Map of all distinct inline fields in the document, from key name -> metadata. */
-    $infields: Record<string, InlineField>;
+    $infields: Record<string, JsonInlineField>;
 }
 
 export interface JsonMarkdownBlock {
@@ -82,9 +83,9 @@ export interface JsonMarkdownBlock {
     /** All tags on the block. */
     $tags: string[];
     /** All links in the file. */
-    $links: Link[];
+    $links: JsonLink[];
     /** Map of all distinct inline fields in the document, from key name -> metadata. */
-    $infields: Record<string, InlineField>;
+    $infields: Record<string, JsonInlineField>;
     /** If present, the distinct block ID for this block. */
     $blockId?: string;
     /** The type of block - paragraph, list, and so on. */
@@ -100,7 +101,7 @@ export interface JsonMarkdownListBlock extends JsonMarkdownBlock {
 
 export interface JsonMarkdownDatablock extends JsonMarkdownBlock {
     /** The raw data in the object. */
-    $data: Record<string, FrontmatterEntry>;
+    $data: Record<string, JsonFrontmatterEntry>;
 
     $type: "datablock";
 }
@@ -126,9 +127,9 @@ export interface JsonMarkdownListItem {
     /** Exact tags on this list item. */
     $tags: string[];
     /** Map of all distinct inline fields in the document, from key name -> metadata. */
-    $infields: Record<string, InlineField>;
+    $infields: Record<string, JsonInlineField>;
     /** All links in the file. */
-    $links: Link[];
+    $links: JsonLink[];
     /** The block ID of this list item if present. */
     $blockId?: string;
     /**
