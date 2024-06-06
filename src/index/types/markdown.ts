@@ -286,7 +286,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
         } else if (object.$type === "datablock") {
             return MarkdownDatablock.from(object as JsonMarkdownDatablock, file, normalizer);
         } else if (object.$type === "codeblock") {
-            return MarkdownCodeblock.from(object as JsonMarkdownCodeblock, file);
+            return MarkdownCodeblock.from(object as JsonMarkdownCodeblock, file, normalizer);
         }
 
         return new MarkdownBlock({
@@ -405,7 +405,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
         super(init);
     }
 
-    static from(object: JsonMarkdownCodeblock, file: string): MarkdownCodeblock {
+    static from(object: JsonMarkdownCodeblock, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownCodeblock {
         return new MarkdownCodeblock({
             $file: file,
             $id: MarkdownCodeblock.readableId(file, object.$position.start),
@@ -415,6 +415,9 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
             $type: "codeblock",
             $blockId: object.$blockId,
             $languages: object.$languages,
+            $links: object.$links.map(link => normalizer(Link.fromObject(link))),
+            $tags: object.$tags,
+            $infields: mapObjectValues(object.$infields, valueInlineField),
             $contentPosition: object.$contentPosition,
             $style: object.$style,
         });

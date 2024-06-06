@@ -60,6 +60,7 @@ export class FileImporter extends Component {
         let promise = deferred<T>();
 
         this.outstanding.set(file.path, promise);
+        this.queue.enqueue([file, promise]);
         this.schedule();
         return promise;
     }
@@ -78,7 +79,7 @@ export class FileImporter extends Component {
         const worker = this.availableWorker();
         if (!worker) return;
 
-        const [file, promise] = this.queue.pop()!;
+        const [file, promise] = this.queue.dequeue()!;
         worker.active = [file, promise, Date.now()];
 
         try {

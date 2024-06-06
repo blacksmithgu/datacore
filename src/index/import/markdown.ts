@@ -365,7 +365,7 @@ export class Metadata {
 
 /** Convienent utility for constructing page objects. */
 export class PageData {
-    public sections: SectionData[];
+    public sections: SectionData[] = [];
     public metadata: Metadata = new Metadata();
 
     public constructor(

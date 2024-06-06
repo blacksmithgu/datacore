@@ -56,7 +56,7 @@ export namespace JsonConversion {
             return normalizer(json.map((input) => JsonConversion.value(input, normalizer)));
         } else if (typeof json === "object") {
             if (!("$_type" in json))
-                return mapObjectValues(json.value, (v) => JsonConversion.value(v as JsonLiteral, normalizer));
+                return mapObjectValues(json, (v) => JsonConversion.value(v as JsonLiteral, normalizer));
 
             const type = json["$_type"];
             switch (type) {

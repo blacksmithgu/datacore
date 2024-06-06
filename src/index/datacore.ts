@@ -11,6 +11,8 @@ import { PDF } from "./types/pdf";
 import { GenericFile } from "./types/files";
 import { DateTime } from "luxon";
 import { EmbedQueue } from "./embed-queue";
+import { JsonMarkdownPage } from "./types/json/markdown";
+import { JsonPDF } from "./types/json/pdf";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -90,11 +92,18 @@ export class Datacore extends Component {
             const durationSecs = (stats.durationMs / 1000.0).toFixed(3);
             console.log(
                 `Datacore: Imported all files in the vault in ${durationSecs}s ` +
-                    `(${stats.imported} imported, ${stats.skipped} skipped).`
+                    `(${stats.imported} imported, ${stats.cached} cached, ${stats.skipped} skipped).`
             );
 
             this.datastore.touch();
             this.trigger("update", this.revision);
+
+            // Clean up any documents which no longer exist in the vault.
+            // TODO: I think this may race with other concurrent operations, so
+            // this may need to happen at the start of init and not at the end.
+            const currentFiles = this.vault.getFiles().map(file => file.path);
+            this.persister.synchronize(currentFiles).then(cleared =>
+                console.log(`Datacore: dropped ${cleared.size} out-of-date file metadata blocks.`));
         });
 
         this.addChild(init);
@@ -135,42 +144,61 @@ export class Datacore extends Component {
             return result;
         }
 
+        console.log("reloading " + file.path);
         const result = await this.importer.import<ImportResult>(file);
 
         if (result.type === "error") {
             throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
         } else if (result.type === "markdown") {
+            // Parse the file and normalize metadata from it.
             const parsed = MarkdownPage.from(result.result, (link) => {
                 const rpath = this.metadataCache.getFirstLinkpathDest(link.path, result.result.$path!);
                 if (rpath) return link.withPath(rpath.path);
                 else return link;
             });
 
-            this.datastore.store(parsed, (object, store) => {
-                store(object.$sections, (section, store) => {
-                    store(section.$blocks, (block, store) => {
-                        if (block instanceof MarkdownListBlock) {
-                            // Recursive store function for storing list heirarchies.
-                            const storeRec: Substorer<MarkdownListItem> = (item, store) =>
-                                store(item.$elements, storeRec);
+            // Store it recursively into the datastore for querying.
+            this.storeMarkdown(parsed);
 
-                            store(block.$elements, storeRec);
-                        }
-                    });
-                });
-            });
+            // Write it to the file cache for faster loads in the future.
+            this.persister.storeFile(parsed.$path, parsed.json());
 
+            // And finally trigger an update.
             this.trigger("update", this.revision);
             return parsed;
         } else if (result.type == "pdf") {
             let parsed = PDF.from(result.result);
-            this.datastore.store(parsed);
+
+            this.storePdf(parsed);
+            this.persister.storeFile(parsed.$path, parsed.json());
 
             this.trigger("update", this.revision);
             return parsed;
         }
 
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);
+    }
+
+    /** Store a markdown document. */
+    public storeMarkdown(data: MarkdownPage) {
+        this.datastore.store(data, (object, store) => {
+            store(object.$sections, (section, store) => {
+                store(section.$blocks, (block, store) => {
+                    if (block instanceof MarkdownListBlock) {
+                        // Recursive store function for storing list heirarchies.
+                        const storeRec: Substorer<MarkdownListItem> = (item, store) =>
+                            store(item.$elements, storeRec);
+
+                        store(block.$elements, storeRec);
+                    }
+                });
+            });
+        });
+    }
+
+    /** Store a PDF document. */
+    public storePdf(data: PDF) {
+        this.datastore.store(data);
     }
 
     // Event propogation.
@@ -226,6 +254,8 @@ export class DatacoreInitializer extends Component {
     imported: number;
     /** Total number of skipped files. */
     skipped: number;
+    /** Total number of cached files. */
+    cached: number;
 
     constructor(public core: Datacore) {
         super();
@@ -237,7 +267,7 @@ export class DatacoreInitializer extends Component {
         this.current = [];
         this.done = deferred();
 
-        this.initialized = this.imported = this.skipped = 0;
+        this.initialized = this.imported = this.skipped = this.cached = 0;
     }
 
     async onload() {
@@ -285,6 +315,7 @@ export class DatacoreInitializer extends Component {
                 files: this.files,
                 imported: this.imported,
                 skipped: this.skipped,
+                cached: this.cached
             });
         }
     }
@@ -296,6 +327,7 @@ export class DatacoreInitializer extends Component {
 
         if (result.status === "skipped") this.skipped++;
         else if (result.status === "imported") this.imported++;
+        else if (result.status === "cached") this.cached++;
 
         // Queue more jobs for processing.
         this.runNext();
@@ -304,10 +336,26 @@ export class DatacoreInitializer extends Component {
     /** Initialize a specific file. */
     private async init(file: TFile): Promise<InitializationResult> {
         try {
-            // TODO: Implement initial cache loading here.
+            // Handle loading PDFs and markdown files from cache.
+            const cached = await this.core.persister.loadFile(file.path);
+            if (cached && cached.time >= file.stat.mtime && cached.version == this.core.version) {
+                if (file.extension === "md") {
+                    const data = MarkdownPage.from(cached.data as JsonMarkdownPage, (link) => link);
+                    this.core.storeMarkdown(data);
+                    return { status: "cached" };
+                } else if (file.extension === "pdf") {
+                    const data = PDF.from(cached.data as JsonPDF);
+                    this.core.storePdf(data);
+                    return { status: "cached" };
+                } 
 
-            await this.core.reload(file);
-            return { status: "imported" };
+                // Does not match an existing import type, just reload normally.
+                await this.core.reload(file);
+                return { status: "imported" };
+            } else {
+                await this.core.reload(file);
+                return { status: "imported" };
+            }
         } catch (ex) {
             console.log("Datacore: Failed to import file: ", ex);
             return { status: "skipped" };
@@ -325,9 +373,11 @@ export interface InitializationStats {
     imported: number;
     /** The number of files that were skipped due to no longer existing or not being ready. */
     skipped: number;
+    /** The number of files loaded from the IndexedDB cache. */
+    cached: number;
 }
 
 /** The result of initializing a file. */
 interface InitializationResult {
-    status: "skipped" | "imported";
+    status: "skipped" | "imported" | "cached";
 }

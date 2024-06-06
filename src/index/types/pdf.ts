@@ -14,6 +14,7 @@ export class PDF implements File, Indexable, Linkable {
     $mtime: DateTime;
     $size: number;
     $extension: string;
+
     $pageCount: number;
 
     // file IDs are always just the full path.
@@ -36,7 +37,7 @@ export class PDF implements File, Indexable, Linkable {
     }
 
     /** Convert this page into it's partial representation for saving. */
-    public partial(): JsonPDF {
+    public json(): JsonPDF {
         return {
             $path: this.$path,
             $ctime: this.$ctime.toMillis(),
