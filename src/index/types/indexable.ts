@@ -62,4 +62,4 @@ export interface Linkbearing {
  * All supported extensions. This should probably become a dynamic lookup table and not just
  * a fixed list at some point, especially if we add the ability to turn indexing on/off.
  */
-export const INDEXABLE_EXTENSIONS = ["md", "markdown", "pdf"];
+export const INDEXABLE_EXTENSIONS = ["md", "markdown"];

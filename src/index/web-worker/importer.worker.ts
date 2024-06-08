@@ -1,6 +1,5 @@
 import { markdownImport } from "index/import/markdown";
-import { pdfImport } from "index/import/pdf";
-import { ImportCommand, MarkdownImportResult, PdfImportResult } from "index/web-worker/message";
+import { ImportCommand, MarkdownImportResult } from "index/web-worker/message";
 
 /** Web worker entry point for importing. */
 onmessage = async (event) => {
@@ -14,18 +13,11 @@ onmessage = async (event) => {
                 type: "markdown",
                 result: markdown,
             } as MarkdownImportResult);
-        } else if (message.type === "pdf") {
-            const pdf = await pdfImport(message);
-
-            postMessage({
-                type: "pdf",
-                result: pdf,
-            } as PdfImportResult);
         } else {
             postMessage({ $error: "Unsupported import method." });
         }
     } catch (error) {
-        console.error(`Datacore Indexer failed to index ${event.data.path}: ${error}`)
+        console.error(`Datacore Indexer failed to index ${event.data.path}: ${error}`);
         postMessage({ $error: error.message });
     }
 };

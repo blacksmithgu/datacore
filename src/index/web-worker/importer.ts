@@ -2,7 +2,7 @@
 
 import ImportWorker from "index/web-worker/importer.worker";
 import { Component, MetadataCache, TFile, Vault } from "obsidian";
-import { MarkdownImport, PDFImport } from "index/web-worker/message";
+import { MarkdownImport } from "index/web-worker/message";
 import { Deferred, deferred } from "utils/deferred";
 
 import { Queue } from "@datastructures-js/queue";
@@ -84,14 +84,6 @@ export class FileImporter extends Component {
 
         try {
             switch (file.extension) {
-                case "pdf":
-                    worker!.worker.postMessage({
-                        type: "pdf",
-                        path: file.path,
-                        stat: file.stat,
-                        resourceURI: this.vault.getResourcePath(file),
-                    } as PDFImport);
-                    break;
                 default:
                     const contents = await this.vault.cachedRead(file);
                     worker!.worker.postMessage({

@@ -51,7 +51,6 @@
     "localforage": "1.10.0",
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
-    "pdfjs-dist": "^4.3.136",
     "preact": "^10.17.1",
     "react-select": "^5.8.0",
     "sorted-btree": "^1.8.1",

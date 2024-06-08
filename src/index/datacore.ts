@@ -7,12 +7,10 @@ import { ImportResult } from "index/web-worker/message";
 import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
 import { Settings } from "settings";
 import { MarkdownListBlock, MarkdownListItem, MarkdownPage } from "./types/markdown";
-import { PDF } from "./types/pdf";
 import { GenericFile } from "./types/files";
 import { DateTime } from "luxon";
 import { EmbedQueue } from "./embed-queue";
 import { JsonMarkdownPage } from "./types/json/markdown";
-import { JsonPDF } from "./types/json/pdf";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -101,9 +99,10 @@ export class Datacore extends Component {
             // Clean up any documents which no longer exist in the vault.
             // TODO: I think this may race with other concurrent operations, so
             // this may need to happen at the start of init and not at the end.
-            const currentFiles = this.vault.getFiles().map(file => file.path);
-            this.persister.synchronize(currentFiles).then(cleared =>
-                console.log(`Datacore: dropped ${cleared.size} out-of-date file metadata blocks.`));
+            const currentFiles = this.vault.getFiles().map((file) => file.path);
+            this.persister
+                .synchronize(currentFiles)
+                .then((cleared) => console.log(`Datacore: dropped ${cleared.size} out-of-date file metadata blocks.`));
         });
 
         this.addChild(init);
@@ -144,7 +143,6 @@ export class Datacore extends Component {
             return result;
         }
 
-        console.log("reloading " + file.path);
         const result = await this.importer.import<ImportResult>(file);
 
         if (result.type === "error") {
@@ -166,14 +164,6 @@ export class Datacore extends Component {
             // And finally trigger an update.
             this.trigger("update", this.revision);
             return parsed;
-        } else if (result.type == "pdf") {
-            let parsed = PDF.from(result.result);
-
-            this.storePdf(parsed);
-            this.persister.storeFile(parsed.$path, parsed.json());
-
-            this.trigger("update", this.revision);
-            return parsed;
         }
 
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);
@@ -186,19 +176,13 @@ export class Datacore extends Component {
                 store(section.$blocks, (block, store) => {
                     if (block instanceof MarkdownListBlock) {
                         // Recursive store function for storing list heirarchies.
-                        const storeRec: Substorer<MarkdownListItem> = (item, store) =>
-                            store(item.$elements, storeRec);
+                        const storeRec: Substorer<MarkdownListItem> = (item, store) => store(item.$elements, storeRec);
 
                         store(block.$elements, storeRec);
                     }
                 });
             });
         });
-    }
-
-    /** Store a PDF document. */
-    public storePdf(data: PDF) {
-        this.datastore.store(data);
     }
 
     // Event propogation.
@@ -315,7 +299,7 @@ export class DatacoreInitializer extends Component {
                 files: this.files,
                 imported: this.imported,
                 skipped: this.skipped,
-                cached: this.cached
+                cached: this.cached,
             });
         }
     }
@@ -336,18 +320,14 @@ export class DatacoreInitializer extends Component {
     /** Initialize a specific file. */
     private async init(file: TFile): Promise<InitializationResult> {
         try {
-            // Handle loading PDFs and markdown files from cache.
+            // Handle loading markdown files from cache.
             const cached = await this.core.persister.loadFile(file.path);
             if (cached && cached.time >= file.stat.mtime && cached.version == this.core.version) {
                 if (file.extension === "md") {
                     const data = MarkdownPage.from(cached.data as JsonMarkdownPage, (link) => link);
                     this.core.storeMarkdown(data);
                     return { status: "cached" };
-                } else if (file.extension === "pdf") {
-                    const data = PDF.from(cached.data as JsonPDF);
-                    this.core.storePdf(data);
-                    return { status: "cached" };
-                } 
+                }
 
                 // Does not match an existing import type, just reload normally.
                 await this.core.reload(file);
