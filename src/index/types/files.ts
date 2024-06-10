@@ -1,11 +1,11 @@
 import { Link } from "expression/link";
-import { FILE_TYPE, File, Indexable, LINKABLE_TYPE } from "./indexable";
+import { FILE_TYPE, File, Indexable, LINKABLE_TYPE, Linkable } from "./indexable";
 import { DateTime } from "luxon";
 import { Extractors, FIELDBEARING_TYPE, FieldExtractor, Fieldbearing } from "expression/field";
 import { Literal } from "expression/literal";
 
 /** Datacore representation of a generic file with no additional parsing. */
-export class GenericFile implements File, Indexable, Fieldbearing {
+export class GenericFile implements File, Indexable, Fieldbearing, Linkable {
     static TYPES: string[] = [FILE_TYPE, FIELDBEARING_TYPE, LINKABLE_TYPE];
 
     $types: string[] = GenericFile.TYPES;
