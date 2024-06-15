@@ -74,16 +74,16 @@ export default class DatacorePlugin extends Plugin {
 
     /** Register codeblock highlighting and return a closure which unregisters. */
     registerCodeblockHighlighting(): () => void {
-        window.CodeMirror.defineMode("datacorejs", config => window.CodeMirror.getMode(config, "javascript"));
-        window.CodeMirror.defineMode("datacorejsx", config => window.CodeMirror.getMode(config, "jsx"));
-        window.CodeMirror.defineMode("datacorets", config => window.CodeMirror.getMode(config, "javascript"));
-        window.CodeMirror.defineMode("datacoretsx", config => window.CodeMirror.getMode(config, "jsx"));
+        window.CodeMirror.defineMode("datacorejs", (config) => window.CodeMirror.getMode(config, "javascript"));
+        window.CodeMirror.defineMode("datacorejsx", (config) => window.CodeMirror.getMode(config, "jsx"));
+        window.CodeMirror.defineMode("datacorets", (config) => window.CodeMirror.getMode(config, "javascript"));
+        window.CodeMirror.defineMode("datacoretsx", (config) => window.CodeMirror.getMode(config, "jsx"));
 
         return () => {
-            window.CodeMirror.defineMode("datacorejs", config => window.CodeMirror.getMode(config, "null"));
-            window.CodeMirror.defineMode("datacorejsx", config => window.CodeMirror.getMode(config, "null"));
-            window.CodeMirror.defineMode("datacorets", config => window.CodeMirror.getMode(config, "null"));
-            window.CodeMirror.defineMode("datacoretsx", config => window.CodeMirror.getMode(config, "null"));
+            window.CodeMirror.defineMode("datacorejs", (config) => window.CodeMirror.getMode(config, "null"));
+            window.CodeMirror.defineMode("datacorejsx", (config) => window.CodeMirror.getMode(config, "null"));
+            window.CodeMirror.defineMode("datacorets", (config) => window.CodeMirror.getMode(config, "null"));
+            window.CodeMirror.defineMode("datacoretsx", (config) => window.CodeMirror.getMode(config, "null"));
         };
     }
 

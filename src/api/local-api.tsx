@@ -17,6 +17,7 @@ import { Embed } from "ui/embed";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
+import { Button } from "./ui/basics";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -173,7 +174,7 @@ export class DatacoreLocalApi {
     }
 
     /** Create a vanilla Obsidian embed for the given link. */
-    public Embed({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) {
+    public LinkEmbed({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) {
         const realLink = hooks.useMemo(() => (typeof link === "string" ? Link.file(link) : link), [link]);
         const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
         return (
@@ -184,4 +185,10 @@ export class DatacoreLocalApi {
             />
         );
     }
+
+    /////////////////////////
+    // Interative elements //
+    /////////////////////////
+
+    public Button = Button;
 }
