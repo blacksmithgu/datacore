@@ -81,6 +81,16 @@ export class DatacoreApi {
         return Link.file(path);
     }
 
+    /** Create a link to a header with the given name. */
+    public headerLink(path: string, header: string): Link {
+        return Link.header(path, header);
+    }
+
+    /** Create a link to a block with the given path and block ID. */
+    public blockLink(path: string, block: string): Link {
+        return Link.block(path, block);
+    }
+
     /** Try to parse the given link, throwing an error if it is invalid. */
     public parseLink(linktext: string): Link {
         return this.tryParseLink(linktext).orElseThrow((e) => "Failed to parse link: " + e);
