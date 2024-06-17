@@ -5,6 +5,8 @@ import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
 import { VNode, isValidElement } from "preact";
 
+import "./table.css";
+
 /** A simple column definition which allows for custom renderers and titles. */
 export interface VanillaColumn<T, V = Literal> {
     /** The unique ID of this table column; you cannot have multiple columns with the same ID in a given table. */
@@ -150,7 +152,7 @@ function useAsElement(element: VNode | Literal): VNode {
         if (isValidElement(element)) {
             return element as VNode;
         } else {
-            return <Lit sourcePath={sourcePath} inline={false} value={element as any} />;
+            return <Lit sourcePath={sourcePath} inline={true} value={element as any} />;
         }
     }, [element]);
 }

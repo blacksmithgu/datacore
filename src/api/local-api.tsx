@@ -18,6 +18,7 @@ import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
+import { DataArray } from "./data-array";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -85,6 +86,11 @@ export class DatacoreLocalApi {
     /** Try to parse a link, returning a monadic success/failure result. */
     public tryParseLink(linktext: string): Result<Link, string> {
         return this.api.tryParseLink(linktext);
+    }
+
+    /** Create a data array from a regular array. */
+    public array<T>(input: T[] | DataArray<T>): DataArray<T> {
+        return DataArray.wrap(input);
     }
 
     /////////////
