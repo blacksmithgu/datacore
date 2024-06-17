@@ -10,7 +10,7 @@ import { extractImageDimensions, isImageEmbed } from "utils/media";
 import { createContext, Fragment, VNode, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
 import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
-import { Embed } from "./embed";
+import { Embed } from "../api/ui/embed";
 
 import "styles/errors.css";
 

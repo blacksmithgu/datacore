@@ -1,12 +1,12 @@
 import { Literal, Literals } from "expression/literal";
-import { CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit } from "./markdown";
-import { useInterning, useStableCallback } from "./hooks";
+import { CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit } from "../../../ui/markdown";
+import { useInterning, useStableCallback } from "../../../ui/hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 
 import { Fragment, VNode, isValidElement } from "preact";
 import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks";
-import { Grouping } from "./grouping";
+import { Grouping } from "../grouping";
 import { PagingControl } from "./paging";
 
 import "styles/reactive-table.css";

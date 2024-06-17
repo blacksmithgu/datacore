@@ -6,7 +6,7 @@ import {
     DATACORE_CONTEXT,
     ErrorMessage,
     Markdown,
-} from "./markdown";
+} from "../../ui/markdown";
 import { Link } from "expression/link";
 import { lineRange } from "utils/normalizers";
 

@@ -6,18 +6,18 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown";
 import { App } from "obsidian";
-import { useFileMetadata, useFullQuery, useInterning, useQuery } from "ui/hooks";
+import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
-import { DataArray } from "./data-array";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
-import { Embed } from "ui/embed";
+import { Embed, LineSpanEmbed } from "api/ui/embed";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button } from "./ui/basics";
+import { VanillaTable } from "./ui/views/vanilla-table";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -58,8 +58,8 @@ export class DatacoreLocalApi {
     ///////////////////////
 
     /** Resolve a local or absolute path or link to an absolute path. */
-    public resolvePath(path: string | Link): string {
-        return this.api.resolvePath(path, this.path);
+    public resolvePath(path: string | Link, sourcePath?: string): string {
+        return this.api.resolvePath(path, sourcePath ?? this.path);
     }
 
     /** Try to parse the given query, returning a monadic success/failure result. */
@@ -114,7 +114,7 @@ export class DatacoreLocalApi {
 
     /** Automatically refresh the view whenever the index updates; returns the latest index revision ID. */
     public useIndexUpdates(settings?: { debounce?: number }): number {
-        return this.useIndexUpdates(settings);
+        return useIndexUpdates(this.core, settings);
     }
 
     /**
@@ -126,10 +126,9 @@ export class DatacoreLocalApi {
     }
 
     /** Run a query, automatically re-running it whenever the vault changes. */
-    public useQuery(query: string | IndexQuery, settings?: { debounce?: number }): DataArray<Indexable> {
+    public useQuery(query: string | IndexQuery, settings?: { debounce?: number }): Indexable[] {
         // Hooks need to be called in a consistent order, so we don't nest the `useQuery` call in the DataArray.wrap _just_ in case.
-        const result = useQuery(this.core, this.parseQuery(query), settings);
-        return DataArray.wrap(result);
+        return useQuery(this.core, this.parseQuery(query), settings);
     }
 
     /////////////////////
@@ -185,6 +184,30 @@ export class DatacoreLocalApi {
             />
         );
     }
+
+    /** Create an explicit 'span' embed which extracts a span of lines from a markdown file */
+    public SpanEmbed({
+        path,
+        start,
+        end,
+        sourcePath,
+    }: {
+        path: string;
+        sourcePath?: string;
+        start: number;
+        end: number;
+    }) {
+        // Resolve the path to the correct path if a source path is provided.
+        const resolvedPath = hooks.useMemo(() => this.resolvePath(path, sourcePath), [path, sourcePath]);
+
+        return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
+    }
+
+    ///////////
+    // Views //
+    ///////////
+
+    public VanillaTable = VanillaTable;
 
     /////////////////////////
     // Interative elements //

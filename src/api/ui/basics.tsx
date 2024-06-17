@@ -29,7 +29,18 @@ export function Button(
     );
 }
 
-/** Appends additional classes to  */
+export function Textbox(
+    props: { className?: string; children: ComponentChildren } & React.HTMLProps<HTMLInputElement>
+) {
+    const { className, children, ...forwardingProps } = props;
+    return (
+        <input className={combineClasses("dc-textbox", className)} {...forwardingProps}>
+            {children}
+        </input>
+    );
+}
+
+/** Appends additional classes to a basic fixed class. */
 function combineClasses(fixed: string, ...rest: (string | undefined)[]) {
     const nonempty = rest.filter((c) => c !== undefined);
     if (nonempty.length === 0) return fixed;

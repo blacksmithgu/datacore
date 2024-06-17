@@ -26,3 +26,12 @@
 .dc-intent-success {
     background-color: var(--color-green) !important;
 }
+
+/** Text boxes. */
+.dc-textbox {
+    padding: 4px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
