@@ -75,7 +75,7 @@ export function jsonInlineField(field: InlineField): JsonInlineField {
 
 /** Convert a JSON inline field back to a regular field. */
 export function valueInlineField(field: JsonInlineField): InlineField {
-    return Object.assign({}, field, { value: JsonConversion.value(field) });
+    return Object.assign({}, field, { value: JsonConversion.value(field.value) });
 }
 
 export function asInlineField(local: LocalInlineField, lineno: number): InlineField;

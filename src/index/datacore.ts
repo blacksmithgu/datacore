@@ -80,6 +80,11 @@ export class Datacore extends Component {
             })
         );
 
+        this.index();
+    }
+
+    /** Starts the background initializer. */
+    index() {
         // Asynchronously initialize actual content in the background using a lifecycle-respecting object.
         const init = (this.initializer = new DatacoreInitializer(this));
         init.finished().then((stats) => {
