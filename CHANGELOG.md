@@ -1,3 +1,10 @@
+# 0.1.4 (Beta)
+
+Fixes several issues with link and field indexing and adds the `dc.Link` primitive for rendering obsidian links.
+
+
+---
+
 # 0.1.3 (Beta)
 
 Beta releases containing the latest datacore incremental functionality will start now. This one includes the datacore query engine, DatacoreJS + DatacoreJSX, and the grouped table view. More will be coming in the future.
