@@ -6,6 +6,7 @@ import { Fragment } from "preact/jsx-runtime";
 import { VNode, isValidElement } from "preact";
 
 import "./table.css";
+import { ControlledPager, useDatacorePaging } from "./paging";
 
 /** A simple column definition which allows for custom renderers and titles. */
 export interface VanillaColumn<T, V = Literal> {
@@ -48,21 +49,35 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
         return a.every((value, index) => value == b[index]);
     });
 
+    const totalElements = useMemo(() => Groupings.count(props.rows), [props.rows]);
+    const paging = useDatacorePaging({ initialPage: 0, paging: props.paging, elements: totalElements });
+
+    const pagedRows = useMemo(() => {
+        if (paging.enabled)
+            return Groupings.slice(props.rows, paging.page * paging.pageSize, (paging.page + 1) * paging.pageSize);
+        else return props.rows;
+    }, [paging.page, paging.pageSize, paging.enabled, props.rows]);
+
     return (
-        <table className="datacore-table">
-            <thead>
-                <tr className="datacore-table-header-row">
-                    {columns.map((col) => (
-                        <VanillaTableHeaderCell column={col} />
+        <div>
+            <table className="datacore-table">
+                <thead>
+                    <tr className="datacore-table-header-row">
+                        {columns.map((col) => (
+                            <VanillaTableHeaderCell column={col} />
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {pagedRows.map((row) => (
+                        <VanillaRowGroup level={0} columns={columns} element={row} />
                     ))}
-                </tr>
-            </thead>
-            <tbody>
-                {props.rows.map((row) => (
-                    <VanillaRowGroup level={0} columns={columns} element={row} />
-                ))}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+            {paging.enabled && (
+                <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
+            )}
+        </div>
     );
 }
 

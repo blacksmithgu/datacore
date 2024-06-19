@@ -12,7 +12,7 @@ import {
     extractInlineFields,
     jsonInlineField,
 } from "./inline-field";
-import { EXPRESSION } from "expression/parser";
+import { PRIMITIVES } from "expression/parser";
 import { Literal } from "expression/literal";
 import {
     JsonMarkdownBlock,
@@ -294,13 +294,13 @@ export function parseFrontmatter(value: any): Literal {
     } else if (typeof value === "boolean") {
         return value;
     } else if (typeof value === "string") {
-        let dateParse = EXPRESSION.date.parse(value);
+        let dateParse = PRIMITIVES.date.parse(value);
         if (dateParse.status) return dateParse.value;
 
-        let durationParse = EXPRESSION.duration.parse(value);
+        let durationParse = PRIMITIVES.duration.parse(value);
         if (durationParse.status) return durationParse.value;
 
-        let linkParse = EXPRESSION.link.parse(value);
+        let linkParse = PRIMITIVES.link.parse(value);
         if (linkParse.status) return linkParse.value;
 
         return value;

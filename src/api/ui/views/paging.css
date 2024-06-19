@@ -1,0 +1,16 @@
+.dc-paging-control {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.dc-paging-control-page:hover {
+    background-color: var(--text-selection) !important;
+}
+
+.dc-paging-control-page-active {
+    background-color: var(--text-selection) !important;
+}

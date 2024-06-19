@@ -1,6 +1,9 @@
-import { useCallback, useMemo, useState } from "preact/hooks";
+import { useCallback, useContext, useMemo, useState } from "preact/hooks";
 import { Fragment } from "preact";
 import React from "preact/compat";
+import { SETTINGS_CONTEXT } from "ui/markdown";
+
+import "./paging.css";
 
 /** 0-indexed page control. `page` should be the current 0-indexed page, while `totalPages` is the total number of pages. */
 function RawControlledPager({
@@ -15,14 +18,19 @@ function RawControlledPager({
     // Clamp page to be within the actual bounds of pages.
     totalPages = Math.max(1, totalPages);
 
-    const realPage = Math.max(0, Math.min(page, totalPages));
+    const realPage = clamp(page, 0, totalPages - 1);
     const visiblePages = useMemo(() => splitPages(realPage, totalPages), [realPage, totalPages]);
 
     return (
         <div className="dc-paging-control">
             {visiblePages.map((pages, i) => (
                 <Fragment>
-                    {i > 0 && <button className="dc-paging-control-separator">...</button>}
+                    {i > 0 && <span className="dc-paging-control-separator">...</span>}
+                    {page != 0 && (
+                        <button className="dc-paging-control-page" onClick={() => setPage(page - 1)}>
+                            &lt;
+                        </button>
+                    )}
                     {pages.map((p) => (
                         <button
                             className={`dc-paging-control-page ${
@@ -33,6 +41,11 @@ function RawControlledPager({
                             {p + 1}
                         </button>
                     ))}
+                    {page != totalPages - 1 && (
+                        <button className="dc-paging-control-page" onClick={() => setPage(page + 1)}>
+                            &gt;
+                        </button>
+                    )}
                 </Fragment>
             ))}
         </div>
@@ -43,17 +56,61 @@ function RawControlledPager({
 export const ControlledPager = React.memo(RawControlledPager);
 
 /** Hook which provides automatic page reflow and page state management. */
-export function usePaging({ initialPage = 0, pageSize, elements }: { initialPage: number; pageSize: number; elements: number; }): [number, number, (page: number) => void] {
-    const [page, setPage] = useState(initialPage);
-    const totalPages = useMemo(() => Math.ceil(elements / pageSize), [elements, pageSize]);
+export function usePaging({
+    initialPage = 0,
+    pageSize,
+    elements,
+}: {
+    initialPage: number;
+    pageSize: number;
+    elements: number;
+}): [number, number, (page: number) => void] {
+    // We track the start index of the page so that when page size changes we can just automatically recompute the page we are on without any state.
+    const totalPages = Math.max(1, Math.ceil(elements / pageSize));
+    const [pageStart, setPageStart] = useState(() => clamp(initialPage, 0, totalPages - 1));
 
-    const setBoundedPage = useCallback((page: number) => {
-        setPage(page);
-    }, [pageSize, totalPages]);
+    const setBoundedPage = useCallback(
+        (page: number) => setPageStart(clamp(page, 0, totalPages - 1) * pageSize),
+        [pageSize, totalPages]
+    );
 
+    const page = clamp(Math.floor(pageStart / pageSize), 0, totalPages - 1);
     return [page, totalPages, setBoundedPage];
 }
 
+/** Provides useful metadata about paging. */
+export interface Paging {
+    enabled: boolean;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+    setPage: (page: number) => void;
+}
+
+/**  */
+export function useDatacorePaging({
+    initialPage = 0,
+    paging,
+    elements,
+}: {
+    initialPage: number;
+    paging: number | boolean | undefined;
+    elements: number;
+}): Paging {
+    const settings = useContext(SETTINGS_CONTEXT);
+
+    const pageSize = typeof paging === "number" ? paging : settings.defaultPageSize;
+    const pagingEnabled = typeof paging === "number" || paging === true;
+
+    const [page, totalPages, setPage] = usePaging({ initialPage, pageSize, elements });
+    return { enabled: pagingEnabled, page, pageSize, totalPages, setPage };
+}
+
+function clamp(input: number, min: number, max: number): number {
+    if (input < min) return min;
+    if (input > max) return max;
+    return input;
+}
 
 /** Utility function for finding the specific page numbers to render. Always aims to render 9 or 10 page numbers with a separator. */
 function splitPages(page: number, totalPages: number): number[][] {

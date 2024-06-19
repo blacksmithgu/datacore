@@ -311,10 +311,7 @@ class DataArrayImpl<T> implements DataArray<T> {
         return this;
     }
 
-    public groupBy<U>(
-        key: ArrayFunc<T, U>,
-        comparator?: ArrayComparator<U>
-    ): DataArray<{ key: U; rows: T[] }> {
+    public groupBy<U>(key: ArrayFunc<T, U>, comparator?: ArrayComparator<U>): DataArray<{ key: U; rows: T[] }> {
         if (this.values.length == 0) return this.lwrap([]);
 
         // JavaScript sucks and we can't make hash maps over arbitrary types (only strings/ints), so

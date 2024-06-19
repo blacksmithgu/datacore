@@ -110,7 +110,7 @@ export class DatacoreLocalApi {
 
     /** Memoize the input automatically and process it using a Data Array; returns a vanilla array back. */
     public useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: any[]): U[] {
-        return hooks.useMemo(() => process(DataArray.wrap(input)).array(), [input, ...deps ?? []]);
+        return hooks.useMemo(() => process(DataArray.wrap(input)).array(), [input, ...(deps ?? [])]);
     }
 
     /** Use the file metadata for the current file. Automatically updates the view when the current file metadata changes. */

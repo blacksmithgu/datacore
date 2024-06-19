@@ -426,7 +426,8 @@ export namespace Groupings {
         if (isLeaf(elements)) return elements.slice(start, end);
 
         // Find the first group that contains index `start`.
-        let index = 0, seen = 0;
+        let index = 0,
+            seen = 0;
         while (index < elements.length && seen + count(elements[index]) <= start) {
             seen += count(elements[index]);
             index++;
@@ -435,7 +436,7 @@ export namespace Groupings {
         // start was greater than the entire length of the groupings.
         if (index >= elements.length) return [];
 
-        const result: { key: Literal, rows: Grouping<T> }[] = [];
+        const result: { key: Literal; rows: Grouping<T> }[] = [];
         while (index < elements.length && seen < end) {
             const group = elements[index];
             const groupSize = count(group);

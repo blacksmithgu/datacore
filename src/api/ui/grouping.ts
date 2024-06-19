@@ -53,7 +53,10 @@ export namespace Grouping {
                       .groupBy((raw) => raw.key, comparator)
                       .map((group) => ({
                           key: group.key,
-                          value: groupBy(group.rows.map((g) => g.row), groupOn.slice(1)),
+                          value: groupBy(
+                              group.rows.map((g) => g.row),
+                              groupOn.slice(1)
+                          ),
                           size: group.rows.length,
                       }))
                       .array()
