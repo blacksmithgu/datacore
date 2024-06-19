@@ -45,14 +45,16 @@ export function DatacoreContextProvider({
 }
 
 /** Copies how an Obsidian link is rendered but is about an order of magnitude faster to render than via markdown rendering. */
-export function RawLink({ link, sourcePath }: { link: Link | string; sourcePath: string }) {
-    const workspace = useContext(APP_CONTEXT).workspace;
+export function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | string; sourcePath?: string }) {
+    const workspace = useContext(APP_CONTEXT)?.workspace;
+    const currentPath = useContext(CURRENT_FILE_CONTEXT);
+    const sourcePath = maybeSourcePath ?? currentPath ?? "";
     const parsed = useMemo(() => (Literals.isLink(link) ? link : Link.infer(link)), [link]);
 
     const onClick = useCallback(
         (event: MouseEvent) => {
             const newtab = event.shiftKey;
-            workspace.openLinkText(parsed.obsidianLink(), sourcePath, newtab);
+            workspace?.openLinkText(parsed.obsidianLink(), sourcePath, newtab);
         },
         [parsed, sourcePath]
     );

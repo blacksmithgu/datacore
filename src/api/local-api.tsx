@@ -13,10 +13,10 @@ import * as hooks from "preact/hooks";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
-import { CURRENT_FILE_CONTEXT, Lit, Markdown } from "ui/markdown";
+import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
-import { Button } from "./ui/basics";
+import { Button, Textbox } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
 import { DataArray } from "./data-array";
 
@@ -183,6 +183,9 @@ export class DatacoreLocalApi {
         );
     }
 
+    /** Renders an obsidian-style link directly and more effieicntly than rendering markdown. */
+    public Link = ObsidianLink;
+
     /** Create a vanilla Obsidian embed for the given link. */
     public LinkEmbed({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) {
         const realLink = hooks.useMemo(() => (typeof link === "string" ? Link.file(link) : link), [link]);
@@ -225,4 +228,5 @@ export class DatacoreLocalApi {
     /////////////////////////
 
     public Button = Button;
+    public Textbox = Textbox;
 }

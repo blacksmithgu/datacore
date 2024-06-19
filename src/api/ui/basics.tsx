@@ -29,15 +29,9 @@ export function Button(
     );
 }
 
-export function Textbox(
-    props: { className?: string; children: ComponentChildren } & React.HTMLProps<HTMLInputElement>
-) {
+export function Textbox(props: { className?: string } & React.HTMLProps<HTMLInputElement>) {
     const { className, children, ...forwardingProps } = props;
-    return (
-        <input className={combineClasses("dc-textbox", className)} {...forwardingProps}>
-            {children}
-        </input>
-    );
+    return <input className={combineClasses("dc-textbox", className)} {...forwardingProps} />;
 }
 
 /** Appends additional classes to a basic fixed class. */

@@ -120,7 +120,6 @@ export function SelectableEditable({
     }) {
     const onChange = useStableCallback(
         (newValue: any, actionMeta: ActionMeta<SelectableType>) => {
-            console.log(newValue);
             if (Array.isArray(newValue)) {
                 dispatch({
                     type: "content-changed",
