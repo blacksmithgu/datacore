@@ -108,6 +108,11 @@ export class DatacoreLocalApi {
     public useRef = hooks.useRef;
     public useInterning = useInterning;
 
+    /** Memoize the input automatically and process it using a Data Array; returns a vanilla array back. */
+    public useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: any[]): U[] {
+        return hooks.useMemo(() => process(DataArray.wrap(input)).array(), [input, ...deps ?? []]);
+    }
+
     /** Use the file metadata for the current file. Automatically updates the view when the current file metadata changes. */
     public useCurrentFile(settings?: { debounce?: number }): MarkdownPage {
         return useFileMetadata(this.core, this.path, settings) as MarkdownPage;

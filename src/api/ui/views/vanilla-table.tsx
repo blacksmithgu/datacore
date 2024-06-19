@@ -32,6 +32,12 @@ export interface VanillaTableProps<T> {
 
     /** The rows to render; may potentially be grouped or just a plain array. */
     rows: Grouping<T>;
+
+    /**
+     * If set to a boolean - enables or disables paging.
+     * If set to a number, paging will be enabled with the given number of rows per page.
+     */
+    paging?: boolean | number;
 }
 
 export function VanillaTable<T>(props: VanillaTableProps<T>) {
@@ -115,7 +121,9 @@ export function TableGroupHeader<T>({ level, value, width }: { level: number; va
     return (
         <tr className="datacore-table-group-header">
             <td colSpan={width}>
-                <Lit sourcePath={sourcePath} inline={true} value={value} />
+                <h2>
+                    <Lit sourcePath={sourcePath} inline={true} value={value} />
+                </h2>
             </td>
         </tr>
     );

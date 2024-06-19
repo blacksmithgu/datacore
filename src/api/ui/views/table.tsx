@@ -7,7 +7,7 @@ import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons"
 import { Fragment, VNode, isValidElement } from "preact";
 import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks";
 import { Grouping } from "../grouping";
-import { PagingControl } from "./paging";
+import { ControlledPager } from "./paging";
 
 import "styles/reactive-table.css";
 
@@ -180,7 +180,7 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
                 <tfoot>
                     <tr>
                         <td colSpan={visualColumns.length}>
-                            <PagingControl
+                            <ControlledPager
                                 totalPages={totalPages}
                                 page={props.page ?? 0}
                                 setPage={(page) => props.dispatch({ type: "set-page", page })}

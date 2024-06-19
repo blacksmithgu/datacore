@@ -1,9 +1,9 @@
-import { useMemo } from "preact/hooks";
+import { useCallback, useMemo, useState } from "preact/hooks";
 import { Fragment } from "preact";
 import React from "preact/compat";
 
 /** 0-indexed page control. `page` should be the current 0-indexed page, while `totalPages` is the total number of pages. */
-function RawPagingControl({
+function RawControlledPager({
     page,
     setPage,
     totalPages,
@@ -40,7 +40,20 @@ function RawPagingControl({
 }
 
 /** 0-indexed page control. `page` should be the current 0-indexed paeg, while `maxPage` is the maximum page (inclusive). */
-export const PagingControl = React.memo(RawPagingControl);
+export const ControlledPager = React.memo(RawControlledPager);
+
+/** Hook which provides automatic page reflow and page state management. */
+export function usePaging({ initialPage = 0, pageSize, elements }: { initialPage: number; pageSize: number; elements: number; }): [number, number, (page: number) => void] {
+    const [page, setPage] = useState(initialPage);
+    const totalPages = useMemo(() => Math.ceil(elements / pageSize), [elements, pageSize]);
+
+    const setBoundedPage = useCallback((page: number) => {
+        setPage(page);
+    }, [pageSize, totalPages]);
+
+    return [page, totalPages, setBoundedPage];
+}
+
 
 /** Utility function for finding the specific page numbers to render. Always aims to render 9 or 10 page numbers with a separator. */
 function splitPages(page: number, totalPages: number): number[][] {
