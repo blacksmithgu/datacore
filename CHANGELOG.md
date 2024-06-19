@@ -1,3 +1,9 @@
+# 0.1.3 (Beta)
+
+Beta releases containing the latest datacore incremental functionality will start now. This one includes the datacore query engine, DatacoreJS + DatacoreJSX, and the grouped table view. More will be coming in the future.
+
+---
+
 # 0.1.2
 
 Still does nothing, but now has a snappy and simple query planner, as well as support for querying by type.
