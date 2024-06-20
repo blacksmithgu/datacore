@@ -1,3 +1,9 @@
+# 0.1.5 (Beta)
+
+Improves the look of the paging UI.
+
+---
+
 # 0.1.4 (Beta)
 
 Fixes several issues with link and field indexing and adds the `dc.Link` primitive for rendering obsidian links.
