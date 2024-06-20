@@ -3,7 +3,7 @@ import React from "preact/compat";
 
 import "./basics.css";
 import { ComponentChildren } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { setIcon } from "obsidian";
 
 /** Various intents for buttons and other interactive elements. */
 export type Intent = "error" | "warn" | "info" | "success";
@@ -48,9 +48,9 @@ export function Checkbox(
     } & React.HTMLProps<HTMLInputElement>
 ) {
     const { className, disabled, defaultChecked, checked, onCheckChange, children, ...forwardingProps } = props;
-    const [isChecked, setIsChecked] = useState(checked ?? defaultChecked ?? false);
+    const [isChecked, setIsChecked] = React.useState(checked ?? defaultChecked ?? false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (typeof checked === "boolean") setIsChecked(checked);
     }, [checked]);
 
@@ -85,9 +85,9 @@ export function Slider(
     } & React.HTMLProps<HTMLInputElement>
 ) {
     const { className, min = 0, max = 10, step = 1, value, defaultValue, onValueChange, ...forwardingProps } = props;
-    const [sliderValue, setSliderValue] = useState(value ?? defaultValue ?? 0);
+    const [sliderValue, setSliderValue] = React.useState(value ?? defaultValue ?? 0);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (typeof value === "number") setSliderValue(value);
     }, [value]);
 
@@ -120,9 +120,9 @@ export function Switch(
     } & React.HTMLProps<HTMLInputElement>
 ) {
     const { className, disabled, defaultChecked, checked, onToggleChange, ...forwardingProps } = props;
-    const [isToggled, setIsToggled] = useState(checked ?? defaultChecked ?? false);
+    const [isToggled, setIsToggled] = React.useState(checked ?? defaultChecked ?? false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (typeof checked === "boolean") setIsToggled(checked);
     }, [checked]);
 
@@ -162,9 +162,9 @@ export function VanillaSelect(
     } & React.HTMLProps<HTMLSelectElement>
 ) {
     const { className, options = [], value, defaultValue, onValueChange, ...forwardingProps } = props;
-    const [selectedValue, setSelectedValue] = useState(value ?? defaultValue ?? "");
+    const [selectedValue, setSelectedValue] = React.useState(value ?? defaultValue ?? "");
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (typeof value === "string") setSelectedValue(value);
     }, [value]);
 
@@ -185,6 +185,19 @@ export function VanillaSelect(
             ))}
         </select>
     );
+}
+
+export function Icon(props: { className?: string; icon: string }) {
+    const { className, icon } = props;
+    const ref = React.createRef<HTMLSpanElement>();
+
+    React.useEffect(() => {
+        if (ref.current) {
+            setIcon(ref.current, icon);
+        }
+    }, [ref]);
+
+    return <span ref={ref} className={combineClasses("dc-icon", className)} data-icon={icon} />;
 }
 
 /** Appends additional classes to a basic fixed class. */

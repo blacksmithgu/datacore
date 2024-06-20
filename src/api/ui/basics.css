@@ -79,8 +79,13 @@
 }
 
 
-/* Basic styles for dc-switch, based on obsidian default style */
 .dc-switch.dc-switch-disabled {
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+/* Basic styles for dc-icon, make it vertical center */
+.dc-icon {
+    display: inline-flex;
+    align-items: center;
 }
