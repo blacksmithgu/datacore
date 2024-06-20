@@ -84,7 +84,7 @@ export function Slider(
         onValueChange?: (value: number) => void;
     } & React.HTMLProps<HTMLInputElement>
 ) {
-    const { className, min, max, step, value, defaultValue, onValueChange, ...forwardingProps } = props;
+    const { className, min = 0, max = 10, step = 1, value, defaultValue, onValueChange, ...forwardingProps } = props;
     const [sliderValue, setSliderValue] = useState(value ?? defaultValue ?? 0);
 
     useEffect(() => {
@@ -148,6 +148,42 @@ export function Switch(
                 {...forwardingProps}
             />
         </label>
+    );
+}
+
+/** Wrapper for a select component with some default classes. */
+export function VanillaSelect(
+    props: {
+        className?: string;
+        options: { value: string; label: string }[];
+        value?: string;
+        defaultValue?: string;
+        onValueChange?: (value: string) => void;
+    } & React.HTMLProps<HTMLSelectElement>
+) {
+    const { className, options = [], value, defaultValue, onValueChange, ...forwardingProps } = props;
+    const [selectedValue, setSelectedValue] = useState(value ?? defaultValue ?? "");
+
+    useEffect(() => {
+        if (typeof value === "string") setSelectedValue(value);
+    }, [value]);
+
+    return (
+        <select
+            className={combineClasses("dc-select dropdown", className)}
+            value={selectedValue}
+            onChange={(e) => {
+                setSelectedValue(e.currentTarget.value);
+                onValueChange && onValueChange(e.currentTarget.value);
+            }}
+            {...forwardingProps}
+        >
+            {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                    {option.label}
+                </option>
+            ))}
+        </select>
     );
 }
 
