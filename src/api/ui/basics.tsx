@@ -129,7 +129,7 @@ export function Switch(
     return (
         <label
             className={combineClasses(
-                "dc-switch",
+                "dc-switch checkbox-container",
                 isToggled ? "is-enabled" : undefined,
                 disabled ? "dc-switch-disabled" : undefined,
                 className
