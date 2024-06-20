@@ -23,14 +23,14 @@ function RawControlledPager({
 
     return (
         <div className="dc-paging-control">
+            {page != 0 && (
+                <button className="dc-paging-control-page" onClick={() => setPage(page - 1)}>
+                    &lt;
+                </button>
+            )}
             {visiblePages.map((pages, i) => (
                 <Fragment>
                     {i > 0 && <span className="dc-paging-control-separator">...</span>}
-                    {page != 0 && (
-                        <button className="dc-paging-control-page" onClick={() => setPage(page - 1)}>
-                            &lt;
-                        </button>
-                    )}
                     {pages.map((p) => (
                         <button
                             className={`dc-paging-control-page ${
@@ -41,13 +41,13 @@ function RawControlledPager({
                             {p + 1}
                         </button>
                     ))}
-                    {page != totalPages - 1 && (
-                        <button className="dc-paging-control-page" onClick={() => setPage(page + 1)}>
-                            &gt;
-                        </button>
-                    )}
                 </Fragment>
             ))}
+            {page != totalPages - 1 && (
+                <button className="dc-paging-control-page" onClick={() => setPage(page + 1)}>
+                    &gt;
+                </button>
+            )}
         </div>
     );
 }
@@ -114,10 +114,10 @@ function clamp(input: number, min: number, max: number): number {
 
 /** Utility function for finding the specific page numbers to render. Always aims to render 9 or 10 page numbers with a separator. */
 function splitPages(page: number, totalPages: number): number[][] {
-    // If less than 11 pages, show all of them.
-    if (totalPages < 11) return [Array.from({ length: totalPages }, (_, i) => i)];
+    // If less than 12 pages, show all of them.
+    if (totalPages < 12) return [Array.from({ length: totalPages }, (_, i) => i)];
 
-    // We have at least 11 pages (0 .. 10 inclusive). Our goal is to have 9 total visible elements, so split based on that.
+    // We have at least 12 pages (0 .. 10 inclusive). Our goal is to have 9 total visible elements, so split based on that.
     // 5 surrounding {page}, 0, 1, maxPage - 1, maxPage.
     if (page < 5)
         return [
