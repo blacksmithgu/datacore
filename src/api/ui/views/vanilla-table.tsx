@@ -1,4 +1,4 @@
-import { GroupElement, Grouping, Groupings, Literal } from "expression/literal";
+import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
 import { useContext, useMemo } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
@@ -26,6 +26,12 @@ export interface VanillaColumn<T, V = Literal> {
     render?: (value: V, object: T) => Literal | VNode;
 }
 
+/** Metadata for configuring how groupings in the data should be handled. */
+export interface GroupingConfig<T> {
+    /** How a grouping with the given key and set of rows should be handled. */
+    render?: (key: Literal, rows: Grouping<T>) => Literal | VNode;
+}
+
 /** All available props for a vanilla table. */
 export interface VanillaTableProps<T> {
     /** The columns to render in the table. */
@@ -33,6 +39,9 @@ export interface VanillaTableProps<T> {
 
     /** The rows to render; may potentially be grouped or just a plain array. */
     rows: Grouping<T>;
+
+    /** Allows for grouping header columns to be overridden with custom rendering/logic. */
+    groupings?: GroupingConfig<T> | GroupingConfig<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | VNode);
 
     /**
      * If set to a boolean - enables or disables paging.
@@ -58,6 +67,14 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
         else return props.rows;
     }, [paging.page, paging.pageSize, paging.enabled, props.rows]);
 
+    const groupings = useMemo(() => {
+        if (!props.groupings) return undefined;
+        if (Array.isArray(props.groupings)) return props.groupings;
+
+        if (Literals.isFunction(props.groupings)) return [{ render: props.groupings }];
+        else return [props.groupings];
+    }, [props.groupings]);
+
     return (
         <div>
             <table className="datacore-table">
@@ -70,7 +87,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
                 </thead>
                 <tbody>
                     {pagedRows.map((row) => (
-                        <VanillaRowGroup level={0} columns={columns} element={row} />
+                        <VanillaRowGroup level={0} groupings={groupings} columns={columns} element={row} />
                     ))}
                 </tbody>
             </table>
@@ -111,15 +128,19 @@ export function VanillaRowGroup<T>({
     level,
     columns,
     element,
+    groupings,
 }: {
     level: number;
     columns: VanillaColumn<T>[];
     element: T | GroupElement<T>;
+    groupings?: GroupingConfig<T>[];
 }) {
     if (Groupings.isElementGroup(element)) {
+        const groupingConfig = groupings ? groupings[Math.min(groupings.length - 1, level)] : undefined;
+
         return (
             <Fragment>
-                <TableGroupHeader level={level} value={element.key} width={columns.length} />
+                <TableGroupHeader level={level} value={element} width={columns.length} config={groupingConfig} />
                 {element.rows.map((row) => (
                     <VanillaRowGroup level={level + 1} columns={columns} element={row} />
                 ))}
@@ -131,15 +152,32 @@ export function VanillaRowGroup<T>({
 }
 
 /** A header of a grouped set of columns. */
-export function TableGroupHeader<T>({ level, value, width }: { level: number; value: Literal; width: number }) {
+export function TableGroupHeader<T>({
+    level,
+    value,
+    width,
+    config,
+}: {
+    level: number;
+    value: GroupElement<T>;
+    width: number;
+    config?: GroupingConfig<T>;
+}) {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
+    const rawRenderable = useMemo(() => {
+        if (config?.render) return config.render(value.key, value.rows);
+        else
+            return (
+                <h2>
+                    <Lit sourcePath={sourcePath} inline={true} value={value.key} />
+                </h2>
+            );
+    }, [config?.render, value.key, value.rows]);
+    const renderable = useAsElement(rawRenderable);
+
     return (
         <tr className="datacore-table-group-header">
-            <td colSpan={width}>
-                <h2>
-                    <Lit sourcePath={sourcePath} inline={true} value={value} />
-                </h2>
-            </td>
+            <td colSpan={width}>{renderable}</td>
         </tr>
     );
 }
