@@ -1,3 +1,9 @@
+# 0.1.6 (Beta)
+
+Group rendering in tables is now also configurable.
+
+---
+
 # 0.1.5 (Beta)
 
 Improves the look of the paging UI.
