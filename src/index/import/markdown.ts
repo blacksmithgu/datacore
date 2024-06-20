@@ -1,7 +1,7 @@
 import { JsonLink, Link } from "expression/link";
 import { getExtension, getFileTitle } from "utils/normalizers";
 import { DateTime } from "luxon";
-import { CachedMetadata, FileStats } from "obsidian";
+import { CachedMetadata, FileStats, FrontMatterCache } from "obsidian";
 import { parse as parseYaml } from "yaml";
 import BTree from "sorted-btree";
 import {
@@ -165,7 +165,7 @@ export function markdownImport(
     //////////
 
     // For each tag, assign it to the appropriate section and block that it is a part of.
-    for (let tagdef of metadata.tags ?? []) {
+    for (const tagdef of metadata.tags ?? []) {
         const tag = tagdef.tag.startsWith("#") ? tagdef.tag : "#" + tagdef.tag;
         const line = tagdef.position.start.line;
         page.metadata.tag(tag);
@@ -173,6 +173,14 @@ export function markdownImport(
         lookup(line, sections)?.metadata.tag(tag);
         lookup(line, blocks)?.metadata.tag(tag);
         lookup(line, listItems)?.metadata.tag(tag);
+    }
+
+    // Add frontmatter tags.
+    if (metadata.frontmatter) {
+        for (const rawtag in extractTags(metadata.frontmatter)) {
+            const tag = rawtag.startsWith("#") ? rawtag : "#" + rawtag;
+            page.metadata.tag(tag);
+        }
     }
 
     ///////////
@@ -316,6 +324,34 @@ export function lookup<T extends { start: number; end: number }>(line: number, t
     if (target && target.end > line) return target;
 
     return undefined;
+}
+
+/** Extract tags intelligently from frontmatter. Handles arrays, numbers, and strings. */
+export function extractTags(metadata: FrontMatterCache): string[] {
+    let tagKeys = Object.keys(metadata).filter(t => t.toLowerCase() == "tags" || t.toLowerCase() == "tag");
+
+    return tagKeys
+        .map(k => splitFrontmatterTagOrAlias(metadata[k], /[,\s]+/))
+        .reduce((p, c) => p.concat(c), [])
+        .map(str => (str.startsWith("#") ? str : "#" + str));
+}
+
+/** Split a frontmatter list into separate elements; handles actual lists, comma separated lists, and single elements. */
+export function splitFrontmatterTagOrAlias(data: any, on: RegExp): string[] {
+    if (data == null || data == undefined) return [];
+    if (Array.isArray(data)) {
+        return data
+            .filter(s => !!s)
+            .map(s => splitFrontmatterTagOrAlias(s, on))
+            .reduce((p, c) => p.concat(c), []);
+    }
+
+    // Force to a string to handle numbers and so on.
+    return ("" + data)
+        .split(on)
+        .filter(t => !!t)
+        .map(t => t.trim())
+        .filter(t => t.length > 0);
 }
 
 ///////////////////////
