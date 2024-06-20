@@ -32,7 +32,9 @@ export function Button(
 
 export function Textbox(props: { className?: string } & React.HTMLProps<HTMLInputElement>) {
     const { className, children, ...forwardingProps } = props;
-    return <input className={combineClasses("dc-textbox", className)} {...forwardingProps} />;
+    return (
+        <input type={props.type ?? "text"} className={combineClasses("dc-textbox", className)} {...forwardingProps} />
+    );
 }
 
 export function Checkbox(
@@ -66,6 +68,85 @@ export function Checkbox(
                 {...forwardingProps}
             />
             {children}
+        </label>
+    );
+}
+
+/** Wrapper for a slider (range input) with some default classes. */
+export function Slider(
+    props: {
+        className?: string;
+        min?: number;
+        max?: number;
+        step?: number;
+        value?: number;
+        defaultValue?: number;
+        onValueChange?: (value: number) => void;
+    } & React.HTMLProps<HTMLInputElement>
+) {
+    const { className, min, max, step, value, defaultValue, onValueChange, ...forwardingProps } = props;
+    const [sliderValue, setSliderValue] = useState(value ?? defaultValue ?? 0);
+
+    useEffect(() => {
+        if (typeof value === "number") setSliderValue(value);
+    }, [value]);
+
+    return (
+        <input
+            type="range"
+            aria-label={sliderValue.toString()}
+            className={combineClasses("dc-slider", className)}
+            min={min}
+            max={max}
+            step={step}
+            value={sliderValue}
+            onChange={(e) => {
+                setSliderValue(Number(e.currentTarget.value));
+                onValueChange && onValueChange(Number(e.currentTarget.value));
+            }}
+            {...forwardingProps}
+        />
+    );
+}
+
+/** Wrapper for a switch (toggle) component with some default classes. */
+export function Switch(
+    props: {
+        className?: string;
+        disabled?: boolean;
+        checked?: boolean;
+        defaultChecked?: boolean;
+        onToggleChange?: (checked: boolean) => void;
+    } & React.HTMLProps<HTMLInputElement>
+) {
+    const { className, disabled, defaultChecked, checked, onToggleChange, ...forwardingProps } = props;
+    const [isToggled, setIsToggled] = useState(checked ?? defaultChecked ?? false);
+
+    useEffect(() => {
+        if (typeof checked === "boolean") setIsToggled(checked);
+    }, [checked]);
+
+    return (
+        <label
+            className={combineClasses(
+                "dc-switch",
+                isToggled ? "is-enabled" : undefined,
+                disabled ? "dc-switch-disabled" : undefined,
+                className
+            )}
+        >
+            <input
+                type="checkbox"
+                className="dc-switch-input"
+                defaultChecked={defaultChecked}
+                checked={isToggled}
+                disabled={disabled}
+                onChange={(e) => {
+                    setIsToggled(e.currentTarget.checked);
+                    onToggleChange && onToggleChange(e.currentTarget.checked);
+                }}
+                {...forwardingProps}
+            />
         </label>
     );
 }
