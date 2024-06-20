@@ -229,7 +229,7 @@ export class DatacoreLocalApi {
 
     public Button = Button;
     public Textbox = Textbox;
-    public CheckBox = Checkbox;
+    public Checkbox = Checkbox;
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
