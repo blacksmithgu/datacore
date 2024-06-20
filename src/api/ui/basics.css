@@ -35,3 +35,41 @@
     margin-top: 2px;
     margin-bottom: 2px;
 }
+
+/* Checkbox */
+.dc-checkbox {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    margin: 4px 0;
+    font-size: 16px;
+}
+
+.dc-checkbox input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Checkbox hover */
+.dc-checkbox:hover {
+    opacity: 0.8;
+}
+
+/* Checkbox focus */
+.dc-checkbox input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: var(--shadow-s);
+}
+
+/* Checkbox disabled */
+.dc-checkbox-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.dc-checkbox-disabled input[type="checkbox"] {
+    cursor: not-allowed;
+}
+

@@ -16,13 +16,14 @@ import { Embed, LineSpanEmbed } from "api/ui/embed";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
-import { Button, Textbox } from "./ui/basics";
+import { Button, Checkbox, Textbox } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
 import { DataArray } from "./data-array";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
-    public constructor(public api: DatacoreApi, public path: string) {}
+    public constructor(public api: DatacoreApi, public path: string) {
+    }
 
     /** The current file path for the local API. */
     public currentPath(): string {
@@ -159,12 +160,12 @@ export class DatacoreLocalApi {
 
     /** Renders markdown using the Obsidian markdown renderer, optionally attaching additional styles. */
     public Markdown({
-        content,
-        sourcePath,
-        inline,
-        style,
-        className,
-    }: {
+                        content,
+                        sourcePath,
+                        inline,
+                        style,
+                        className,
+                    }: {
         content: string;
         sourcePath?: string;
         inline?: boolean;
@@ -201,11 +202,11 @@ export class DatacoreLocalApi {
 
     /** Create an explicit 'span' embed which extracts a span of lines from a markdown file */
     public SpanEmbed({
-        path,
-        start,
-        end,
-        sourcePath,
-    }: {
+                         path,
+                         start,
+                         end,
+                         sourcePath,
+                     }: {
         path: string;
         sourcePath?: string;
         start: number;
@@ -229,4 +230,5 @@ export class DatacoreLocalApi {
 
     public Button = Button;
     public Textbox = Textbox;
+    public CheckBox = Checkbox;
 }
