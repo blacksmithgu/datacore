@@ -328,12 +328,12 @@ export function lookup<T extends { start: number; end: number }>(line: number, t
 
 /** Extract tags intelligently from frontmatter. Handles arrays, numbers, and strings. */
 export function extractTags(metadata: FrontMatterCache): string[] {
-    let tagKeys = Object.keys(metadata).filter(t => t.toLowerCase() == "tags" || t.toLowerCase() == "tag");
+    let tagKeys = Object.keys(metadata).filter((t) => t.toLowerCase() == "tags" || t.toLowerCase() == "tag");
 
     return tagKeys
-        .map(k => splitFrontmatterTagOrAlias(metadata[k], /[,\s]+/))
+        .map((k) => splitFrontmatterTagOrAlias(metadata[k], /[,\s]+/))
         .reduce((p, c) => p.concat(c), [])
-        .map(str => (str.startsWith("#") ? str : "#" + str));
+        .map((str) => (str.startsWith("#") ? str : "#" + str));
 }
 
 /** Split a frontmatter list into separate elements; handles actual lists, comma separated lists, and single elements. */
@@ -341,17 +341,17 @@ export function splitFrontmatterTagOrAlias(data: any, on: RegExp): string[] {
     if (data == null || data == undefined) return [];
     if (Array.isArray(data)) {
         return data
-            .filter(s => !!s)
-            .map(s => splitFrontmatterTagOrAlias(s, on))
+            .filter((s) => !!s)
+            .map((s) => splitFrontmatterTagOrAlias(s, on))
             .reduce((p, c) => p.concat(c), []);
     }
 
     // Force to a string to handle numbers and so on.
     return ("" + data)
         .split(on)
-        .filter(t => !!t)
-        .map(t => t.trim())
-        .filter(t => t.length > 0);
+        .filter((t) => !!t)
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
 }
 
 ///////////////////////

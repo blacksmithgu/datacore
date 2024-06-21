@@ -19,6 +19,7 @@ import { Literal } from "expression/literal";
 import { Button, Textbox } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
 import { DataArray } from "./data-array";
+import { Coerce } from "./coerce";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -57,6 +58,9 @@ export class DatacoreLocalApi {
     ///////////////////////
     // General utilities //
     ///////////////////////
+
+    /** Utilities for coercing types into one specific type for easier programming. */
+    public coerce = Coerce;
 
     /** Resolve a local or absolute path or link to an absolute path. */
     public resolvePath(path: string | Link, sourcePath?: string): string {
