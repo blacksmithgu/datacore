@@ -24,3 +24,44 @@ extra functionality.
   metadata like due date and more operations for manipulating tasks directly.
 - **Section / Block Queries**: Datacore indexes all files (including attachments, PDFs, and images), and supports queries
   at section and block level granularity.
+
+## Compiling & Building
+
+You can do a first-time setup of the repository by making sure you have `yarn` installed and then just running
+
+```bash
+yarn install
+yarn run build
+```
+
+This will invoke `esbuild` under the hood and dump the final plugin into the `/build` directory. There is a short script which can then copy the compiled plugin into your vault -
+
+```bash
+./scripts/install-built /path/to/your/vault/root
+```
+
+You can combine the build and install into a single command:
+
+```bash
+yarn run build && ./scripts/install-built /path/to/your/vault/root
+```
+
+## Formatting & Running Tests
+
+You can format your code via
+
+```bash
+yarn run format
+```
+
+And you can run jest tests via
+
+```bash
+yarn run test
+```
+
+## Contributing
+
+**Discord**: <https://discord.gg/KwZUX4BYba>.
+
+Contributions are welcome; for large contributions, we recommend reaching out via email or discord to make sure what you are trying to implement is reasonable / feasible!

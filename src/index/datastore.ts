@@ -3,9 +3,9 @@ import { Filter, Filters } from "expression/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery, IndexSource } from "index/types/index-query";
-import { INDEX_FIELDS, Indexable, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
+import { INDEX_FIELDS, Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
 import { MetadataCache, Vault } from "obsidian";
-import { MarkdownPage } from "./types/markdown/markdown";
+import { MarkdownPage } from "./types/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";
 import FlatQueue from "flatqueue";
 import { FieldIndex } from "index/storage/fields";
@@ -188,8 +188,8 @@ export class Datastore {
         }
 
         // All fields on an object.
-        if (object.$types.contains(FIELDBEARING_TYPE) && "fields" in object) {
-            for (const field of object.fields as Iterable<Field>) {
+        if (object.$types.contains(FIELDBEARING_TYPE) && "$fields" in object) {
+            for (const field of object.$fields as Iterable<Field>) {
                 // Skip any index fields.
                 if (INDEX_FIELDS.has(field.key)) continue;
 
@@ -221,8 +221,8 @@ export class Datastore {
             );
         }
 
-        if (object.$types.contains(FIELDBEARING_TYPE) && "fields" in object) {
-            for (const field of object.fields as Iterable<Field>) {
+        if (object.$types.contains(FIELDBEARING_TYPE) && "$fields" in object) {
+            for (const field of object.$fields as Iterable<Field>) {
                 // Skip any index fields.
                 if (INDEX_FIELDS.has(field.key)) continue;
 
@@ -557,8 +557,8 @@ export class Datastore {
         const object = this.objects.get(id);
         if (!object) return;
 
-        if ((direction === "both" || direction === "incoming") && "link" in object && object["link"]) {
-            const incoming = this.links.get((object.link as Link).obsidianLink());
+        if ((direction === "both" || direction === "incoming") && "$link" in object && object["$link"]) {
+            const incoming = this.links.get((object.$link as Link).obsidianLink());
             if (incoming) {
                 for (const id of incoming) {
                     yield id;
@@ -568,10 +568,10 @@ export class Datastore {
 
         if (
             (direction === "both" || direction === "outgoing") &&
-            LINKBEARING_TYPE in object &&
-            iterableExists(object, "links")
+            object.$types.contains(LINKABLE_TYPE) &&
+            iterableExists(object, "$links")
         ) {
-            for (const link of object.links as Link[]) {
+            for (const link of object.$links as Link[]) {
                 const resolved = this.resolveLink(link);
                 if (resolved) yield resolved.$id;
             }

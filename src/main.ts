@@ -51,6 +51,9 @@ export default class DatacorePlugin extends Plugin {
             -100
         );
 
+        // Register JS highlighting for codeblocks.
+        this.register(this.registerCodeblockHighlighting());
+
         // Initialize as soon as the workspace is ready.
         if (!this.app.workspace.layoutReady) {
             this.app.workspace.onLayoutReady(async () => this.core.initialize());
@@ -67,6 +70,21 @@ export default class DatacorePlugin extends Plugin {
 
     onunload() {
         console.log(`Datacore: version ${this.manifest.version} unloaded.`);
+    }
+
+    /** Register codeblock highlighting and return a closure which unregisters. */
+    registerCodeblockHighlighting(): () => void {
+        window.CodeMirror.defineMode("datacorejs", (config) => window.CodeMirror.getMode(config, "javascript"));
+        window.CodeMirror.defineMode("datacorejsx", (config) => window.CodeMirror.getMode(config, "jsx"));
+        window.CodeMirror.defineMode("datacorets", (config) => window.CodeMirror.getMode(config, "javascript"));
+        window.CodeMirror.defineMode("datacoretsx", (config) => window.CodeMirror.getMode(config, "jsx"));
+
+        return () => {
+            window.CodeMirror.defineMode("datacorejs", (config) => window.CodeMirror.getMode(config, "null"));
+            window.CodeMirror.defineMode("datacorejsx", (config) => window.CodeMirror.getMode(config, "null"));
+            window.CodeMirror.defineMode("datacorets", (config) => window.CodeMirror.getMode(config, "null"));
+            window.CodeMirror.defineMode("datacoretsx", (config) => window.CodeMirror.getMode(config, "null"));
+        };
     }
 
     /** Update the given settings to new values. */

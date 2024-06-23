@@ -389,7 +389,7 @@ export type Grouping<T> = T[] | GroupElement<T>[];
 
 export namespace Groupings {
     /** Determines if the given group entry is a standalone value, or a grouping of sub-entries. */
-    export function isElementGroup<T>(entry: T | GroupElement<T>): entry is GroupElement<T> {
+    export function isElementGroup<T>(entry: any): entry is GroupElement<T> {
         return Literals.isObject(entry) && Object.keys(entry).length == 2 && "key" in entry && "rows" in entry;
     }
 
@@ -408,13 +408,50 @@ export namespace Groupings {
     }
 
     /** Count the total number of elements in a recursive grouping. */
-    export function count<T>(elements: Grouping<T>): number {
-        if (isGrouping(elements)) {
+    export function count<T>(elements: Grouping<T> | GroupElement<T>): number {
+        if (isElementGroup(elements)) {
+            return count(elements.rows);
+        } else if (isGrouping(elements)) {
             let result = 0;
             for (let subgroup of elements) result += count(subgroup.rows);
             return result;
         } else {
             return elements.length;
         }
+    }
+
+    /** Recursively slice a grouping, preserving the group structure that contains elements [start...end). */
+    export function slice<T>(elements: Grouping<T>, start: number, end: number): Grouping<T> {
+        if (end <= start) return [];
+        if (isLeaf(elements)) return elements.slice(start, end);
+
+        // Find the first group that contains index `start`.
+        let index = 0,
+            seen = 0;
+        while (index < elements.length && seen + count(elements[index]) <= start) {
+            seen += count(elements[index]);
+            index++;
+        }
+
+        // start was greater than the entire length of the groupings.
+        if (index >= elements.length) return [];
+
+        const result: { key: Literal; rows: Grouping<T> }[] = [];
+        while (index < elements.length && seen < end) {
+            const group = elements[index];
+            const groupSize = count(group);
+            const groupStart = Math.max(seen, start);
+            const groupEnd = Math.min(groupSize + seen, end);
+
+            result.push({
+                key: group.key,
+                rows: slice(group.rows, groupStart - seen, groupEnd - seen),
+            });
+
+            seen += groupSize;
+            index++;
+        }
+
+        return result;
     }
 }

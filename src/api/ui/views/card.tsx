@@ -1,5 +1,5 @@
 import { Literal } from "expression/literal";
-import { VNode, h } from "preact";
+import { VNode } from "preact";
 import { useMemo } from "preact/hooks";
 
 import "styles/cards.css";

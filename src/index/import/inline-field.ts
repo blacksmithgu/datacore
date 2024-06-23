@@ -4,6 +4,7 @@ import { PRIMITIVES } from "expression/parser";
 import { Literal } from "expression/literal";
 import * as P from "parsimmon";
 import emojiRegex from "emoji-regex";
+import { JsonConversion, JsonLiteral } from "index/types/json/common";
 
 /** A parsed inline field from a specific line. */
 export interface LocalInlineField {
@@ -42,6 +43,39 @@ export interface InlineField {
     };
     /** If this inline field was defined via a wrapping ('[' or '(' or 'link'), then the wrapping that was used. */
     wrapping?: string;
+}
+
+/** JSON, serializable representation of an inline field. */
+export interface JsonInlineField {
+    /** The actual key describing the inline field. */
+    key: string;
+    /** The raw value of the inline field. */
+    raw: string;
+    /** The parsed value. */
+    value: JsonLiteral;
+    /** Full position information for where the inline field is located in the document. */
+    position: {
+        /** The line number the inline field appears on. */
+        line: number;
+        /** The start column of the field. */
+        start: number;
+        /** The start column of the *value* for the field. Immediately after the '::'. */
+        startValue: number;
+        /** The end column of the field. */
+        end: number;
+    };
+    /** If this inline field was defined via a wrapping ('[' or '(' or 'link'), then the wrapping that was used. */
+    wrapping?: string;
+}
+
+/** Convert an inline field to a JSON format. */
+export function jsonInlineField(field: InlineField): JsonInlineField {
+    return Object.assign({}, field, { value: JsonConversion.json(field.value) });
+}
+
+/** Convert a JSON inline field back to a regular field. */
+export function valueInlineField(field: JsonInlineField): InlineField {
+    return Object.assign({}, field, { value: JsonConversion.value(field.value) });
 }
 
 export function asInlineField(local: LocalInlineField, lineno: number): InlineField;

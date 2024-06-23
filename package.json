@@ -1,6 +1,6 @@
 {
   "name": "datacore",
-  "version": "0.1.2",
+  "version": "0.1.6",
   "description": "Reactive data engine for Obsidian.md.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -39,9 +39,10 @@
     "prettier": "2.3.2",
     "ts-jest": "^27.0.5",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.2"
+    "typescript": "^5.4.2"
   },
   "dependencies": {
+    "@datastructures-js/queue": "^4.2.3",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
@@ -53,7 +54,7 @@
     "preact": "^10.17.1",
     "react-select": "^5.8.0",
     "sorted-btree": "^1.8.1",
-    "yaml": "^2.3.3",
-    "sucrase": "3.35.0"
+    "sucrase": "3.35.0",
+    "yaml": "^2.3.3"
   }
 }

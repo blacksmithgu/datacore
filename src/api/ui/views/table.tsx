@@ -1,13 +1,13 @@
 import { Literal, Literals } from "expression/literal";
-import { CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit } from "./markdown";
-import { useInterning, useStableCallback } from "./hooks";
+import { CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit } from "../../../ui/markdown";
+import { useInterning, useStableCallback } from "../../../ui/hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 
-import { Fragment, VNode, h, isValidElement } from "preact";
+import { Fragment, VNode, isValidElement } from "preact";
 import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks";
-import { Grouping } from "./grouping";
-import { PagingControl } from "./paging";
+import { Grouping } from "../grouping";
+import { ControlledPager } from "./paging";
 
 import "styles/reactive-table.css";
 
@@ -65,9 +65,9 @@ export interface TableColumn<T, V = Literal> {
 
     /** Enables or disables grouping on this column. */
     groupable?: boolean;
-		
-		/** enables or disables editing on this column. */
-		editable?: boolean;
+
+    /** enables or disables editing on this column. */
+    editable?: boolean;
     /** called when the value is updated via editing */
     update?: (value: V) => any;
 }
@@ -180,7 +180,7 @@ export function ControlledTableView<T>(props: TableState<T> & { rows: T[]; dispa
                 <tfoot>
                     <tr>
                         <td colSpan={visualColumns.length}>
-                            <PagingControl
+                            <ControlledPager
                                 totalPages={totalPages}
                                 page={props.page ?? 0}
                                 setPage={(page) => props.dispatch({ type: "set-page", page })}

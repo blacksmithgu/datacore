@@ -42,9 +42,9 @@ Obsidian has some native support for editing metadata at the page level, and has
 away from inline fields (since they are much more bespoke). Inline fields will still be supported for users who prefer
 it, but the following ways to add metadata will be added:
 
-- [ ] **Inline YAML**: You will be able to place YAML objects anywhere in the document and mark it `inline` to have it
+- [X] **Inline YAML**: You will be able to place YAML objects anywhere in the document and mark it `inline` to have it
   add additional metadata to the page / section.
-- [ ] **Inline Objects**: You will be able to define YAML codeblocks as "objects", which are searchable independent of
+- [X] **Inline Objects**: You will be able to define YAML codeblocks as "objects", which are searchable independent of
   the page they are on (for example, "exercise" objects).
 - [X] **Sections**: Sections can be treated as objects and are directly queryable.
 - [X] **Tasks**: Tasks can be directly queried and are more performant; metadata can be added using the Task plugin
@@ -55,10 +55,10 @@ it, but the following ways to add metadata will be added:
 Dataview can be very frustrating to debug if it fails or lags; some new features are being added to make things more
 clear.
 
-- [ ] **Auto-limit**: Queries will autromatically be limited to the top 50/100 results to prevent serious rendering
+- [X] **Auto-limit**: Queries will autromatically be limited to the top 50/100 results to prevent serious rendering
   lagging. Rendering large objects (such as markdown pages) will show abbreviated views that are much more performant.
-- [ ] **Query Time**: All views will have timing information showing total time it took to query, render, and update.
-- [ ] **Indexing Activity**: A new indicator on the bottom of the screen will show how indexing is going visually and
+- [X] **Query Time**: All views will have timing information showing total time it took to query, render, and update.
+- [X] **Indexing Activity**: A new indicator on the bottom of the screen will show how indexing is going visually and
   average index time per file.
 - [ ] **Log**: Datacore will log any actions it takes (re-renders, indexes) with timing information for debugging. This
   data will be available in a simple log view which supports redacting file names for safely posting to support forums.
@@ -68,7 +68,7 @@ clear.
 The kind of metadata that Datacore will index.
 
 - [X] **Markdown Pages**: As expected. Should index sections, tasks, frontmatter, inline fields, and so on.
-- [ ] **Inline Fields**: Inline fields will be opt-in instead of on by default, so performance sensitive vaults can opt
+- [X] **Inline Fields**: Inline fields will be opt-in instead of on by default, so performance sensitive vaults can opt
   for inline YAML blocks or frontmatter instead, which are faster to parse.
 - [X] **Sections**: Every section in markdown pages will be parsed, including the implicit "root" section (the first
   part of the page before any section headers).
@@ -101,7 +101,7 @@ Background pre-requisites; this is generally not user facing.
   index all to speed up performance.
     - All of these features will have timings which indicate how long they take, on average.
 - [X] **Throttle Controls**: Set a percent allowance of how much CPU to use up for all Datacore tasks.
-- [ ] **File-based Persistence**: IndexedDB appears to have hard metadata limits and does not work for large vaults
+- [X] **File-based Persistence**: IndexedDB appears to have hard metadata limits and does not work for large vaults
   (where caching is most desparately needed). An alternative multi-file database (of sorted JSON documents), like LowDB
   or LevelDB, will work better.
 - [X] **Rendering Ratelimiting**: Datacore should never crash Obsidian due to rendering a huge query. All queries have

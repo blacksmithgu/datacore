@@ -1,7 +1,7 @@
 import { Literal, Literals } from "expression/literal";
 import { Indexable } from "../index/types/indexable";
 import { InlineField } from "index/import/inline-field";
-import { FrontmatterEntry } from "index/types/markdown/json";
+import { FrontmatterEntry } from "index/types/markdown";
 
 /** The source of a field, used when determining what files to overwrite and how. */
 export type Provenance =

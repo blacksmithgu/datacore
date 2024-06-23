@@ -3,7 +3,7 @@
 import { DataObject, Link, Literal, Literals } from "expression/literal";
 import { Result } from "api/result";
 import { BinaryOpHandler, createBinaryOps } from "./binaryop";
-import { Expression } from "expression/expression";
+import { Expression, Expressions } from "expression/expression";
 import { DEFAULT_FUNCTIONS, FunctionImpl } from "./functions";
 import { Settings } from "settings";
 import { Fieldbearing, Fieldbearings } from "./field";
@@ -69,7 +69,7 @@ export class Evaluator {
             case "literal":
                 return Result.success(expr.value);
             case "variable":
-                if (expr.name === "row") return Result.success(variables.all());
+                if (expr.name === Expressions.ROW) return Result.success(variables.all());
 
                 const resolved = variables.resolve(expr.name);
                 if (resolved !== undefined) return Result.success(resolved);

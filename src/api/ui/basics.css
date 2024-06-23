@@ -1,0 +1,37 @@
+/* Basic padding for buttons. */
+.dc-button {
+    padding: 4px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+/* Error intent - red background. */
+.dc-intent-error {
+    background-color: var(--color-red) !important;
+}
+
+/* Warn intent - orange background. */
+.dc-intent-warn {
+    background-color: var(--color-orange) !important;
+}
+
+/* "Info" intent - blue background. */
+.dc-intent-info {
+    background-color: var(--color-blue) !important;
+}
+
+/** "Success" intent - green background. */
+.dc-intent-success {
+    background-color: var(--color-green) !important;
+}
+
+/** Text boxes. */
+.dc-textbox {
+    padding: 4px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}

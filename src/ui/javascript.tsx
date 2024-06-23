@@ -35,10 +35,10 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
                 Fragment: Fragment,
             });
 
+            // Early return in case state changes during the async call above.
             if (!this.loaded) return;
 
             const renderableElement = makeRenderableElement(renderable, this.path);
-
             render(
                 <DatacoreContextProvider
                     app={this.api.app}
@@ -92,10 +92,13 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 export function makeRenderableElement(object: any, sourcePath: string): JSX.Element {
     if (typeof object === "function") {
         return createElement(object, {});
-		}
-		else if(Array.isArray(object)) {
-			return createElement("div", {}, (object as any[]).map(x => makeRenderableElement(x, sourcePath)))
-		} else if (isValidElement(object)) {
+    } else if (Array.isArray(object)) {
+        return createElement(
+            "div",
+            {},
+            (object as any[]).map((x) => makeRenderableElement(x, sourcePath))
+        );
+    } else if (isValidElement(object)) {
         return object;
     } else {
         return <Lit value={object} sourcePath={sourcePath} />;

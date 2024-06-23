@@ -1,5 +1,6 @@
-import { Transferable } from "index/web-worker/transferable";
 import { Link } from "expression/link";
+import { Literal } from "expression/literal";
+import { JsonConversion } from "index/types/json/common";
 import { DateTime, Duration } from "luxon";
 
 describe("Literals", () => {
@@ -10,6 +11,11 @@ describe("Literals", () => {
 });
 
 test("Date", () => expect(roundTrip(DateTime.fromObject({ year: 1982, month: 5, day: 25 })).day).toEqual(25));
+test("Date Timezone", () => {
+    const date = DateTime.fromObject({ year: 1941, month: 6, day: 5 }, { zone: "PST" });
+    expect(roundTrip(date)).toEqual(date);
+});
+
 test("Duration", () => expect(roundTrip(Duration.fromMillis(10000)).toMillis()).toEqual(10000));
 test("Link", () => expect(roundTrip(Link.file("hello"))).toEqual(Link.file("hello")));
 
@@ -19,8 +25,8 @@ test("Full Date", () => {
 });
 
 /** Run a value through the transferable converter and back again. */
-function roundTrip<T>(value: T): T {
-    return Transferable.value(Transferable.transferable(value));
+function roundTrip<T extends Literal>(value: T): T {
+    return JsonConversion.value(JsonConversion.json(value)) as T;
 }
 
 function checkRoundTrip(value: any) {

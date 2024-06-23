@@ -1,14 +1,20 @@
-import { Link } from "expression/link";
-import { getFileTitle } from "utils/normalizers";
+import { JsonLink, Link } from "expression/link";
+import { getExtension, getFileTitle } from "utils/normalizers";
 import { DateTime } from "luxon";
-import { CachedMetadata, FileStats, ListItemCache } from "obsidian";
+import { CachedMetadata, FileStats, FrontMatterCache } from "obsidian";
 import { parse as parseYaml } from "yaml";
 import BTree from "sorted-btree";
-import { InlineField, asInlineField, extractFullLineField, extractInlineFields } from "./inline-field";
-import { EXPRESSION } from "expression/parser";
+import {
+    InlineField,
+    JsonInlineField,
+    asInlineField,
+    extractFullLineField,
+    extractInlineFields,
+    jsonInlineField,
+} from "./inline-field";
+import { PRIMITIVES } from "expression/parser";
 import { Literal } from "expression/literal";
 import {
-    FrontmatterEntry,
     JsonMarkdownBlock,
     JsonMarkdownListBlock,
     JsonMarkdownListItem,
@@ -17,7 +23,10 @@ import {
     JsonMarkdownTaskItem,
     JsonMarkdownDatablock,
     JsonMarkdownCodeblock,
-} from "index/types/markdown/json";
+    JsonFrontmatterEntry,
+} from "index/types/json/markdown";
+import { JsonConversion } from "index/types/json/common";
+import { mapObjectValues } from "utils/data";
 
 /** Matches yaml datablocks, which show up as independent objects in the datacore index. */
 const YAML_DATA_REGEX = /```yaml:data/i;
@@ -34,9 +43,12 @@ export function markdownImport(
     metadata: CachedMetadata,
     stats: FileStats
 ): JsonMarkdownPage {
-    // Total length of the file.
     const lines = markdown.split("\n");
-    const empty = !lines.some((line) => line.trim() !== "");
+    const frontmatter: Record<string, JsonFrontmatterEntry> | undefined = metadata.frontmatter
+        ? parseFrontmatterBlock(metadata.frontmatter)
+        : undefined;
+
+    const page = new PageData(path, stats, lines.length, frontmatter);
 
     //////////////
     // Sections //
@@ -45,40 +57,31 @@ export function markdownImport(
     const metaheadings = metadata.headings ?? [];
     metaheadings.sort((a, b) => a.position.start.line - b.position.start.line);
 
-    const sections = new BTree<number, JsonMarkdownSection>(undefined, (a, b) => a - b);
+    const sections = new BTree<number, SectionData>(undefined, (a, b) => a - b);
     for (let index = 0; index < metaheadings.length; index++) {
-        const section = metaheadings[index];
-        const start = section.position.start.line;
-        const end =
-            index == metaheadings.length - 1 ? lines.length - 1 : metaheadings[index + 1].position.start.line - 1;
+        const entry = metaheadings[index];
+        const start = entry.position.start.line;
+        const end = index == metaheadings.length - 1 ? lines.length : metaheadings[index + 1].position.start.line;
 
-        sections.set(start, {
-            $ordinal: index + 1,
-            $title: section.heading,
-            $level: section.level,
-            $position: { start, end },
-            $infields: {},
-            $blocks: [],
-            $tags: [],
-            $links: [],
-        });
+        const section = new SectionData(start, end, entry.heading, entry.level, index + 1);
+        sections.set(start, page.section(section));
     }
 
     // Add an implicit section for the "heading" section of the page if there is not an immediate header but there is
     // some content in the file. If there are other sections, then go up to that, otherwise, go for the entire file.
-    const firstSection: [number, JsonMarkdownSection] | undefined = sections.getPairOrNextHigher(0);
-    if ((!firstSection && !empty) || (firstSection && !emptylines(lines, 0, firstSection[1].$position.start))) {
-        const end = firstSection ? firstSection[1].$position.start - 1 : lines.length;
-        sections.set(0, {
-            $ordinal: 0,
-            $title: getFileTitle(path),
-            $level: 1,
-            $position: { start: 0, end },
-            $blocks: [],
-            $infields: {},
-            $tags: [],
-            $links: [],
-        });
+    if (sections.size == 0) {
+        if (!emptylines(lines, 0, lines.length)) {
+            const section = new SectionData(0, lines.length, getFileTitle(path), 1, 0);
+            sections.set(0, page.section(section));
+        }
+    } else {
+        // Find the start of the first section.
+        const first = sections.getPairOrNextHigher(0)?.[1]!!;
+
+        if (first.start > 0 && !emptylines(lines, 0, first.start)) {
+            const section = new SectionData(0, first.start, getFileTitle(path), 1, 0);
+            sections.set(0, page.section(section));
+        }
     }
 
     ////////////
@@ -87,7 +90,7 @@ export function markdownImport(
 
     // All blocks; we will assign tags and other metadata to blocks as we encounter them. At the end, only blocks that
     // have actual metadata will be stored to save on memory pressure.
-    const blocks = new BTree<number, JsonMarkdownBlock>(undefined, (a, b) => a - b);
+    const blocks = new BTree<number, BlockData>(undefined, (a, b) => a - b);
     let blockOrdinal = 1;
     for (const block of metadata.sections || []) {
         // Skip headings blocks, we handle them specially as sections.
@@ -98,130 +101,73 @@ export function markdownImport(
         const startLine = lines[start]; // to use to check the codeblock type
 
         if (block.type === "list") {
-            blocks.set(start, {
-                $ordinal: blockOrdinal++,
-                $position: { start, end },
-                $tags: [],
-                $links: [],
-                $infields: {},
-                $blockId: block.id,
-                $elements: [],
-                $type: "list",
-            } as JsonMarkdownListBlock);
+            blocks.set(start, new ListBlockData(start, end, blockOrdinal++, block.id));
         } else if (block.type == "code" && YAML_DATA_REGEX.test(startLine)) {
             const yaml: string = lines
                 .slice(start + 1, end)
                 .join("\n")
                 .replace(/\t/gm, "  ");
-            const parsed = parseYaml(yaml);
+            const split: Record<string, JsonFrontmatterEntry> = parseFrontmatterBlock(parseYaml(yaml));
 
-            const split: Record<string, FrontmatterEntry> = {};
-            for (const key of Object.keys(parsed)) {
-                const value = parsed[key];
-
-                split[key.toLowerCase()] = {
-                    key: key,
-                    value: parseFrontmatter(value),
-                    raw: value,
-                };
-            }
-
-            blocks.set(start, {
-                $ordinal: blockOrdinal++,
-                $position: { start, end },
-                $tags: [],
-                $infields: {},
-                $type: "datablock",
-                $data: split,
-                $links: [],
-            } as JsonMarkdownDatablock);
+            blocks.set(start, new DatablockData(start, end, blockOrdinal++, split, block.id));
         } else if (block.type === "code") {
             // Check if the block is fenced.
             const match = startLine.match(CODEBLOCK_FENCE_REGEX);
             if (!match) {
                 // This is an indented-style codeblock.
-                blocks.set(start, {
-                    $ordinal: blockOrdinal++,
-                    $position: { start, end },
-                    $tags: [],
-                    $infields: {},
-                    $type: "codeblock",
-                    $links: [],
-                    $languages: [],
-                    $contentPosition: { start, end },
-                    $style: "indent",
-                } as JsonMarkdownCodeblock);
+                blocks.set(start, new CodeblockData(start, end, blockOrdinal++, [], "indent", start, end, block.id));
             } else {
                 const languages = match.length > 1 && match[1] ? match[1].split(",") : [];
-                blocks.set(start, {
-                    $ordinal: blockOrdinal++,
-                    $position: { start, end },
-                    $tags: [],
-                    $infields: {},
-                    $type: "codeblock",
-                    $links: [],
-                    $languages: languages,
-                    $contentPosition: { start: start + 1, end: end - 1 },
-                    $style: "fenced",
-                } as JsonMarkdownCodeblock);
+                blocks.set(
+                    start,
+                    new CodeblockData(start, end, blockOrdinal++, languages, "fenced", start + 1, end - 1, block.id)
+                );
             }
         } else {
-            blocks.set(start, {
-                $ordinal: blockOrdinal++,
-                $position: { start, end },
-                $tags: [],
-                $links: [],
-                $infields: {},
-                $blockId: block.id,
-                $type: block.type,
-            });
+            blocks.set(start, new BaseBlockData(start, end, blockOrdinal++, block.type, block.id));
         }
     }
 
     // Add blocks to sections.
-    for (const block of blocks.values() as Iterable<JsonMarkdownBlock>) {
-        const section = sections.getPairOrNextLower(block.$position.start);
-
-        if (section && section[1].$position.end >= block.$position.end) {
-            section[1].$blocks.push(block);
-        }
-    }
+    for (const block of blocks.values()) lookup(block.start, sections)?.block(block);
 
     ///////////
     // Lists //
     ///////////
 
     // All list items in lists. Start with a simple trivial pass.
-    const listItems = new BTree<number, JsonMarkdownListItem>(undefined, (a, b) => a - b);
+    const listItems = new BTree<number, ListItemData>(undefined, (a, b) => a - b);
     for (const list of metadata.listItems || []) {
-        const item = convertListItem(list);
-        let content = lines
-            .slice(item.$position.start, (item.$position.end) + 1).join("\n")
+        const item = new ListItemData(
+            list.position.start.line,
+            list.position.end.line,
+            list.parent,
+            list.id,
+            list.task
+        );
+				let content = lines
+            .slice(item.start, (item.end) + 1).join("\n")
             /** strip inline fields maybe */
-        let marker = content.split("\n")[0].replace(/>|\t/g, "").trim().slice(0, 1)
-        item.$symbol = marker;
-        item.$text = content.replace(/[\-+\*]\s\[.\]\s/, "");
-        listItems.set(item.$position.start, item);
+        item.text = content.replace(/[\-+\*]\s\[.\]\s/, "");
+        listItems.set(item.start, item);
     }
 
     // In the second list pass, actually construct the list heirarchy.
     for (const item of listItems.values()) {
-        let content = lines
-            .slice(item.$position.start, (item.$position.end) + 1).join("\n")
+				let content = lines
+            .slice(item.start, (item.end) + 1).join("\n")
             .replace(/^[\t\f\v ]+|[\-*+]\s/gm, "")
             /** strip inline fields maybe */
             // .replace(/[\[\(].*?::\s*.*?[\]\)]/gm, "")
-        item.$text = content;
-        if (item.$parentLine < 0) {
-            const listBlock = blocks.get(-item.$parentLine);
-            if (!listBlock || !(listBlock.$type === "list")) continue;
+        item.text = content;
 
-            (listBlock as JsonMarkdownListBlock).$elements.push(item);
+        if (item.parentLine < 0) {
+            const listBlock = blocks.get(-item.parentLine);
+            if (!listBlock || !(listBlock.type === "list")) continue;
+
+            (listBlock as ListBlockData).items.push(item);
         } else {
-            const listItem = listItems.get(item.$parentLine);
-            if (!listItem) continue;
-
-            listItem.$elements.push(item);
+            listItems.get(item.parentLine)?.elements.push(item);
         }
     }
 
@@ -230,40 +176,36 @@ export function markdownImport(
     //////////
 
     // For each tag, assign it to the appropriate section and block that it is a part of.
-    const tags = new Set<string>();
-    for (let tagdef of metadata.tags ?? []) {
+    for (const tagdef of metadata.tags ?? []) {
         const tag = tagdef.tag.startsWith("#") ? tagdef.tag : "#" + tagdef.tag;
         const line = tagdef.position.start.line;
-        tags.add(tag);
+        page.metadata.tag(tag);
 
-        const section = sections.getPairOrNextLower(line);
-        if (section && section[1].$position.end >= line) addTag(section[1].$tags, tag);
+        lookup(line, sections)?.metadata.tag(tag);
+        lookup(line, blocks)?.metadata.tag(tag);
+        lookup(line, listItems)?.metadata.tag(tag);
+    }
 
-        const block = blocks.getPairOrNextLower(line);
-        if (block && block[1].$position.end >= line) addTag(block[1].$tags, tag);
-
-        const listItem = blocks.getPairOrNextLower(line);
-        if (listItem && listItem[1].$position.end >= line) addTag(listItem[1].$tags, tag);
+    // Add frontmatter tags.
+    if (metadata.frontmatter) {
+        for (const rawtag in extractTags(metadata.frontmatter)) {
+            const tag = rawtag.startsWith("#") ? rawtag : "#" + rawtag;
+            page.metadata.tag(tag);
+        }
     }
 
     ///////////
     // Links //
     ///////////
 
-    const links: Link[] = [];
     for (let linkdef of metadata.links ?? []) {
         const link = Link.infer(linkdef.link);
         const line = linkdef.position.start.line;
-        addLink(links, link);
+        page.metadata.link(link);
 
-        const section = sections.getPairOrNextLower(line);
-        if (section && section[1].$position.end >= line) addLink(section[1].$links, link);
-
-        const block = blocks.getPairOrNextLower(line);
-        if (block && block[1].$position.end >= line) addLink(block[1].$links, link);
-
-        const listItem = listItems.getPairOrNextLower(line);
-        if (listItem && listItem[1].$position.end >= line) addLink(listItem[1].$links, link);
+        lookup(line, sections)?.metadata.link(link);
+        lookup(line, blocks)?.metadata.link(link);
+        lookup(line, listItems)?.metadata.link(link);
     }
 
     ///////////////////////
@@ -272,89 +214,28 @@ export function markdownImport(
 
     // Frontmatter links are only assigned to the page.
     for (const linkdef of metadata.frontmatterLinks ?? []) {
-        const link = Link.infer(linkdef.link, false, linkdef.displayText);
-        addLink(links, link);
+        page.metadata.link(Link.infer(linkdef.link, false, linkdef.displayText));
     }
 
     ///////////////////
     // Inline Fields //
     ///////////////////
 
-    const inlineFields: Record<string, InlineField> = {};
     for (const field of iterateInlineFields(lines)) {
         const line = field.position.line;
-        addInlineField(inlineFields, field);
+        page.metadata.inlineField(field);
 
-        const section = sections.getPairOrNextLower(line);
-        if (section && section[1].$position.end >= line) addInlineField(section[1].$infields, field);
-
-        const block = blocks.getPairOrNextLower(line);
-        if (block && block[1].$position.end >= line) addInlineField(block[1].$infields, field);
-
-        const listItem = listItems.getPairOrNextLower(line);
-        if (listItem && listItem[1].$position.end >= line) addInlineField(listItem[1].$infields, field);
+        lookup(line, sections)?.metadata.inlineField(field);
+        lookup(line, blocks)?.metadata.inlineField(field);
+        lookup(line, listItems)?.metadata.inlineField(field);
     }
 
-    /////////////////////////
-    // Frontmatter Parsing //
-    /////////////////////////
-
-    const frontmatter: Record<string, FrontmatterEntry> = {};
-    for (const key of Object.keys(metadata.frontmatter ?? {})) {
-        const value = metadata.frontmatter![key];
-
-        // Lower-case the keys; this does mean we may miss some frontmatter entries but I hope not too many people
-        // have frontmatter keys that are identical up to casing...
-        // If you do, I'm very sorry to hear that. I may add the raw frontmatter somewhere for your explicit use case.
-        frontmatter[key.toLowerCase()] = {
-            key,
-            value: parseFrontmatter(value),
-            raw: value,
-        };
-    }
-
-    return {
-        $path: path,
-        $tags: Array.from(tags),
-        $links: links,
-        $sections: sections.valuesArray(),
-        $ctime: stats.ctime,
-        $mtime: stats.mtime,
-        $frontmatter: frontmatter,
-        $infields: inlineFields,
-        $extension: "md",
-        $size: stats.size,
-        $position: { start: 0, end: lines.length },
-    };
+    return page.build();
 }
 
-/** Convert a list item into the appropriate markdown list type. */
-function convertListItem(raw: ListItemCache): JsonMarkdownListItem {
-    if (raw.task) {
-        return {
-            $tags: [],
-            $links: [],
-            $position: { start: raw.position.start.line, end: raw.position.end.line },
-            $elements: [],
-            $infields: {},
-            $parentLine: raw.parent,
-            $blockId: raw.id,
-            $type: "task",
-            $status: raw.task,
-        } as JsonMarkdownTaskItem;
-    } else {
-        return {
-            $tags: [],
-            $links: [],
-            $position: { start: raw.position.start.line, end: raw.position.end.line },
-            $elements: [],
-            $infields: {},
-            $parentLine: raw.parent,
-            $blockId: raw.id,
-            $type: "list",
-        };
-    }
-}
+//////////////////
+// Parsing Aids //
+//////////////////
 
 /** Check if the given line range is all empty. Start is inclusive, end exclusive. */
 function emptylines(lines: string[], start: number, end: number): boolean {
@@ -363,16 +244,6 @@ function emptylines(lines: string[], start: number, end: number): boolean {
     }
 
     return true;
-}
-
-/**
- * Mutably add the given link to the list only if it is not already present.
- * This is O(n) but should be fine for most files; we could eliminate the O(n) by instead
- * using intermediate sets but not worth the complexity.
- */
-function addLink(target: Link[], incoming: Link) {
-    if (target.find((v) => v.equals(incoming))) return;
-    target.push(incoming);
 }
 
 /**
@@ -397,23 +268,20 @@ function* iterateInlineFields(content: string[]): Generator<InlineField> {
     }
 }
 
-/**
- * Mutably add the inline field to the list only if a field with the given name is not already present.
- * This is linear time, which hopefully will not be awful. We can complicate the storage container if it is.
- *
- * TODO: As a simple optimization, make a builder which makes this O(1).
- */
-function addInlineField(target: Record<string, InlineField>, incoming: InlineField) {
-    const lower = incoming.key.toLowerCase();
-    if (Object.keys(target).some((key) => key.toLowerCase() == lower)) return;
+/** Top-level function which maps a YAML block - including frontmatter - into frontmatter entries. */
+export function parseFrontmatterBlock(block: Record<string, any>): Record<string, JsonFrontmatterEntry> {
+    const result: Record<string, JsonFrontmatterEntry> = {};
+    for (const key of Object.keys(block)) {
+        const value = block[key];
 
-    target[lower] = incoming;
-}
+        result[key.toLowerCase()] = {
+            key: key,
+            value: JsonConversion.json(parseFrontmatter(value)),
+            raw: value,
+        };
+    }
 
-/** Add a tag to the given list only if it is not already present. */
-function addTag(target: string[], incoming: string) {
-    if (target.indexOf(incoming) != -1) return;
-    target.push(incoming);
+    return result;
 }
 
 /** Recursively convert frontmatter into fields. We have to dance around YAML structure. */
@@ -445,13 +313,13 @@ export function parseFrontmatter(value: any): Literal {
     } else if (typeof value === "boolean") {
         return value;
     } else if (typeof value === "string") {
-        let dateParse = EXPRESSION.date.parse(value);
+        let dateParse = PRIMITIVES.date.parse(value);
         if (dateParse.status) return dateParse.value;
 
-        let durationParse = EXPRESSION.duration.parse(value);
+        let durationParse = PRIMITIVES.duration.parse(value);
         if (durationParse.status) return durationParse.value;
 
-        let linkParse = EXPRESSION.link.parse(value);
+        let linkParse = PRIMITIVES.link.parse(value);
         if (linkParse.status) return linkParse.value;
 
         return value;
@@ -459,4 +327,287 @@ export function parseFrontmatter(value: any): Literal {
 
     // Backup if we don't understand the type.
     return null;
+}
+
+/** Finds an element which contains the given line. */
+export function lookup<T extends { start: number; end: number }>(line: number, tree: BTree<number, T>): T | undefined {
+    const target = tree.getPairOrNextLower(line)?.[1];
+    if (target && target.end > line) return target;
+
+    return undefined;
+}
+
+/** Extract tags intelligently from frontmatter. Handles arrays, numbers, and strings. */
+export function extractTags(metadata: FrontMatterCache): string[] {
+    let tagKeys = Object.keys(metadata).filter((t) => t.toLowerCase() == "tags" || t.toLowerCase() == "tag");
+
+    return tagKeys
+        .map((k) => splitFrontmatterTagOrAlias(metadata[k], /[,\s]+/))
+        .reduce((p, c) => p.concat(c), [])
+        .map((str) => (str.startsWith("#") ? str : "#" + str));
+}
+
+/** Split a frontmatter list into separate elements; handles actual lists, comma separated lists, and single elements. */
+export function splitFrontmatterTagOrAlias(data: any, on: RegExp): string[] {
+    if (data == null || data == undefined) return [];
+    if (Array.isArray(data)) {
+        return data
+            .filter((s) => !!s)
+            .map((s) => splitFrontmatterTagOrAlias(s, on))
+            .reduce((p, c) => p.concat(c), []);
+    }
+
+    // Force to a string to handle numbers and so on.
+    return ("" + data)
+        .split(on)
+        .filter((t) => !!t)
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
+}
+
+///////////////////////
+// Builder Utilities //
+///////////////////////
+
+/** Convienent shared utility for tracking metadata - links, tags, and so on. */
+export class Metadata {
+    public tags: Set<string> = new Set();
+    public links: Link[] = [];
+    public inlineFields: Record<string, InlineField> = {};
+
+    /** Add a tag to the metadata. */
+    public tag(tag: string) {
+        this.tags.add(tag);
+    }
+
+    /** Add a link to the metadata. */
+    public link(link: Link) {
+        if (this.links.find((v) => v.equals(link))) return;
+        this.links.push(link);
+    }
+
+    /** Add an inline field to the metadata. */
+    public inlineField(field: InlineField) {
+        const lower = field.key.toLowerCase();
+        if (Object.keys(this.inlineFields).some((key) => key.toLowerCase() == lower)) return;
+
+        this.inlineFields[lower] = field;
+    }
+
+    /** Return a list of unique added tags. */
+    public finishTags(): string[] {
+        return Array.from(this.tags);
+    }
+
+    /** Return a list of JSON-serialized links. */
+    public finishLinks(): JsonLink[] {
+        return this.links.map((link) => link.toObject());
+    }
+
+    /** Return a list of JSON-serialized inline fields. */
+    public finishInlineFields(): Record<string, JsonInlineField> {
+        return mapObjectValues(this.inlineFields, jsonInlineField);
+    }
+}
+
+/** Convienent utility for constructing page objects. */
+export class PageData {
+    public sections: SectionData[] = [];
+    public metadata: Metadata = new Metadata();
+
+    public constructor(
+        public path: string,
+        public stats: FileStats,
+        public length: number,
+        public frontmatter?: Record<string, JsonFrontmatterEntry>
+    ) {}
+
+    /** Add a new section to the page. */
+    public section(section: SectionData): SectionData {
+        this.sections.push(section);
+        return section;
+    }
+
+    public build(): JsonMarkdownPage {
+        return {
+            $path: this.path,
+            $ctime: this.stats.ctime,
+            $mtime: this.stats.mtime,
+            $size: this.stats.size,
+            $extension: getExtension(this.path),
+            $position: { start: 0, end: this.length },
+            $tags: this.metadata.finishTags(),
+            $links: this.metadata.finishLinks(),
+            $infields: this.metadata.finishInlineFields(),
+            $sections: this.sections.map((x) => x.build()),
+            $frontmatter: this.frontmatter,
+        };
+    }
+}
+
+/** Convienent utility for constructing markdown sections. */
+export class SectionData {
+    public blocks: BlockData[] = [];
+    public metadata: Metadata = new Metadata();
+
+    public constructor(
+        public start: number,
+        public end: number,
+        public title: string,
+        public level: number,
+        public ordinal: number
+    ) {}
+
+    public block(block: BlockData) {
+        this.blocks.push(block);
+    }
+
+    public build(): JsonMarkdownSection {
+        return {
+            $title: this.title,
+            $ordinal: this.ordinal,
+            $level: this.level,
+            $tags: this.metadata.finishTags(),
+            $infields: this.metadata.finishInlineFields(),
+            $links: this.metadata.finishLinks(),
+            $position: { start: this.start, end: this.end },
+            $blocks: this.blocks.map((block) => block.build()),
+        };
+    }
+}
+
+/** Constructs markdown list blocks specifically. */
+export class ListBlockData {
+    public type: string = "list";
+    public metadata: Metadata = new Metadata();
+    public items: ListItemData[] = [];
+
+    public constructor(public start: number, public end: number, public ordinal: number, public blockId?: string) {}
+
+    public build(): JsonMarkdownListBlock {
+        return {
+            $ordinal: this.ordinal,
+            $position: { start: this.start, end: this.end },
+            $infields: this.metadata.finishInlineFields(),
+            $tags: this.metadata.finishTags(),
+            $links: this.metadata.finishLinks(),
+            $type: "list",
+            $blockId: this.blockId,
+            $elements: this.items.map((item) => item.build()),
+        };
+    }
+}
+
+/** Constructs markdown codeblocks specifically. */
+export class CodeblockData {
+    public type: string = "codeblock";
+    public metadata: Metadata = new Metadata();
+
+    public constructor(
+        public start: number,
+        public end: number,
+        public ordinal: number,
+        public languages: string[],
+        public style: "indent" | "fenced",
+        public contentStart: number,
+        public contentEnd: number,
+        public blockId?: string
+    ) {}
+
+    public build(): JsonMarkdownCodeblock {
+        return {
+            $type: "codeblock",
+            $ordinal: this.ordinal,
+            $position: { start: this.start, end: this.end },
+            $infields: this.metadata.finishInlineFields(),
+            $tags: this.metadata.finishTags(),
+            $links: this.metadata.finishLinks(),
+            $blockId: this.blockId,
+            $languages: this.languages,
+            $style: this.style,
+            $contentPosition: { start: this.contentStart, end: this.contentEnd },
+        };
+    }
+}
+
+/** Constructs markdown datablocks specifically. */
+export class DatablockData {
+    public type: string = "datablock";
+    public metadata: Metadata = new Metadata();
+
+    public constructor(
+        public start: number,
+        public end: number,
+        public ordinal: number,
+        public data: Record<string, JsonFrontmatterEntry>,
+        public blockId?: string
+    ) {}
+
+    public build(): JsonMarkdownDatablock {
+        return {
+            $type: "datablock",
+            $ordinal: this.ordinal,
+            $position: { start: this.start, end: this.end },
+            $infields: this.metadata.finishInlineFields(),
+            $tags: this.metadata.finishTags(),
+            $links: this.metadata.finishLinks(),
+            $blockId: this.blockId,
+            $data: this.data,
+        };
+    }
+}
+
+/** Base block metadata used for non-specific blocks. */
+export class BaseBlockData {
+    public metadata: Metadata = new Metadata();
+
+    public constructor(
+        public start: number,
+        public end: number,
+        public ordinal: number,
+        public type: string,
+        public blockId?: string
+    ) {}
+
+    public build(): JsonMarkdownBlock {
+        return {
+            $type: this.type,
+            $ordinal: this.ordinal,
+            $position: { start: this.start, end: this.end },
+            $infields: this.metadata.finishInlineFields(),
+            $tags: this.metadata.finishTags(),
+            $links: this.metadata.finishLinks(),
+            $blockId: this.blockId,
+        };
+    }
+}
+
+export type BlockData = ListBlockData | CodeblockData | DatablockData | BaseBlockData;
+
+/** Utility for constructing markdown list items. */
+export class ListItemData {
+    public metadata: Metadata = new Metadata();
+    public elements: ListItemData[] = [];
+		public text: string;
+    public constructor(
+        public start: number,
+        public end: number,
+        public parentLine: number,
+        public blockId?: string,
+        public status?: string
+    ) {}
+
+    public build(): JsonMarkdownListItem {
+        return {
+            $parentLine: this.parentLine,
+            $position: { start: this.start, end: this.end },
+            $blockId: this.blockId,
+            $elements: this.elements.map((element) => element.build()),
+            $type: this.status ? "task" : "list",
+            $infields: this.metadata.finishInlineFields(),
+            $tags: this.metadata.finishTags(),
+            $links: this.metadata.finishLinks(),
+            $status: this.status,
+        } as JsonMarkdownTaskItem;
+    }
 }

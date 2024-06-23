@@ -4,12 +4,13 @@ import { SearchResult } from "index/datastore";
 import { PRIMITIVES, QUERY } from "expression/parser";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown/markdown";
+import { MarkdownPage } from "index/types/markdown";
 import { Result } from "./result";
 import { Component, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
 import { DatacoreJSRenderer } from "ui/javascript";
 import { DatacoreLocalApi } from "./local-api";
 import Parsimmon from "parsimmon";
+import { Coerce } from "./coerce";
 
 /** Exterally visible API for datacore. */
 export class DatacoreApi {
@@ -51,6 +52,9 @@ export class DatacoreApi {
     // General utilities //
     ///////////////////////
 
+    /** Utilities for coercing types into one specific type for easier programming. */
+    public coerce = Coerce;
+
     /** Resolve a local or absolute path or link to an absolute path. */
     public resolvePath(path: string | Link, sourcePath?: string): string {
         const rawpath = path instanceof Link ? path.path : path;
@@ -79,6 +83,16 @@ export class DatacoreApi {
     /** Create a file link pointing to the given path. */
     public fileLink(path: string): Link {
         return Link.file(path);
+    }
+
+    /** Create a link to a header with the given name. */
+    public headerLink(path: string, header: string): Link {
+        return Link.header(path, header);
+    }
+
+    /** Create a link to a block with the given path and block ID. */
+    public blockLink(path: string, block: string): Link {
+        return Link.block(path, block);
     }
 
     /** Try to parse the given link, throwing an error if it is invalid. */

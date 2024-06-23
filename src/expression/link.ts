@@ -59,7 +59,7 @@ export class Link {
     }
 
     /** Load a link from it's raw JSON representation. */
-    public static fromObject(object: Record<string, any>): Link {
+    public static fromObject(object: JsonLink): Link {
         return new Link(object);
     }
 
@@ -113,7 +113,7 @@ export class Link {
     }
 
     /** Convert this link to a raw object which is serialization-friendly. */
-    public toObject(): Record<string, any> {
+    public toObject(): JsonLink {
         return {
             path: this.path,
             type: this.type,
@@ -124,7 +124,7 @@ export class Link {
     }
 
     /** Convert any link into a link to its file. */
-    public toFile() {
+    public toFile(): Link {
         return Link.file(this.path, this.embed, this.display);
     }
 
@@ -146,7 +146,7 @@ export class Link {
         return result;
     }
 
-    /** Obtain the display for this link, or return a simple default display. */
+    /** Obtain the display for this link if present, or return a simple default display. */
     public displayOrDefault() {
         if (this.display) {
             return this.display;
@@ -170,6 +170,20 @@ export class Link {
     public fileName(): string {
         return getFileTitle(this.path);
     }
+}
+
+/** Serialized form of a link. */
+export interface JsonLink {
+    /** The file path this link points to. */
+    path: string;
+    /** The display name associated with the link. */
+    display?: string;
+    /** The block ID or header this link points to within a file, if relevant. */
+    subpath?: string;
+    /** Is this link an embedded link (of form '![[hello]]')? */
+    embed: boolean;
+    /** The type of this link, which determines what 'subpath' refers to, if anything. */
+    type: "file" | "header" | "block";
 }
 
 /** Split on unescaped pipes in an inner link. */

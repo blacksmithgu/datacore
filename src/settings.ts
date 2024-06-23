@@ -17,7 +17,8 @@ export interface Settings {
     defaultPageSize: number;
     /**
      * Maximum depth that objects will be rendered to (i.e., how many levels of subproperties
-     * will be rendered by default).
+     * will be rendered by default). This avoids infinite recursion due to self referential objects
+     * and also ensures that rendering objects is acceptably performant.
      */
     maxRecursiveRenderDepth: number;
 
