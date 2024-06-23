@@ -1,23 +1,24 @@
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { DefaultListElement, ListState } from "api/ui/views/list";
-import { useIndexUpdates, useStableCallback } from "../../../ui/hooks";
+import { useIndexUpdates, useStableCallback } from "ui/hooks";
 import { Fragment } from "preact";
-import { APP_CONTEXT, DATACORE_CONTEXT } from "../../../ui/markdown";
+import { APP_CONTEXT, DATACORE_CONTEXT } from "ui/markdown";
 import { JSXInternal } from "preact/src/jsx";
 import { Dispatch, useContext, useMemo, useRef, useState } from "preact/hooks";
-import { rewriteTask, setTaskCompletion } from "../../../ui/utils";
+import { rewriteTask, setTaskCompletion } from "ui/utils";
 import { Literal, Literals } from "expression/literal";
 import {
-  EditableAction,
-  EditableListField,
-  EditableState,
-  TextEditable,
-  useEditableDispatch,
+	EditableAction,
+	EditableListField,
+	EditableState,
+	TextEditable,
+	useEditableDispatch,
 } from "ui/fields/editable";
 import { setInlineField } from "index/import/inline-field";
-import { BaseFieldProps } from "../../../ui/fields/common-props";
+import { BaseFieldProps } from "ui/fields/common-props";
 import { Field } from "expression/field";
 import { DateTime } from "luxon";
+import "styles/lists.css";
 
 export interface TaskProps extends ListState<MarkdownTaskItem | MarkdownListItem> {
   /** task states to cycle through, if specified */
