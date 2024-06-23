@@ -332,7 +332,7 @@ export function parseFrontmatter(value: any): Literal {
 /** Finds an element which contains the given line. */
 export function lookup<T extends { start: number; end: number }>(line: number, tree: BTree<number, T>): T | undefined {
     const target = tree.getPairOrNextLower(line)?.[1];
-    if (target && target.end > line) return target;
+    if (target && target.end >= line) return target;
 
     return undefined;
 }
