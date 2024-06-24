@@ -18,6 +18,7 @@ import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Textbox } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
+import { TaskList } from "./ui/views/task";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 
@@ -220,6 +221,8 @@ export class DatacoreLocalApi {
 
         return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
     }
+
+		public TaskList = TaskList;
 
     ///////////
     // Views //
