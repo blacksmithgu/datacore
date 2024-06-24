@@ -18,6 +18,7 @@ import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Textbox } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
+import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 
@@ -233,4 +234,5 @@ export class DatacoreLocalApi {
 
     public Button = Button;
     public Textbox = Textbox;
+		public Callout = Callout;
 }
