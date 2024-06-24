@@ -22,22 +22,26 @@ import "styles/lists.css";
 
 export interface TaskProps extends ListState<MarkdownTaskItem | MarkdownListItem> {
 	/** task states to cycle through, if specified */
-	states?: string[];
+	additionalStates?: string[];
 	/** fields to display under each item in this task list */
 	displayedFields?: (BaseFieldProps<Literal> & { key: string })[];
 }
 
 export function TaskList({
 	rows: items,
-	states,
+	additionalStates: states,
 	renderer: listRenderer = (item, index) => <DefaultListElement element={item} />,
 	...rest
 }: TaskProps) {
 	const content = useMemo(() => {
 		return (
-			<ul class="contains-task-list">
+			<ul className="datacore contains-task-list">
 				{items?.map((item, ind) =>
-					item instanceof MarkdownTaskItem ? <Task state={{ ...rest, states }} item={item} /> : listRenderer(item, ind)
+					item instanceof MarkdownTaskItem ? (
+						<Task state={{ ...rest, additionalStates: states }} item={item} />
+					) : (
+						listRenderer(item, ind)
+					)
 				)}
 			</ul>
 		);
@@ -50,18 +54,19 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 	const core = useContext(DATACORE_CONTEXT);
 	const [iu] = useState(useIndexUpdates(core));
 	const { settings } = core;
+	const states = [" ", ...(props.additionalStates || []), "x"];
 	const nextState = useMemo(() => {
-		if (props.states && props.states?.length > 0) {
-			let curIndex = props.states.findIndex((a) => a === item.$status);
+		if (props.additionalStates && props.additionalStates?.length > 0) {
+			let curIndex = states.findIndex((a) => a === item.$status);
 			curIndex++;
-			if (curIndex >= props.states.length) {
+			if (curIndex >= states.length) {
 				curIndex = 0;
 			}
-			return props.states[curIndex];
+			return states[curIndex];
 		} else {
 			return item.$completed ? " " : "x";
 		}
-	}, [props.states, item, item.$status, item.$completed]);
+	}, [props.additionalStates, item, item.$status, item.$completed]);
 
 	const completedRef = useRef<Dispatch<EditableAction<Literal>>>(null);
 	const onChecked = useStableCallback(
@@ -89,7 +94,6 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 				);
 				await rewriteTask(app.vault, task, newStatus, newText);
 				task.$status = newStatus;
-				// taskDispatch({type: "field-changed", newValue: DateTime.now().toFormat(settings.defaultDateFormat), fieldKey: settings.taskCompletionTextField, })
 			}
 			if (settings.recursiveTaskCompletion) {
 				let flatted: MarkdownTaskItem[] = [];
@@ -183,17 +187,41 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 			/>
 		);
 	});
+	const [collapsed, setCollapsed] = useState<boolean>(true);
+	const hasChildren = item.$elements.length > 0;
+	const toggleCnames = ["datacore-collapser"];
+	if (collapsed) toggleCnames.push("is-collapsed");
+	if (!hasChildren) toggleCnames.push("no-children");
+	const collapseIndicator = (
+		<div onClick={() => setCollapsed(!collapsed)} className={toggleCnames.join(" ")} dir="auto">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="24"
+				height="24"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				className="svg-icon right-triangle"
+			>
+				<path d="M3 8L12 17L21 8"></path>
+			</svg>
+		</div>
+	);
 
 	return (
-		<li class={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={item.$status}>
-			<input class="datacore task-list-item-checkbox" type="checkbox" checked={checked} onClick={onChecked} />
+		<li className={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={item.$status}>
+			{collapseIndicator}
+			<input className="datacore task-list-item-checkbox" type="checkbox" checked={checked} onClick={onChecked} />
 			<div>
 				<div className="datacore-list-item-content">
 					{theElement}
-					<div class="datacore-list-item-fields">{editableFields}</div>
+					<div className="datacore-list-item-fields">{editableFields}</div>
 				</div>
 			</div>
-			{item.$elements.length > 0 && <TaskList {...props} rows={item.$elements} />}
+			{hasChildren && !collapsed && <TaskList {...props} rows={item.$elements} />}
 		</li>
 	);
 }

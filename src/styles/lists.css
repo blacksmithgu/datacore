@@ -1,9 +1,5 @@
 .datacore-list-item-content {
 	display: inline-flex;
-}
-
-.datacore-list-item-content {
-	display: inline-flex;
 	justify-content: space-between;
   width: -webkit-fill-available;
 }
@@ -11,14 +7,44 @@
 :is(ul, ol) li:not(:first-of-type) p:first-of-type {
 	 margin-block-start: unset !important;
 }
-
+ul.datacore.contains-task-list > li {
+	/* margin-inline-start: 0; */
+}
 input.datacore.task-list-item-checkbox {
-    float: left !important;
+	/* position: absolute; */
+	float: left;
+	margin-inline-start: calc(var(--checkbox-size) * 0.1) !important;
+		/* margin-inline-start: 0 !important; */
 }
 
-li.datacore.task-list-item > *:nth-child(2) {
+li.datacore.task-list-item > *:nth-child(3) {
     display: flow-root !important;
     top: -5px;
 		padding-left: 0.5em;
     position: relative;
+}
+
+.datacore-collapser, .datacore-collapser svg.svg-icon {
+	transition: transform 100ms ease-in-out;
+}
+.datacore-collapser.is-collapsed svg.svg-icon {
+  transform: rotate(calc(var(--direction) * -1 * 90deg));
+}
+li.datacore.datacore.task-list-item .datacore-collapser {
+	margin-right: 0.7em;
+	float: left;
+}
+/* li.datacore.task-list-item > :first-child {
+	display: flex;
+	float: left;
+} */
+li.datacore.task-list-item .datacore-collapser {
+	vertical-align: middle;
+	align-self: start;
+	top: -0.1em;
+	position:absolute;
+	margin-inline-start: calc(var(--checkbox-size) * -1.4);
+}
+li.datacore.task-list-item .datacore-collapser.no-children {
+	visibility: hidden;
 }
