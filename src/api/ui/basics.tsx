@@ -122,9 +122,11 @@ export function Switch(
     const { className, disabled, defaultChecked, checked, onToggleChange, ...forwardingProps } = props;
     const [isToggled, setIsToggled] = React.useState(checked ?? defaultChecked ?? false);
 
-    React.useEffect(() => {
-        if (typeof checked === "boolean") setIsToggled(checked);
-    }, [checked]);
+    // Directly update checked state if the current internal state does not match.
+    if (typeof checked === "boolean" && checked != isToggled) {
+        setIsToggled(checked);
+        return;
+    }
 
     return (
         <label
