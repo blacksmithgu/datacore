@@ -631,6 +631,8 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $links: this.$links,
             $blockId: this.$blockId,
             $parentLine: this.$parentLine,
+						$text: this.$text,
+						$symbol: this.$symbol
         };
     }
 
