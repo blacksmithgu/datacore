@@ -16,7 +16,7 @@ import { Embed, LineSpanEmbed } from "api/ui/embed";
 import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
-import { Button, Textbox } from "./ui/basics";
+import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
 import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
@@ -235,4 +235,9 @@ export class DatacoreLocalApi {
     public Button = Button;
     public Textbox = Textbox;
 		public Callout = Callout;
+    public Checkbox = Checkbox;
+    public Slider = Slider;
+    public Switch = Switch;
+    public VanillaSelect = VanillaSelect;
+    public Icon = Icon;
 }

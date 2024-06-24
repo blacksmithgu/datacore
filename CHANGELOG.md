@@ -1,3 +1,9 @@
+# 0.1.7 (Beta)
+
+Includes several new interactive UI elements courtesy of @Quorafind!
+
+---
+
 # 0.1.6 (Beta)
 
 Group rendering in tables is now also configurable.
