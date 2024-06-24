@@ -136,6 +136,8 @@ export function markdownImport(
     ///////////
 
     // All list items in lists. Start with a simple trivial pass.
+		const contentRegex = /^[\t\f\v ]*[\-+\*]\s(\[.\]\s)?/;
+		const markerRegex = /^(>?\s?)*(\t|\s)*/g;
     const listItems = new BTree<number, ListItemData>(undefined, (a, b) => a - b);
     for (const list of metadata.listItems || []) {
         const item = new ListItemData(
@@ -149,8 +151,8 @@ export function markdownImport(
             .slice(item.start, (item.end) + 1).join("\n")
             /** strip inline fields maybe */
 
-        let marker = content.split("\n")[0].replace(/^(>?\s?)*(\t|\s)*/g, "").trim().slice(0, 1)
-        item.text = content.replace(/^[\t\f\v ]*[\-+\*](\s\[.\])?\s/, "");
+        let marker = content.split("\n")[0].replace(markerRegex, "").trim().slice(0, 1)
+        item.text = content.replace(contentRegex, "");
 				item.symbol = marker;
         listItems.set(item.start, item);
     }
@@ -161,9 +163,9 @@ export function markdownImport(
             .slice(item.start, (item.end) + 1).join("\n") 
             /** strip inline fields maybe */
             // .replace(/[\[\(].*?::\s*.*?[\]\)]/gm, "")
-        item.text = content.replace(/^[\t\f\v ]*[\-+\*](\s\[.\])?\s/, "");
+        item.text = content.replace(contentRegex, "");
 
-				item.symbol = content.split("\n")[0].replace(/^(>?\s?)*(\t|\s)*/g, "").trim().slice(0, 1);
+				item.symbol = content.split("\n")[0].replace(markerRegex, "").trim().slice(0, 1);
         listItems.set(item.start, item);
         if (item.parentLine < 0) {
             const listBlock = blocks.get(-item.parentLine);
