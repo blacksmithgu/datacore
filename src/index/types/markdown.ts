@@ -610,7 +610,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
 
     /** return text without annotations + indentation */
     get $strippedText() {
-        return this.$text.replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1").replace(/^[\t\f\v\s]+|[\-*+]\s(\[.\])?/gm, "").trimEnd()//.replace(/^$/gm, "")
+        return this.$text.replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1").replace(/^[\t\f\v\s]*[\-\*+]\s(\[.\])?/gm, "").trimEnd()//.replace(/^$/gm, "")
     }
     /** Fetch a specific field by key. */
     public field(key: string) {
