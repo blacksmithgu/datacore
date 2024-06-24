@@ -78,7 +78,6 @@
     transition: background 0.3s;
 }
 
-
 .dc-switch.dc-switch-disabled {
     cursor: not-allowed;
     opacity: 0.6;
