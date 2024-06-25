@@ -1,5 +1,5 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useContext, useMemo } from "preact/hooks";
+import { useContext, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -37,6 +37,12 @@ export interface VanillaTableProps<T> {
     /** The columns to render in the table. */
     columns: VanillaColumn<T>[];
 
+    /** Scroll to the top of the table when the page changes.
+     *  If set to a boolean - enables or disables scrolling to the top.
+     *  If set to a number, scrolling to the top will be enabled with the given number of rows per page.
+     **/
+    scrollToTop?: boolean | number;
+
     /** The rows to render; may potentially be grouped or just a plain array. */
     rows: Grouping<T>;
 
@@ -60,11 +66,24 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
 
     const totalElements = useMemo(() => Groupings.count(props.rows), [props.rows]);
     const paging = useDatacorePaging({ initialPage: 0, paging: props.paging, elements: totalElements });
+    const tableRef = useRef<HTMLTableElement>(null);
 
     const pagedRows = useMemo(() => {
-        if (paging.enabled)
+        if (paging.enabled) {
+            if (
+                tableRef.current &&
+                ((typeof props.scrollToTop === "number" && paging.pageSize >= props.scrollToTop) ||
+                    props.scrollToTop === true)
+            ) {
+                tableRef.current.scrollIntoView({
+                    behavior: "instant",
+                    block: "start",
+                    inline: "nearest",
+                });
+            }
+
             return Groupings.slice(props.rows, paging.page * paging.pageSize, (paging.page + 1) * paging.pageSize);
-        else return props.rows;
+        } else return props.rows;
     }, [paging.page, paging.pageSize, paging.enabled, props.rows]);
 
     const groupings = useMemo(() => {
@@ -77,7 +96,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
 
     return (
         <div>
-            <table className="datacore-table">
+            <table ref={tableRef} className="datacore-table">
                 <thead>
                     <tr className="datacore-table-header-row">
                         {columns.map((col) => (
