@@ -223,7 +223,7 @@ export class DatacoreLocalApi {
         return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
     }
 
-		public TaskList = TaskList;
+    public TaskList = TaskList;
 
     ///////////
     // Views //

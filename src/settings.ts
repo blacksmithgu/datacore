@@ -32,11 +32,11 @@ export interface Settings {
     /** Whether to index inline fields by default. Inline field parsing requires a full scan of the document, which can make indexing take 2-3x longer. */
     indexInlineFields: boolean;
 
-		/** Whether to check task items off recursively in datacore views */
-		recursiveTaskCompletion: boolean;
-		
-		/** Name of field in which to store completion date/time */
-		taskCompletionTextField: string;
+    /** Whether to check task items off recursively in datacore views */
+    recursiveTaskCompletion: boolean;
+
+    /** Name of field in which to store completion date/time */
+    taskCompletionTextField: string;
 }
 
 /** Default settings for the plugin. */
@@ -56,6 +56,6 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
     renderNullAs: "-",
 
     indexInlineFields: true,
-		recursiveTaskCompletion: false,
-		taskCompletionTextField: "completedAt"
+    recursiveTaskCompletion: false,
+    taskCompletionTextField: "completedAt",
 });

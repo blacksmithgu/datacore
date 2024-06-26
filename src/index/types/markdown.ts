@@ -585,7 +585,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
             $text: object.$text,
-            $symbol: object.$symbol!
+            $symbol: object.$symbol!,
         });
     }
 
@@ -610,7 +610,10 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
 
     /** return text without annotations + indentation */
     get $strippedText() {
-        return this.$text.replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1").replace(/^[\t\f\v\s]*[\-\*+]\s(\[.\])?/gm, "").trimEnd()//.replace(/^$/gm, "")
+        return this.$text
+            .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1")
+            .replace(/^[\t\f\v\s]*[\-\*+]\s(\[.\])?/gm, "")
+            .trimEnd(); //.replace(/^$/gm, "")
     }
     /** Fetch a specific field by key. */
     public field(key: string) {
@@ -631,8 +634,8 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $links: this.$links,
             $blockId: this.$blockId,
             $parentLine: this.$parentLine,
-						$text: this.$text,
-						$symbol: this.$symbol
+            $text: this.$text,
+            $symbol: this.$symbol,
         };
     }
 
@@ -672,7 +675,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
             $parentLine: object.$parentLine,
             $status: object.$status,
             $text: object.$text,
-            $symbol: object.$symbol!
+            $symbol: object.$symbol!,
         });
     }
 

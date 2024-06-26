@@ -153,5 +153,4 @@ export interface JsonMarkdownTaskItem extends JsonMarkdownListItem {
 
     /** The text inside of the task item. */
     $status: string;
-    
 }
