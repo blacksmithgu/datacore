@@ -37,16 +37,14 @@ export function Callout({
         foldCnames.remove("is-collapsed");
         cnames.remove("is-collapsed");
     }
-    const contentRef = useRef<HTMLDivElement>(null);
-    let contentHeight = 0;
-    useEffect(() => {
-        contentRef.current &&
-            (contentRef.current.style.height = open ? contentRef.current.scrollHeight.toString() + "px" : "0");
-    }, [open]);
-    const toggle = useStableCallback(() => {
-        // @ts-ignore
-        setOpen(!open);
-    }, [contentHeight]);
+		const contentRef = useRef<HTMLDivElement>(null)
+		let contentHeight = 0;
+		useEffect(() => {
+			contentRef.current && (contentRef.current.style.height = open ? contentRef.current.scrollHeight.toString() + "px" : "0")
+		}, [open])
+		const toggle = useStableCallback(() => {
+			setOpen(!open)
+		}, [contentHeight])	
     return (
         <div
             data-callout-metadata
