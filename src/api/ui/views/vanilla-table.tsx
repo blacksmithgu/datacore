@@ -39,7 +39,7 @@ export interface VanillaTableProps<T> {
 
     /** Scroll to the top of the table when the page changes.
      *  If set to a boolean - enables or disables scrolling to the top.
-     *  If set to a number, scrolling to the top will be enabled with the given number of rows per page.
+     *  If set to a number, scroll-to-top will be enabled only if the page size is greater than the provided number.
      **/
     scrollToTop?: boolean | number;
 
