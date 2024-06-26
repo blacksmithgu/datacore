@@ -1,5 +1,5 @@
 import { ComponentChildren, VNode } from "preact";
-import { memo, useRef } from "preact/compat";
+import { memo, useMemo, useRef } from "preact/compat";
 import { useControlledState, useStableCallback } from "ui/hooks";
 import "./callout.css";
 
@@ -39,8 +39,9 @@ export function Callout({
         cnames.remove("is-collapsed");
     }
 		const contentRef = useRef<HTMLDivElement>(null)
+		const contentHeight = useMemo(() => contentRef.current?.scrollHeight, [collapsible])
 		const toggle = useStableCallback(() => {
-			contentRef.current && (contentRef.current.style.height = !open ? "0" : contentRef.current?.scrollHeight.toString())
+			contentHeight && contentRef.current && (contentRef.current.style.height = !open ? "0" : contentHeight.toString())
 			setOpen(!open)
 		}, [open, collapsible])
     return (
