@@ -43,9 +43,7 @@ export function Callout({
 			contentRef.current && (contentRef.current.style.height = open ? contentRef.current.scrollHeight.toString() + "px" : "0")
 		}, [open])
 		const toggle = useStableCallback(() => {
-			// @ts-ignore
 			setOpen(!open)
-
 		}, [contentHeight])	
     return (
         <div
