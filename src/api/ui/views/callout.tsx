@@ -14,7 +14,6 @@ export interface CalloutProps {
     onOpenChange?: (value: boolean) => void;
 }
 
-
 export function Callout({
     collapsible,
     open: openProp,
@@ -30,7 +29,7 @@ export function Callout({
     const cnames = ["datacore", "callout"];
     if (collapsible) cnames.push("is-collapsible");
 
-		let foldCnames = ["callout-fold"];
+    let foldCnames = ["callout-fold"];
     if (!open) {
         foldCnames.push("is-collapsed");
         cnames.push("is-collapsed");
@@ -38,16 +37,16 @@ export function Callout({
         foldCnames.remove("is-collapsed");
         cnames.remove("is-collapsed");
     }
-		const contentRef = useRef<HTMLDivElement>(null)
-		let contentHeight = 0;
-		useEffect(() => {
-			contentRef.current && (contentRef.current.style.height = open ? contentRef.current.scrollHeight.toString() + "px" : "0")
-		}, [open])
-		const toggle = useStableCallback(() => {
-			// @ts-ignore
-			setOpen(!open)
-
-		}, [contentHeight])	
+    const contentRef = useRef<HTMLDivElement>(null);
+    let contentHeight = 0;
+    useEffect(() => {
+        contentRef.current &&
+            (contentRef.current.style.height = open ? contentRef.current.scrollHeight.toString() + "px" : "0");
+    }, [open]);
+    const toggle = useStableCallback(() => {
+        // @ts-ignore
+        setOpen(!open);
+    }, [contentHeight]);
     return (
         <div
             data-callout-metadata
@@ -75,7 +74,9 @@ export function Callout({
                     </svg>
                 </div>
             </div>
-            <div ref={contentRef} className="callout-content">{open ? children : null}</div>
+            <div ref={contentRef} className="callout-content">
+                {open ? children : null}
+            </div>
         </div>
     );
 }
