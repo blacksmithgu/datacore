@@ -1,6 +1,6 @@
 import { ComponentChildren, VNode } from "preact";
-import { memo } from "preact/compat";
-import { useControlledState } from "ui/hooks";
+import { memo, useRef } from "preact/compat";
+import { useControlledState, useStableCallback } from "ui/hooks";
 import "./callout.css";
 
 export interface CalloutProps {
@@ -37,6 +37,11 @@ export function Callout({
         foldCnames.remove("is-collapsed");
         cnames.remove("is-collapsed");
     }
+		const contentRef = useRef<HTMLDivElement>(null)
+		const toggle = useStableCallback(() => {
+			contentRef.current && (contentRef.current.style.height = !open ? "0" : contentRef.current?.scrollHeight.toString())
+			setOpen(!open)
+		}, [open, collapsible])
     return (
         <div
             data-callout-metadata
@@ -44,7 +49,7 @@ export function Callout({
             data-callout-fold={initialOpen ? "+" : "-"}
             className={cnames.join(" ")}
         >
-            <div className="callout-title" onClick={() => collapsible && setOpen(!open)}>
+            <div className="callout-title" onClick={() => collapsible && toggle()}>
                 {icon}
                 <div className="callout-title-inner">{title}</div>
                 <div className={foldCnames.join(" ")}>
@@ -64,7 +69,7 @@ export function Callout({
                     </svg>
                 </div>
             </div>
-            <div className="callout-content">{open ? children : null}</div>
+            <div ref={contentRef} className="callout-content">{open ? children : null}</div>
         </div>
     );
 }
