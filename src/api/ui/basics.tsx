@@ -1,9 +1,11 @@
 /** Basic UI components that have simple Obsidian theming. */
-import React from "preact/compat";
+import React, { useCallback } from "preact/compat";
 
-import "./basics.css";
 import { ComponentChildren } from "preact";
 import { setIcon } from "obsidian";
+import { useControlledState } from "ui/hooks";
+
+import "./basics.css";
 
 /** Various intents for buttons and other interactive elements. */
 export type Intent = "error" | "warn" | "info" | "success";
@@ -30,6 +32,7 @@ export function Button(
     );
 }
 
+/** A simple textbox which accepts text. */
 export function Textbox(props: { className?: string } & React.HTMLProps<HTMLInputElement>) {
     const { className, children, ...forwardingProps } = props;
     return (
@@ -37,6 +40,7 @@ export function Textbox(props: { className?: string } & React.HTMLProps<HTMLInpu
     );
 }
 
+/** A checkbox that can be checked and unchecked. */
 export function Checkbox(
     props: {
         className?: string;
@@ -47,24 +51,27 @@ export function Checkbox(
         children?: ComponentChildren;
     } & React.HTMLProps<HTMLInputElement>
 ) {
-    const { className, disabled, defaultChecked, checked, onCheckChange, children, ...forwardingProps } = props;
-    const [isChecked, setIsChecked] = React.useState(checked ?? defaultChecked ?? false);
+    const {
+        className,
+        disabled,
+        defaultChecked,
+        checked: isChecked,
+        onCheckChange,
+        children,
+        ...forwardingProps
+    } = props;
+    const [checked, setChecked] = useControlledState(defaultChecked ?? false, isChecked, onCheckChange);
 
-    React.useEffect(() => {
-        if (typeof checked === "boolean") setIsChecked(checked);
-    }, [checked]);
+    const onChange = useCallback((event: any) => setChecked(event.currentTarget.checked), [setChecked]);
 
     return (
         <label className={combineClasses("dc-checkbox", disabled ? "dc-checkbox-disabled" : undefined, className)}>
             <input
                 type="checkbox"
                 defaultChecked={defaultChecked}
-                checked={isChecked}
+                checked={checked}
                 disabled={disabled}
-                onChange={(e) => {
-                    setIsChecked(e.currentTarget.checked);
-                    onCheckChange && onCheckChange(e.currentTarget.checked);
-                }}
+                onChange={onChange}
                 {...forwardingProps}
             />
             {children}
@@ -85,25 +92,20 @@ export function Slider(
     } & React.HTMLProps<HTMLInputElement>
 ) {
     const { className, min = 0, max = 10, step = 1, value, defaultValue, onValueChange, ...forwardingProps } = props;
-    const [sliderValue, setSliderValue] = React.useState(value ?? defaultValue ?? 0);
+    const [slider, setSlider] = useControlledState(defaultValue ?? 0, value, onValueChange);
 
-    React.useEffect(() => {
-        if (typeof value === "number") setSliderValue(value);
-    }, [value]);
+    const onChange = useCallback((event: any) => setSlider(event.currentTarget.value), [setSlider]);
 
     return (
         <input
             type="range"
-            aria-label={sliderValue.toString()}
+            aria-label={slider.toString()}
             className={combineClasses("dc-slider", className)}
             min={min}
             max={max}
             step={step}
-            value={sliderValue}
-            onChange={(e) => {
-                setSliderValue(Number(e.currentTarget.value));
-                onValueChange && onValueChange(Number(e.currentTarget.value));
-            }}
+            value={slider}
+            onChange={onChange}
             {...forwardingProps}
         />
     );
@@ -120,19 +122,15 @@ export function Switch(
     } & React.HTMLProps<HTMLInputElement>
 ) {
     const { className, disabled, defaultChecked, checked, onToggleChange, ...forwardingProps } = props;
-    const [isToggled, setIsToggled] = React.useState(checked ?? defaultChecked ?? false);
+    const [toggled, setToggled] = useControlledState(defaultChecked ?? false, checked, onToggleChange);
 
-    // Directly update checked state if the current internal state does not match.
-    if (typeof checked === "boolean" && checked != isToggled) {
-        setIsToggled(checked);
-        return;
-    }
+    const onChange = useCallback((event: any) => setToggled(event.currentTarget.checked), [setToggled]);
 
     return (
         <label
             className={combineClasses(
                 "dc-switch checkbox-container",
-                isToggled ? "is-enabled" : undefined,
+                toggled ? "is-enabled" : undefined,
                 disabled ? "dc-switch-disabled" : undefined,
                 className
             )}
@@ -141,12 +139,9 @@ export function Switch(
                 type="checkbox"
                 className="dc-switch-input"
                 defaultChecked={defaultChecked}
-                checked={isToggled}
+                checked={toggled}
                 disabled={disabled}
-                onChange={(e) => {
-                    setIsToggled(e.currentTarget.checked);
-                    onToggleChange && onToggleChange(e.currentTarget.checked);
-                }}
+                onChange={onChange}
                 {...forwardingProps}
             />
         </label>
