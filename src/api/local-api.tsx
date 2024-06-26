@@ -234,7 +234,7 @@ export class DatacoreLocalApi {
 
     public Button = Button;
     public Textbox = Textbox;
-		public Callout = Callout;
+    public Callout = Callout;
     public Checkbox = Checkbox;
     public Slider = Slider;
     public Switch = Switch;
