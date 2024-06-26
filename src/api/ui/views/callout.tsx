@@ -53,7 +53,7 @@ export function Callout({
             className={cnames.join(" ")}
         >
             <div className="callout-title" onClick={() => collapsible && toggle()}>
-                {icon}
+                {icon && <div className="callout-icon">{icon}</div>}
                 <div className="callout-title-inner">{title}</div>
                 <div className={foldCnames.join(" ")}>
                     <svg
