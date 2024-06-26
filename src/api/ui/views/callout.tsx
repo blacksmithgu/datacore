@@ -15,7 +15,7 @@ export interface CalloutProps {
 }
 
 export function Callout({
-    collapsible,
+    collapsible = true,
     open: openProp,
     initialOpen,
     onOpenChange,
@@ -38,13 +38,9 @@ export function Callout({
         cnames.remove("is-collapsed");
     }
 		const contentRef = useRef<HTMLDivElement>(null)
-		let contentHeight = 0;
 		useEffect(() => {
 			contentRef.current && (contentRef.current.style.height = open ? contentRef.current.scrollHeight.toString() + "px" : "0")
-		}, [open])
-		const toggle = useStableCallback(() => {
-			setOpen(!open)
-		}, [contentHeight])	
+		}, [open])	
     return (
         <div
             data-callout-metadata
@@ -52,10 +48,10 @@ export function Callout({
             data-callout-fold={initialOpen ? "+" : "-"}
             className={cnames.join(" ")}
         >
-            <div className="callout-title" onClick={() => collapsible && toggle()}>
+            <div className="callout-title" onClick={() => collapsible && setOpen(!open) }>
                 {icon && <div className="callout-icon">{icon}</div>}
                 <div className="callout-title-inner">{title}</div>
-                <div className={foldCnames.join(" ")}>
+                {collapsible && <div className={foldCnames.join(" ")}>
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
@@ -70,7 +66,7 @@ export function Callout({
                     >
                         <path d="m6 9 6 6 6-6"></path>
                     </svg>
-                </div>
+                </div>}
             </div>
             <div ref={contentRef} className="callout-content">
                 {open ? children : null}
