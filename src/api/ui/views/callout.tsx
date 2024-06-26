@@ -14,22 +14,34 @@ export interface CalloutProps {
     onOpenChange?: (value: boolean) => void;
 }
 
-function CalloutTitleComponent({
-    onClick,
+
+export function Callout({
+    collapsible,
+    open: openProp,
+    initialOpen,
+    onOpenChange,
     title,
     icon,
-    open,
-}: {
-    onClick: () => unknown;
-    title: CalloutProps["title"];
-    icon: CalloutProps["icon"];
-    open: boolean;
-}) {
-    let foldCnames = ["callout-fold"];
+    children,
+    type,
+}: CalloutProps) {
+    const [open, setOpen] = useControlledState(initialOpen ?? true, openProp, onOpenChange);
+
+    const cnames = ["datacore", "callout"];
+    if (collapsible) cnames.push("is-collapsible");
+    if (!open) cnames.push("is-collapsed");
+
+		let foldCnames = ["callout-fold"];
     if (!open) foldCnames.push("is-collapsed");
     else foldCnames.remove("is-collapsed");
     return (
-        <div className="callout-title" onClick={onClick}>
+        <div
+            data-callout-metadata
+            data-callout={type}
+            data-callout-fold={initialOpen ? "+" : "-"}
+            className={cnames.join(" ")}
+        >
+<div className="callout-title" onClick={() => setOpen(!open)}>
             {icon}
             <div className="callout-title-inner">{title}</div>
             <div className={foldCnames.join(" ")}>
@@ -49,32 +61,6 @@ function CalloutTitleComponent({
                 </svg>
             </div>
         </div>
-    );
-}
-const CalloutTitle = memo(CalloutTitleComponent);
-export function Callout({
-    collapsible,
-    open: openProp,
-    initialOpen,
-    onOpenChange,
-    title,
-    icon,
-    children,
-    type,
-}: CalloutProps) {
-    const [open, setOpen] = useControlledState(initialOpen ?? true, openProp, onOpenChange);
-
-    const cnames = ["datacore", "callout"];
-    if (collapsible) cnames.push("is-collapsible");
-    if (!open) cnames.push("is-collapsed");
-    return (
-        <div
-            data-callout-metadata
-            data-callout={type}
-            data-callout-fold={initialOpen ? "+" : "-"}
-            className={cnames.join(" ")}
-        >
-            <CalloutTitle open={open} title={title} icon={icon} onClick={() => setOpen(!open)} />
             <div className="callout-content">{open && children}</div>
         </div>
     );
