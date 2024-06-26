@@ -15,7 +15,7 @@ function CalloutContent({
     children,
     open,
 }: {
-    style?: { [k in keyof CSSProperties]: string };
+    style?: Partial<CSSProperties>;
     children: ComponentChildren;
     open: boolean;
 }) {
