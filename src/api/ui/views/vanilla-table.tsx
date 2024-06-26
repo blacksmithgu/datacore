@@ -1,5 +1,5 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useContext, useMemo, useRef } from "preact/hooks";
+import { useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -68,22 +68,27 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
     const paging = useDatacorePaging({ initialPage: 0, paging: props.paging, elements: totalElements });
     const tableRef = useRef<HTMLTableElement>(null);
 
-    const pagedRows = useMemo(() => {
-        if (paging.enabled) {
-            if (
-                tableRef.current &&
-                ((typeof props.scrollToTop === "number" && paging.pageSize >= props.scrollToTop) ||
-                    props.scrollToTop === true)
-            ) {
-                tableRef.current.scrollIntoView({
-                    behavior: "instant",
-                    block: "start",
-                    inline: "nearest",
-                });
-            }
+    useEffect(() => {
+        if (
+            paging.enabled &&
+            tableRef.current &&
+            ((typeof props.scrollToTop === "number" && paging.pageSize >= props.scrollToTop) ||
+                props.scrollToTop === true ||
+                /** Disabled scroll-to-top when user set this as false in props **/
+                (paging.scrollToTop && props.scrollToTop !== false))
+        ) {
+            tableRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+                inline: "nearest",
+            });
+        }
+    }, [paging.page, paging.pageSize, props.scrollToTop]);
 
+    const pagedRows = useMemo(() => {
+        if (paging.enabled)
             return Groupings.slice(props.rows, paging.page * paging.pageSize, (paging.page + 1) * paging.pageSize);
-        } else return props.rows;
+        else return props.rows;
     }, [paging.page, paging.pageSize, paging.enabled, props.rows]);
 
     const groupings = useMemo(() => {

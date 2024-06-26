@@ -81,6 +81,7 @@ export function usePaging({
 /** Provides useful metadata about paging. */
 export interface Paging {
     enabled: boolean;
+    scrollToTop: boolean;
     page: number;
     pageSize: number;
     totalPages: number;
@@ -101,9 +102,10 @@ export function useDatacorePaging({
 
     const pageSize = typeof paging === "number" ? paging : settings.defaultPageSize;
     const pagingEnabled = typeof paging === "number" || paging === true;
+    const scrollToTop = settings.scrollToTop;
 
     const [page, totalPages, setPage] = usePaging({ initialPage, pageSize, elements });
-    return { enabled: pagingEnabled, page, pageSize, totalPages, setPage };
+    return { enabled: pagingEnabled, scrollToTop, page, pageSize, totalPages, setPage };
 }
 
 function clamp(input: number, min: number, max: number): number {

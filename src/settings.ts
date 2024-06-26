@@ -16,6 +16,12 @@ export interface Settings {
     /** Default paging size for all views (number of entries per page.) */
     defaultPageSize: number;
     /**
+     *  Sroll to the top of the table when the page changes.
+     *  By default, this is disabled to avoid the page jumping around when paging.
+     * */
+    scrollToTop: boolean;
+
+    /**
      * Maximum depth that objects will be rendered to (i.e., how many levels of subproperties
      * will be rendered by default). This avoids infinite recursion due to self referential objects
      * and also ensures that rendering objects is acceptably performant.
@@ -42,6 +48,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
 
     defaultPagingEnabled: true,
     defaultPageSize: 50,
+    scrollToTop: false,
     maxRecursiveRenderDepth: 5,
 
     defaultDateFormat: "MMMM dd, yyyy",
