@@ -19,6 +19,7 @@ import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
 import { TaskList } from "./ui/views/task";
+import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 
@@ -236,6 +237,7 @@ export class DatacoreLocalApi {
 
     public Button = Button;
     public Textbox = Textbox;
+    public Callout = Callout;
     public Checkbox = Checkbox;
     public Slider = Slider;
     public Switch = Switch;
