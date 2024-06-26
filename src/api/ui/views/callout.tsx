@@ -1,5 +1,5 @@
 import { ComponentChildren, VNode } from "preact";
-import { memo, useMemo, useRef } from "preact/compat";
+import { memo, useEffect, useMemo, useRef } from "preact/compat";
 import { useControlledState, useStableCallback } from "ui/hooks";
 import "./callout.css";
 
@@ -29,7 +29,7 @@ export function Callout({
     const cnames = ["datacore", "callout"];
     if (collapsible) cnames.push("is-collapsible");
 
-    let foldCnames = ["callout-fold"];
+		let foldCnames = ["callout-fold"];
     if (!open) {
         foldCnames.push("is-collapsed");
         cnames.push("is-collapsed");
@@ -38,13 +38,15 @@ export function Callout({
         cnames.remove("is-collapsed");
     }
 		const contentRef = useRef<HTMLDivElement>(null)
-		const contentHeight = useMemo(() => contentRef.current?.scrollHeight, [collapsible])
+		let contentHeight = 0;
+		useEffect(() => {
+			contentRef.current && (contentRef.current.style.height = open ? contentRef.current.scrollHeight.toString() + "px" : "0")
+		}, [open])
 		const toggle = useStableCallback(() => {
-			contentHeight && contentRef.current && (contentRef.current.style.height = !open ? "0" : contentHeight.toString())
-		}, [open, collapsible])
-		contentRef.current?.addEventListener("transitionend", () => {
+			// @ts-ignore
 			setOpen(!open)
-		})
+
+		}, [contentHeight])	
     return (
         <div
             data-callout-metadata
