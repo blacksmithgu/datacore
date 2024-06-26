@@ -41,8 +41,10 @@ export function Callout({
 		const contentHeight = useMemo(() => contentRef.current?.scrollHeight, [collapsible])
 		const toggle = useStableCallback(() => {
 			contentHeight && contentRef.current && (contentRef.current.style.height = !open ? "0" : contentHeight.toString())
-			setOpen(!open)
 		}, [open, collapsible])
+		contentRef.current?.addEventListener("transitionend", () => {
+			setOpen(!open)
+		})
     return (
         <div
             data-callout-metadata
