@@ -29,11 +29,16 @@ export function Callout({
 
     const cnames = ["datacore", "callout"];
     if (collapsible) cnames.push("is-collapsible");
-    if (!open) cnames.push("is-collapsed");
 
 		let foldCnames = ["callout-fold"];
-    if (!open) foldCnames.push("is-collapsed");
-    else foldCnames.remove("is-collapsed");
+    if (!open) {
+				foldCnames.push("is-collapsed")
+				cnames.push("is-collapsed")
+		}
+    else {
+			foldCnames.remove("is-collapsed")
+			cnames.remove("is-collapsed")
+		}
     return (
         <div
             data-callout-metadata
@@ -41,7 +46,7 @@ export function Callout({
             data-callout-fold={initialOpen ? "+" : "-"}
             className={cnames.join(" ")}
         >
-<div className="callout-title" onClick={() => setOpen(!open)}>
+<div className="callout-title" onClick={() => collapsible && setOpen(!open)}>
             {icon}
             <div className="callout-title-inner">{title}</div>
             <div className={foldCnames.join(" ")}>
@@ -61,7 +66,7 @@ export function Callout({
                 </svg>
             </div>
         </div>
-            <div className="callout-content">{open && children}</div>
+            <div className="callout-content">{open ? children : null}</div>
         </div>
     );
 }
