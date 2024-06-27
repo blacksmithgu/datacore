@@ -4,9 +4,9 @@ import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
 import { VNode, isValidElement } from "preact";
+import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
-import { ControlledPager, useDatacorePaging } from "./paging";
 
 /** A simple column definition which allows for custom renderers and titles. */
 export interface VanillaColumn<T, V = Literal> {
@@ -71,12 +71,10 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
         scrollOnPageChange: props.scrollOnPaging,
         elements: totalElements,
     });
-    const tableRef = useRef<HTMLTableElement>(null);
+    const tableRef = useRef<HTMLDivElement>(null);
 
     const setPage = useCallback(
         (page: number) => {
-            paging.setPage(page);
-
             if (page != paging.page && paging.scroll) {
                 tableRef.current?.scrollIntoView({
                     behavior: "smooth",
@@ -84,8 +82,10 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
                     inline: "nearest",
                 });
             }
+
+            paging.setPage(page);
         },
-        [paging.setPage, paging.scroll, tableRef.current]
+        [paging.page, paging.setPage, paging.scroll, tableRef]
     );
 
     const pagedRows = useMemo(() => {
@@ -103,8 +103,8 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
     }, [props.groupings]);
 
     return (
-        <div>
-            <table ref={tableRef} className="datacore-table">
+        <div ref={tableRef}>
+            <table className="datacore-table">
                 <thead>
                     <tr className="datacore-table-header-row">
                         {columns.map((col) => (
