@@ -181,5 +181,13 @@ export function useControlledState<T>(
         return [override, update ?? NO_OP_UPDATE];
     }
 
-    return [state, setState];
+    const setStateWithUpdate = useCallback(
+        (value: T) => {
+            setState(value);
+            if (update) update(value);
+        },
+        [setState, update]
+    );
+
+    return [state, setStateWithUpdate];
 }

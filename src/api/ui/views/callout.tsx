@@ -1,16 +1,26 @@
-import { ComponentChildren, VNode } from "preact";
-import { memo, useEffect, useMemo, useRef } from "preact/compat";
-import { useControlledState, useStableCallback } from "ui/hooks";
-import "./callout.css";
+import { VNode } from "preact";
+import { PropsWithChildren } from "preact/compat";
+import { useControlledState } from "ui/hooks";
 
+import "./callout.css";
+import { combineClasses } from "../basics";
+
+/** General properties for configuring a callout. */
 export interface CalloutProps {
-    open: boolean;
-    initialOpen?: boolean;
-    children?: ComponentChildren;
+    /** Title of the callout. */
     title: string | VNode;
+    /** Arbitrary icon to show at the left side of the title in the callout. */
     icon?: VNode;
+    /** The type of the callout. */
     type?: string;
+    /** Whether the callout is collapsible (defaults to true). */
     collapsible?: boolean;
+
+    /** Controlled prop for setting whether the callout is open. */
+    open: boolean;
+    /** Whether the callout is initially open if uncontrolled. */
+    initialOpen?: boolean;
+    /** Called whenever the open state of the callout changes due to user action. */
     onOpenChange?: (value: boolean) => void;
 }
 
@@ -23,54 +33,39 @@ export function Callout({
     icon,
     children,
     type,
-}: CalloutProps) {
+}: PropsWithChildren<CalloutProps>) {
     const [open, setOpen] = useControlledState(initialOpen ?? true, openProp, onOpenChange);
 
-    const cnames = ["datacore", "callout"];
-    if (collapsible) cnames.push("is-collapsible");
-
-    let foldCnames = ["callout-fold"];
-    if (!open) {
-        foldCnames.push("is-collapsed");
-        cnames.push("is-collapsed");
-    } else {
-        foldCnames.remove("is-collapsed");
-        cnames.remove("is-collapsed");
-    }
-		const contentRef = useRef<HTMLDivElement>(null)
-		useEffect(() => {
-			contentRef.current && (contentRef.current.style.height = open ? contentRef.current.scrollHeight.toString() + "px" : "0")
-		}, [open])	
     return (
         <div
             data-callout-metadata
             data-callout={type}
-            data-callout-fold={initialOpen ? "+" : "-"}
-            className={cnames.join(" ")}
+            data-callout-fold={open ? "+" : "-"}
+            className={combineClasses("datacore", "callout", collapsible ? "is-collapsible" : undefined)}
         >
-            <div className="callout-title" onClick={() => collapsible && setOpen(!open) }>
+            <div className="callout-title" onClick={() => collapsible && setOpen(!open)}>
                 {icon && <div className="callout-icon">{icon}</div>}
                 <div className="callout-title-inner">{title}</div>
-                {collapsible && <div className={foldCnames.join(" ")}>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="svg-icon lucide-chevron-down"
-                    >
-                        <path d="m6 9 6 6 6-6"></path>
-                    </svg>
-                </div>}
+                {collapsible && (
+                    <div className={combineClasses("callout-fold", !open ? "is-collapsed" : undefined)}>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="svg-icon lucide-chevron-down"
+                        >
+                            <path d="m6 9 6 6 6-6"></path>
+                        </svg>
+                    </div>
+                )}
             </div>
-            <div ref={contentRef} className="callout-content">
-                {open ? children : null}
-            </div>
+            {open && <div className="callout-content">{children}</div>}
         </div>
     );
 }
