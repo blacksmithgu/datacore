@@ -1,5 +1,5 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useContext, useEffect, useMemo, useRef } from "preact/hooks";
+import { useCallback, useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -37,12 +37,6 @@ export interface VanillaTableProps<T> {
     /** The columns to render in the table. */
     columns: VanillaColumn<T>[];
 
-    /** Scroll to the top of the table when the page changes.
-     *  If set to a boolean - enables or disables scrolling to the top.
-     *  If set to a number, scroll-to-top will be enabled only if the page size is greater than the provided number.
-     **/
-    scrollToTop?: boolean | number;
-
     /** The rows to render; may potentially be grouped or just a plain array. */
     rows: Grouping<T>;
 
@@ -54,6 +48,12 @@ export interface VanillaTableProps<T> {
      * If set to a number, paging will be enabled with the given number of rows per page.
      */
     paging?: boolean | number;
+
+    /**
+     * Whether the view will scroll to the top automatically on page changes. If true, will always scroll on page changes.
+     * If a number, will scroll only if the number is greater than the current page size.
+     **/
+    scrollOnPaging?: boolean | number;
 }
 
 export function VanillaTable<T>(props: VanillaTableProps<T>) {
@@ -65,25 +65,28 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
     });
 
     const totalElements = useMemo(() => Groupings.count(props.rows), [props.rows]);
-    const paging = useDatacorePaging({ initialPage: 0, paging: props.paging, elements: totalElements });
+    const paging = useDatacorePaging({
+        initialPage: 0,
+        paging: props.paging,
+        scrollOnPageChange: props.scrollOnPaging,
+        elements: totalElements,
+    });
     const tableRef = useRef<HTMLTableElement>(null);
 
-    useEffect(() => {
-        if (
-            paging.enabled &&
-            tableRef.current &&
-            ((typeof props.scrollToTop === "number" && paging.pageSize >= props.scrollToTop) ||
-                props.scrollToTop === true ||
-                /** Disabled scroll-to-top when user set this as false in props **/
-                (paging.scrollToTop && props.scrollToTop !== false))
-        ) {
-            tableRef.current.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-                inline: "nearest",
-            });
-        }
-    }, [paging.page, paging.pageSize, props.scrollToTop]);
+    const setPage = useCallback(
+        (page: number) => {
+            paging.setPage(page);
+
+            if (page != paging.page && paging.scroll) {
+                tableRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                    inline: "nearest",
+                });
+            }
+        },
+        [paging.setPage, paging.scroll, tableRef.current]
+    );
 
     const pagedRows = useMemo(() => {
         if (paging.enabled)
@@ -115,9 +118,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
                     ))}
                 </tbody>
             </table>
-            {paging.enabled && (
-                <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
-            )}
+            {paging.enabled && <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={setPage} />}
         </div>
     );
 }
