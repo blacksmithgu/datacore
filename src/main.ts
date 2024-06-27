@@ -151,6 +151,17 @@ class GeneralSettingsTab extends PluginSettingTab {
                     });
             });
 
+        new Setting(this.containerEl)
+            .setName("Scroll to Top")
+            .setDesc(
+                "If enabled, table that are paged will scroll to the top of the table when the page changes. You can set scrollToTop in specific table element to false to avoid the page jumping around when paging."
+            )
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.settings.scrollToTop).onChange(async (value) => {
+                    await this.plugin.updateSettings({ scrollToTop: value });
+                });
+            });
+
         this.containerEl.createEl("h2", { text: "Performance Tuning" });
 
         new Setting(this.containerEl)

@@ -1,5 +1,5 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useContext, useMemo } from "preact/hooks";
+import { useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -37,6 +37,12 @@ export interface VanillaTableProps<T> {
     /** The columns to render in the table. */
     columns: VanillaColumn<T>[];
 
+    /** Scroll to the top of the table when the page changes.
+     *  If set to a boolean - enables or disables scrolling to the top.
+     *  If set to a number, scroll-to-top will be enabled only if the page size is greater than the provided number.
+     **/
+    scrollToTop?: boolean | number;
+
     /** The rows to render; may potentially be grouped or just a plain array. */
     rows: Grouping<T>;
 
@@ -60,6 +66,24 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
 
     const totalElements = useMemo(() => Groupings.count(props.rows), [props.rows]);
     const paging = useDatacorePaging({ initialPage: 0, paging: props.paging, elements: totalElements });
+    const tableRef = useRef<HTMLTableElement>(null);
+
+    useEffect(() => {
+        if (
+            paging.enabled &&
+            tableRef.current &&
+            ((typeof props.scrollToTop === "number" && paging.pageSize >= props.scrollToTop) ||
+                props.scrollToTop === true ||
+                /** Disabled scroll-to-top when user set this as false in props **/
+                (paging.scrollToTop && props.scrollToTop !== false))
+        ) {
+            tableRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+                inline: "nearest",
+            });
+        }
+    }, [paging.page, paging.pageSize, props.scrollToTop]);
 
     const pagedRows = useMemo(() => {
         if (paging.enabled)
@@ -77,7 +101,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
 
     return (
         <div>
-            <table className="datacore-table">
+            <table ref={tableRef} className="datacore-table">
                 <thead>
                     <tr className="datacore-table-header-row">
                         {columns.map((col) => (
