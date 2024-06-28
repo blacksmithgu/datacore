@@ -20,6 +20,7 @@ import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "
 import { VanillaTable } from "./ui/views/vanilla-table";
 import { TaskList } from "./ui/views/task";
 import { Callout } from "./ui/views/callout";
+import { Card } from "./ui/views/card";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 
@@ -223,13 +224,14 @@ export class DatacoreLocalApi {
         return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
     }
 
-    public TaskList = TaskList;
 
     ///////////
     // Views //
     ///////////
 
+    public TaskList = TaskList;
     public VanillaTable = VanillaTable;
+		public Card = Card;
 
     /////////////////////////
     // Interative elements //
