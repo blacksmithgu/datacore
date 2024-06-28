@@ -151,6 +151,18 @@ class GeneralSettingsTab extends PluginSettingTab {
                     });
             });
 
+        new Setting(this.containerEl)
+            .setName("Scroll on Page Change")
+            .setDesc(
+                "If enabled, table that are paged will scroll to the top of the table when the page changes. " +
+                    "This can be overriden on a per-view basis."
+            )
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.settings.scrollOnPageChange).onChange(async (value) => {
+                    await this.plugin.updateSettings({ scrollOnPageChange: value });
+                });
+            });
+
         this.containerEl.createEl("h2", { text: "Performance Tuning" });
 
         new Setting(this.containerEl)

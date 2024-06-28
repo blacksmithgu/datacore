@@ -1,3 +1,10 @@
+# 0.1.8 (Beta)
+
+- @Quorafind - Adds 'scroll to top' functionality for large tables when you change pages.
+- @GamerGirlandCo - Adds a dc.Callout component that faithfully recreates the Obsidian callout.
+
+---
+
 # 0.1.7 (Beta)
 
 Includes several new interactive UI elements courtesy of @Quorafind!

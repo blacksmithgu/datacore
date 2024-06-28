@@ -1,12 +1,12 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useContext, useMemo } from "preact/hooks";
+import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
 import { VNode, isValidElement } from "preact";
+import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
-import { ControlledPager, useDatacorePaging } from "./paging";
 
 /** A simple column definition which allows for custom renderers and titles. */
 export interface VanillaColumn<T, V = Literal> {
@@ -48,6 +48,12 @@ export interface VanillaTableProps<T> {
      * If set to a number, paging will be enabled with the given number of rows per page.
      */
     paging?: boolean | number;
+
+    /**
+     * Whether the view will scroll to the top automatically on page changes. If true, will always scroll on page changes.
+     * If a number, will scroll only if the number is greater than the current page size.
+     **/
+    scrollOnPaging?: boolean | number;
 }
 
 export function VanillaTable<T>(props: VanillaTableProps<T>) {
@@ -59,7 +65,28 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
     });
 
     const totalElements = useMemo(() => Groupings.count(props.rows), [props.rows]);
-    const paging = useDatacorePaging({ initialPage: 0, paging: props.paging, elements: totalElements });
+    const paging = useDatacorePaging({
+        initialPage: 0,
+        paging: props.paging,
+        scrollOnPageChange: props.scrollOnPaging,
+        elements: totalElements,
+    });
+    const tableRef = useRef<HTMLDivElement>(null);
+
+    const setPage = useCallback(
+        (page: number) => {
+            if (page != paging.page && paging.scroll) {
+                tableRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                    inline: "nearest",
+                });
+            }
+
+            paging.setPage(page);
+        },
+        [paging.page, paging.setPage, paging.scroll, tableRef]
+    );
 
     const pagedRows = useMemo(() => {
         if (paging.enabled)
@@ -76,7 +103,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
     }, [props.groupings]);
 
     return (
-        <div>
+        <div ref={tableRef}>
             <table className="datacore-table">
                 <thead>
                     <tr className="datacore-table-header-row">
@@ -91,9 +118,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
                     ))}
                 </tbody>
             </table>
-            {paging.enabled && (
-                <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
-            )}
+            {paging.enabled && <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={setPage} />}
         </div>
     );
 }

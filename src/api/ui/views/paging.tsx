@@ -36,7 +36,7 @@ function RawControlledPager({
                             className={`dc-paging-control-page ${
                                 p === realPage ? " dc-paging-control-page-active" : ""
                             }`}
-                            onClick={() => setPage(p)}
+                            onClick={(event: any) => setPage(p)}
                         >
                             {p + 1}
                         </button>
@@ -80,10 +80,17 @@ export function usePaging({
 
 /** Provides useful metadata about paging. */
 export interface Paging {
+    /** Whether paging is enabled. */
     enabled: boolean;
+    /** Whether the view should scroll when the page changes. */
+    scroll: boolean;
+    /** The current page. */
     page: number;
+    /** The size of each page. */
     pageSize: number;
+    /** The total number of pages for this data. */
     totalPages: number;
+    /** Update the current page. */
     setPage: (page: number) => void;
 }
 
@@ -91,19 +98,24 @@ export interface Paging {
 export function useDatacorePaging({
     initialPage = 0,
     paging,
+    scrollOnPageChange,
     elements,
 }: {
     initialPage: number;
     paging: number | boolean | undefined;
+    scrollOnPageChange?: boolean | number;
     elements: number;
 }): Paging {
     const settings = useContext(SETTINGS_CONTEXT);
 
     const pageSize = typeof paging === "number" ? paging : settings.defaultPageSize;
     const pagingEnabled = typeof paging === "number" || paging === true;
+    const shouldScroll =
+        (typeof scrollOnPageChange === "number" && scrollOnPageChange >= pageSize) ||
+        !!(scrollOnPageChange ?? settings.scrollOnPageChange);
 
     const [page, totalPages, setPage] = usePaging({ initialPage, pageSize, elements });
-    return { enabled: pagingEnabled, page, pageSize, totalPages, setPage };
+    return { enabled: pagingEnabled, scroll: shouldScroll, page, pageSize, totalPages, setPage };
 }
 
 function clamp(input: number, min: number, max: number): number {

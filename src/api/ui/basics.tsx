@@ -198,7 +198,7 @@ export function Icon(props: { className?: string; icon: string }) {
 }
 
 /** Appends additional classes to a basic fixed class. */
-function combineClasses(fixed: string, ...rest: (string | undefined)[]) {
+export function combineClasses(fixed: string, ...rest: (string | undefined)[]) {
     const nonempty = rest.filter((c) => c !== undefined);
     if (nonempty.length === 0) return fixed;
 

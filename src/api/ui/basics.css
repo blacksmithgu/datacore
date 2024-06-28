@@ -75,6 +75,7 @@
 /* Basic styles for dc-slider */
 .dc-slider {
     -webkit-appearance: none;
+    appearance: none;
     transition: background 0.3s;
 }
 
