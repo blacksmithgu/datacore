@@ -38,8 +38,11 @@ export interface Settings {
     /** Whether to check task items off recursively in datacore views */
     recursiveTaskCompletion: boolean;
 
-    /** Name of field in which to store completion date/time */
-    taskCompletionTextField: string;
+    /** Name of the inline field in which to store completion date/time */
+    taskCompletionText: string;
+
+		/** If enabled, automatic completions will use emoji shorthand ✅ YYYY-MM-DD instead of [completion:: date]. */
+    taskCompletionUseEmojiShorthand: boolean;
 }
 
 /** Default settings for the plugin. */
@@ -62,5 +65,6 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
 
     indexInlineFields: true,
     recursiveTaskCompletion: false,
-    taskCompletionTextField: "completedAt",
+    taskCompletionText: "completedAt",
+		taskCompletionUseEmojiShorthand: false
 });

@@ -86,9 +86,8 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                 let newText = setTaskCompletion(
                     task,
                     task.$text,
-                    // TODO: replace these next three arguments with proper settings
-                    false,
-                    settings.taskCompletionTextField,
+                    settings.taskCompletionUseEmojiShorthand,
+                    settings.taskCompletionText,
                     settings.defaultDateFormat,
                     newStatus?.toLowerCase() === "x"
                 );
@@ -168,7 +167,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                 [item.$infields, iu]
             ),
         });
-        if (ifield.key == settings.taskCompletionTextField) {
+        if (ifield.key == settings.taskCompletionText) {
             //@ts-ignore huh?
             completedRef.current = dispatch;
         }
