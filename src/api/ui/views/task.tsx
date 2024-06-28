@@ -52,7 +52,6 @@ export function TaskList({
 export function Task({ item, state: props }: { item: MarkdownTaskItem; state: TaskProps }) {
     const app = useContext(APP_CONTEXT);
     const core = useContext(DATACORE_CONTEXT);
-    const [iu] = useState(useIndexUpdates(core));
     const { settings } = core;
     const states = [" ", ...(props.additionalStates || []), "x"];
     const nextState = useMemo(() => {
@@ -112,7 +111,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
             const nv = completed ? DateTime.now().toFormat(settings.defaultDateFormat) : null;
             completedRef.current && completedRef.current({ type: "commit", newValue: nv });
         },
-        [item, iu]
+        [item]
     );
     const onChanger = useStableCallback(
         async (val: Literal) => {
@@ -124,7 +123,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                 await rewriteTask(app.vault, item, item.$status, withFields);
             }
         },
-        [item, iu]
+        [item]
     );
     const checked = useMemo(() => item.$status !== " ", [item.$status]);
     const eState: EditableState<string> = useMemo(() => {
@@ -134,7 +133,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
             inline: false,
             isEditing: false,
         } as EditableState<string>;
-    }, [item, iu]);
+    }, [item]);
     const theElement = useMemo(() => <TextEditable sourcePath={item.$file} {...eState} />, [eState, item, props.rows]);
 
     const editableFields = (props.displayedFields || []).map((ifield) => {
@@ -164,7 +163,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                     }
                     rewriteTask(app.vault, item, item.$status, withFields);
                 },
-                [item.$infields, iu]
+                [item.$infields]
             ),
         });
         if (ifield.key == settings.taskCompletionText) {
