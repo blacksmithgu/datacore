@@ -27,7 +27,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 
         // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
-            const primitiveScript = this.convert(this.script, this.language);
+            const primitiveScript = DatacoreJSRenderer.convert(this.script, this.language);
 
             const renderable = await asyncEvalInContext(primitiveScript, {
                 dc: this.api,
@@ -69,17 +69,17 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
     }
 
     /** Attempts to convert the script in the given language to plain javascript; will throw an Error on failure. */
-    private convert(script: string, language: "js" | "ts" | "jsx" | "tsx"): string {
+  	public static convert(script: string, language: "js" | "ts" | "jsx" | "tsx"): string {
         switch (language) {
             case "js":
                 return script;
             case "jsx":
-                return transform(this.script, { transforms: ["jsx"], jsxPragma: "h", jsxFragmentPragma: "Fragment" })
+                return transform(script, { transforms: ["jsx"], jsxPragma: "h", jsxFragmentPragma: "Fragment" })
                     .code;
             case "ts":
-                return transform(this.script, { transforms: ["typescript"] }).code;
+                return transform(script, { transforms: ["typescript"] }).code;
             case "tsx":
-                return transform(this.script, {
+                return transform(script, {
                     transforms: ["typescript", "jsx"],
                     jsxPragma: "h",
                     jsxFragmentPragma: "Fragment",
