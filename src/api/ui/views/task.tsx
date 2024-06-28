@@ -137,6 +137,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     const theElement = useMemo(() => <TextEditable sourcePath={item.$file} {...eState} />, [eState, item, props.rows]);
 
     const editableFields = (props.displayedFields || []).map((ifield) => {
+			ifield.key = ifield.key.toLocaleLowerCase();
         let defVal = typeof ifield.defaultValue == "function" ? ifield.defaultValue() : ifield.defaultValue;
         let defField: Field = {
             key: ifield.key,
@@ -156,11 +157,12 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                             ? Literals.toString(v)
                             : undefined;
 
-                    let withFields = setInlineField(item.$text, ifield.key, dateString(val));
+                    let withFields = item.$text;
                     if (item.$infields[ifield.key]) item.$infields[ifield.key].value = dateString(val)!;
                     for (let field in item.$infields) {
                         withFields = setInlineField(withFields, field, dateString(item.$infields[field]?.value));
                     }
+										withFields = setInlineField(item.$text, ifield.key, dateString(val))
                     rewriteTask(app.vault, item, item.$status, withFields);
                 },
                 [item.$infields]
