@@ -79,7 +79,7 @@ export class DatacoreLocalApi {
             if (blockData instanceof MarkdownCodeblock) {
                 const tfile = this.core.vault.getFileByPath(blockData.$file);
                 if (tfile !== null) {
-                    const rawCode = (await this.core.vault.cachedRead(tfile))
+                    const rawCode = (await this.core.vault.read(tfile))
                         .split(/\r?\n|\r/)
                         .slice(blockData.$contentPosition.start, blockData.$contentPosition.end + 1)
                         .join("\n");
@@ -90,7 +90,7 @@ export class DatacoreLocalApi {
         } else {
             const tfile = this.core.vault.getFileByPath(path);
             if (tfile !== null) {
-                const rawCode = await this.core.vault.cachedRead(tfile);
+                const rawCode = await this.core.vault.read(tfile);
                 const lang = path.substring(path.lastIndexOf(".") + 1);
                 if (!!lang.match(/[jt]sx?$/i)) {
                     code = DatacoreJSRenderer.convert(rawCode, lang as "js" | "ts" | "jsx" | "tsx"); 
