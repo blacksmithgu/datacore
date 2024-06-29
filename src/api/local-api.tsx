@@ -22,6 +22,7 @@ import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { DatacoreJSRenderer, asyncEvalInContext } from "ui/javascript";
+import { DatacoreScript, ScriptCache } from "./script-cache";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -70,39 +71,15 @@ export class DatacoreLocalApi {
      * from markdown files via the link option
      *
      */
+
+    public readonly scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
+
     public async require(path: string | Link): Promise<any> {
-        let code: string | null = null;
-        if (path instanceof Link) {
-            const blockData = this.core.datastore.resolveLink(path);
-            if (blockData instanceof MarkdownCodeblock) {
-                const tfile = this.core.vault.getFileByPath(blockData.$file);
-                if (tfile !== null) {
-                    const rawCode = (await this.core.vault.read(tfile))
-                        .split(/\r?\n|\r/)
-                        .slice(blockData.$contentPosition.start, blockData.$contentPosition.end + 1)
-                        .join("\n");
-                    const lang = blockData.$languages[0].replace(/datacore/i, "");
-                    code = DatacoreJSRenderer.convert(rawCode, lang as "js" | "ts" | "jsx" | "tsx");
-                }
-            }
-        } else {
-            const tfile = this.core.vault.getFileByPath(path);
-            if (tfile !== null) {
-                const rawCode = await this.core.vault.read(tfile);
-                const lang = path.substring(path.lastIndexOf(".") + 1);
-                if (!!lang.match(/[jt]sx?$/i)) {
-                    code = DatacoreJSRenderer.convert(rawCode, lang as "js" | "ts" | "jsx" | "tsx"); 
-                }
-            }
-        }
-        return code
-            ? await asyncEvalInContext(code, {
-                  dc: this,
-                  h: preact.h,
-                  Fragment: preact.Fragment,
-              })
-            : code;
+        let result = await this.scriptCache.load(path, this);
+        if (!result.successful) return null;
+        return result.value;
     }
+    public readonly loadedScripts: DatacoreScript[] = [];
 
     ///////////////////////
     // General utilities //
