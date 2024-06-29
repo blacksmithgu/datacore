@@ -4,7 +4,7 @@ import { DatacoreLocalApi } from "api/local-api";
 import { JSX, createElement, h, isValidElement, render, Fragment } from "preact";
 import { unmountComponentAtNode } from "preact/compat";
 import { transform } from "sucrase";
-
+export type ScriptLanguage = "js" | "ts" | "jsx" | "tsx";
 /**
  * Renders a script by executing it and handing it the appropriate React context to execute
  * automatically.
@@ -17,7 +17,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
         public container: HTMLElement,
         public path: string,
         public script: string,
-        public language: "js" | "ts" | "jsx" | "tsx"
+        public language: ScriptLanguage
     ) {
         super(container);
     }
@@ -69,7 +69,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
     }
 
     /** Attempts to convert the script in the given language to plain javascript; will throw an Error on failure. */
-  	public static convert(script: string, language: "js" | "ts" | "jsx" | "tsx"): string {
+  	public static convert(script: string, language: ScriptLanguage): string {
         switch (language) {
             case "js":
                 return script;
