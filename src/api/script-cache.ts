@@ -74,14 +74,15 @@ export class ScriptCache {
             return Result.failure("Could not find a script in the given markdown section: " + path.toString());
 
         let lang = codeBlock.$languages.find((a) => ScriptCache.SCRIPT_TAGS.includes(a));
+				if (lang?.toLocaleLowerCase() === "typescript") lang = "ts";
+        else if (lang?.toLocaleLowerCase() === "javascript") lang = "js";
+
         const rawCode = (await this.store.vault.read(tfile))
             .split(/\r?\n|\r/)
             .slice(codeBlock.$contentPosition.start, codeBlock.$contentPosition.end + 1)
             .join("\n");
         let code = DatacoreJSRenderer.convert(rawCode, lang as ScriptLanguage);
-        if (lang?.toLocaleLowerCase() === "typescript") lang = "ts";
-        else if (lang?.toLocaleLowerCase() === "javascript") lang = "js";
-
+        
         return Result.success({
             code,
             id: codeBlock.$id,
