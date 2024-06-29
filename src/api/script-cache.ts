@@ -52,6 +52,7 @@ export class ScriptCache {
     /** Attempts to resolve the source to load given a path or link to a markdown section. */
     private async resolveSource(path: string | Link, sourcePath?: string): Promise<Result<DatacoreScript, string>> {
         const object = this.store.resolveLink(path);
+				const prefixRegex = /datacore\s?/i;
         if (!object) return Result.failure("Could not find a script at the given path: " + path.toString());
 
         const tfile = this.store.vault.getFileByPath(object.$file!);
@@ -66,14 +67,14 @@ export class ScriptCache {
 
             // Load the script.
         } else if (object instanceof MarkdownCodeblock) {
-            if (object.$languages.some((x) => ScriptCache.SCRIPT_TAGS.includes(x.replace(/datacore\s?/i, ""))))
+            if (object.$languages.some((x) => ScriptCache.SCRIPT_TAGS.includes(x.replace(prefixRegex, ""))))
                 codeBlock = object;
         }
 
         if (!codeBlock)
             return Result.failure("Could not find a script in the given markdown section: " + path.toString());
 
-        let lang = codeBlock.$languages.find((a) => ScriptCache.SCRIPT_TAGS.includes(a));
+        let lang = codeBlock.$languages.find((a) => ScriptCache.SCRIPT_TAGS.includes(a.replace(prefixRegex, "")))!.replace(prefixRegex, "");
 				if (lang?.toLocaleLowerCase() === "typescript") lang = "ts";
         else if (lang?.toLocaleLowerCase() === "javascript") lang = "js";
 
