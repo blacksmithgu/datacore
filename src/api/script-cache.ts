@@ -7,9 +7,10 @@ import { DatacoreLocalApi } from "./local-api";
 import { Fragment, h } from "preact";
 export interface DatacoreScript {
     language: ScriptLanguage;
-    code: string;
+    code: string | null;
     id: string;
     state: LoadingState;
+    source: string;
 }
 export const enum LoadingState {
     UNDEFINED = -1,
@@ -30,20 +31,22 @@ export class ScriptCache {
         const source = await this.resolveSource(path, sourcePath);
         if (!source.successful) return source;
         source.value.state = LoadingState.LOADING;
-        const res = await asyncEvalInContext(source.value.code, {
-            dc,
-            h,
-            Fragment,
-        });
-        if (!dc.scriptMap.get(source.value.id)) {
-            dc.scriptMap.set(source.value.id, source.value);
-            source.value.state = LoadingState.LOADED;
-            dc.scriptMap.set(source.value.id, source.value);
+
+        let element = dc.loadedScripts.find((x) => x.id === source.value.id && x.state === LoadingState.LOADING);
+        if (!element) {
+            dc.loadedScripts.push(source.value);
+            const res = await asyncEvalInContext(source.value.code!, {
+                h,
+                Fragment,
+								dc
+            });
+						dc.loadedScripts[dc.loadedScripts.length - 1].code = null;
+						dc.loadedScripts[dc.loadedScripts.length - 1].state = LoadingState.LOADED;
             return Result.success(res);
         }
-        return Result.failure(`Script import cycle detected; currently loaded scripts are:
-${[...dc.scriptMap.keys()].map(x => `		- ${x}\n`)}
-`);
+        return Result.failure(
+            `Script import cycle detected; currently loaded scripts are:\n${dc.loadedScripts.map((x) => `		- ${x.source}`).join("\n")}`
+        );
     }
 
     /** Attempts to resolve the source to load given a path or link to a markdown section. */
@@ -84,6 +87,7 @@ ${[...dc.scriptMap.keys()].map(x => `		- ${x}\n`)}
             id: codeBlock.$id,
             language: lang as ScriptLanguage,
             state: LoadingState.UNDEFINED,
+            source: codeBlock.$file
         }); // TODO.
     }
 }
