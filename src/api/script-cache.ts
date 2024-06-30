@@ -46,7 +46,7 @@ export class ScriptCache {
             return Result.success(res);
         }
         return Result.failure(
-            `Script import cycle detected; currently loaded scripts are:\n${dc.loadedScripts.map((x) => `		- ${x.source}`).join("\n")}`
+            `Script import cycle detected; currently loaded scripts are:\n${parentContext.loadedScripts.map((x) => `		- ${x.source}`).join("\n")}`
         );
     }
 
