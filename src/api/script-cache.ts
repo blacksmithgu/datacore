@@ -1,15 +1,17 @@
 import { Link } from "expression/link";
 import { Datastore } from "index/datastore";
-import { Result } from "./result";
+import { Failure, Result } from "./result";
 import { MarkdownCodeblock, MarkdownSection } from "index/types/markdown";
 import { DatacoreJSRenderer, ScriptLanguage, asyncEvalInContext, convert } from "ui/javascript";
 import { DatacoreLocalApi } from "./local-api";
 import { Fragment, h } from "preact";
+import { Deferred, deferred } from "utils/deferred";
 export interface DatacoreScript {
     language: ScriptLanguage;
     id: string;
     state: LoadingState;
     source: string;
+    promise: Deferred<any>;
 }
 export const enum LoadingState {
     UNDEFINED = -1,
@@ -35,26 +37,25 @@ export class ScriptCache {
         const source = await this.resolveSource(path, sourcePath);
         if (!source.successful) return source;
 
-				const {value: {scriptInfo, code}} = source
+        const {
+            value: { scriptInfo, code },
+        } = source;
         scriptInfo.state = LoadingState.LOADING;
-        let element = this.loadedScripts.get(scriptInfo.id); 
+				let element = this.loadedScripts.get(scriptInfo.source);
         if (!element) {
-            this.loadedScripts.set(scriptInfo.id, scriptInfo);
+            this.loadedScripts.set(scriptInfo.source, scriptInfo);
             let dc = new DatacoreLocalApi(parentContext.api, scriptInfo.source);
             const res = await asyncEvalInContext(code, {
                 h,
                 Fragment,
                 dc,
             });
-						scriptInfo.state = LoadingState.LOADED;
-						this.loadedScripts.set(scriptInfo.id, scriptInfo)
-            return Result.success(res);
-        }
-        return Result.failure(
-            `Script import cycle detected; currently loaded scripts are:\n${[...this.loadedScripts.values()]
-                .map((x) => `		- ${x.source}`)
-                .join("\n")}`
-        );
+            scriptInfo.state = LoadingState.LOADED;
+            scriptInfo.promise.resolve(res);
+            this.loadedScripts.set(scriptInfo.source, scriptInfo);
+						return Result.success(await scriptInfo.promise)
+        } 
+				return Result.success(await element.promise)
     }
 
     /** Attempts to resolve the source to load given a path or link to a markdown section. */
@@ -107,8 +108,9 @@ export class ScriptCache {
                 language: lang as ScriptLanguage,
                 state: LoadingState.UNDEFINED,
                 source: codeBlock.$file,
+                promise: deferred<any>(),
             },
-						code
+            code,
         });
     }
 }
