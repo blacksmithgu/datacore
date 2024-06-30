@@ -97,14 +97,14 @@ export function markdownImport(
         if (block.type === "heading") continue;
 
         const start = block.position.start.line;
-        const end = block.position.end.line;
+        const end = block.position.end.line + 1;
         const startLine = lines[start]; // to use to check the codeblock type
 
         if (block.type === "list") {
             blocks.set(start, new ListBlockData(start, end, blockOrdinal++, block.id));
         } else if (block.type == "code" && YAML_DATA_REGEX.test(startLine)) {
             const yaml: string = lines
-                .slice(start + 1, end)
+                .slice(start + 1, end - 1)
                 .join("\n")
                 .replace(/\t/gm, "  ");
             const split: Record<string, JsonFrontmatterEntry> = parseFrontmatterBlock(parseYaml(yaml));
@@ -140,7 +140,7 @@ export function markdownImport(
     for (const list of metadata.listItems || []) {
         const item = new ListItemData(
             list.position.start.line,
-            list.position.end.line,
+            list.position.end.line + 1,
             list.parent,
             list.id,
             list.task
