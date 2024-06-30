@@ -217,10 +217,14 @@ export class DatacoreLocalApi {
         path,
         start,
         end,
+        explain,
+        showExplain,
         sourcePath: maybeSourcePath,
     }: {
         path: string;
         sourcePath?: string;
+        explain?: string;
+        showExplain?: boolean;
         start: number;
         end: number;
     }) => {
@@ -228,7 +232,9 @@ export class DatacoreLocalApi {
         const sourcePath = maybeSourcePath ?? this.path;
         const resolvedPath = hooks.useMemo(() => this.resolvePath(path, sourcePath), [path, sourcePath]);
 
-        return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
+        return (
+            <LineSpanEmbed path={resolvedPath} start={start} end={end} explain={explain} showExplain={showExplain} />
+        );
     }).bind(this);
 
     /** Renders an obsidian lucide icon. */

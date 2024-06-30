@@ -8,7 +8,7 @@ import {
     Markdown,
 } from "../../ui/markdown";
 import { Link } from "expression/link";
-import { lineRange } from "utils/normalizers";
+import { getFileTitle, lineRange } from "utils/normalizers";
 
 import "./embed.css";
 
@@ -78,8 +78,21 @@ export function Embed({
  * - generally, datacore will asynchronously reload these files in the background and fix it's index, but you may have some
  * strange artifacts otherwise.
  */
-export function LineSpanEmbed({ path, start, end }: { path: string; start: number; end: number }) {
+export function LineSpanEmbed({
+    path,
+    start,
+    end,
+    explain,
+    showExplain = true,
+}: {
+    path: string;
+    start: number;
+    end: number;
+    explain?: string;
+    showExplain?: boolean;
+}) {
     const content = useLineSpan(path, start, end);
+    const explainer = explain ?? `${getFileTitle(path)} (${start} - ${end})`;
 
     switch (content.type) {
         case "loading":
@@ -91,6 +104,7 @@ export function LineSpanEmbed({ path, start, end }: { path: string; start: numbe
         case "loaded":
             return (
                 <div className="datacore-span-embed">
+                    {showExplain && <div className="datacore-embed-source">{explainer}</div>}
                     <Markdown content={content.content} inline={false} />
                 </div>
             );
