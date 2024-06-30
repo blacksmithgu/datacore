@@ -1,3 +1,9 @@
+# 0.1.10 (Beta)
+
+- Fixes several annoying off-by-one errors in line span embeds and an indexing off-by-one.
+
+---
+
 # 0.1.9 (Beta)
 
 - Fixes a bunch of off-by-one errors in markdown parsing, meaning block links and tags actually work now.
