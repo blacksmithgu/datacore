@@ -5,7 +5,7 @@ import { Fragment } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT } from "ui/markdown";
 import { JSXInternal } from "preact/src/jsx";
 import { Dispatch, useContext, useMemo, useRef, useState } from "preact/hooks";
-import { rewriteTask, setTaskCompletion } from "ui/utils";
+import { rewriteTask, setTaskCompletion } from "utils/task";
 import { Literal, Literals } from "expression/literal";
 import {
     EditableAction,
