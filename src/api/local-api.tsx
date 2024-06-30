@@ -74,7 +74,7 @@ export class DatacoreLocalApi {
      *
      */
 
-    public readonly scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
+    public scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
 
     public async require(path: string | Link): Promise<any> {
         let result = await this.scriptCache.load(path, this);

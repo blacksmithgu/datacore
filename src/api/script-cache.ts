@@ -11,7 +11,7 @@ export interface DatacoreScript {
     id: string;
     state: LoadingState;
     source: string;
-    promise: Deferred<any>;
+    promise: Deferred<Result<any, string>>;
 }
 export const enum LoadingState {
     UNDEFINED = -1,
@@ -41,21 +41,30 @@ export class ScriptCache {
             value: { scriptInfo, code },
         } = source;
         scriptInfo.state = LoadingState.LOADING;
-				let element = this.loadedScripts.get(scriptInfo.source);
-        if (!element) {
+        if (!this.loadedScripts.has(scriptInfo.source)) {
             this.loadedScripts.set(scriptInfo.source, scriptInfo);
             let dc = new DatacoreLocalApi(parentContext.api, scriptInfo.source);
+            dc.scriptCache = this;
             const res = await asyncEvalInContext(code, {
                 h,
                 Fragment,
                 dc,
             });
             scriptInfo.state = LoadingState.LOADED;
-            scriptInfo.promise.resolve(res);
+            scriptInfo.promise.resolve(Result.success(res));
             this.loadedScripts.set(scriptInfo.source, scriptInfo);
-						return Result.success(await scriptInfo.promise)
-        } 
-				return Result.success(await element.promise)
+        }
+        let element = this.loadedScripts.get(scriptInfo.source);
+        if (element?.state === LoadingState.LOADING) {
+            let res: Failure<any, string> = Result.failure(
+                `Script import cycle detected; currently loaded scripts are:\n${[...this.loadedScripts.values()]
+                    .map((x) => `		- ${x.source}`)
+                    .join("\n")}`
+            ) as Failure<any, string>;
+            scriptInfo.promise.reject(res.error);
+            return res;
+        }
+        return element!.promise;
     }
 
     /** Attempts to resolve the source to load given a path or link to a markdown section. */
@@ -108,7 +117,7 @@ export class ScriptCache {
                 language: lang as ScriptLanguage,
                 state: LoadingState.UNDEFINED,
                 source: codeBlock.$file,
-                promise: deferred<any>(),
+                promise: deferred<Result<string, any>>(),
             },
             code,
         });
