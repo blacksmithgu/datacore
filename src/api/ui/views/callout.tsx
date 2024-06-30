@@ -35,11 +35,11 @@ export function Callout({
     type,
 }: PropsWithChildren<CalloutProps>) {
     const [open, setOpen] = useControlledState(initialOpen ?? true, openProp, onOpenChange);
-
+    const splitRegex = /\|(.*)/s;
     return (
         <div
-            data-callout-metadata
-            data-callout={type}
+            data-callout-metadata={type?.split(splitRegex)[1]}
+            data-callout={type?.split(splitRegex)[0]}
             data-callout-fold={open ? "+" : "-"}
             className={combineClasses("datacore", "callout", collapsible ? "is-collapsible" : undefined)}
         >

@@ -150,7 +150,7 @@ export function markdownImport(
             list.parent,
             marker,
             list.id,
-						content.replace(contentRegex, ""),
+            content.replace(contentRegex, ""),
             list.task
         );
 

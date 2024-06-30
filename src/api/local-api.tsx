@@ -248,14 +248,13 @@ export class DatacoreLocalApi {
         return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
     }
 
-
     ///////////
     // Views //
     ///////////
 
     public TaskList = TaskList;
     public VanillaTable = VanillaTable;
-		public Card = Card;
+    public Card = Card;
 
     /////////////////////////
     // Interative elements //
