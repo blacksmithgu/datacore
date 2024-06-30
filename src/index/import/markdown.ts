@@ -158,13 +158,7 @@ export function markdownImport(
 
     // In the second list pass, actually construct the list heirarchy.
     for (const item of listItems.values()) {
-        let content = lines.slice(item.start, item.end + 1).join("\n");
-        /** strip inline fields maybe */
-        // .replace(/[\[\(].*?::\s*.*?[\]\)]/gm, "")
-        item.text = content.replace(contentRegex, "");
-
-        item.symbol = content.split("\n")[0].replace(markerRegex, "").trim().slice(0, 1);
-        listItems.set(item.start, item);
+       listItems.set(item.start, item);
         if (item.parentLine < 0) {
             const listBlock = blocks.get(-item.parentLine);
             if (!listBlock || !(listBlock.type === "list")) continue;
