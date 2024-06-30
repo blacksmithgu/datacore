@@ -72,7 +72,7 @@ export class ScriptCache {
         if (object instanceof MarkdownSection) {
             codeBlock = object.$blocks
                 .filter((b): b is MarkdownCodeblock => b.$type === "codeblock")
-                .find((cb) => ScriptCache.SCRIPT_TAGS.some((language) => cb.$languages.includes(language)));
+                .find((cb) => cb.$languages.some((language) => ScriptCache.SCRIPT_TAGS.includes(language.replace(prefixRegex, ""))));
 
             // Load the script.
         } else if (object instanceof MarkdownCodeblock) {
