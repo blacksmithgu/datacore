@@ -28,7 +28,7 @@ import { DatacoreScript, ScriptCache } from "./script-cache";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
-    public constructor(public api: DatacoreApi, public path: string, public loadedScripts: DatacoreScript[] = []) {}
+    public constructor(public api: DatacoreApi, public path: string) {}
 
     /** The current file path for the local API. */
     public currentPath(): string {
