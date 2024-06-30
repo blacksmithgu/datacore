@@ -157,13 +157,13 @@ export class DatacoreLocalApi {
     public Group = Group;
 
     /** Renders a literal value in a pretty way that respects settings. */
-    public Literal({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) {
+    public Literal = (({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) => {
         const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
         return <Lit value={value} sourcePath={sourcePath ?? implicitSourcePath ?? this.path} inline={inline} />;
-    }
+    }).bind(this);
 
     /** Renders markdown using the Obsidian markdown renderer, optionally attaching additional styles. */
-    public Markdown({
+    public Markdown = (({
         content,
         sourcePath,
         inline,
@@ -175,7 +175,7 @@ export class DatacoreLocalApi {
         inline?: boolean;
         style?: CSSProperties;
         className?: string;
-    }) {
+    }) => {
         const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
         return (
             <Markdown
@@ -186,13 +186,13 @@ export class DatacoreLocalApi {
                 cls={className}
             />
         );
-    }
+    }).bind(this);
 
     /** Renders an obsidian-style link directly and more effieicntly than rendering markdown. */
     public Link = ObsidianLink;
 
     /** Create a vanilla Obsidian embed for the given link. */
-    public LinkEmbed({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) {
+    public LinkEmbed = (({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) => {
         const realLink = hooks.useMemo(() => (typeof link === "string" ? Link.file(link) : link), [link]);
         const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
         return (
@@ -202,10 +202,10 @@ export class DatacoreLocalApi {
                 sourcePath={sourcePath ?? implicitSourcePath ?? this.path}
             />
         );
-    }
+    }).bind(this);
 
     /** Create an explicit 'span' embed which extracts a span of lines from a markdown file. */
-    public SpanEmbed({
+    public SpanEmbed = (({
         path,
         start,
         end,
@@ -215,13 +215,16 @@ export class DatacoreLocalApi {
         sourcePath?: string;
         start: number;
         end: number;
-    }) {
+    }) => {
         // Resolve the path to the correct path if a source path is provided.
         const sourcePath = maybeSourcePath ?? this.path;
         const resolvedPath = hooks.useMemo(() => this.resolvePath(path, sourcePath), [path, sourcePath]);
 
         return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
-    }
+    }).bind(this);
+
+    /** Renders an obsidian lucide icon. */
+    public Icon = Icon;
 
     ///////////
     // Views //
@@ -240,5 +243,4 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
-    public Icon = Icon;
 }

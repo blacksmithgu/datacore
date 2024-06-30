@@ -10,6 +10,8 @@ import {
 import { Link } from "expression/link";
 import { lineRange } from "utils/normalizers";
 
+import "./embed.css";
+
 /** Renders an embed in the canonical Obsidian style. */
 export function Embed({
     link,
@@ -70,9 +72,9 @@ export function Embed({
 
 /**
  * An embed of an arbitrary span of lines in a Markdown file. Operates by asynchronously loading the file and pulling
- * out the given [start, end] line span.
+ * out the given [start, end) line span.
  *
- * Note that it's possible for the file on disk to be different than it was when you first loaded the [start, end] line span
+ * Note that it's possible for the file on disk to be different than it was when you first loaded the [start, end) line span
  * - generally, datacore will asynchronously reload these files in the background and fix it's index, but you may have some
  * strange artifacts otherwise.
  */
@@ -81,14 +83,14 @@ export function LineSpanEmbed({ path, start, end }: { path: string; start: numbe
 
     switch (content.type) {
         case "loading":
-            return <div>Loading...</div>;
+            return <ErrorMessage message={`Reading ${path} (${start} - ${end})`} />;
         case "file-not-found":
             return <ErrorMessage message={`Could not find a file at path: ${content.path}`} />;
         case "error":
             return <ErrorMessage message={content.message} />;
         case "loaded":
             return (
-                <div className="datacore-embed">
+                <div className="datacore-span-embed">
                     <Markdown content={content.content} inline={false} />
                 </div>
             );
@@ -102,7 +104,7 @@ export type LineSpanContent =
     | { type: "error"; message: string }
     | { type: "loaded"; content: string };
 
-/** Utility hook which loads path[start..end] as long as the target file exists. */
+/** Utility hook which loads path[start..end) as long as the target file exists. */
 export function useLineSpan(path: string, start: number, end: number): LineSpanContent {
     const app = useContext(APP_CONTEXT);
     const datacore = useContext(DATACORE_CONTEXT);
