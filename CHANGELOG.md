@@ -1,3 +1,10 @@
+# 0.1.9 (Beta)
+
+- Fixes a bunch of off-by-one errors in markdown parsing, meaning block links and tags actually work now.
+- Cleaned up the `dc.SpanEmbed` visual appearance to be something a bit more attractive.
+
+---
+
 # 0.1.8 (Beta)
 
 - @Quorafind - Adds 'scroll to top' functionality for large tables when you change pages.
