@@ -204,12 +204,12 @@ export class DatacoreLocalApi {
         );
     }
 
-    /** Create an explicit 'span' embed which extracts a span of lines from a markdown file */
+    /** Create an explicit 'span' embed which extracts a span of lines from a markdown file. */
     public SpanEmbed({
         path,
         start,
         end,
-        sourcePath,
+        sourcePath: maybeSourcePath,
     }: {
         path: string;
         sourcePath?: string;
@@ -217,6 +217,7 @@ export class DatacoreLocalApi {
         end: number;
     }) {
         // Resolve the path to the correct path if a source path is provided.
+        const sourcePath = maybeSourcePath ?? this.path;
         const resolvedPath = hooks.useMemo(() => this.resolvePath(path, sourcePath), [path, sourcePath]);
 
         return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
