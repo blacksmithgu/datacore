@@ -1,7 +1,7 @@
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { DefaultListElement, ListState } from "api/ui/views/list";
 import { useIndexUpdates, useStableCallback } from "ui/hooks";
-import { Fragment } from "preact";
+import { Fragment, Ref } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT } from "ui/markdown";
 import { JSXInternal } from "preact/src/jsx";
 import { Dispatch, useContext, useMemo, useRef, useState } from "preact/hooks";
@@ -149,7 +149,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                 <div className="datacore-list-item-content">
                     {theElement}
                     <div className="datacore-list-item-fields">
-                        <ListItemFields displayedFields={props.displayedFields} item={item} />
+                        <ListItemFields displayedFields={props.displayedFields} item={item} completedRef={completedRef} />
                     </div>
                 </div>
             </div>
@@ -192,9 +192,11 @@ function CollapseIndicator({
 export function ListItemFields({
     displayedFields = [],
     item,
+		completedRef
 }: {
     displayedFields?: TaskProps["displayedFields"];
     item: MarkdownTaskItem;
+		completedRef: Ref<Dispatch<EditableAction<Literal>>>
 }) {
     const app = useContext(APP_CONTEXT);
     const core = useContext(DATACORE_CONTEXT);
