@@ -14,7 +14,7 @@ import {
     TextEditable,
     useEditableDispatch,
 } from "ui/fields/editable";
-import { setInlineField } from "index/import/inline-field";
+import { InlineField, setInlineField } from "index/import/inline-field";
 import { BaseFieldProps } from "ui/fields/common-props";
 import { Field } from "expression/field";
 import { DateTime } from "luxon";
@@ -54,7 +54,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     const core = useContext(DATACORE_CONTEXT);
     const { settings } = core;
     const states = [" ", ...(props.additionalStates || []), "x"];
-    const nextState = useMemo(() => {
+    const nextState = () => {
         if (props.additionalStates && props.additionalStates?.length > 0) {
             let curIndex = states.findIndex((a) => a === item.$status);
             curIndex++;
@@ -65,22 +65,20 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         } else {
             return item.$completed ? " " : "x";
         }
-    }, [props.additionalStates, item, item.$status, item.$completed]);
-
+    };
+    const [status, setStatus] = useState<string>(item.$status);
     const completedRef = useRef<Dispatch<EditableAction<Literal>>>(null);
     const onChecked = useStableCallback(
         async (evt: JSXInternal.TargetedMouseEvent<HTMLInputElement>) => {
-            // evt.stopPropagation();
             const completed = evt.currentTarget.checked;
 
             let newStatus: string;
             if (evt.shiftKey) {
-                newStatus = nextState!;
+                newStatus = nextState();
             } else {
                 newStatus = completed ? "x" : " ";
             }
-            const parent = evt.currentTarget.parentElement;
-            parent?.setAttribute("data-task", newStatus);
+            setStatus(newStatus);
             async function rewr(task: MarkdownTaskItem) {
                 let newText = setTaskCompletion(
                     task,
@@ -136,64 +134,43 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     }, [item]);
     const theElement = useMemo(() => <TextEditable sourcePath={item.$file} {...eState} />, [eState, item, props.rows]);
 
-    const editableFields = (props.displayedFields || []).map((ifield) => {
-			ifield.key = ifield.key.toLocaleLowerCase();
-        let defVal = typeof ifield.defaultValue == "function" ? ifield.defaultValue() : ifield.defaultValue;
-        let defField: Field = {
-            key: ifield.key,
-            value: defVal,
-            raw: Literals.toString(defVal),
-        };
-        const [fieldValue] = useState<Literal>(item.$infields[ifield?.key]?.value || defField.value!);
-        const [state2, dispatch] = useEditableDispatch<Literal>({
-            content: fieldValue,
-            isEditing: false,
-            updater: useStableCallback(
-                (val: Literal) => {
-                    const dateString = (v: Literal) =>
-                        v instanceof DateTime
-                            ? v.toFormat(settings.defaultDateFormat)
-                            : v != null
-                            ? Literals.toString(v)
-                            : undefined;
-
-                    let withFields = item.$text;
-                    if (item.$infields[ifield.key]) item.$infields[ifield.key].value = dateString(val)!;
-                    for (let field in item.$infields) {
-                        withFields = setInlineField(withFields, field, dateString(item.$infields[field]?.value));
-                    }
-										withFields = setInlineField(item.$text, ifield.key, dateString(val))
-                    rewriteTask(app.vault, item, item.$status, withFields);
-                },
-                [item.$infields]
-            ),
-        });
-        if (ifield.key == settings.taskCompletionText) {
-            //@ts-ignore huh?
-            completedRef.current = dispatch;
-        }
-        return (
-            <EditableListField
-                props={state2}
-                dispatch={dispatch}
-                type={ifield.type || Literals.wrapValue(fieldValue)!.type}
-                file={item.$file}
-                field={item.$infields[ifield.key] || defField}
-                config={ifield.config}
-                parent={item}
-                updater={state2.updater}
-                value={fieldValue}
-                renderAs={ifield.renderAs}
-            />
-        );
-    });
     const [collapsed, setCollapsed] = useState<boolean>(true);
     const hasChildren = item.$elements.length > 0;
+
+    return (
+        <li className={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={status}>
+            <CollapseIndicator
+                onClick={() => setCollapsed(!collapsed)}
+                collapsed={collapsed}
+                hasChildren={hasChildren}
+            />
+            <input className="datacore task-list-item-checkbox" type="checkbox" checked={checked} onClick={onChecked} />
+            <div>
+                <div className="datacore-list-item-content">
+                    {theElement}
+                    <div className="datacore-list-item-fields">
+                        <ListItemFields displayedFields={props.displayedFields} item={item} />
+                    </div>
+                </div>
+            </div>
+            {hasChildren && !collapsed && <TaskList {...props} rows={item.$elements} />}
+        </li>
+    );
+}
+function CollapseIndicator({
+    collapsed,
+    onClick,
+    hasChildren,
+}: {
+    collapsed: boolean;
+    onClick: () => void;
+    hasChildren: boolean;
+}) {
     const toggleCnames = ["datacore-collapser"];
     if (collapsed) toggleCnames.push("is-collapsed");
     if (!hasChildren) toggleCnames.push("no-children");
-    const collapseIndicator = (
-        <div onClick={() => setCollapsed(!collapsed)} className={toggleCnames.join(" ")} dir="auto">
+    return (
+        <div onClick={onClick} className={toggleCnames.join(" ")} dir="auto">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -210,18 +187,76 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
             </svg>
         </div>
     );
+}
+
+export function ListItemFields({
+    displayedFields = [],
+    item,
+}: {
+    displayedFields?: TaskProps["displayedFields"];
+    item: MarkdownTaskItem;
+}) {
+    const app = useContext(APP_CONTEXT);
+    const core = useContext(DATACORE_CONTEXT);
+    const { settings } = core;
 
     return (
-        <li className={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={item.$status}>
-            {collapseIndicator}
-            <input className="datacore task-list-item-checkbox" type="checkbox" checked={checked} onClick={onChecked} />
-            <div>
-                <div className="datacore-list-item-content">
-                    {theElement}
-                    <div className="datacore-list-item-fields">{editableFields}</div>
-                </div>
-            </div>
-            {hasChildren && !collapsed && <TaskList {...props} rows={item.$elements} />}
-        </li>
+        <>
+            {displayedFields.map((ifield) => {
+                ifield.key = ifield.key.toLocaleLowerCase();
+                let defVal = typeof ifield.defaultValue == "function" ? ifield.defaultValue() : ifield.defaultValue;
+                let defField: Field = {
+                    key: ifield.key,
+                    value: defVal,
+                    raw: Literals.toString(defVal),
+                };
+                const [fieldValue] = useState<Literal>(item.$infields[ifield?.key]?.value || defField.value!);
+                const [state2, dispatch] = useEditableDispatch<Literal>({
+                    content: fieldValue,
+                    isEditing: false,
+                    updater: useStableCallback(
+                        (val: Literal) => {
+                            const dateString = (v: Literal) =>
+                                v instanceof DateTime
+                                    ? v.toFormat(settings.defaultDateFormat)
+                                    : v != null
+                                    ? Literals.toString(v)
+                                    : undefined;
+
+                            let withFields = item.$text;
+                            if (item.$infields[ifield.key]) item.$infields[ifield.key].value = dateString(val)!;
+                            for (let field in item.$infields) {
+                                withFields = setInlineField(
+                                    withFields,
+                                    field,
+                                    dateString(item.$infields[field]?.value)
+                                );
+                            }
+                            withFields = setInlineField(item.$text, ifield.key, dateString(val));
+                            rewriteTask(app.vault, item, item.$status, withFields);
+                        },
+                        [item.$infields]
+                    ),
+                });
+                if (ifield.key == settings.taskCompletionText) {
+                    //@ts-ignore huh?
+                    completedRef.current = dispatch;
+                }
+                return (
+                    <EditableListField
+                        props={state2}
+                        dispatch={dispatch}
+                        type={ifield.type || Literals.wrapValue(fieldValue)!.type}
+                        file={item.$file}
+                        field={item.$infields[ifield.key] || defField}
+                        config={ifield.config}
+                        parent={item}
+                        updater={state2.updater}
+                        value={fieldValue}
+                        renderAs={ifield.renderAs}
+                    />
+                );
+            })}
+        </>
     );
 }
