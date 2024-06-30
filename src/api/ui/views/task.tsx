@@ -127,7 +127,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     const eState: EditableState<string> = useMemo(() => {
         return {
             updater: onChanger,
-            content: item.$strippedText,
+            content: item.$cleanText,
             inline: false,
             isEditing: false,
         } as EditableState<string>;

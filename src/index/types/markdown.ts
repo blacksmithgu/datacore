@@ -609,7 +609,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     }
 
     /** return text without annotations + indentation */
-    get $strippedText() {
+    get $cleanText() {
         return this.$text
             .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1")
             .replace(/^[\t\f\v\s]*[\-\*+]\s(\[.\])?/gm, "")
