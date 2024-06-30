@@ -192,7 +192,15 @@ export class DatacoreLocalApi {
     public Link = ObsidianLink;
 
     /** Create a vanilla Obsidian embed for the given link. */
-    public LinkEmbed = (({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) => {
+    public LinkEmbed = (({
+        link,
+        inline,
+        sourcePath,
+    }: {
+        link: string | Link;
+        inline?: boolean;
+        sourcePath?: string;
+    }) => {
         const realLink = hooks.useMemo(() => (typeof link === "string" ? Link.file(link) : link), [link]);
         const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
         return (
