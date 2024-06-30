@@ -28,7 +28,7 @@ import { DatacoreScript, ScriptCache } from "./script-cache";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
-    public constructor(public api: DatacoreApi, public path: string) {}
+    public constructor(public api: DatacoreApi, public path: string, public loadedScripts: DatacoreScript[] = []) {}
 
     /** The current file path for the local API. */
     public currentPath(): string {
@@ -78,10 +78,9 @@ export class DatacoreLocalApi {
 
     public async require(path: string | Link): Promise<any> {
         let result = await this.scriptCache.load(path, this);
-        if (!result.successful) return null;
+        if (!result.successful) throw new Error(result.error);
         return result.value;
     }
-    public readonly loadedScripts: DatacoreScript[] = [];
 
     ///////////////////////
     // General utilities //

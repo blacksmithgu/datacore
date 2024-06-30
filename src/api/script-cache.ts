@@ -27,21 +27,22 @@ export class ScriptCache {
     /**
      * Load the given script at the given path, recursively loading any subscripts by correctly injecting `import` into the child contexts.
      */
-    public async load(path: string | Link, dc: DatacoreLocalApi, sourcePath?: string): Promise<Result<any, string>> {
+    public async load(path: string | Link, parentContext: DatacoreLocalApi, sourcePath?: string): Promise<Result<any, string>> {
         const source = await this.resolveSource(path, sourcePath);
         if (!source.successful) return source;
         source.value.state = LoadingState.LOADING;
-
-        let element = dc.loadedScripts.find((x) => x.id === source.value.id && x.state === LoadingState.LOADING);
+				let dc = new DatacoreLocalApi(parentContext.api, source.value.source, parentContext.loadedScripts)
+        let element = parentContext.loadedScripts.find((x) => x.id === source.value.id && x.state === LoadingState.LOADING);
         if (!element) {
-            dc.loadedScripts.push(source.value);
+            parentContext.loadedScripts.push(source.value);
             const res = await asyncEvalInContext(source.value.code!, {
                 h,
                 Fragment,
 								dc
             });
-						dc.loadedScripts[dc.loadedScripts.length - 1].code = null;
-						dc.loadedScripts[dc.loadedScripts.length - 1].state = LoadingState.LOADED;
+						parentContext.loadedScripts[parentContext.loadedScripts.length - 1].code = null;
+						parentContext.loadedScripts[parentContext.loadedScripts.length - 1].state = LoadingState.LOADED;
+						
             return Result.success(res);
         }
         return Result.failure(
