@@ -49,7 +49,7 @@ async function build(prod) {
 	}).catch(() => process.exit(1));
 
 	// Copy the manifest and styles.
-	fs.copyFileSync("manifest.json", "build/plugin/manifest.json");
+	fs.copyFileSync("manifest-beta.json", "build/plugin/manifest.json");
 	fs.renameSync("build/plugin/main.css", "build/plugin/styles.css");
 	fs.writeFileSync("build/meta.json", JSON.stringify(result.metafile));
 }
