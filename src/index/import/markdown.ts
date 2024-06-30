@@ -139,26 +139,27 @@ export function markdownImport(
     const contentRegex = /^[\t\f\v ]*[\-+\*]\s(\[.\]\s)?/;
     const markerRegex = /^(>?\s?)*(\t|\s)*/g;
     const listItems = new BTree<number, ListItemData>(undefined, (a, b) => a - b);
+
     for (const list of metadata.listItems || []) {
+        let content = lines.slice(list.position.start.line, list.position.end.line + 1).join("\n");
+
+        let marker = content.split("\n")[0].replace(markerRegex, "").trim().slice(0, 1);
         const item = new ListItemData(
             list.position.start.line,
             list.position.end.line,
             list.parent,
+            marker,
             list.id,
+						content.replace(contentRegex, ""),
             list.task
         );
-        let content = lines.slice(item.start, item.end + 1).join("\n");
-        /** strip inline fields maybe */
 
-        let marker = content.split("\n")[0].replace(markerRegex, "").trim().slice(0, 1);
-        item.text = content.replace(contentRegex, "");
-        item.symbol = marker;
         listItems.set(item.start, item);
     }
 
     // In the second list pass, actually construct the list heirarchy.
     for (const item of listItems.values()) {
-       listItems.set(item.start, item);
+        listItems.set(item.start, item);
         if (item.parentLine < 0) {
             const listBlock = blocks.get(-item.parentLine);
             if (!listBlock || !(listBlock.type === "list")) continue;
@@ -586,13 +587,13 @@ export type BlockData = ListBlockData | CodeblockData | DatablockData | BaseBloc
 export class ListItemData {
     public metadata: Metadata = new Metadata();
     public elements: ListItemData[] = [];
-    public text: string;
-    public symbol: string;
     public constructor(
         public start: number,
         public end: number,
         public parentLine: number,
+        public symbol: string,
         public blockId?: string,
+        public text?: string,
         public status?: string
     ) {}
 
