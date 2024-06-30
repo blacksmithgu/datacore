@@ -4,7 +4,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown";
+import { MarkdownCodeblock, MarkdownPage } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -18,9 +18,13 @@ import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
+import { TaskList } from "./ui/views/task";
 import { Callout } from "./ui/views/callout";
+import { Card } from "./ui/views/card";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
+import { DatacoreJSRenderer, asyncEvalInContext } from "ui/javascript";
+import { DatacoreScript, ScriptCache } from "./script-cache";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -54,6 +58,28 @@ export class DatacoreLocalApi {
     /** The internal plugin central datastructure. */
     get core(): Datacore {
         return this.api.core;
+    }
+
+    //////////////////////////////
+    // Script loading utilities //
+    //////////////////////////////
+
+    // Note: Script loading is a bit jank, since it has to be asynchronous due to IO (unless of course we wanted to cache
+    // every single script in the vault in memory, which seems terrible for performance). It functions by essentially
+    // returning a lazy proxy.
+
+    /**
+     * Asynchronously load a javascript block from the given path or link; this method supports loading code blocks
+     * from markdown files via the link option
+     *
+     */
+
+    public scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
+
+    public async require(path: string | Link): Promise<any> {
+        let result = await this.scriptCache.load(path, this);
+        if (!result.successful) throw new Error(result.error);
+        return result.value;
     }
 
     ///////////////////////
@@ -244,7 +270,9 @@ export class DatacoreLocalApi {
     // Views //
     ///////////
 
+    public TaskList = TaskList;
     public VanillaTable = VanillaTable;
+    public Card = Card;
 
     /////////////////////////
     // Interative elements //

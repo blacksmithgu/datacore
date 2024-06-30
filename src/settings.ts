@@ -34,6 +34,15 @@ export interface Settings {
 
     /** Whether to index inline fields by default. Inline field parsing requires a full scan of the document, which can make indexing take 2-3x longer. */
     indexInlineFields: boolean;
+
+    /** Whether to check task items off recursively in datacore views */
+    recursiveTaskCompletion: boolean;
+
+    /** Name of the inline field in which to store completion date/time */
+    taskCompletionText: string;
+
+    /** If enabled, automatic completions will use emoji shorthand ✅ YYYY-MM-DD instead of [completion:: date]. */
+    taskCompletionUseEmojiShorthand: boolean;
 }
 
 /** Default settings for the plugin. */
@@ -55,4 +64,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
     renderNullAs: "-",
 
     indexInlineFields: true,
+    recursiveTaskCompletion: false,
+    taskCompletionText: "completedAt",
+    taskCompletionUseEmojiShorthand: false,
 });

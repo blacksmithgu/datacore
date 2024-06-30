@@ -188,8 +188,8 @@ export class Datastore {
         }
 
         // All fields on an object.
-        if (object.$types.contains(FIELDBEARING_TYPE) && "$fields" in object) {
-            for (const field of object.$fields as Iterable<Field>) {
+        if (object.$types.contains(FIELDBEARING_TYPE) && "fields" in object) {
+            for (const field of object.fields as Iterable<Field>) {
                 // Skip any index fields.
                 if (INDEX_FIELDS.has(field.key)) continue;
 
@@ -221,8 +221,8 @@ export class Datastore {
             );
         }
 
-        if (object.$types.contains(FIELDBEARING_TYPE) && "$fields" in object) {
-            for (const field of object.$fields as Iterable<Field>) {
+        if (object.$types.contains(FIELDBEARING_TYPE) && "fields" in object) {
+            for (const field of object.fields as Iterable<Field>) {
                 // Skip any index fields.
                 if (INDEX_FIELDS.has(field.key)) continue;
 

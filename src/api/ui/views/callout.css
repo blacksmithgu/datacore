@@ -1,5 +1,9 @@
-.datacore .callout-content {
+.datacore .callout-content,
+.datacore.callout {
     transition: all 100ms cubic-bezier(0.02, 0.01, 0.47, 1);
     margin-top: 10px;
     margin-bottom: 10px;
+}
+.datacore .callout-fold {
+    align-self: center;
 }
