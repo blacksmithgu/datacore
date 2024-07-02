@@ -122,4 +122,13 @@ export namespace Result {
 
         return Result.success(result);
     }
+
+    /** Catch any errors in a call, returning a result instead. */
+    export function trying<T>(call: () => T): Result<T, Error> {
+        try {
+            return Result.success(call());
+        } catch (error) {
+            return Result.failure(error);
+        }
+    }
 }

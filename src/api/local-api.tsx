@@ -4,7 +4,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownCodeblock, MarkdownPage } from "index/types/markdown";
+import { MarkdownPage } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -21,11 +21,12 @@ import { VanillaTable } from "./ui/views/vanilla-table";
 import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
-import { DatacoreJSRenderer, asyncEvalInContext } from "ui/javascript";
-import { DatacoreScript, ScriptCache } from "./script-cache";
+import { ScriptCache } from "./script-cache";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
+    public scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
+
     public constructor(public api: DatacoreApi, public path: string) {}
 
     /** The current file path for the local API. */
@@ -62,22 +63,24 @@ export class DatacoreLocalApi {
     // Script loading utilities //
     //////////////////////////////
 
-    // Note: Script loading is a bit jank, since it has to be asynchronous due to IO (unless of course we wanted to cache
-    // every single script in the vault in memory, which seems terrible for performance). It functions by essentially
-    // returning a lazy proxy.
-
     /**
-     * Asynchronously load a javascript block from the given path or link; this method supports loading code blocks
-     * from markdown files via the link option
+     * Asynchronously load a javascript block from the given path or link; you can either load from JS/TS/JSX/TSX files
+     * directly, or from codeblocks by loading from the section the codeblock is inside of. There are a few stipulations
+     * to loading:
+     * - You cannot load cyclical dependencies.
+     * - This is similar to vanilla js `require()`, not `import ... `. Your scripts you are requiring need to explicitly
+     *   return the things they are exporting, like the example below. The `export` keyword does not work.
      *
+     * ```js
+     * function MyElement() {
+     *  ...
+     * }
+     *
+     * return { MyElement };
+     * ```
      */
-
-    public scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
-
     public async require(path: string | Link): Promise<any> {
-        let result = await this.scriptCache.load(path, this);
-        if (!result.successful) throw new Error(result.error);
-        return result.value;
+        return (await this.scriptCache.load(path, this)).orElseThrow();
     }
 
     ///////////////////////
