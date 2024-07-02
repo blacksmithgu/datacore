@@ -170,3 +170,34 @@ return function View() {
     </ul>;
 }
 ```
+
+## Sharing Code
+
+You can split code up into common snippets that can then be imported by other scripts using `dc.require`. Common snippets can either be placed directly into `js/ts` files in your vault, OR they
+can be placed into codeblocks and imported by the name of the section the codeblock is in. For example,
+in file `scripts/lists.md`:
+
+~~~markdown
+# ListItem
+
+```jsx
+function ListItem({ text }) {
+    return <li>Some text: {text}</li>;
+}
+
+// The return is important here - dc.require literally calls this code as a function and yields
+// whatever this codeblock returns. If you are used to 'import'-style includes in modern ECMAScript,
+// this may look a bit weird.
+return { ListItem };
+```
+~~~
+
+Then, from another script elsewhere:
+
+```jsx
+const { ListItem } = await dc.require(dc.headerLink("scripts/lists.md", "ListItem"));
+
+return function View() {
+    return <ListItem text="whoa!" />;
+}
+```

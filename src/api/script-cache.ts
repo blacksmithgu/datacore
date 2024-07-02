@@ -109,7 +109,7 @@ export class ScriptCache {
         // Then finally execute the script to 'load' it.
         const finalContext = Object.assign({ h: h, Fragment: Fragment }, context);
         try {
-            return await asyncEvalInContext(basic, finalContext);
+            return Result.success(await asyncEvalInContext(basic, finalContext));
         } catch (error) {
             return Result.failure(`Failed to execute script '${path.toString()}': ${error}`);
         }
