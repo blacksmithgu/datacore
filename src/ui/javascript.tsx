@@ -4,7 +4,7 @@ import { DatacoreLocalApi } from "api/local-api";
 import { JSX, createElement, h, isValidElement, render, Fragment } from "preact";
 import { unmountComponentAtNode } from "preact/compat";
 import { transform } from "sucrase";
-
+export type ScriptLanguage = "js" | "ts" | "jsx" | "tsx";
 /**
  * Renders a script by executing it and handing it the appropriate React context to execute
  * automatically.
@@ -17,7 +17,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
         public container: HTMLElement,
         public path: string,
         public script: string,
-        public language: "js" | "ts" | "jsx" | "tsx"
+        public language: ScriptLanguage
     ) {
         super(container);
     }
@@ -27,7 +27,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 
         // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
-            const primitiveScript = this.convert(this.script, this.language);
+            const primitiveScript = convert(this.script, this.language);
 
             const renderable = await asyncEvalInContext(primitiveScript, {
                 dc: this.api,
@@ -69,25 +69,23 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
     }
 
     /** Attempts to convert the script in the given language to plain javascript; will throw an Error on failure. */
-    private convert(script: string, language: "js" | "ts" | "jsx" | "tsx"): string {
-        switch (language) {
-            case "js":
-                return script;
-            case "jsx":
-                return transform(this.script, { transforms: ["jsx"], jsxPragma: "h", jsxFragmentPragma: "Fragment" })
-                    .code;
-            case "ts":
-                return transform(this.script, { transforms: ["typescript"] }).code;
-            case "tsx":
-                return transform(this.script, {
-                    transforms: ["typescript", "jsx"],
-                    jsxPragma: "h",
-                    jsxFragmentPragma: "Fragment",
-                }).code;
-        }
+}
+export function convert(script: string, language: ScriptLanguage): string {
+    switch (language) {
+        case "js":
+            return script;
+        case "jsx":
+            return transform(script, { transforms: ["jsx"], jsxPragma: "h", jsxFragmentPragma: "Fragment" }).code;
+        case "ts":
+            return transform(script, { transforms: ["typescript"] }).code;
+        case "tsx":
+            return transform(script, {
+                transforms: ["typescript", "jsx"],
+                jsxPragma: "h",
+                jsxFragmentPragma: "Fragment",
+            }).code;
     }
 }
-
 /** Make a renderable element from the returned object; if this transformation is not possible, throw an exception. */
 export function makeRenderableElement(object: any, sourcePath: string): JSX.Element {
     if (typeof object === "function") {
