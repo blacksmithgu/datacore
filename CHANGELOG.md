@@ -1,3 +1,9 @@
+# 0.1.11 (Beta)
+
+Adds experimental support for `dc.require()`, allowing for importing other codeblocks from script files or from codeblocks in named sections.
+
+---
+
 # 0.1.10 (Beta)
 
 - Fixes several annoying off-by-one errors in line span embeds and an indexing off-by-one.
