@@ -1,3 +1,9 @@
+# 0.1.14 (Beta)
+
+Fixes non-markdown files not showing up in the Datacore index when they are created while Obsidian is running.
+
+---
+
 # 0.1.13 (Beta)
 
 Fixes parsing tags from frontmatter.
