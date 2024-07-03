@@ -65,11 +65,31 @@ export class Datacore extends Component {
 
     /** Initialize datacore by scanning persisted caches and all available files, and queueing parses as needed. */
     initialize() {
-        // The metadata cache is updated on initial file index and file loads.
+        // Metadata cache handles markdown file updates.
         this.registerEvent(this.metadataCache.on("resolve", (file) => this.reload(file)));
 
         // Renames do not set off the metadata cache; catch these explicitly.
         this.registerEvent(this.vault.on("rename", this.rename, this));
+
+        // Handle generic file creates and updates; resolve generally only applies to markdown files
+        // but we do keep basic metadata about all files.
+        this.registerEvent(this.vault.on("create", (file) => {
+            if (!(file instanceof TFile)) return;
+
+            // Handled by the metadata cache.
+            if (file.extension === "md" || file.extension === "markdown") return;
+
+            this.reload(file);
+        }));
+
+        this.registerEvent(this.vault.on("modify", (file) => {
+            if (!(file instanceof TFile)) return;
+
+            // Handled by the metadata cache.
+            if (file.extension === "md" || file.extension === "markdown") return;
+
+            this.reload(file);
+        }));
 
         // File creation does cause a metadata change, but deletes do not. Clear the caches for this.
         this.registerEvent(
@@ -124,6 +144,9 @@ export class Datacore extends Component {
         // (for sections, tasks, etc to refer to their parent file) and it requires some finesse to fix.
         this.datastore.delete(oldPath);
         this.reload(file);
+
+        // TODO: For correctness, probably have to either fix links in all linked files OR
+        // just stop normalizing links in the store.
     }
 
     /**
@@ -340,14 +363,11 @@ export class DatacoreInitializer extends Component {
                     this.core.storeMarkdown(data);
                     return { status: "cached" };
                 }
-
-                // Does not match an existing import type, just reload normally.
-                await this.core.reload(file);
-                return { status: "imported" };
-            } else {
-                await this.core.reload(file);
-                return { status: "imported" };
             }
+
+            // Does not match an existing import type, just reload normally.
+            await this.core.reload(file);
+            return { status: "imported" };
         } catch (ex) {
             console.log("Datacore: Failed to import file: ", ex);
             return { status: "skipped" };
