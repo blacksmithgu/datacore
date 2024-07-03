@@ -100,6 +100,7 @@ export class Datacore extends Component {
 
             this.datastore.touch();
             this.trigger("update", this.revision);
+            this.trigger("initialized");
 
             // Clean up any documents which no longer exist in the vault.
             // TODO: I think this may race with other concurrent operations, so
@@ -194,6 +195,7 @@ export class Datacore extends Component {
 
     /** Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
     public on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
+    public on(evt: "initialized", callback: () => any, context?: any): EventRef;
 
     on(evt: string, callback: (...data: any) => any, context?: any): EventRef {
         return this.events.on(evt, callback, context);
@@ -211,6 +213,8 @@ export class Datacore extends Component {
 
     /** Trigger an update event. */
     private trigger(evt: "update", revision: number): void;
+    /** Trigger an initialization event. */
+    private trigger(evt: "initialized"): void;
 
     /** Trigger an event. */
     private trigger(evt: string, ...args: any[]): void {
@@ -233,6 +237,8 @@ export class DatacoreInitializer extends Component {
     /** Deferred promise which resolves when importing is done. */
     done: Deferred<InitializationStats>;
 
+    /** The total number of target files to import. */
+    targetTotal: number;
     /** The time that init started in milliseconds. */
     start: number;
     /** Total number of files to import. */
@@ -251,6 +257,7 @@ export class DatacoreInitializer extends Component {
 
         this.active = false;
         this.queue = this.core.vault.getFiles();
+        this.targetTotal = this.queue.length;
         this.files = this.queue.length;
         this.start = Date.now();
         this.current = [];

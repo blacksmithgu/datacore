@@ -1,9 +1,11 @@
-import { Lit, ErrorMessage, SimpleErrorBoundary, CURRENT_FILE_CONTEXT, DatacoreContextProvider } from "ui/markdown";
-import { MarkdownRenderChild } from "obsidian";
+import { ErrorMessage, SimpleErrorBoundary, CURRENT_FILE_CONTEXT, DatacoreContextProvider } from "ui/markdown";
+import { App, MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
-import { JSX, createElement, h, isValidElement, render, Fragment } from "preact";
+import { h, render, Fragment, VNode } from "preact";
 import { unmountComponentAtNode } from "preact/compat";
 import { ScriptLanguage, asyncEvalInContext, transpile } from "utils/javascript";
+import { LoadingBoundary, ScriptContainer } from "./loading-boundary";
+import { Datacore } from "index/datacore";
 
 /**
  * Renders a script by executing it and handing it the appropriate React context to execute
@@ -28,17 +30,14 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
         // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
             const primitiveScript = transpile(this.script, this.language);
+            const renderer = async () => {
+                return await asyncEvalInContext(primitiveScript, {
+                    dc: this.api,
+                    h: h,
+                    Fragment: Fragment,
+                });
+            };
 
-            const renderable = await asyncEvalInContext(primitiveScript, {
-                dc: this.api,
-                h: h,
-                Fragment: Fragment,
-            });
-
-            // Early return in case state changes during the async call above.
-            if (!this.loaded) return;
-
-            const renderableElement = makeRenderableElement(renderable, this.path);
             render(
                 <DatacoreContextProvider
                     app={this.api.app}
@@ -48,14 +47,15 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
                 >
                     <CURRENT_FILE_CONTEXT.Provider value={this.path}>
                         <SimpleErrorBoundary message="The datacore script failed to execute.">
-                            {renderableElement}
+                            <LoadingBoundary datacore={this.api.core}>
+                                <ScriptContainer executor={renderer} sourcePath={this.path} />
+                            </LoadingBoundary>
                         </SimpleErrorBoundary>
                     </CURRENT_FILE_CONTEXT.Provider>
                 </DatacoreContextProvider>,
                 this.container
             );
         } catch (ex) {
-            console.error(ex);
             render(
                 <ErrorMessage message="Datacore failed to render the code block." error={"" + ex} />,
                 this.container
@@ -67,23 +67,37 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
         if (this.loaded) unmountComponentAtNode(this.container);
         this.loaded = false;
     }
-
-    /** Attempts to convert the script in the given language to plain javascript; will throw an Error on failure. */
 }
 
-/** Make a renderable element from the returned object; if this transformation is not possible, throw an exception. */
-export function makeRenderableElement(object: any, sourcePath: string): JSX.Element {
-    if (typeof object === "function") {
-        return createElement(object, {});
-    } else if (Array.isArray(object)) {
-        return createElement(
-            "div",
-            {},
-            (object as any[]).map((x) => makeRenderableElement(x, sourcePath))
+/** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
+export class ReactRenderer extends MarkdownRenderChild {
+    public constructor(
+        public app: App,
+        public datacore: Datacore,
+        public container: HTMLElement,
+        public sourcePath: string,
+        public element: VNode
+    ) {
+        super(container);
+    }
+
+    public onload(): void {
+        render(
+            <DatacoreContextProvider
+                app={this.app}
+                component={this}
+                datacore={this.datacore}
+                settings={this.datacore.settings}
+            >
+                <CURRENT_FILE_CONTEXT.Provider value={this.sourcePath}>
+                    <LoadingBoundary datacore={this.datacore}>{this.element}</LoadingBoundary>
+                </CURRENT_FILE_CONTEXT.Provider>
+            </DatacoreContextProvider>,
+            this.container
         );
-    } else if (isValidElement(object)) {
-        return object;
-    } else {
-        return <Lit value={object} sourcePath={sourcePath} />;
+    }
+
+    public onunload(): void {
+        unmountComponentAtNode(this.container);
     }
 }
