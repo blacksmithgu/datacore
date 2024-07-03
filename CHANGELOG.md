@@ -1,3 +1,9 @@
+# 0.1.12 (Beta)
+
+Added a (crappy looking) guard to all views which waits for Datacore to actually be initialized before proceeding.
+
+---
+
 # 0.1.11 (Beta)
 
 Adds experimental support for `dc.require()`, allowing for importing other codeblocks from script files or from codeblocks in named sections.
