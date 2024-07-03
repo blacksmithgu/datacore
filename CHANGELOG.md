@@ -1,3 +1,9 @@
+# 0.1.13 (Beta)
+
+Fixes parsing tags from frontmatter.
+
+---
+
 # 0.1.12 (Beta)
 
 Added a (crappy looking) guard to all views which waits for Datacore to actually be initialized before proceeding.
