@@ -177,7 +177,7 @@ export function markdownImport(
 
     // Add frontmatter tags.
     if (metadata.frontmatter) {
-        for (const rawtag in extractTags(metadata.frontmatter)) {
+        for (const rawtag of extractTags(metadata.frontmatter)) {
             const tag = rawtag.startsWith("#") ? rawtag : "#" + rawtag;
             page.metadata.tag(tag);
         }
