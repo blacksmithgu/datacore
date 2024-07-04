@@ -274,5 +274,28 @@ class GeneralSettingsTab extends PluginSettingTab {
 								await this.plugin.updateSettings({maxRecursiveRenderDepth: parsed})
 							})
 						});
+
+			this.containerEl.createEl("h2", "Tasks")
+
+			new Setting(this.containerEl)
+						.setName("Task Completion Text")
+						.setDesc("Name of inline field in which to store task completion date/time")
+						.addText(text => {
+							text.setValue(this.plugin.settings.taskCompletionText).onChange(async value => {
+								await this.plugin.updateSettings({taskCompletionText: value})
+							})
+						})
+
+			new Setting(this.containerEl)
+						.setName("Use Emoji Shorthand for Task Completion")
+						.setDesc("If enabled, automatic completion will use an emoji shorthand ✅ YYYY-MM-DD" + 
+							"instead of [completion:: date].")
+						.addToggle((tb) => {
+                tb.setValue(this.plugin.settings.taskCompletionUseEmojiShorthand).onChange(async (val) => {
+                    await this.plugin.updateSettings({ taskCompletionUseEmojiShorthand: val });
+                });
+            });
+
+	
     }
 }

@@ -1,6 +1,6 @@
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { DefaultListElement, ListState } from "api/ui/views/list";
-import { useIndexUpdates, useStableCallback } from "ui/hooks";
+import { useStableCallback } from "ui/hooks";
 import { Fragment, Ref } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT } from "ui/markdown";
 import { JSXInternal } from "preact/src/jsx";
@@ -14,7 +14,7 @@ import {
     TextEditable,
     useEditableDispatch,
 } from "ui/fields/editable";
-import { InlineField, setInlineField } from "index/import/inline-field";
+import { setInlineField } from "index/import/inline-field";
 import { BaseFieldProps } from "ui/fields/common-props";
 import { Field } from "expression/field";
 import { DateTime } from "luxon";
