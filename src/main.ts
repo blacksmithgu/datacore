@@ -1,5 +1,6 @@
 import { DatacoreApi } from "api/api";
 import { Datacore } from "index/datacore";
+import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
@@ -163,6 +164,54 @@ class GeneralSettingsTab extends PluginSettingTab {
                 });
             });
 
+        new Setting(this.containerEl)
+            .setName("Enable Javascript")
+            .setDesc("Whether Javascript codeblocks will be evaluated.")
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.settings.enableJs).onChange(async (value) => {
+                    await this.plugin.updateSettings({ enableJs: value });
+                });
+            });
+				
+				new Setting(this.containerEl)
+						.setName("Render Null As")
+						.setDesc("How to render null values in objects")
+						.addText(text => {
+							text.setValue(this.plugin.settings.renderNullAs).onChange(async (value) => {
+								await this.plugin.updateSettings({renderNullAs: value})
+							})
+						})
+
+
+				new Setting(this.containerEl)
+						.setName("Default Date Format")
+						.setDesc("The default format that dates are rendered in")
+						.addText(text => {
+							text.setValue(this.plugin.settings.defaultDateFormat).onChange(async value => {
+								// check if date format is valid
+								try {
+									DateTime.fromMillis(Date.now()).toFormat(value)
+								} catch {
+									return
+								}
+								await this.plugin.updateSettings({defaultDateFormat: value})
+							})
+						})
+					
+					new Setting(this.containerEl)
+						.setName("Default Date-Time format")
+						.setDesc("The default format that date-times are rendered in")
+						.addText(text => {
+							text.setValue(this.plugin.settings.defaultDateTimeFormat).onChange(async value => {
+								try {
+									DateTime.fromMillis(Date.now()).toFormat(value)
+								} catch {
+									return
+								}
+								await this.plugin.updateSettings({defaultDateTimeFormat: value})
+							})
+						})
+
         this.containerEl.createEl("h2", { text: "Performance Tuning" });
 
         new Setting(this.containerEl)
@@ -204,5 +253,18 @@ class GeneralSettingsTab extends PluginSettingTab {
                     await this.plugin.updateSettings({ importerUtilization: limited });
                 });
             });
+
+        new Setting(this.containerEl)
+					.setName("Maximum Recursive Render Depth")
+					.setDesc("Maximum depth that objects will be rendered to (i.e., how many levels of subproperties" + 
+						"will be rendered by default). This avoids infinite recursion due to self-referential objects" + 
+						"and ensures that rendering objects is acceptably performant.")
+						.addText(text => {
+							text.setValue(this.plugin.settings.maxRecursiveRenderDepth.toString()).onChange(async value => {
+								const parsed = parseInt(value)
+								if(isNaN(parsed)) return;
+								await this.plugin.updateSettings({maxRecursiveRenderDepth: parsed})
+							})
+						});
     }
 }
