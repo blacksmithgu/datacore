@@ -97,14 +97,14 @@ export function markdownImport(
         if (block.type === "heading") continue;
 
         const start = block.position.start.line;
-        const end = block.position.end.line;
+        const end = block.position.end.line + 1;
         const startLine = lines[start]; // to use to check the codeblock type
 
         if (block.type === "list") {
             blocks.set(start, new ListBlockData(start, end, blockOrdinal++, block.id));
         } else if (block.type == "code" && YAML_DATA_REGEX.test(startLine)) {
             const yaml: string = lines
-                .slice(start + 1, end)
+                .slice(start + 1, end - 1)
                 .join("\n")
                 .replace(/\t/gm, "  ");
             const split: Record<string, JsonFrontmatterEntry> = parseFrontmatterBlock(parseYaml(yaml));
@@ -146,7 +146,7 @@ export function markdownImport(
         let marker = content.split("\n")[0].replace(markerRegex, "").trim().slice(0, 1);
         const item = new ListItemData(
             list.position.start.line,
-            list.position.end.line,
+            list.position.end.line + 1,
             list.parent,
             marker,
             list.id,
@@ -187,7 +187,7 @@ export function markdownImport(
 
     // Add frontmatter tags.
     if (metadata.frontmatter) {
-        for (const rawtag in extractTags(metadata.frontmatter)) {
+        for (const rawtag of extractTags(metadata.frontmatter)) {
             const tag = rawtag.startsWith("#") ? rawtag : "#" + rawtag;
             page.metadata.tag(tag);
         }

@@ -57,6 +57,18 @@ return function View() {
 }
 ```
 
+> **Note: When Does My View Update?**
+>
+> Datacore uses React Hooks to automatically update views. Most datacore hooks like `dc.useCurrentFile()`
+> and `dc.useQuery()` internally set up event listeners for when the datacore index changes. When it does,
+> they update some internal state which causes your view to automatically re-render. This is similar
+> to how the React `useState` hook will cause your view to re-render if you update the state!
+>
+> For more advanced users, note that this means you can directly control when things re-render if
+> you wish, by directly using load apis like `dc.query()` and manually reacting to index updates -
+> either by subscribing to the event or using the low level `dc.useIndexUpdates()` hook to just
+> trigger on every index update.
+
 ### Processing your Data
 
 Datacore queries always produce lists of matching objects. You should maximize putting logic into
@@ -85,8 +97,8 @@ return function View() {
     // Then show those buckets!
     return (
         <ul>
-            {["1", "2", "3", "4", "5"].map(rating => (
-                <li>{rating}: {ratingBuckets[rating] ?? 0} entries.</li>
+            {Object.keys(ratingBuckets).map(rating => (
+                <li>Rating {rating}: {ratingBuckets[rating] ?? 0} entries.</li>
             ))}
         </ul>
     );
@@ -96,4 +108,96 @@ return function View() {
 ### Displaying Your Data
 
 To display your data, you can output arbitrary HTML using the Javascript JSX syntax (also covered
-in the React documentation).
+in the React documentation). For example, to render some paragraphs:
+
+```jsx
+return function View() {
+    return <div>
+        <p>Hello!</p>
+        <p>Goodbye!</p>
+    </div>;
+}
+```
+
+Injecting data into JSX views is done via `{}` interpolation; for example:
+
+```jsx
+return function View() {
+    const data = dc.useCurrentFile();
+
+    return <p>The file you are on is "{data.$path}".</p>;
+}
+```
+
+You can run arbitrary javascript inside interpolated blocks:
+
+```jsx
+return function View() {
+    const data = dc.useCurrentFile();
+
+    return <p>The first character is {data.$title.substring(0, 1)}!</p>
+}
+```
+
+You can even `map` over arrays to allow for creating lists and so on:
+
+```jsx
+return function View() {
+    const data = [1, 2, 3, 4];
+
+    return <ol>
+        {data.map(index => (
+            <li>{index}</li>
+        ))}
+    </ol>;
+}
+```
+
+## Splitting Up Complex Views
+
+For large views, you can split up large blocks of complicated JSX into separate functions.
+
+```jsx
+function ListItem({ text }) {
+    return <li>Some text: {text}</li>;
+}
+
+return function View() {
+    return <ul>
+        <ListItem text="text!" />
+        <ListItem text="more text!" />
+        <ListItem text="even more text!" />
+    </ul>;
+}
+```
+
+## Sharing Code
+
+You can split code up into common snippets that can then be imported by other scripts using `dc.require`. Common snippets can either be placed directly into `js/ts` files in your vault, OR they
+can be placed into codeblocks and imported by the name of the section the codeblock is in. For example,
+in file `scripts/lists.md`:
+
+~~~markdown
+# ListItem
+
+```jsx
+function ListItem({ text }) {
+    return <li>Some text: {text}</li>;
+}
+
+// The return is important here - dc.require literally calls this code as a function and yields
+// whatever this codeblock returns. If you are used to 'import'-style includes in modern ECMAScript,
+// this may look a bit weird.
+return { ListItem };
+```
+~~~
+
+Then, from another script elsewhere:
+
+```jsx
+const { ListItem } = await dc.require(dc.headerLink("scripts/lists.md", "ListItem"));
+
+return function View() {
+    return <ListItem text="whoa!" />;
+}
+```

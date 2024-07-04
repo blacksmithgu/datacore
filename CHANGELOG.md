@@ -1,3 +1,40 @@
+# 0.1.14 (Beta)
+
+Fixes non-markdown files not showing up in the Datacore index when they are created while Obsidian is running.
+
+---
+
+# 0.1.13 (Beta)
+
+Fixes parsing tags from frontmatter.
+
+---
+
+# 0.1.12 (Beta)
+
+Added a (crappy looking) guard to all views which waits for Datacore to actually be initialized before proceeding.
+
+---
+
+# 0.1.11 (Beta)
+
+Adds experimental support for `dc.require()`, allowing for importing other codeblocks from script files or from codeblocks in named sections.
+
+---
+
+# 0.1.10 (Beta)
+
+- Fixes several annoying off-by-one errors in line span embeds and an indexing off-by-one.
+
+---
+
+# 0.1.9 (Beta)
+
+- Fixes a bunch of off-by-one errors in markdown parsing, meaning block links and tags actually work now.
+- Cleaned up the `dc.SpanEmbed` visual appearance to be something a bit more attractive.
+
+---
+
 # 0.1.8 (Beta)
 
 - @Quorafind - Adds 'scroll to top' functionality for large tables when you change pages.

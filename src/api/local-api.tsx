@@ -23,11 +23,12 @@ import { Callout } from "./ui/views/callout";
 import { Card } from "./ui/views/card";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
-import { DatacoreJSRenderer, asyncEvalInContext } from "ui/javascript";
-import { DatacoreScript, ScriptCache } from "./script-cache";
+import { ScriptCache } from "./script-cache";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
+    public scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
+
     public constructor(public api: DatacoreApi, public path: string) {}
 
     /** The current file path for the local API. */
@@ -64,22 +65,25 @@ export class DatacoreLocalApi {
     // Script loading utilities //
     //////////////////////////////
 
-    // Note: Script loading is a bit jank, since it has to be asynchronous due to IO (unless of course we wanted to cache
-    // every single script in the vault in memory, which seems terrible for performance). It functions by essentially
-    // returning a lazy proxy.
-
     /**
-     * Asynchronously load a javascript block from the given path or link; this method supports loading code blocks
-     * from markdown files via the link option
+     * Asynchronously load a javascript block from the given path or link; you can either load from JS/TS/JSX/TSX files
+     * directly, or from codeblocks by loading from the section the codeblock is inside of. There are a few stipulations
+     * to loading:
+     * - You cannot load cyclical dependencies.
+     * - This is similar to vanilla js `require()`, not `import ... `. Your scripts you are requiring need to explicitly
+     *   return the things they are exporting, like the example below. The `export` keyword does not work.
      *
+     * ```js
+     * function MyElement() {
+     *  ...
+     * }
+     *
+     * return { MyElement };
+     * ```
      */
-
-    public scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
-
     public async require(path: string | Link): Promise<any> {
-        let result = await this.scriptCache.load(path, this);
-        if (!result.successful) throw new Error(result.error);
-        return result.value;
+        const result = await this.scriptCache.load(path, { dc: this });
+        return result.orElseThrow();
     }
 
     ///////////////////////
@@ -107,6 +111,16 @@ export class DatacoreLocalApi {
     /** Create a file link pointing to the given path. */
     public fileLink(path: string): Link {
         return Link.file(path);
+    }
+
+    /** Create a link to a header with the given name. */
+    public headerLink(path: string, header: string): Link {
+        return Link.header(path, header);
+    }
+
+    /** Create a link to a block with the given path and block ID. */
+    public blockLink(path: string, block: string): Link {
+        return Link.block(path, block);
     }
 
     /** Try to parse the given link, throwing an error if it is invalid. */
@@ -183,13 +197,13 @@ export class DatacoreLocalApi {
     public Group = Group;
 
     /** Renders a literal value in a pretty way that respects settings. */
-    public Literal({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) {
+    public Literal = (({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) => {
         const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
         return <Lit value={value} sourcePath={sourcePath ?? implicitSourcePath ?? this.path} inline={inline} />;
-    }
+    }).bind(this);
 
     /** Renders markdown using the Obsidian markdown renderer, optionally attaching additional styles. */
-    public Markdown({
+    public Markdown = (({
         content,
         sourcePath,
         inline,
@@ -201,7 +215,7 @@ export class DatacoreLocalApi {
         inline?: boolean;
         style?: CSSProperties;
         className?: string;
-    }) {
+    }) => {
         const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
         return (
             <Markdown
@@ -212,13 +226,21 @@ export class DatacoreLocalApi {
                 cls={className}
             />
         );
-    }
+    }).bind(this);
 
     /** Renders an obsidian-style link directly and more effieicntly than rendering markdown. */
     public Link = ObsidianLink;
 
     /** Create a vanilla Obsidian embed for the given link. */
-    public LinkEmbed({ link, inline, sourcePath }: { link: string | Link; inline?: boolean; sourcePath?: string }) {
+    public LinkEmbed = (({
+        link,
+        inline,
+        sourcePath,
+    }: {
+        link: string | Link;
+        inline?: boolean;
+        sourcePath?: string;
+    }) => {
         const realLink = hooks.useMemo(() => (typeof link === "string" ? Link.file(link) : link), [link]);
         const implicitSourcePath = hooks.useContext(CURRENT_FILE_CONTEXT);
         return (
@@ -228,25 +250,35 @@ export class DatacoreLocalApi {
                 sourcePath={sourcePath ?? implicitSourcePath ?? this.path}
             />
         );
-    }
+    }).bind(this);
 
-    /** Create an explicit 'span' embed which extracts a span of lines from a markdown file */
-    public SpanEmbed({
+    /** Create an explicit 'span' embed which extracts a span of lines from a markdown file. */
+    public SpanEmbed = (({
         path,
         start,
         end,
-        sourcePath,
+        explain,
+        showExplain,
+        sourcePath: maybeSourcePath,
     }: {
         path: string;
         sourcePath?: string;
+        explain?: string;
+        showExplain?: boolean;
         start: number;
         end: number;
-    }) {
+    }) => {
         // Resolve the path to the correct path if a source path is provided.
+        const sourcePath = maybeSourcePath ?? this.path;
         const resolvedPath = hooks.useMemo(() => this.resolvePath(path, sourcePath), [path, sourcePath]);
 
-        return <LineSpanEmbed path={resolvedPath} start={start} end={end} />;
-    }
+        return (
+            <LineSpanEmbed path={resolvedPath} start={start} end={end} explain={explain} showExplain={showExplain} />
+        );
+    }).bind(this);
+
+    /** Renders an obsidian lucide icon. */
+    public Icon = Icon;
 
     ///////////
     // Views //
@@ -267,5 +299,4 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
-    public Icon = Icon;
 }

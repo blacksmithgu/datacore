@@ -1,5 +1,5 @@
 /** Provides core preact / rendering utilities for all view types. */
-import { App, MarkdownRenderChild, MarkdownRenderer } from "obsidian";
+import { App, MarkdownRenderer } from "obsidian";
 import { Component } from "obsidian";
 import { Link, Literal, Literals } from "expression/literal";
 import { Datacore } from "index/datacore";
@@ -7,12 +7,12 @@ import { Settings } from "settings";
 import { currentLocale, renderMinimalDate, renderMinimalDuration } from "utils/normalizers";
 import { extractImageDimensions, isImageEmbed } from "utils/media";
 
-import { createContext, Fragment, VNode, render } from "preact";
+import { createContext, Fragment, render } from "preact";
 import { useContext, useMemo, useCallback, useRef, useEffect, useErrorBoundary } from "preact/hooks";
-import { CSSProperties, PropsWithChildren, memo, unmountComponentAtNode } from "preact/compat";
-import { Embed } from "../api/ui/embed";
+import { CSSProperties, PropsWithChildren, memo } from "preact/compat";
+import { Embed } from "api/ui/embed";
 
-import "styles/errors.css";
+import "./errors.css";
 
 export const COMPONENT_CONTEXT = createContext<Component>(undefined!);
 export const APP_CONTEXT = createContext<App>(undefined!);
@@ -299,36 +299,5 @@ export function SimpleErrorBoundary({
         return <ErrorMessage title={title} message={message} error={error.stack} reset={reset} />;
     } else {
         return <Fragment>{children}</Fragment>;
-    }
-}
-
-/** A trivial wrapper which allows a react component to live for the duration of a `MarkdownRenderChild`. */
-export class ReactRenderer extends MarkdownRenderChild {
-    public constructor(
-        public app: App,
-        public datacore: Datacore,
-        public container: HTMLElement,
-        public sourcePath: string,
-        public element: VNode
-    ) {
-        super(container);
-    }
-
-    public onload(): void {
-        render(
-            <DatacoreContextProvider
-                app={this.app}
-                component={this}
-                datacore={this.datacore}
-                settings={this.datacore.settings}
-            >
-                <CURRENT_FILE_CONTEXT.Provider value={this.sourcePath}>{this.element}</CURRENT_FILE_CONTEXT.Provider>
-            </DatacoreContextProvider>,
-            this.container
-        );
-    }
-
-    public onunload(): void {
-        unmountComponentAtNode(this.container);
     }
 }

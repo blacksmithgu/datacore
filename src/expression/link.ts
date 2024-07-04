@@ -141,6 +141,7 @@ export class Link {
     /** Convert this link to markdown so it can be rendered. */
     public markdown(): string {
         let result = (this.embed ? "!" : "") + "[[" + this.obsidianLink();
+        result += "|";
         result += this.displayOrDefault();
         result += "]]";
         return result;
