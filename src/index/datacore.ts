@@ -73,23 +73,27 @@ export class Datacore extends Component {
 
         // Handle generic file creates and updates; resolve generally only applies to markdown files
         // but we do keep basic metadata about all files.
-        this.registerEvent(this.vault.on("create", (file) => {
-            if (!(file instanceof TFile)) return;
+        this.registerEvent(
+            this.vault.on("create", (file) => {
+                if (!(file instanceof TFile)) return;
 
-            // Handled by the metadata cache.
-            if (file.extension === "md" || file.extension === "markdown") return;
+                // Handled by the metadata cache.
+                if (file.extension === "md" || file.extension === "markdown") return;
 
-            this.reload(file);
-        }));
+                this.reload(file);
+            })
+        );
 
-        this.registerEvent(this.vault.on("modify", (file) => {
-            if (!(file instanceof TFile)) return;
+        this.registerEvent(
+            this.vault.on("modify", (file) => {
+                if (!(file instanceof TFile)) return;
 
-            // Handled by the metadata cache.
-            if (file.extension === "md" || file.extension === "markdown") return;
+                // Handled by the metadata cache.
+                if (file.extension === "md" || file.extension === "markdown") return;
 
-            this.reload(file);
-        }));
+                this.reload(file);
+            })
+        );
 
         // File creation does cause a metadata change, but deletes do not. Clear the caches for this.
         this.registerEvent(
