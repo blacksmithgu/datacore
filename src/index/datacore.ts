@@ -78,7 +78,7 @@ export class Datacore extends Component {
                 if (!(file instanceof TFile)) return;
 
                 // Handled by the metadata cache.
-                if (file.extension === "md" || file.extension === "markdown") return;
+                if (INDEXABLE_EXTENSIONS.has(file.extension.toLowerCase())) return;
 
                 this.reload(file);
             })
@@ -89,7 +89,7 @@ export class Datacore extends Component {
                 if (!(file instanceof TFile)) return;
 
                 // Handled by the metadata cache.
-                if (file.extension === "md" || file.extension === "markdown") return;
+                if (INDEXABLE_EXTENSIONS.has(file.extension.toLowerCase())) return;
 
                 this.reload(file);
             })
@@ -164,7 +164,7 @@ export class Datacore extends Component {
     /** Queue a file for reloading; this is done asynchronously in the background and may take a few seconds. */
     public async reload(file: TFile): Promise<Indexable> {
         // Filter files by file extensions.
-        if (!INDEXABLE_EXTENSIONS.contains(file.extension)) {
+        if (!INDEXABLE_EXTENSIONS.has(file.extension)) {
             const result = new GenericFile(
                 file.path,
                 DateTime.fromMillis(file.stat.ctime),
