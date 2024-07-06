@@ -144,6 +144,11 @@ export function SelectableEditable({
                 isMulti={config?.multi ?? false}
                 options={config?.options ?? []}
                 menuPortalTarget={document.body}
+                value={
+                    config?.options.filter((x: any) =>
+                        ((Array.isArray(content) ? content : [content]) as any[]).contains(x.value)
+                    ) || []
+                }
                 classNames={{
                     input: (props: any) => "prompt-input",
                     valueContainer: (props: any) => "suggestion-item value-container",

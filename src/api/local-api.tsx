@@ -18,7 +18,9 @@ import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
+import { TaskList } from "./ui/views/task";
 import { Callout } from "./ui/views/callout";
+import { Card } from "./ui/views/card";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
@@ -282,7 +284,9 @@ export class DatacoreLocalApi {
     // Views //
     ///////////
 
+    public TaskList = TaskList;
     public VanillaTable = VanillaTable;
+    public Card = Card;
 
     /////////////////////////
     // Interative elements //
