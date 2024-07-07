@@ -1,5 +1,5 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
+import { useCallback, useContext, useMemo, useRef, useState } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -30,6 +30,7 @@ export interface VanillaColumn<T, V = Literal> {
 export interface GroupingConfig<T> {
     /** How a grouping with the given key and set of rows should be handled. */
     render?: (key: Literal, rows: Grouping<T>) => Literal | VNode;
+		displayAsRow: boolean;
 }
 
 /** All available props for a vanilla table. */
@@ -54,6 +55,8 @@ export interface VanillaTableProps<T> {
      * If a number, will scroll only if the number is greater than the current page size.
      **/
     scrollOnPaging?: boolean | number;
+
+		displayGroupAsRow?: boolean;
 }
 
 export function VanillaTable<T>(props: VanillaTableProps<T>) {
@@ -98,7 +101,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
         if (!props.groupings) return undefined;
         if (Array.isArray(props.groupings)) return props.groupings;
 
-        if (Literals.isFunction(props.groupings)) return [{ render: props.groupings }];
+        if (Literals.isFunction(props.groupings)) return [{ render: props.groupings, displayAsRow: false }];
         else return [props.groupings];
     }, [props.groupings]);
 
@@ -165,9 +168,11 @@ export function VanillaRowGroup<T>({
 
         return (
             <Fragment>
-                <TableGroupHeader level={level} value={element} width={columns.length} config={groupingConfig} />
+								{groupingConfig?.displayAsRow ? 
+									<TableRow row={element.key as T} columns={columns} level={level}/> :	<TableGroupHeader level={level} value={element} width={columns.length} config={groupingConfig} />
+								}
                 {element.rows.map((row) => (
-                    <VanillaRowGroup level={level + 1} columns={columns} element={row} />
+                    <VanillaRowGroup level={level + 1} columns={columns} element={row} groupings={groupings} />
                 ))}
             </Fragment>
         );
@@ -201,7 +206,7 @@ export function TableGroupHeader<T>({
     const renderable = useAsElement(rawRenderable);
 
     return (
-        <tr className="datacore-table-group-header">
+        <tr className="datacore-table-group-header" style={{marginLeft: `${level * 5}px`}}>
             <td colSpan={width}>{renderable}</td>
         </tr>
     );
@@ -210,16 +215,17 @@ export function TableGroupHeader<T>({
 /** A single row inside the table. */
 export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: VanillaColumn<T>[] }) {
     return (
-        <tr className="datacore-table-row" style={level ? `padding-left: ${level * 5}px` : undefined}>
-            {columns.map((col) => (
-                <TableRowCell row={row} column={col} />
+        <tr className="datacore-table-row" style={level ? `margin-left: ${level * 10}px;` : undefined} data-level={level}>
+						<TableRowCell row={row} column={columns[0]} isFirst level={level}/>
+            {columns.slice(1).map((col) => (
+                <TableRowCell row={row} column={col} level={level}/>
             ))}
         </tr>
     );
 }
 
 /** A single cell inside of a row of the table. */
-export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn<T> }) {
+export function TableRowCell<T>({ row, column, level, isFirst = false }: { row: T; column: VanillaColumn<T>, level?: number, isFirst?: boolean }) {
     const value = useMemo(() => column.value(row), [row, column.value]);
     const renderable = useMemo(() => {
         if (column.render) return column.render(value, row);
@@ -227,7 +233,7 @@ export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn
     }, [row, column.render, value]);
     const rendered = useAsElement(renderable);
 
-    return <td className="datacore-table-cell">{rendered}</td>;
+    return <td data-level={level} style={{paddingLeft: level && isFirst ? `${level * 13}px` : undefined}} className="datacore-table-cell">{rendered}</td>;
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element. */
