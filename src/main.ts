@@ -164,53 +164,49 @@ class GeneralSettingsTab extends PluginSettingTab {
                 });
             });
 
+        this.containerEl.createEl("h2", { text: "Formatting" });
+
         new Setting(this.containerEl)
-            .setName("Enable Javascript")
-            .setDesc("Whether Javascript codeblocks will be evaluated.")
-            .addToggle((toggle) => {
-                toggle.setValue(this.plugin.settings.enableJs).onChange(async (value) => {
-                    await this.plugin.updateSettings({ enableJs: value });
+            .setName("Empty Values")
+            .setDesc("What to show for unset/empty properties.")
+            .addText((text) => {
+                text.setValue(this.plugin.settings.renderNullAs).onChange(async (value) => {
+                    await this.plugin.updateSettings({ renderNullAs: value });
                 });
             });
-				
-				new Setting(this.containerEl)
-						.setName("Render Null As")
-						.setDesc("How to render null values in objects")
-						.addText(text => {
-							text.setValue(this.plugin.settings.renderNullAs).onChange(async (value) => {
-								await this.plugin.updateSettings({renderNullAs: value})
-							})
-						})
 
+        new Setting(this.containerEl)
+            .setName("Default Date Format")
+            .setDesc(
+                "The default format that dates are rendered in. Uses luxon date formatting (https://github.com/moment/luxon/blob/master/docs/formatting.md#formatting-with-tokens-strings-for-cthulhu)."
+            )
+            .addText((text) => {
+                text.setValue(this.plugin.settings.defaultDateFormat).onChange(async (value) => {
+                    // check if date format is valid
+                    try {
+                        DateTime.fromMillis(Date.now()).toFormat(value);
+                    } catch {
+                        return;
+                    }
+                    await this.plugin.updateSettings({ defaultDateFormat: value });
+                });
+            });
 
-				new Setting(this.containerEl)
-						.setName("Default Date Format")
-						.setDesc("The default format that dates are rendered in")
-						.addText(text => {
-							text.setValue(this.plugin.settings.defaultDateFormat).onChange(async value => {
-								// check if date format is valid
-								try {
-									DateTime.fromMillis(Date.now()).toFormat(value)
-								} catch {
-									return
-								}
-								await this.plugin.updateSettings({defaultDateFormat: value})
-							})
-						})
-					
-					new Setting(this.containerEl)
-						.setName("Default Date-Time format")
-						.setDesc("The default format that date-times are rendered in")
-						.addText(text => {
-							text.setValue(this.plugin.settings.defaultDateTimeFormat).onChange(async value => {
-								try {
-									DateTime.fromMillis(Date.now()).toFormat(value)
-								} catch {
-									return
-								}
-								await this.plugin.updateSettings({defaultDateTimeFormat: value})
-							})
-						})
+        new Setting(this.containerEl)
+            .setName("Default Date-Time format")
+            .setDesc(
+                "The default format that date-times are rendered in. Uses luxon date formatting (https://github.com/moment/luxon/blob/master/docs/formatting.md#formatting-with-tokens-strings-for-cthulhu)."
+            )
+            .addText((text) => {
+                text.setValue(this.plugin.settings.defaultDateTimeFormat).onChange(async (value) => {
+                    try {
+                        DateTime.fromMillis(Date.now()).toFormat(value);
+                    } catch {
+                        return;
+                    }
+                    await this.plugin.updateSettings({ defaultDateTimeFormat: value });
+                });
+            });
 
         this.containerEl.createEl("h2", { text: "Performance Tuning" });
 
