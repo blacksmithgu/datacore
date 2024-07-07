@@ -1,3 +1,9 @@
+# 0.1.15 (Beta)
+
+Fixes field indexing, meaning you can use things like `rating >= 8` in your queries directly again (and they will also be much faster!). Thanks to @GamerGirlAndCo for the slew of fixes.
+
+---
+
 # 0.1.14 (Beta)
 
 Fixes non-markdown files not showing up in the Datacore index when they are created while Obsidian is running.
