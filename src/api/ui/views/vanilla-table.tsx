@@ -7,6 +7,7 @@ import { VNode, isValidElement } from "preact";
 import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
+import { combineClasses } from "../basics";
 
 /** A simple column definition which allows for custom renderers and titles. */
 export interface VanillaColumn<T, V = Literal> {
@@ -30,7 +31,8 @@ export interface VanillaColumn<T, V = Literal> {
 export interface GroupingConfig<T> {
     /** How a grouping with the given key and set of rows should be handled. */
     render?: (key: Literal, rows: Grouping<T>) => Literal | VNode;
-		displayAsRow: boolean;
+    /** whether to display this group's key as a row. */
+    displayAsRow: boolean;
 }
 
 /** All available props for a vanilla table. */
@@ -55,8 +57,6 @@ export interface VanillaTableProps<T> {
      * If a number, will scroll only if the number is greater than the current page size.
      **/
     scrollOnPaging?: boolean | number;
-
-		displayGroupAsRow?: boolean;
 }
 
 export function VanillaTable<T>(props: VanillaTableProps<T>) {
@@ -110,6 +110,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
             <table className="datacore-table">
                 <thead>
                     <tr className="datacore-table-header-row">
+                        <th width={1} />
                         {columns.map((col) => (
                             <VanillaTableHeaderCell column={col} />
                         ))}
@@ -163,21 +164,48 @@ export function VanillaRowGroup<T>({
     element: T | GroupElement<T>;
     groupings?: GroupingConfig<T>[];
 }) {
+    const [open, setOpen] = useState(true);
     if (Groupings.isElementGroup(element)) {
         const groupingConfig = groupings ? groupings[Math.min(groupings.length - 1, level)] : undefined;
-
         return (
             <Fragment>
-								{groupingConfig?.displayAsRow ? 
-									<TableRow row={element.key as T} columns={columns} level={level}/> :	<TableGroupHeader level={level} value={element} width={columns.length} config={groupingConfig} />
-								}
-                {element.rows.map((row) => (
-                    <VanillaRowGroup level={level + 1} columns={columns} element={row} groupings={groupings} />
-                ))}
+                {groupingConfig?.displayAsRow ? (
+                    <TableRow
+                        open={open}
+                        openChanged={setOpen}
+                        row={element.key as T}
+                        columns={columns}
+                        level={level}
+                        hasChildren={element.rows.length > 0}
+                    />
+                ) : (
+                    <TableGroupHeader
+                        level={level}
+                        value={element}
+                        width={columns.length}
+                        config={groupingConfig}
+                        open={open}
+                        openChanged={setOpen}
+                    />
+                )}
+                {open
+                    ? element.rows.map((row) => (
+                          <VanillaRowGroup level={level + 1} columns={columns} element={row} groupings={groupings} />
+                      ))
+                    : null}
             </Fragment>
         );
     } else {
-        return <TableRow level={level} row={element} columns={columns} />;
+        return (
+            <TableRow
+                hasChildren={false}
+                open={open}
+                openChanged={setOpen}
+                level={level}
+                row={element}
+                columns={columns}
+            />
+        );
     }
 }
 
@@ -187,11 +215,15 @@ export function TableGroupHeader<T>({
     value,
     width,
     config,
+    open,
+    openChanged,
 }: {
     level: number;
     value: GroupElement<T>;
     width: number;
     config?: GroupingConfig<T>;
+    openChanged: (b: boolean) => void;
+    open: boolean;
 }) {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
     const rawRenderable = useMemo(() => {
@@ -206,26 +238,45 @@ export function TableGroupHeader<T>({
     const renderable = useAsElement(rawRenderable);
 
     return (
-        <tr className="datacore-table-group-header" style={{marginLeft: `${level * 5}px`}}>
+        <tr className="datacore-table-group-header" style={{ paddingLeftt: `${level * 25}px` }}>
+            <td colSpan={1}>
+                <TableCollapser open={open} openChanged={openChanged} />
+            </td>
             <td colSpan={width}>{renderable}</td>
         </tr>
     );
 }
 
 /** A single row inside the table. */
-export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: VanillaColumn<T>[] }) {
+export function TableRow<T>({
+    level,
+    row,
+    columns,
+    openChanged,
+    open,
+    hasChildren = false,
+}: {
+    level: number;
+    row: T;
+    columns: VanillaColumn<T>[];
+    openChanged: (b: boolean) => void;
+    open: boolean;
+    hasChildren?: boolean;
+}) {
     return (
-        <tr className="datacore-table-row" style={level ? `margin-left: ${level * 10}px;` : undefined} data-level={level}>
-						<TableRowCell row={row} column={columns[0]} isFirst level={level}/>
-            {columns.slice(1).map((col) => (
-                <TableRowCell row={row} column={col} level={level}/>
+        <tr className="datacore-table-row" data-level={level}>
+            <td style={level ? `padding-left: ${level * 25}px;` : undefined}>
+                {hasChildren ? <TableCollapser open={open} openChanged={openChanged} /> : null}
+            </td>
+            {columns.map((col) => (
+                <TableRowCell row={row} column={col} level={level} />
             ))}
         </tr>
     );
 }
 
 /** A single cell inside of a row of the table. */
-export function TableRowCell<T>({ row, column, level, isFirst = false }: { row: T; column: VanillaColumn<T>, level?: number, isFirst?: boolean }) {
+export function TableRowCell<T>({ row, column, level }: { row: T; column: VanillaColumn<T>; level?: number }) {
     const value = useMemo(() => column.value(row), [row, column.value]);
     const renderable = useMemo(() => {
         if (column.render) return column.render(value, row);
@@ -233,7 +284,15 @@ export function TableRowCell<T>({ row, column, level, isFirst = false }: { row: 
     }, [row, column.render, value]);
     const rendered = useAsElement(renderable);
 
-    return <td data-level={level} style={{paddingLeft: level && isFirst ? `${level * 13}px` : undefined}} className="datacore-table-cell">{rendered}</td>;
+    return (
+        <td
+            style={level ? `padding-left: ${level * 25}px;` : undefined}
+            data-level={level}
+            className="datacore-table-cell"
+        >
+            {rendered}
+        </td>
+    );
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element. */
@@ -247,4 +306,29 @@ function useAsElement(element: VNode | Literal): VNode {
             return <Lit sourcePath={sourcePath} inline={true} value={element as any} />;
         }
     }, [element]);
+}
+
+function TableCollapser({ openChanged, open }: { openChanged: (b: boolean) => void; open: boolean }) {
+    return (
+        <div
+            onClick={() => openChanged(!open)}
+            className={combineClasses("datacore-collapser", !open ? "is-collapsed" : undefined)}
+            dir="auto"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                className="svg-icon right-triangle"
+            >
+                <path d="M3 8L12 17L21 8"></path>
+            </svg>
+        </div>
+    );
 }
