@@ -41,7 +41,7 @@ export function Callout({
             data-callout-metadata={type?.split(splitRegex)[1]}
             data-callout={type?.split(splitRegex)[0]}
             data-callout-fold={open ? "+" : "-"}
-            className={combineClasses("datacore", "callout", collapsible ? "is-collapsible" : undefined)}
+            className={combineClasses("datacore", "callout", collapsible ? "is-collapsible" : undefined, !open ? "is-collapsed" : undefined)}
         >
             <div className="callout-title" onClick={() => collapsible && setOpen(!open)}>
                 {icon && <div className="callout-icon">{icon}</div>}
