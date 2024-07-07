@@ -24,6 +24,9 @@ export interface CalloutProps {
     onOpenChange?: (value: boolean) => void;
 }
 
+/** Splits on `|<stuff>`. */
+const METADATA_SPLIT_REGEX = /\|(.*)/s;
+
 export function Callout({
     collapsible = true,
     open: openProp,
@@ -38,8 +41,8 @@ export function Callout({
 
     return (
         <div
-            data-callout-metadata
-            data-callout={type}
+            data-callout-metadata={type?.split(METADATA_SPLIT_REGEX)?.[1]}
+            data-callout={type?.split(METADATA_SPLIT_REGEX)?.[0]}
             data-callout-fold={open ? "+" : "-"}
             className={combineClasses("datacore", "callout", collapsible ? "is-collapsible" : undefined)}
         >
