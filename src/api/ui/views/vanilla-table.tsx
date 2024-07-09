@@ -308,7 +308,7 @@ export function TableRowCell<T>({ row, column, level }: { row: T; column: Vanill
     return <td
             style={level ? `padding-left: ${level * 25}px;` : undefined}
             data-level={level} 
-		 className="datacore-table-cell"><Editable<typeof value> defaultRender={rendered} editor={editor} dispatch={dispatch} state={editableState}/></td>;
+		 className="datacore-table-cell">{column.editable ? <Editable<typeof value> defaultRender={rendered} editor={editor} dispatch={dispatch} state={editableState}/> : rendered}</td>;
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element. */
