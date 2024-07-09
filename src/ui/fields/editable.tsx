@@ -278,13 +278,6 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
         dispatch({ type: "content-changed", newValue: props.content });
     }, [props.content]);
 
-    const onChangeCb = useStableCallback(
-        async (evt: ChangeEvent) => {
-            text.current = (evt.currentTarget as HTMLTextAreaElement).value;
-        },
-        [text.current, props.sourcePath, state.content, state.updater, state.isEditing]
-    );
-
     const finalize = async () => {
         dispatch({
             type: "commit",
@@ -329,17 +322,38 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
             )}
         </Fragment>
     );
-    const editor = !state.inline ? (
-        <textarea className="datacore-editable" onChange={onChangeCb} onKeyUp={onInput}>
-            {text.current}
-        </textarea>
-    ) : (
-        <input className="datacore-editable" type="text" onChange={onChangeCb} onKeyUp={onInput} />
-    );
+    const editor = <UncontrolledTextEditable onInput={onInput} inline={props.inline} dispatch={dispatch} text={text.current} />;
     return (
         <span className="has-texteditable" onDblClick={dblClick}>
             <Editable<string> dispatch={dispatch} editor={editor} defaultRender={readonlyEl} state={state} />
         </span>
+    );
+}
+
+export function UncontrolledTextEditable({
+    inline,
+    text,
+    dispatch,
+		onInput
+}: {
+    inline?: boolean;
+    text: string;
+    dispatch?: Dispatch<EditableAction<string>>;
+		onInput?: (e: KeyboardEvent) => unknown;
+}) {
+    const onChangeCb = useStableCallback(
+        async (evt: ChangeEvent) => {
+            dispatch && dispatch({ newValue: (evt.currentTarget as HTMLTextAreaElement).value, type: "content-changed" });
+        },
+        [text, dispatch]
+    );
+
+    return !inline ? (
+        <textarea className="datacore-editable" onChange={onChangeCb} onKeyUp={onInput}>
+            {text}
+        </textarea>
+    ) : (
+        <input className="datacore-editable" type="text" onChange={onChangeCb} onKeyUp={onInput} />
     );
 }
 
