@@ -146,7 +146,7 @@ export function markdownImport(
         let marker = content.split("\n")[0].replace(markerRegex, "").trim().slice(0, 1);
         const item = new ListItemData(
             list.position.start.line,
-            list.position.end.line + 1,
+            list.position.end.line,
             list.parent,
             marker,
             list.id,
@@ -159,7 +159,6 @@ export function markdownImport(
 
     // In the second list pass, actually construct the list heirarchy.
     for (const item of listItems.values()) {
-        listItems.set(item.start, item);
         if (item.parentLine < 0) {
             const listBlock = blocks.get(-item.parentLine);
             if (!listBlock || !(listBlock.type === "list")) continue;
