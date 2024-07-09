@@ -25,7 +25,7 @@ import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { setTaskText, useSetField } from "utils/fields";
-import { EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
+import { ControlledTextEditable, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -313,4 +313,5 @@ export class DatacoreLocalApi {
 		/////////////////////////
 		public EditableFieldCheckbox = EditableFieldCheckbox;
 		public EditableFieldTextbox = EditableTextField;
+		public TextEditor = ControlledTextEditable;
 }

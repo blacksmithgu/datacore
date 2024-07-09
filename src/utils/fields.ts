@@ -3,9 +3,10 @@ import { Literal, Literals } from "expression/literal";
 import { setInlineField } from "index/import/inline-field";
 import { MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
-import { useCallback, useContext } from "preact/hooks";
+import { Dispatch, useCallback, useContext } from "preact/hooks";
 import { APP_CONTEXT } from "ui/markdown";
 import { rewriteTask } from "./task";
+import { EditableAction } from "ui/fields/editable";
 
 export async function rewriteFieldInFile(field: Field, newValue: Literal, app: App) {
     switch (field.provenance?.type) {
@@ -49,4 +50,16 @@ export async function setTaskText(text: string, item: MarkdownTaskItem) {
         withFields = setInlineField(withFields, field, item.$infields[field].raw);
     }
     await rewriteTask(app.vault, item, item.$status, withFields);
+}
+export function useFinalizer<T>(newValue: T, dispatch: Dispatch<EditableAction<T>>) {
+    return async function () {
+        dispatch({
+            type: "commit",
+            newValue: newValue,
+        });
+        dispatch({
+            type: "editing-toggled",
+            newValue: false,
+        });
+    };
 }
