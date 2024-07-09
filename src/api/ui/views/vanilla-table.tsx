@@ -34,7 +34,7 @@ export interface VanillaColumn<T, V = Literal> {
 		editor?:(value: V, object: T) => JSX.Element;
 
 		/** Called when the column value updates. */
-		onUpdate?:(value: V) => unknown;
+		onUpdate?:(value: V, object: T) => unknown;
 }
 
 /** Metadata for configuring how groupings in the data should be handled. */
@@ -299,7 +299,7 @@ export function TableRowCell<T>({ row, column, level }: { row: T; column: Vanill
 		const [editableState, dispatch] = useEditableDispatch<typeof value>({
 			content: value,
 			isEditing: false,
-			updater: column.onUpdate!
+			updater: (v) => column.onUpdate!(v, row)
 		})
 		const editor = useMemo(() => {
 			if(column.editable && column.editor) return column.editor(value, row);
