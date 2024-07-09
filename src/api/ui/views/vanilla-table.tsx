@@ -1,5 +1,5 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
+import { Dispatch, useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -7,7 +7,8 @@ import { VNode, isValidElement } from "preact";
 import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
-import { Editable, useEditableDispatch } from "ui/fields/editable";
+import { combineClasses } from "../basics";
+import { Editable, EditableAction, useEditableDispatch } from "ui/fields/editable";
 
 /** A simple column definition which allows for custom renderers and titles. */
 export interface VanillaColumn<T, V = Literal> {
@@ -30,7 +31,7 @@ export interface VanillaColumn<T, V = Literal> {
 		editable?: boolean;
 
 		/** Rendered when editing the column */
-		editor?:(value: V, object: T) => JSX.Element;
+		editor?:(value: V, object: T, dispatch: Dispatch<EditableAction<V>>) => JSX.Element;
 
 		/** Called when the column value updates. */
 		onUpdate?:(value: V, object: T) => unknown;
@@ -245,10 +246,10 @@ export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn
 			updater: (v) => column.onUpdate!(v, row)
 		})
 		const editor = useMemo(() => {
-			if(column.editable && column.editor) return column.editor(value, row);
+			if(column.editable && column.editor) return column.editor(editableState.content, row, dispatch);
 			else return null;
 		}, [row, column.editor, column.editable, value])
-    return <td className="datacore-table-cell">{column.editable ? <Editable<typeof value> defaultRender={rendered} editor={editor} dispatch={dispatch} state={editableState}/> : rendered}</td>;
+    return <td onDblClick={() => dispatch({type: "editing-toggled", newValue: !editableState.isEditing})} className="datacore-table-cell">{column.editable ? <Editable<typeof value> defaultRender={rendered} editor={editor} dispatch={dispatch} state={editableState}/> : rendered}</td>;
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element. */
