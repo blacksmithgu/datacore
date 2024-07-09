@@ -248,7 +248,7 @@ export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn
 			if(column.editable && column.editor) return column.editor(value, row);
 			else return null;
 		}, [row, column.editor, column.editable, value])
-    return <td className="datacore-table-cell"><Editable<typeof value> defaultRender={rendered} editor={editor} dispatch={dispatch} state={editableState}/></td>;
+    return <td className="datacore-table-cell">{column.editable ? <Editable<typeof value> defaultRender={rendered} editor={editor} dispatch={dispatch} state={editableState}/> : rendered}</td>;
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element. */
