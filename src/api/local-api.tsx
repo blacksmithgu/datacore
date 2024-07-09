@@ -4,7 +4,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown";
+import { MarkdownCodeblock, MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -22,7 +22,7 @@ import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
-import { useSetField } from "utils/fields";
+import { setTaskText, useSetField } from "utils/fields";
 import { EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
 
 /** Local API provided to specific codeblocks when they are executing. */
@@ -137,6 +137,10 @@ export class DatacoreLocalApi {
     public array<T>(input: T[] | DataArray<T>): DataArray<T> {
         return DataArray.wrap(input);
     }
+
+		public setTaskText(newText: string, task: MarkdownTaskItem)  {
+			setTaskText(newText, task);
+		}
 
     /////////////
     //  Hooks  //
