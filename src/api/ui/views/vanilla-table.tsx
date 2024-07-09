@@ -8,6 +8,7 @@ import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
 import { combineClasses } from "../basics";
+import { Editable, useEditableDispatch } from "ui/fields/editable";
 
 /** A simple column definition which allows for custom renderers and titles. */
 export interface VanillaColumn<T, V = Literal> {
@@ -25,6 +26,15 @@ export interface VanillaColumn<T, V = Literal> {
 
     /** Called to render the given column value. Can depend on both the specific value and the row object. */
     render?: (value: V, object: T) => Literal | VNode;
+
+		/** whether this column is editable or not */
+		editable?: boolean;
+
+		/** Rendered when editing the column */
+		editor?:(value: V, object: T) => JSX.Element;
+
+		/** Called when the column value updates. */
+		onUpdate?:(value: V) => unknown;
 }
 
 /** Metadata for configuring how groupings in the data should be handled. */
@@ -282,17 +292,23 @@ export function TableRowCell<T>({ row, column, level }: { row: T; column: Vanill
         if (column.render) return column.render(value, row);
         else return value;
     }, [row, column.render, value]);
+		
     const rendered = useAsElement(renderable);
-
-    return (
-        <td
+		
+		
+		const [editableState, dispatch] = useEditableDispatch<typeof value>({
+			content: value,
+			isEditing: false,
+			updater: column.onUpdate!
+		})
+		const editor = useMemo(() => {
+			if(column.editable && column.editor) return column.editor(value, row);
+			else return null;
+		}, [row, column.editor, column.editable, value])
+    return <td
             style={level ? `padding-left: ${level * 25}px;` : undefined}
-            data-level={level}
-            className="datacore-table-cell"
-        >
-            {rendered}
-        </td>
-    );
+            data-level={level} 
+		 className="datacore-table-cell"><Editable<typeof value> defaultRender={rendered} editor={editor} dispatch={dispatch} state={editableState}/></td>;
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element. */
