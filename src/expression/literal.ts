@@ -409,19 +409,8 @@ export namespace Groupings {
 
     /** Count the total number of elements in a recursive grouping. */
     export function count<T>(elements: Grouping<T> | GroupElement<T>, includeKeys: boolean = true): number {
-			const flatMapper = (ik: boolean) => (e: Grouping<T> | GroupElement<T> | T): unknown[] => {
-				let retVal: unknown[] = []
-				if(isElementGroup(e)) retVal = ik ? [e.key as T, ...e.rows.flatMap(flatMapper(ik))] : [...e.rows.flatMap(flatMapper(ik))]
-				else if(Array.isArray(e))
-					if(isGrouping(e)) retVal = e.flatMap(flatMapper(ik))
-					else retVal = [...e].flatMap(flatMapper(ik))
-				else retVal = [e].flatMap(flatMapper(ik))
-				return retVal
-			}
-			if(isElementGroup(elements)) return [elements].flatMap(flatMapper(includeKeys)).length;
-			else if(isGrouping(elements)) return elements.flatMap(flatMapper(includeKeys)).length;
-				else return elements.length;
-        /* if (isElementGroup(elements)) {
+			
+        if (isElementGroup(elements)) {
             return count(elements.rows) + (includeKeys ? 1 : 0);
         } else if (isGrouping(elements)) {
             let result = 0;
@@ -429,7 +418,7 @@ export namespace Groupings {
             return Math.max(result - (includeKeys ? 1 : 0), 0);
         } else {
             return elements.length;
-        } */
+        }
     }
 
     /** Recursively slice a grouping, preserving the group structure that contains elements [start...end). */
