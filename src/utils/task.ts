@@ -118,7 +118,7 @@ export async function rewriteTask(vault: Vault, task: MarkdownTaskItem, desiredS
     let newText = filetext.join(hasRN ? "\r\n" : "\n");
     await vault.adapter.write(task.$file, newText);
 }
-export async function compeleteTask(completed: boolean, task: MarkdownTaskItem, core: Datacore) {
+export async function completeTask(completed: boolean, task: MarkdownTaskItem, core: Datacore) {
     let newText = setTaskCompletion(
         task,
         task.$text,
