@@ -25,9 +25,11 @@ import { ScriptCache } from "./script-cache";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
-    public scriptCache: ScriptCache = new ScriptCache(this.core.datastore);
+    private scriptCache: ScriptCache;
 
-    public constructor(public api: DatacoreApi, public path: string) {}
+    public constructor(public api: DatacoreApi, public path: string) {
+        this.scriptCache = new ScriptCache(this.core.datastore);
+    }
 
     /** The current file path for the local API. */
     public currentPath(): string {
@@ -159,6 +161,12 @@ export class DatacoreLocalApi {
     /** Use the file metadata for the current file. Automatically updates the view when the current file metadata changes. */
     public useCurrentFile(settings?: { debounce?: number }): MarkdownPage {
         return useFileMetadata(this.core, this.path, settings) as MarkdownPage;
+    }
+
+    /** Use the current path. Automatically updates the view if the path changes (though that would be weird). */
+    public useCurrentPath(settings?: { debounce?: number }): string {
+        const meta = this.useCurrentFile(settings);
+        return meta.$path;
     }
 
     /** Use the file metadata for a specific file. Automatically updates the view when the file changes. */
