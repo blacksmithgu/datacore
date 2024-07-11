@@ -144,7 +144,7 @@ export class DatacoreLocalApi {
     }
 
 		public setTaskText(newText: string, task: MarkdownTaskItem): void  {
-			setTaskText(newText, task);
+			setTaskText(newText, task, this.core.vault);
 		}
 		public setTaskCompletion(completed: boolean, task: MarkdownTaskItem): void {
 			compeleteTask(completed, task, this.core)
