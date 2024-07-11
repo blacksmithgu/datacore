@@ -4,6 +4,7 @@ import { Dispatch, useState } from "preact/hooks";
 import { useFinalizer, useSetField } from "utils/fields";
 import { EditableAction, TextEditable, UncontrolledTextEditable, useEditableDispatch } from "./editable";
 import { useStableCallback } from "ui/hooks";
+import { HTMLProps } from "preact/compat";
 
 export function EditableFieldCheckbox(
     props: { className?: string; field: Field; defaultChecked?: boolean } & React.HTMLProps<HTMLInputElement>
@@ -28,10 +29,10 @@ export function EditableTextField(props: {
 }) {
     const { field, inline, dispatch } = props;
 
-    return <ControlledTextEditable text={field.value as string} inline={inline} dispatch={dispatch} />;
+    return <ControlledEditableTextField text={field.value as string} inline={inline} dispatch={dispatch} />;
 }
 
-export function ControlledTextEditable(props: {
+export function ControlledEditableTextField(props: {
     text: string;
     inline: boolean;
     dispatch: Dispatch<EditableAction<string>>;
@@ -54,4 +55,12 @@ export function ControlledTextEditable(props: {
         }
     };
     return <UncontrolledTextEditable text={text} inline={inline} dispatch={dispatch} onInput={onInput} />;
+}
+export function ControlledEditableCheckbox(props: {
+	onUpdate: (val: boolean) => void;
+	initial: boolean;
+	className: string;
+} & HTMLProps<HTMLInputElement>) {
+	const {onUpdate, initial, className, ...rest} = props;
+	return <Checkbox {...rest} className={className} checked={initial} onCheckChange={onUpdate} disabled={false} defaultChecked={initial}/>
 }
