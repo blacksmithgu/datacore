@@ -11,6 +11,7 @@ import { DatacoreJSRenderer } from "ui/javascript";
 import { DatacoreLocalApi } from "./local-api";
 import Parsimmon from "parsimmon";
 import { Coerce } from "./coerce";
+import { DataArray } from "./data-array";
 
 /** Exterally visible API for datacore. */
 export class DatacoreApi {
@@ -106,6 +107,11 @@ export class DatacoreApi {
         if (!parsed.status) return Result.failure(Parsimmon.formatError(linktext, parsed));
 
         return Result.success(parsed.value);
+    }
+
+    /** Create a data array from a regular array. */
+    public array<T>(input: T[] | DataArray<T>): DataArray<T> {
+        return DataArray.wrap(input);
     }
 
     /////////////////////
