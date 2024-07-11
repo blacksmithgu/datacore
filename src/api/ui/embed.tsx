@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useReducer, useRef } from "preact/hooks";
+import { useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "preact/hooks";
 import {
     APP_CONTEXT,
     COMPONENT_CONTEXT,
@@ -94,6 +94,13 @@ export function LineSpanEmbed({
     const content = useLineSpan(path, start, end);
     const explainer = explain ?? `${getFileTitle(path)} (${start} - ${end})`;
 
+    // To allow for the explainer to be clicked on to navigate to the given position.
+    const workspace = useContext(APP_CONTEXT)?.workspace;
+    const onExplainClick = useCallback(
+        (event: MouseEvent) => workspace?.openLinkText(path, path, event.shiftKey),
+        [path]
+    );
+
     switch (content.type) {
         case "loading":
             return <ErrorMessage message={`Reading ${path} (${start} - ${end})`} />;
@@ -104,7 +111,11 @@ export function LineSpanEmbed({
         case "loaded":
             return (
                 <div className="datacore-span-embed">
-                    {showExplain && <div className="datacore-embed-source">{explainer}</div>}
+                    {showExplain && (
+                        <a className="datacore-embed-source" onClick={onExplainClick}>
+                            {explainer}
+                        </a>
+                    )}
                     <Markdown content={content.content} inline={false} />
                 </div>
             );
