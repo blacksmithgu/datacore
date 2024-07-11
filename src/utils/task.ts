@@ -1,3 +1,4 @@
+import { Datacore } from "index/datacore";
 import { setEmojiShorthandCompletionField, setInlineField } from "index/import/inline-field";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage, MarkdownSection, MarkdownBlock, MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
@@ -116,4 +117,15 @@ export async function rewriteTask(vault: Vault, task: MarkdownTaskItem, desiredS
 
     let newText = filetext.join(hasRN ? "\r\n" : "\n");
     await vault.adapter.write(task.$file, newText);
+}
+export async function compeleteTask(completed: boolean, task: MarkdownTaskItem, core: Datacore) {
+    let newText = setTaskCompletion(
+        task,
+        task.$text,
+        core.settings.taskCompletionUseEmojiShorthand,
+        core.settings.taskCompletionText,
+        core.settings.defaultDateFormat,
+        completed
+    );
+    await rewriteTask(core.vault, task, completed ? "x" : " ", newText);
 }
