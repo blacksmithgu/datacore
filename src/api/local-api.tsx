@@ -4,7 +4,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownCodeblock, MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
+import { MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -25,8 +25,8 @@ import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { setTaskText, useSetField } from "utils/fields";
-import { ControlledTextEditable, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
-import { compeleteTask, rewriteTask } from "utils/task";
+import { ControlledEditableCheckbox, ControlledEditableTextField, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
+import { compeleteTask } from "utils/task";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -325,5 +325,6 @@ export class DatacoreLocalApi {
 		/////////////////////////
 		public EditableFieldCheckbox = EditableFieldCheckbox;
 		public EditableFieldTextbox = EditableTextField;
-		public TextEditor = ControlledTextEditable;
+		public EditableCheckbox = ControlledEditableCheckbox;
+		public TextEditor = ControlledEditableTextField;
 }
