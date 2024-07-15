@@ -2,7 +2,7 @@
 
 import ImportWorker from "index/web-worker/importer.worker";
 import { Component, FileManager, MetadataCache, TFile, Vault } from "obsidian";
-import { CanvasImport, MarkdownImport } from "index/web-worker/message";
+import { CanvasImport, MarkdownImport, PDFImport } from "index/web-worker/message";
 import { Deferred, deferred } from "utils/deferred";
 
 import { Queue } from "@datastructures-js/queue";
@@ -99,19 +99,27 @@ export class FileImporter extends Component {
                         stat: file.stat,
                         metadata: this.metadataCache.getFileCache(file),
                     } as MarkdownImport);
-                    break;
-                }
-                case "canvas": {
-                    const contents = await this.vault.cachedRead(file);
-                    worker!.worker.postMessage({
-                        type: "canvas",
-                        path: file.path,
-                        contents: contents,
-                        stat: file.stat,
-                        index: this.fileManager.linkUpdaters.canvas.canvas.index.index[file.path],
-                    } as CanvasImport);
-                    break;
-                }
+										break;
+								}
+								case "pdf": {
+									worker!.worker.postMessage({
+										type: "pdf",
+										resourceURI: this.vault.getResourcePath(file),
+										path: file.path,
+										stat: file.stat
+									} as PDFImport)
+								}
+								case "canvas": {
+									const contents = await this.vault.cachedRead(file);
+									worker!.worker.postMessage({
+										type: "canvas",
+										path: file.path,
+										contents: contents,
+										stat: file.stat,
+										index: this.fileManager.linkUpdaters.canvas.canvas.index.index[file.path]
+									} as CanvasImport)
+									break;
+								}	
             }
         } catch (ex) {
             console.log("Datacore: Background file reloading failed. " + ex);
