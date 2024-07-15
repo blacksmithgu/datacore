@@ -108,6 +108,7 @@ export class FileImporter extends Component {
 										path: file.path,
 										stat: file.stat
 									} as PDFImport)
+									break;
 								}
 								case "canvas": {
 									const contents = await this.vault.cachedRead(file);
