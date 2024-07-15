@@ -30,10 +30,12 @@ export async function pdfImport({ path, resourceURI, stat: stats }: PDFImport): 
     let pdfjsLib = await import(rawPdfJs);
     pdfjsLib.GlobalWorkerOptions.workerSrc = rawPdfWorker;
     console.debug(path, resourceURI);
-    pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(rawPdfWorker, { type: "module" });
+		let actualWorker = new Worker(rawPdfWorker, { type: "module" });
+    pdfjsLib.GlobalWorkerOptions.workerPort = actualWorker;
 
     let { promise } = await pdfjsLib.getDocument(resourceURI);
     let pdf = await promise;
+		pdfjsLib.GlobalWorkerOptions.workerPort.terminate()
     return {
         $pageCount: pdf.numPages,
         $extension: "pdf",
