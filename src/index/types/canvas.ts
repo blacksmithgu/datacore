@@ -100,9 +100,9 @@ abstract class CanvasCard implements Indexable, Linkable {
 		return Link.file(this.$file).withBlock(this.$id)
 	}
 	public json(): JsonBaseCanvasCard {
-		const {$id, $position, $color, $dimensions, $file} = this
+		const {$id, $position, $color, $dimensions, $file, $link} = this
 		return {
-			$id, $position, $color, $dimensions, $file	
+			$id, $position, $color, $dimensions, $file, $link: $link.toObject()
 		}
 	}
 }

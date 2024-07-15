@@ -11,6 +11,7 @@ import {
     JsonCanvasWebCard,
 } from "index/types/json/canvas";
 import { CanvasFileData, CanvasLinkData, CanvasTextData, CanvasData as ICanvas } from "obsidian/canvas";
+import { Link } from "expression/link";
 export function canvasImport(path: string, source: string, index: CanvasMetadataIndex["string"], stats: FileStats): JsonCanvas {
     const canvas = new CanvasData(path, stats);
     const parsed = JSON.parse(source) as ICanvas;
@@ -52,6 +53,7 @@ abstract class AbstractCanvasCardData {
                 height: this.nodeJson.height,
             },
             $color: this.nodeJson.color,
+						$link: Link.file(this.path).withBlock(this.id).toObject()
         };
     }
 }

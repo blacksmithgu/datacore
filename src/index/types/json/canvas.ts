@@ -34,6 +34,7 @@ export interface JsonBaseCanvasCard {
 	$position: CardPos;
 	$dimensions: CardDimensions;
 	$color?: string;
+	$link: JsonLink;
 }
 
 export interface JsonCanvasGroup extends JsonBaseCanvasCard {
