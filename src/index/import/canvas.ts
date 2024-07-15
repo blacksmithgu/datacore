@@ -11,13 +11,13 @@ import {
     JsonCanvasWebCard,
 } from "index/types/json/canvas";
 import { CanvasFileData, CanvasLinkData, CanvasTextData, CanvasData as ICanvas } from "obsidian/canvas";
-export function canvasImport(path: string, source: string, index: CanvasMetadataIndex, stats: FileStats): JsonCanvas {
+export function canvasImport(path: string, source: string, index: CanvasMetadataIndex["string"], stats: FileStats): JsonCanvas {
     const canvas = new CanvasData(path, stats);
     const parsed = JSON.parse(source) as ICanvas;
     for (const c of parsed.nodes) {
         if (c.type == "group") continue;
         if (c.type == "text") {
-            const { frontmatter, metadata, lines, sections } = markdownSourceImport(path, c.text, index[path].caches);
+            const { frontmatter, metadata, lines, sections } = markdownSourceImport(path, c.text, index.caches);
             const card = new CanvasCardData(path, c.id, c, frontmatter);
             sections.forEach((i) => card.section(i));
             canvas.card(card);
