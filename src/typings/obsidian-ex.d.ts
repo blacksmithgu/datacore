@@ -1,7 +1,19 @@
 import type { DatacoreApi } from "api/api";
+import { CanvasMetadataIndex } from "index/types/json/canvas";
 import "obsidian";
 
 declare module "obsidian" {
+	interface FileManager {
+		linkUpdaters: {
+			canvas: {
+				canvas: {
+					index: {
+						index: CanvasMetadataIndex ;
+					} 
+				} 
+			}
+		}
+	}
     interface App {
         appId?: string;
         plugins: {
