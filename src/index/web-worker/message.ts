@@ -1,6 +1,6 @@
 import { CanvasMetadataIndex, JsonCanvas } from "index/types/json/canvas";
 import { JsonMarkdownPage } from "index/types/json/markdown";
-import { JsonPDF } from "index/types/pdf/json";
+import { JsonPDF } from "index/types/json/pdf";
 import { CachedMetadata, FileStats } from "obsidian";
 
 /** A command to import a markdown file. */

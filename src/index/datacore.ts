@@ -12,7 +12,7 @@ import { DateTime } from "luxon";
 import { EmbedQueue } from "./embed-queue";
 import { JsonMarkdownPage } from "./types/json/markdown";
 import { Canvas, CanvasTextCard } from "./types/canvas";
-import { PDF } from "./types/pdf/pdf";
+import { PDF } from "./types/pdf";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {

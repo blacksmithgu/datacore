@@ -1,4 +1,4 @@
-import { JsonPDF } from "index/types/pdf/json";
+import { JsonPDF } from "index/types/json/pdf";
 import { PDFImport } from "index/web-worker/message";
 import { document } from "index/web-worker/polyfill";
 

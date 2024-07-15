@@ -1,7 +1,7 @@
 import { Link } from "expression/link";
 import { DateTime } from "luxon";
-import { FILE_TYPE, File, Indexable, LINKABLE_TYPE, Linkable } from "../indexable";
-import { JsonPDF } from "./json";
+import { FILE_TYPE, File, Indexable, LINKABLE_TYPE, Linkable } from "./indexable";
+import { JsonPDF } from "./json/pdf";
 export class PDF implements File, Indexable, Linkable {
     static TYPES = [FILE_TYPE, "pdf", LINKABLE_TYPE];
     $types: string[] = PDF.TYPES;
