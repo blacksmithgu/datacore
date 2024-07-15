@@ -706,7 +706,7 @@ export function valueFrontmatterEntry(raw: JsonFrontmatterEntry): FrontmatterEnt
 }
 
 /** Normalize links deeply in the object. */
-function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T {
+export function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T {
     return Literals.mapLeaves(input, (value) => {
         if (Literals.isLink(value)) return normalizer(value);
         else return value;
@@ -714,7 +714,7 @@ function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer)
 }
 
 /** Recursively gather links from a literal object. */
-function gatherLinks(input: Literal): Link[] {
+export function gatherLinks(input: Literal): Link[] {
     const result: Link[] = [];
 
     Literals.mapLeaves(input, (value) => {
@@ -726,7 +726,7 @@ function gatherLinks(input: Literal): Link[] {
 }
 
 /** Gather tags from a datablock. */
-function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
+export function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
     function recurse(input: any): string[] {
         if (Literals.isString(input)) return [input.startsWith("#") ? input : "#" + input];
         else if (Literals.isArray(input)) return input.flatMap(recurse);
