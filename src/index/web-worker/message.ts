@@ -52,4 +52,4 @@ export interface ImportFailure {
     $error: string;
 }
 
-export type ImportResult = MarkdownImportResult | ImportFailure;
+export type ImportResult = MarkdownImportResult | CanvasImportResult | ImportFailure;

@@ -72,7 +72,6 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
         const end = index == metaheadings.length - 1 ? lines.length : metaheadings[index + 1].position.start.line;
 
         const section = new SectionData(start, end, entry.heading, entry.level, index + 1);
-				sectionArray.push(section)
         sections.set(start, section);
     }
 
@@ -81,7 +80,6 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
     if (sections.size == 0) {
         if (!emptylines(lines, 0, lines.length)) {
             const section = new SectionData(0, lines.length, getFileTitle(path), 1, 0);
-						sectionArray.push(section)
             sections.set(0, section);
         }
     } else {
@@ -91,7 +89,6 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
         if (first.start > 0 && !emptylines(lines, 0, first.start)) {
             const section = new SectionData(0, first.start, getFileTitle(path), 1, 0);
 
-						sectionArray.push(section)
             sections.set(0, section);
         }
     }
@@ -141,7 +138,9 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
     }
 
     // Add blocks to sections.
-    for (const block of blocks.values()) lookup(block.start, sections)?.block(block);
+    for (const block of blocks.values())  {
+			lookup(block.start, sections)?.block(block)
+		};
 
     ///////////
     // Lists //
@@ -230,6 +229,7 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
         lookup(line, blocks)?.metadata.inlineField(field);
         lookup(line, listItems)?.metadata.inlineField(field);
     }
+		sectionArray.push(...sections.values())
 		return {
 			frontmatter,
 			metadata: markdownMetadata,

@@ -1,6 +1,6 @@
 import { Extractors, Field, Fieldbearing, FIELDBEARING_TYPE, FieldExtractor } from "expression/field";
-import { FILE_TYPE, Indexable, LINKABLE_TYPE, Linkbearing, Taggable, TAGGABLE_TYPE } from "./indexable";
-import { CardDimensions, CardPos, JsonCanvas, JsonCanvasFileCard, JsonCanvasTextCard, JsonCanvasWebCard } from "./json/canvas";
+import { FILE_TYPE, Indexable, Linkable, LINKABLE_TYPE, Linkbearing, Taggable, TAGGABLE_TYPE } from "./indexable";
+import { CardDimensions, CardPos, JsonBaseCanvasCard, JsonCanvas, JsonCanvasCard, JsonCanvasFileCard, JsonCanvasTextCard, JsonCanvasWebCard } from "./json/canvas";
 import { DateTime } from "luxon";
 import { Link } from "expression/link";
 import { FrontmatterEntry, LinkNormalizer, MarkdownPage, MarkdownSection, NOOP_NORMALIZER, normalizeLinks, valueFrontmatterEntry } from "./markdown";
@@ -8,7 +8,7 @@ import { InlineField } from "index/import/inline-field";
 import {File} from "index/types/indexable";
 import { mapObjectValues } from "utils/data";
 
-export class Canvas implements File, Linkbearing, Taggable, Indexable, Fieldbearing {
+export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable, Fieldbearing {
 	static TYPES = [FILE_TYPE, "canvas", TAGGABLE_TYPE, LINKABLE_TYPE, FIELDBEARING_TYPE];
 
 	$types: string[] = Canvas.TYPES;
@@ -24,9 +24,7 @@ export class Canvas implements File, Linkbearing, Taggable, Indexable, Fieldbear
 	get $id() {
 		return this.$path;
 	}
-	get $extension() {
-		return "canvas";
-	}
+	$extension: string = "canvas";
 	get $link() {
 		return Link.file(this.$path);
 	}
@@ -44,6 +42,18 @@ export class Canvas implements File, Linkbearing, Taggable, Indexable, Fieldbear
 	}
 	public field(key: string): Field | undefined {
 		return Canvas.FIELD_DEF(this, key)?.[0];
+	}
+	public json(): JsonCanvas {
+		return {
+			$cards: this.$cards.map(x => x.json()) as JsonCanvasCard[],
+			$ctime: this.$ctime.toMillis(),
+			$mtime: this.$mtime.toMillis(),
+			$size: this.$size,
+			$links: this.$links,
+			$path: this.$path,
+			$infields: this.$infields,
+			$tags: this.$tags
+		}
 	}
 	static from(raw: JsonCanvas, normalizer: LinkNormalizer = NOOP_NORMALIZER): Canvas {
 		const cards = raw.$cards.map(s => {
@@ -66,18 +76,19 @@ export class Canvas implements File, Linkbearing, Taggable, Indexable, Fieldbear
 			$path: raw.$path,
 			$links: raw.$links.map(l => normalizer(Link.fromObject(l))),
 			$infields: raw.$infields,
-			$id: raw.$path,
 			$tags: raw.$tags,
-			$link: Link.file(raw.$path),	
 		})
 	}
 	private static FIELD_DEF: FieldExtractor<Canvas> = Extractors.merge(Extractors.inlineFields(f => f.$infields), Extractors.intrinsics())
 }
 
-abstract class CanvasCard {
+abstract class CanvasCard implements Indexable, Linkable {
 	public constructor(init: Partial<CanvasCard>) {
 		Object.assign(this, init);
 	}
+	abstract $types: string[];
+	abstract $typename: string;
+	$revision?: number | undefined;
 	$id: string;
 	$position: CardPos;
 	$dimensions: CardDimensions;
@@ -85,6 +96,15 @@ abstract class CanvasCard {
 	$file: string;
 	$color?: string;
 	readonly abstract $type: string;
+	get $link(): Link {
+		return Link.file(this.$file).withBlock(this.$id)
+	}
+	public json(): JsonBaseCanvasCard {
+		const {$id, $position, $color, $dimensions, $file} = this
+		return {
+			$id, $position, $color, $dimensions, $file	
+		}
+	}
 }
 
 export class CanvasTextCard extends CanvasCard implements Linkbearing, Taggable, Indexable, Fieldbearing {
@@ -105,9 +125,10 @@ export class CanvasTextCard extends CanvasCard implements Linkbearing, Taggable,
   $frontmatter?: Record<string, FrontmatterEntry>;
 
 	$dimensions: CardDimensions;
-	$sections: MarkdownSection[] = [];
+	$sections: MarkdownSection[];
 	private constructor(init: Partial<CanvasTextCard>) {
 		super(init);
+
 	}
 	get fields(): Field[] {
 		return CanvasTextCard.FIELD_DEF(this)
@@ -115,12 +136,24 @@ export class CanvasTextCard extends CanvasCard implements Linkbearing, Taggable,
 	public field(key: string): Field | undefined {
 		return CanvasTextCard.FIELD_DEF(this, key)?.[0];
 	}
+
+	public json(): JsonCanvasTextCard {
+		return Object.assign(super.json(), {
+			$infields: this.$infields,
+			$links: this.$links,
+			$tags: this.$tags,
+			$type: "text-card",
+			$sections: this.$sections.map(a => a.json())
+		}) as JsonCanvasTextCard
+	}
+
 	static from(raw: JsonCanvasTextCard, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER) {
+		let $sections = raw.$sections.map(s => MarkdownSection.from(s, file, normalizer))
 		return new CanvasTextCard({
 			$file: file,
 			$id: raw.$id,
+			$sections,
 			$links: raw.$links.map(l => normalizer(Link.fromObject(l))),
-			$sections: raw.$sections.map(s => MarkdownSection.from(s, file, normalizer)),
 			$dimensions: raw.$dimensions,
 			$position: raw.$position,
 			$frontmatter: raw.$frontmatter ? mapObjectValues(raw.$frontmatter, fm => normalizeLinks(valueFrontmatterEntry(fm), normalizer)) : undefined,
@@ -145,7 +178,12 @@ export class CanvasFileCard extends CanvasCard implements Indexable {
 
 	/* the page this card is embedding */
 	$page: MarkdownPage;
-
+	public json(): JsonCanvasFileCard {
+		return Object.assign(super.json(), {
+			$linkedFile: this.$linkedFile,
+			$type: "file-card"
+		}) as JsonCanvasFileCard
+	}
 	static from(raw: JsonCanvasFileCard) {
 		return new CanvasFileCard({
 			$file: raw.$file,
@@ -167,7 +205,12 @@ export class CanvasWebCard extends CanvasCard implements Indexable {
 	$url: string;
 
 	readonly $type: string = "web-card";
-
+	public json(): JsonCanvasWebCard {
+		return Object.assign(super.json(), {
+			$url: this.$url,
+			$type: "web-card"
+		}) as JsonCanvasWebCard
+	}
 	static from(raw: JsonCanvasWebCard, file: string) {
 		return new CanvasWebCard({
 			$dimensions: raw.$dimensions,

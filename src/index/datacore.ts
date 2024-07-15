@@ -11,6 +11,7 @@ import { GenericFile } from "./types/files";
 import { DateTime } from "luxon";
 import { EmbedQueue } from "./embed-queue";
 import { JsonMarkdownPage } from "./types/json/markdown";
+import { Canvas, CanvasTextCard } from "./types/canvas";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -46,7 +47,7 @@ export class Datacore extends Component {
         this.initialized = false;
 
         this.addChild(
-            (this.importer = new FileImporter(app.vault, app.metadataCache, () => {
+            (this.importer = new FileImporter(app.vault, app.fileManager, app.metadataCache, () => {
                 return {
                     workers: settings.importerNumThreads,
                     utilization: Math.max(0.1, Math.min(1.0, settings.importerUtilization)),
@@ -197,9 +198,39 @@ export class Datacore extends Component {
             // And finally trigger an update.
             this.trigger("update", this.revision);
             return parsed;
+        } else if (result.type === "canvas") {
+            const parsed = Canvas.from(result.result, (link) => {
+                const rpath = this.metadataCache.getFirstLinkpathDest(link.path, result.result.$path!);
+                if (rpath) return link.withPath(rpath.path);
+                else return link;
+            });
+						this.storeCanvas(parsed);
+						this.persister.storeFile(parsed.$path, parsed.json())
+						this.trigger("update", this.revision)
+						return parsed;
         }
 
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);
+    }
+
+    public storeCanvas(data: Canvas) {
+        this.datastore.store(data, (object, store) => {
+            store(object.$cards, (card, store) => {
+                if (card instanceof CanvasTextCard) {
+                    store(card.$sections, (section, store) => {
+                        store(section.$blocks, (block, store) => {
+                            if (block instanceof MarkdownListBlock) {
+                                // Recursive store function for storing list heirarchies.
+                                const storeRec: Substorer<MarkdownListItem> = (item, store) =>
+                                    store(item.$elements, storeRec);
+
+                                store(block.$elements, storeRec);
+                            }
+                        });
+                    });
+                }
+            });
+        });
     }
 
     /** Store a markdown document. */

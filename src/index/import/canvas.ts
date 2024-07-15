@@ -17,7 +17,7 @@ export function canvasImport(path: string, source: string, index: CanvasMetadata
     for (const c of parsed.nodes) {
         if (c.type == "group") continue;
         if (c.type == "text") {
-            const { frontmatter, metadata, lines, sections } = markdownSourceImport(path, c.text, index.caches);
+            const { frontmatter, metadata, lines, sections } = markdownSourceImport(path, c.text, index.caches[c.id]);
             const card = new CanvasCardData(path, c.id, c, frontmatter);
             sections.forEach((i) => card.section(i));
             canvas.card(card);
@@ -56,7 +56,7 @@ abstract class AbstractCanvasCardData {
     }
 }
 export class CanvasCardData extends AbstractCanvasCardData {
-    public sections: SectionData[];
+    public sections: SectionData[] = [];
     public constructor(
         public path: string,
         public id: string,
