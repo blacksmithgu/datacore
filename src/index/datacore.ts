@@ -204,10 +204,10 @@ export class Datacore extends Component {
                 if (rpath) return link.withPath(rpath.path);
                 else return link;
             });
-						this.storeCanvas(parsed);
-						this.persister.storeFile(parsed.$path, parsed.json())
-						this.trigger("update", this.revision)
-						return parsed;
+            this.storeCanvas(parsed);
+            this.persister.storeFile(parsed.$path, parsed.json());
+            this.trigger("update", this.revision);
+            return parsed;
         }
 
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);

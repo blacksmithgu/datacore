@@ -12,9 +12,17 @@ import {
 } from "index/types/json/canvas";
 import { CanvasFileData, CanvasLinkData, CanvasTextData, CanvasData as ICanvas } from "obsidian/canvas";
 import { Link } from "expression/link";
-export function canvasImport(path: string, source: string, index: CanvasMetadataIndex["string"], stats: FileStats): JsonCanvas {
+
+/** Import a canvas file using the canvas metadata. */
+export function canvasImport(
+    path: string,
+    source: string,
+    index: CanvasMetadataIndex["string"],
+    stats: FileStats
+): JsonCanvas {
     const canvas = new CanvasData(path, stats);
     const parsed = JSON.parse(source) as ICanvas;
+
     for (const c of parsed.nodes) {
         if (c.type == "group") continue;
         if (c.type == "text") {
@@ -30,16 +38,20 @@ export function canvasImport(path: string, source: string, index: CanvasMetadata
             canvas.card(card);
         }
     }
+
     return canvas.build();
 }
 
+/** Metadata for a specific canvas card. */
 abstract class AbstractCanvasCardData {
     public metadata: Metadata = new Metadata();
+
     public constructor(
         public path: string,
         public id: string,
         protected nodeJson: CanvasTextData | CanvasLinkData | CanvasFileData
     ) {}
+
     public build(): JsonBaseCanvasCard {
         return {
             $file: this.path,
@@ -53,10 +65,11 @@ abstract class AbstractCanvasCardData {
                 height: this.nodeJson.height,
             },
             $color: this.nodeJson.color,
-						$link: Link.file(this.path).withBlock(this.id).toObject()
+            $link: Link.file(this.path).withBlock(this.id).toObject(),
         };
     }
 }
+
 export class CanvasCardData extends AbstractCanvasCardData {
     public sections: SectionData[] = [];
     public constructor(
@@ -67,10 +80,12 @@ export class CanvasCardData extends AbstractCanvasCardData {
     ) {
         super(path, id, nodeJson);
     }
+
     public section(section: SectionData): SectionData {
         this.sections.push(section);
         return section;
     }
+
     public build(): JsonCanvasCard {
         switch (this.nodeJson.type) {
             case "text":
@@ -102,11 +117,14 @@ export class CanvasCardData extends AbstractCanvasCardData {
 export class CanvasData {
     public cards: CanvasCardData[] = [];
     public metadata: Metadata = new Metadata();
+
     public constructor(public path: string, public stats: FileStats) {}
+
     public card(d: CanvasCardData): CanvasCardData {
         this.cards.push(d);
         return d;
     }
+
     public build(): JsonCanvas {
         return {
             $cards: this.cards.map((x) => x.build()),

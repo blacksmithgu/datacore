@@ -43,22 +43,26 @@ export function markdownImport(
     metadata: CachedMetadata,
     stats: FileStats
 ): JsonMarkdownPage {
-    
-		const {lines, metadata: pageMetadata, frontmatter, sections} = markdownSourceImport(path, markdown, metadata)
-    const page = new PageData(path, stats, lines.length, frontmatter);
-		page.metadata = pageMetadata
-		sections.forEach(s => page.section(s))
+    const { lines, metadata: pageMetadata, frontmatter, sections } = markdownSourceImport(path, markdown, metadata);
+    const page = new PageData(path, stats, lines.length, pageMetadata, sections, frontmatter);
 
     return page.build();
 }
-export function markdownSourceImport(path: string, markdown: string, metadata: CachedMetadata) {
-		const frontmatter: Record<string, JsonFrontmatterEntry> | undefined = metadata.frontmatter
+
+/** Import markdown file metadata, producing all relevant markdown data. */
+export function markdownSourceImport(path: string, markdown: string, metadata: CachedMetadata): {
+    lines: string[];
+    metadata: Metadata;
+    frontmatter?: Record<string, JsonFrontmatterEntry>;
+    sections: SectionData[];
+} {
+    const frontmatter: Record<string, JsonFrontmatterEntry> | undefined = metadata.frontmatter
         ? parseFrontmatterBlock(metadata.frontmatter)
         : undefined;
     const lines = markdown.split("\n");
-		const markdownMetadata = new Metadata();
-		const sectionArray: SectionData[] = []
-		//////////////
+    const markdownMetadata = new Metadata();
+    const sectionArray: SectionData[] = [];
+    //////////////
     // Sections //
     //////////////
 
@@ -138,9 +142,9 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
     }
 
     // Add blocks to sections.
-    for (const block of blocks.values())  {
-			lookup(block.start, sections)?.block(block)
-		};
+    for (const block of blocks.values()) {
+        lookup(block.start, sections)?.block(block);
+    }
 
     ///////////
     // Lists //
@@ -190,7 +194,7 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
     if (metadata.frontmatter) {
         for (const rawtag of extractTags(metadata.frontmatter)) {
             const tag = rawtag.startsWith("#") ? rawtag : "#" + rawtag;
-          	markdownMetadata.tag(tag);
+            markdownMetadata.tag(tag);
         }
     }
 
@@ -229,14 +233,15 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
         lookup(line, blocks)?.metadata.inlineField(field);
         lookup(line, listItems)?.metadata.inlineField(field);
     }
-		sectionArray.push(...sections.values())
-		return {
-			frontmatter,
-			metadata: markdownMetadata,
-			lines,
-			sections: sectionArray
-		}
+    sectionArray.push(...sections.values());
+    return {
+        lines,
+        frontmatter,
+        metadata: markdownMetadata,
+        sections: sectionArray,
+    };
 }
+
 //////////////////
 // Parsing Aids //
 //////////////////
@@ -416,21 +421,14 @@ export class Metadata {
 
 /** Convienent utility for constructing page objects. */
 export class PageData {
-    public sections: SectionData[] = [];
-    public metadata: Metadata = new Metadata();
-
     public constructor(
         public path: string,
         public stats: FileStats,
         public length: number,
+        public metadata: Metadata,
+        public sections: SectionData[],
         public frontmatter?: Record<string, JsonFrontmatterEntry>
     ) {}
-
-    /** Add a new section to the page. */
-    public section(section: SectionData): SectionData {
-        this.sections.push(section);
-        return section;
-    }
 
     public build(): JsonMarkdownPage {
         return {

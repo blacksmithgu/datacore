@@ -26,8 +26,8 @@ export interface CanvasImport {
     contents: string;
     /** The stats for the file. */
     stat: FileStats;
-		/** the canvas's metadata cache */
-		index: CanvasMetadataIndex["any"]
+    /** the canvas's metadata cache */
+    index: CanvasMetadataIndex["any"];
 }
 
 /** Available import commands to be sent to an import web worker. */
@@ -41,8 +41,8 @@ export interface MarkdownImportResult {
     result: JsonMarkdownPage;
 }
 export interface CanvasImportResult {
-	type: "canvas";
-	result: JsonCanvas;
+    type: "canvas";
+    result: JsonCanvas;
 }
 export interface ImportFailure {
     /** Failed to import. */

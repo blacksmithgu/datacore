@@ -14,14 +14,14 @@ onmessage = async (event) => {
                 type: "markdown",
                 result: markdown,
             } as MarkdownImportResult);
-        } else if(message.type === "canvas") {
-					const canvas = canvasImport(message.path, message.contents, message.index, message.stat)
-					
-					postMessage({
-						type: "canvas",
-						result: canvas
-					} as CanvasImportResult)
-				} else {
+        } else if (message.type === "canvas") {
+            const canvas = canvasImport(message.path, message.contents, message.index, message.stat);
+
+            postMessage({
+                type: "canvas",
+                result: canvas,
+            } as CanvasImportResult);
+        } else {
             postMessage({ $error: "Unsupported import method." });
         }
     } catch (error) {

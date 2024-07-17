@@ -1,3 +1,9 @@
+# 0.1.17 (Beta)
+
+- Adds experimental canvas parsing / indexing / query support (thanks to @GamerGirlAndCo)!
+
+---
+
 # 0.1.16 (Beta)
 
 Improves queries over $id, $revision, and $file.
