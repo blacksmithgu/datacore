@@ -1,6 +1,7 @@
 import { JsonPDF } from "index/types/json/pdf";
 import { PDFImport } from "index/web-worker/message";
 import { document } from "index/web-worker/polyfill";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 
 export async function pdfImport({ path, resourceURI, stat: stats }: PDFImport): Promise<JsonPDF> {
     /** dear reader, i know there is no good explanation for any of the following code... */
@@ -13,7 +14,7 @@ export async function pdfImport({ path, resourceURI, stat: stats }: PDFImport): 
 
     /** add `document` shitfill to global object (to placate the pdf worker) */
     Object.assign(globalThis, { document });
-    const rawPdfWorker = `data:text/javascript;base64,${btoa(
+    /* const rawPdfWorker = `data:text/javascript;base64,${btoa(
         unescape(
             encodeURIComponent(
                 await (await fetch("https://cdn.jsdelivr.net/npm/pdfjs-dist@latest/build/pdf.worker.mjs")).text()
@@ -31,11 +32,10 @@ export async function pdfImport({ path, resourceURI, stat: stats }: PDFImport): 
     pdfjsLib.GlobalWorkerOptions.workerSrc = rawPdfWorker;
     console.debug(path, resourceURI);
 		let actualWorker = new Worker(rawPdfWorker, { type: "module" });
-    pdfjsLib.GlobalWorkerOptions.workerPort = actualWorker;
+    pdfjsLib.GlobalWorkerOptions.workerPort = actualWorker; */
 
-    let { promise } = await pdfjsLib.getDocument(resourceURI);
-    let pdf = await promise;
-		pdfjsLib.GlobalWorkerOptions.workerPort.terminate()
+    let pdf = await getDocument(resourceURI).promise;
+		GlobalWorkerOptions.workerPort?.terminate()
     return {
         $pageCount: pdf.numPages,
         $extension: "pdf",
