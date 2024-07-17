@@ -1,8 +1,8 @@
 /** Controls and creates Dataview file importers, allowing for asynchronous loading and parsing of files. */
 
 import ImportWorker from "index/web-worker/importer.worker";
-import { Component, MetadataCache, TFile, Vault } from "obsidian";
-import { MarkdownImport } from "index/web-worker/message";
+import { Component, FileManager, MetadataCache, TFile, Vault } from "obsidian";
+import { CanvasImport, MarkdownImport } from "index/web-worker/message";
 import { Deferred, deferred } from "utils/deferred";
 
 import { Queue } from "@datastructures-js/queue";
@@ -37,7 +37,7 @@ export class FileImporter extends Component {
     /** Throttle settings. */
     throttle: () => ImportThrottle;
 
-    public constructor(public vault: Vault, public metadataCache: MetadataCache, throttle?: () => ImportThrottle) {
+    public constructor(public vault: Vault, public fileManager: FileManager, public metadataCache: MetadataCache, throttle?: () => ImportThrottle) {
         super();
         this.workers = new Map();
         this.shutdown = false;
@@ -84,7 +84,8 @@ export class FileImporter extends Component {
 
         try {
             switch (file.extension) {
-                default:
+								case "markdown":
+                case "md": {
                     const contents = await this.vault.cachedRead(file);
                     worker!.worker.postMessage({
                         type: "markdown",
@@ -93,6 +94,19 @@ export class FileImporter extends Component {
                         stat: file.stat,
                         metadata: this.metadataCache.getFileCache(file),
                     } as MarkdownImport);
+										break;
+								}
+								case "canvas": {
+									const contents = await this.vault.cachedRead(file);
+									worker!.worker.postMessage({
+										type: "canvas",
+										path: file.path,
+										contents: contents,
+										stat: file.stat,
+										index: this.fileManager.linkUpdaters.canvas.canvas.index.index[file.path]
+									} as CanvasImport)
+									break;
+								}	
             }
         } catch (ex) {
             console.log("Datacore: Background file reloading failed. " + ex);
