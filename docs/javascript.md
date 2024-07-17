@@ -83,7 +83,7 @@ return function View() {
     // We want to manually construct a histogram of games by the rating we gave them.
     const ratingBuckets = dc.useMemo(() => {
         const ratings = {};
-        for (const game in games) {
+        for (const game of games) {
             if (!game.value("rating")) continue;
 
             // Convert all ratings to strings since who knows what people put in metadata these days.
@@ -135,7 +135,7 @@ You can run arbitrary javascript inside interpolated blocks:
 return function View() {
     const data = dc.useCurrentFile();
 
-    return <p>The first character is {data.$title.substring(0, 1)}!</p>
+    return <p>The first character is {data.$name.substring(0, 1)}!</p>
 }
 ```
 
