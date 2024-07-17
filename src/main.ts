@@ -208,6 +208,17 @@ class GeneralSettingsTab extends PluginSettingTab {
                 });
             });
 
+        this.containerEl.createEl("h2", { text: "Tasks" });
+
+        new Setting(this.containerEl)
+            .setName("Recursive subtask completion")
+            .setDesc("Whether or not subtasks should be completed along with their parent in datacore task views.")
+            .addToggle((tb) => {
+                tb.setValue(this.plugin.settings.recursiveTaskCompletion).onChange(async (val) => {
+                    await this.plugin.updateSettings({ recursiveTaskCompletion: val });
+                });
+            });
+
         this.containerEl.createEl("h2", { text: "Performance Tuning" });
 
         new Setting(this.containerEl)
@@ -261,6 +272,7 @@ class GeneralSettingsTab extends PluginSettingTab {
                 text.setValue(this.plugin.settings.maxRecursiveRenderDepth.toString()).onChange(async (value) => {
                     const parsed = parseInt(value);
                     if (isNaN(parsed)) return;
+
                     await this.plugin.updateSettings({ maxRecursiveRenderDepth: parsed });
                 });
             });

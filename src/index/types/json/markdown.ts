@@ -142,6 +142,10 @@ export interface JsonMarkdownListItem {
      * this is a root element of the list starting at line 7.
      */
     $parentLine: number;
+    /** the contents of this list item, with the list marker and indentation stripped. */
+    $text?: string;
+    /** the symbol of this list item */
+    $symbol?: string;
 }
 
 export interface JsonMarkdownTaskItem extends JsonMarkdownListItem {
