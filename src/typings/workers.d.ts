@@ -12,3 +12,4 @@ declare module "index/web-worker/pdf.worker" {
 	}
 }
 declare module "pdfjs-dist/pdf.worker";
+declare module "pdfjs-dist/shared";

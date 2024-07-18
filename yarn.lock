@@ -869,6 +869,14 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
+"@the-tablet/pdfjs-ext-dist@^4.5.88":
+  version "4.5.88"
+  resolved "https://registry.yarnpkg.com/@the-tablet/pdfjs-ext-dist/-/pdfjs-ext-dist-4.5.88.tgz#192777ad381fefbb24836e5e0a71ab0d89c8751d"
+  integrity sha512-IT3b2cP2EkUycfbIOylNkM6JyClimH0FDotWq6ua0R1VHVGsx/L+RzBnUl6xPlkFwNZEilYFpyOWrs/X1N2YlA==
+  optionalDependencies:
+    canvas "^2.11.2"
+    path2d "^0.2.1"
+
 "@tootallnate/once@1":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
@@ -2941,18 +2949,10 @@ path-type@^4.0.0:
   resolved "https://registry.yarnpkg.com/path-type/-/path-type-4.0.0.tgz#84ed01c0a7ba380afe09d90a8c180dcd9d03043b"
   integrity sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==
 
-path2d@^0.2.0:
+path2d@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/path2d/-/path2d-0.2.1.tgz#faf98e5e2222541805a6ac232adc026332330765"
   integrity sha512-Fl2z/BHvkTNvkuBzYTpTuirHZg6wW9z8+4SND/3mDTEcYbbNKWAy21dz9D3ePNNwrrK8pqZO5vLPZ1hLF6T7XA==
-
-pdfjs-dist@^4.4.168:
-  version "4.4.168"
-  resolved "https://registry.yarnpkg.com/pdfjs-dist/-/pdfjs-dist-4.4.168.tgz#4487716376a33c68753ed37f782ae91d1c9ef8fa"
-  integrity sha512-MbkAjpwka/dMHaCfQ75RY1FXX3IewBVu6NGZOcxerRFlaBiIkZmUoR0jotX5VUzYZEXAGzSFtknWs5xRKliXPA==
-  optionalDependencies:
-    canvas "^2.11.2"
-    path2d "^0.2.0"
 
 picocolors@^1.0.0, picocolors@^1.0.1:
   version "1.0.1"

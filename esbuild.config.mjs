@@ -22,7 +22,7 @@ async function build(prod) {
                     workerName: "Datacore Indexer",
                     sourcemap: prod ? false : "inline",
                     alias: {
-                        "pdfjs-dist/pdf.worker": "pdfjs-dist/build/pdf.worker.mjs",
+                        "pdfjs-dist/pdf.worker": "@the-tablet/pdfjs-ext-dist/build/pdf.worker.mjs",
                     },
                 }),
             ],
@@ -46,6 +46,7 @@ async function build(prod) {
             alias: {
                 react: "preact/compat",
                 "pdfjs-dist/pdf.worker": "pdfjs-dist/build/pdf.worker.min.mjs",
+                "pdfjs-dist": "@the-tablet/pdfjs-ext-dist",
             },
             format: "cjs",
             target: "es2018",
@@ -55,6 +56,7 @@ async function build(prod) {
             alias: {
                 react: "preact/compat",
                 "react-dom": "preact/compat",
+                "pdfjs-dist": "@the-tablet/pdfjs-ext-dist",
             },
             outfile: "build/plugin/main.js",
         })

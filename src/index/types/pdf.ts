@@ -30,7 +30,7 @@ export class PDF implements File, Indexable, Linkable {
         Object.assign(this, init);
     }
     /** Convert this page into it's partial representation for saving. */
-    public partial(): JsonPDF {
+    public json(): JsonPDF {
         return {
             $path: this.$path,
             $ctime: this.$ctime.toMillis(),

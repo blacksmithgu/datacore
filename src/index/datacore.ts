@@ -13,6 +13,8 @@ import { EmbedQueue } from "./embed-queue";
 import { JsonMarkdownPage } from "./types/json/markdown";
 import { Canvas, CanvasTextCard } from "./types/canvas";
 import { PDF } from "./types/pdf";
+import { JsonCanvas } from "./types/json/canvas";
+import { JsonPDF } from "./types/json/pdf";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -204,6 +206,7 @@ export class Datacore extends Component {
         } else if(result.type === "pdf") {
             this.trigger("update", this.revision);
             let parsed = PDF.from(result.result);
+						this.persister.storeFile(parsed.$path, parsed.json())
             this.datastore.store(parsed);
             return parsed
         } else if (result.type === "canvas") {
@@ -410,7 +413,11 @@ export class DatacoreInitializer extends Component {
                     const data = MarkdownPage.from(cached.data as JsonMarkdownPage, (link) => link);
                     this.core.storeMarkdown(data);
                     return { status: "cached" };
-                }
+                } else if(file.extension === "pdf") {
+									const data = PDF.from(cached.data as JsonPDF);
+									this.core.datastore.store(data);
+									return {status: "cached"}
+								}
             }
 
             // Does not match an existing import type, just reload normally.
