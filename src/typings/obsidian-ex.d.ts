@@ -51,4 +51,7 @@ declare global {
     interface Window {
         datacore?: DatacoreApi;
     }
+		var pdfjsLib: any;
 }
+
+declare module "pdfjs-dist/build/pdf.worker.min";
