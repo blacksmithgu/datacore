@@ -34,7 +34,6 @@ export async function pdfImport({ path, resourceURI, stat: stats }: PDFImport): 
     console.debug(path, resourceURI);
 		let actualWorker = new Worker(rawPdfWorker, { type: "module" });
     pdfjsLib.GlobalWorkerOptions.workerPort = actualWorker; */
-		console.log("IMPROTMETA", WorkerMessageHandler)
     let pdf = await getDocument(resourceURI).promise;
 		GlobalWorkerOptions.workerPort?.terminate()
     return {
