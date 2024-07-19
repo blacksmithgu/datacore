@@ -151,15 +151,24 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
     ///////////
 
     // All list items in lists. Start with a simple trivial pass.
+    const contentRegex = /^[\t\f\v ]*[\-+\*]\s(\[.\]\s)?/;
+    const markerRegex = /^(>?\s?)*(\t|\s)*/g;
     const listItems = new BTree<number, ListItemData>(undefined, (a, b) => a - b);
+
     for (const list of metadata.listItems || []) {
+        let content = lines.slice(list.position.start.line, list.position.end.line + 1).join("\n");
+
+        let marker = content.split("\n")[0].replace(markerRegex, "").trim().slice(0, 1);
         const item = new ListItemData(
             list.position.start.line,
-            list.position.end.line + 1,
+            list.position.end.line,
             list.parent,
+            marker,
             list.id,
+            content.replace(contentRegex, ""),
             list.task
         );
+
         listItems.set(item.start, item);
     }
 
@@ -241,7 +250,6 @@ export function markdownSourceImport(path: string, markdown: string, metadata: C
         sections: sectionArray,
     };
 }
-
 //////////////////
 // Parsing Aids //
 //////////////////
@@ -341,7 +349,7 @@ export function parseFrontmatter(value: any): Literal {
 /** Finds an element which contains the given line. */
 export function lookup<T extends { start: number; end: number }>(line: number, tree: BTree<number, T>): T | undefined {
     const target = tree.getPairOrNextLower(line)?.[1];
-    if (target && target.end > line) return target;
+    if (target && target.end >= line) return target;
 
     return undefined;
 }
@@ -590,12 +598,13 @@ export type BlockData = ListBlockData | CodeblockData | DatablockData | BaseBloc
 export class ListItemData {
     public metadata: Metadata = new Metadata();
     public elements: ListItemData[] = [];
-
     public constructor(
         public start: number,
         public end: number,
         public parentLine: number,
+        public symbol: string,
         public blockId?: string,
+        public text?: string,
         public status?: string
     ) {}
 
@@ -610,6 +619,8 @@ export class ListItemData {
             $tags: this.metadata.finishTags(),
             $links: this.metadata.finishLinks(),
             $status: this.status,
+            $text: this.text,
+            $symbol: this.symbol,
         } as JsonMarkdownTaskItem;
     }
 }

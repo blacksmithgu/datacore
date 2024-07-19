@@ -4,7 +4,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown";
+import { MarkdownCodeblock, MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -18,10 +18,15 @@ import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { VanillaTable } from "./ui/views/vanilla-table";
+import { TaskList } from "./ui/views/task";
 import { Callout } from "./ui/views/callout";
+import { Card } from "./ui/views/card";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
+import { setTaskText, useSetField } from "utils/fields";
+import { ControlledTextEditable, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
+import { compeleteTask, rewriteTask } from "utils/task";
 
 /** Local API provided to specific codeblocks when they are executing. */
 export class DatacoreLocalApi {
@@ -138,6 +143,13 @@ export class DatacoreLocalApi {
         return DataArray.wrap(input);
     }
 
+		public setTaskText(newText: string, task: MarkdownTaskItem): void  {
+			setTaskText(newText, task);
+		}
+		public setTaskCompletion(completed: boolean, task: MarkdownTaskItem): void {
+			compeleteTask(completed, task, this.core)
+		}
+
     /////////////
     //  Hooks  //
     /////////////
@@ -152,6 +164,8 @@ export class DatacoreLocalApi {
     public useContext = hooks.useContext;
     public useRef = hooks.useRef;
     public useInterning = useInterning;
+
+		public useSetField = useSetField;
 
     /** Memoize the input automatically and process it using a Data Array; returns a vanilla array back. */
     public useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: any[]): U[] {
@@ -290,7 +304,9 @@ export class DatacoreLocalApi {
     // Views //
     ///////////
 
+    public TaskList = TaskList;
     public VanillaTable = VanillaTable;
+    public Card = Card;
 
     /////////////////////////
     // Interative elements //
@@ -303,4 +319,11 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
+
+    /////////////////////////
+		//    field editors    //
+		/////////////////////////
+		public EditableFieldCheckbox = EditableFieldCheckbox;
+		public EditableFieldTextbox = EditableTextField;
+		public TextEditor = ControlledTextEditable;
 }
