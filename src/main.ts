@@ -249,6 +249,14 @@ class GeneralSettingsTab extends PluginSettingTab {
                     await this.plugin.updateSettings({ importerUtilization: limited });
                 });
             });
+        new Setting(this.containerEl)
+            .setName("Recursive subtask completion")
+            .setDesc("Whether or not subtasks should be completed along with their parent in datacore task views")
+            .addToggle((tb) => {
+                tb.setValue(this.plugin.settings.recursiveTaskCompletion).onChange(async (val) => {
+                    await this.plugin.updateSettings({ recursiveTaskCompletion: val });
+                });
+            });
 
         new Setting(this.containerEl)
             .setName("Maximum Recursive Render Depth")
@@ -262,6 +270,29 @@ class GeneralSettingsTab extends PluginSettingTab {
                     const parsed = parseInt(value);
                     if (isNaN(parsed)) return;
                     await this.plugin.updateSettings({ maxRecursiveRenderDepth: parsed });
+                });
+            });
+
+        this.containerEl.createEl("h2", "Tasks");
+
+        new Setting(this.containerEl)
+            .setName("Task Completion Text")
+            .setDesc("Name of inline field in which to store task completion date/time")
+            .addText((text) => {
+                text.setValue(this.plugin.settings.taskCompletionText).onChange(async (value) => {
+                    await this.plugin.updateSettings({ taskCompletionText: value });
+                });
+            });
+
+        new Setting(this.containerEl)
+            .setName("Use Emoji Shorthand for Task Completion")
+            .setDesc(
+                "If enabled, automatic completion will use an emoji shorthand ✅ YYYY-MM-DD" +
+                    "instead of [completion:: date]."
+            )
+            .addToggle((tb) => {
+                tb.setValue(this.plugin.settings.taskCompletionUseEmojiShorthand).onChange(async (val) => {
+                    await this.plugin.updateSettings({ taskCompletionUseEmojiShorthand: val });
                 });
             });
     }

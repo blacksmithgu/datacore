@@ -9,7 +9,7 @@ import { Reducer, useContext, useMemo, useReducer, Dispatch } from "preact/hooks
 import { Grouping } from "../grouping";
 import { ControlledPager } from "./paging";
 
-import "styles/reactive-table.css";
+import "./table.css";
 
 /** Contains only the actual relevant state for a table (i.e., excluding initial props). */
 export interface TableState<T> {
