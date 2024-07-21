@@ -12,7 +12,7 @@ import {
     Taggable,
 } from "index/types/indexable";
 import { DateTime } from "luxon";
-import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing } from "../../expression/field";
+import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing, Fieldbearings } from "../../expression/field";
 import { InlineField, jsonInlineField, valueInlineField } from "index/import/inline-field";
 import {
     LineSpan,
@@ -223,7 +223,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
 
     /** Fetch a specific field by key. */
     public field(key: string): Field {
-        return MarkdownSection.FIELD_DEF(this, key)?.[0];
+        return MarkdownSection.FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -319,7 +319,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
 
     /** Fetch a specific field by key. */
     public field(key: string) {
-        return MarkdownBlock.FIELD_DEF(this, key)?.[0];
+        return MarkdownBlock.FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -434,7 +434,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
 
     /** Fetch a specific field by key. */
     public field(key: string) {
-        return MarkdownCodeblock.SUB_FIELD_DEF(this, key)?.[0];
+        return MarkdownCodeblock.SUB_FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -502,7 +502,7 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
 
     /** Fetch a specific field by key. */
     public field(key: string) {
-        return MarkdownDatablock.SUB_FIELD_DEF(this, key)?.[0];
+        return MarkdownDatablock.SUB_FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -559,6 +559,11 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
      */
     $parentLine: number;
 
+    /** the contents of the list item */
+    $text: string;
+
+    $symbol: string;
+
     /** Create a list item from a serialized object. */
     static from(
         object: JsonMarkdownListItem,
@@ -579,6 +584,8 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $links: object.$links.map((l) => normalizer(Link.fromObject(l))),
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
+            $text: object.$text,
+            $symbol: object.$symbol!,
         });
     }
 
@@ -601,9 +608,16 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
         return MarkdownListItem.FIELD_DEF(this);
     }
 
+    /** return text without annotations + indentation */
+    get $cleanText() {
+        return this.$text
+            .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1")
+            .replace(/^[\t\f\v\s]*[\-\*+]\s(\[.\])?/gm, "")
+            .trimEnd(); //.replace(/^$/gm, "")
+    }
     /** Fetch a specific field by key. */
     public field(key: string) {
-        return MarkdownListItem.FIELD_DEF(this, key)?.[0];
+        return MarkdownListItem.FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -620,6 +634,8 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $links: this.$links,
             $blockId: this.$blockId,
             $parentLine: this.$parentLine,
+            $text: this.$text,
+            $symbol: this.$symbol,
         };
     }
 
@@ -658,6 +674,8 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
             $status: object.$status,
+            $text: object.$text,
+            $symbol: object.$symbol!,
         });
     }
 
