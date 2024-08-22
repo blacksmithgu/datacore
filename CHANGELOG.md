@@ -1,3 +1,9 @@
+# 0.1.18 (Beta)
+
+Use "\-" as the default null value, instead of just "-".
+
+---
+
 # 0.1.17 (Beta)
 
 - Adds experimental canvas parsing / indexing / query support (thanks to @GamerGirlAndCo)!
