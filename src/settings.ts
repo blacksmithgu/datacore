@@ -52,7 +52,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
     defaultDateFormat: "MMMM dd, yyyy",
     defaultDateTimeFormat: "h:mm a - MMMM dd, yyyy",
 
-    renderNullAs: "-",
+    renderNullAs: "\-",
 
     indexInlineFields: true,
 });
