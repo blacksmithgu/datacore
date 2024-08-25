@@ -70,6 +70,7 @@ abstract class AbstractCanvasCardData {
     }
 }
 
+/** Metadata for a specific card in a canvas view. */
 export class CanvasCardData extends AbstractCanvasCardData {
     public sections: SectionData[] = [];
     public constructor(
@@ -114,6 +115,7 @@ export class CanvasCardData extends AbstractCanvasCardData {
     }
 }
 
+/** Metadata for the whole canvas page as a whole. */
 export class CanvasData {
     public cards: CanvasCardData[] = [];
     public metadata: Metadata = new Metadata();

@@ -17,7 +17,7 @@ import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
-import { VanillaTable } from "./ui/views/vanilla-table";
+import { VanillaTable } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";

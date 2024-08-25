@@ -17,6 +17,15 @@ import { DataArray } from "./data-array";
 export class DatacoreApi {
     public constructor(public core: Datacore) {}
 
+    ///////////////
+    // Local API //
+    ///////////////
+
+    /** Construct a local API for the file at the given path. */
+    public local(path: string): DatacoreLocalApi {
+        return new DatacoreLocalApi(this, path);
+    }
+
     /////////////////////////
     // Querying + Fetching //
     /////////////////////////

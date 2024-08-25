@@ -73,6 +73,10 @@ export class Failure<T, E> {
     }
 }
 
+/**
+ * A monadic result type which stores either "success" or "failure". An alternative handling exceptional behavior
+ * by using the return value instead of an exception.
+ */
 export type Result<T, E> = Success<T, E> | Failure<T, E>;
 
 /** Monadic 'Result' type which encapsulates whether a procedure succeeded or failed, as well as it's return value. */

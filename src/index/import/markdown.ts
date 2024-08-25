@@ -50,7 +50,11 @@ export function markdownImport(
 }
 
 /** Import markdown file metadata, producing all relevant markdown data. */
-export function markdownSourceImport(path: string, markdown: string, metadata: CachedMetadata): {
+export function markdownSourceImport(
+    path: string,
+    markdown: string,
+    metadata: CachedMetadata
+): {
     lines: string[];
     metadata: Metadata;
     frontmatter?: Record<string, JsonFrontmatterEntry>;
