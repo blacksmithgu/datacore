@@ -5,9 +5,8 @@ import { FrontmatterEntry } from "index/types/markdown";
 
 /** The source of a field, used when determining what files to overwrite and how. */
 export type Provenance =
-    | { type: "intrinsic" }
     | { type: "frontmatter"; file: string; key: string }
-    | { type: "inline-field"; file: string; line: number; key: string }; // TODO: I think line is not strictly required for correctness.
+    | { type: "inline-field"; file: string; line: number; key: string };
 
 /** General definition for a field. Provides the field key, value, as well as information on it's source and how it can be edited. */
 export interface Field {
@@ -44,9 +43,6 @@ export namespace Fieldbearings {
         else return object[key];
     }
 }
-
-/** Constant for the intrinsic provenance.  */
-export const INTRINSIC_PROVENANCE: Provenance = { type: "intrinsic" };
 
 /**
  * Generic function which extract fields. If no argument is provided, it should return all fields; otherwise,
@@ -94,7 +90,6 @@ export namespace Extractors {
                     fields.push({
                         key,
                         value: (object as any)[key],
-                        provenance: INTRINSIC_PROVENANCE,
                     });
                 }
 
@@ -106,7 +101,6 @@ export namespace Extractors {
                         {
                             key,
                             value: (object as any)[key],
-                            provenance: INTRINSIC_PROVENANCE,
                         },
                     ] as Field[];
                 }

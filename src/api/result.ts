@@ -135,4 +135,13 @@ export namespace Result {
             return Result.failure(error);
         }
     }
+
+    /** Convert a promise which may throw into a promise which returns a result of the successful value or an error. */
+    export async function async<T>(promise: Promise<T>): Promise<Result<T, Error>> {
+        try {
+            return Result.success(await promise);
+        } catch (error) {
+            return Result.failure(error);
+        }
+    }
 }
