@@ -157,36 +157,45 @@ export function normalizeHeaderForLink(header: string): string {
     return HEADER_CANONICALIZER.tryParse(header);
 }
 
-// Equality operations.
-
-/** Determine if two sets are equal in contents. */
-export function setsEqual<T>(first: Set<T>, second: Set<T>): boolean {
-    if (first.size != second.size) return false;
-    for (let elem of first) if (!second.has(elem)) return false;
-
-    return true;
-}
-
 // Fast extraction of line ranges from large pieces of text.
 
-/** Extract the lines in the range [start, end). Start is inclusive, end is exclusive. */
-export function lineRange(text: string, start: number, end: number): string {
+/** Update the line range from [start, end) with the given function. */
+export function lineReplace(text: string, start: number, end: number, func: (line: string) => string): string {
+    const [data, offset] = lineSpan(text, start, end);
+    if (!offset) return text;
+
+    return (
+        data.substring(0, offset.start) + func(data.substring(offset.start, offset.end)) + data.substring(offset.end)
+    );
+}
+
+/** Extract the lines in the range [start, end), as well as the actual offsets of the start and end. */
+export function lineSpan(
+    text: string,
+    start: number,
+    end: number
+): [string, { start: number; end: number } | undefined] {
     start = Math.max(start, 0);
     end = Math.max(end, 0);
 
-    if (start >= end) return "";
+    if (start >= end) return ["", undefined];
 
     // Start by finding the starting line offset.
     const startOffset = skipNewlines(text, 0, start);
-    if (startOffset == -1) return "";
+    if (startOffset == -1) return ["", undefined];
 
     const endOffset = skipNewlines(text, startOffset, end - start);
-    if (endOffset == -1) return text.substring(startOffset);
-    else return text.substring(startOffset, endOffset - 1);
+    if (endOffset == -1) return [text.substring(startOffset), { start: startOffset, end: text.length }];
+    else return [text.substring(startOffset, endOffset - 1), { start: startOffset, end: endOffset - 1 }];
+}
+
+/** Extract the lines in the range [start, end). Start is inclusive, end is exclusive. */
+export function lineRange(text: string, start: number, end: number): string {
+    return lineSpan(text, start, end)[0];
 }
 
 /** Skip {count} total newlines, returning the start of the line {count} lines after the current line. If count is 0, the initial offset is returned. */
-function skipNewlines(text: string, start: number, count: number): number {
+export function skipNewlines(text: string, start: number, count: number): number {
     if (count == 0) return start;
 
     let position = start;
