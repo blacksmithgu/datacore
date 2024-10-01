@@ -1,5 +1,5 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
+import { useContext, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -56,6 +56,7 @@ export interface VanillaTableProps<T> {
     scrollOnPaging?: boolean | number;
 }
 
+/** A simple table which supports grouping, sorting, paging, and custom columns. */
 export function VanillaTable<T>(props: VanillaTableProps<T>) {
     // Cache columns by reference equality of the specific columns. Columns have various function references
     // inside them and so cannot be compared by value equality.
@@ -64,29 +65,16 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
         return a.every((value, index) => value == b[index]);
     });
 
+    // Count total elements and then page appropriately.
+    const tableRef = useRef<HTMLDivElement>(null);
     const totalElements = useMemo(() => Groupings.count(props.rows), [props.rows]);
     const paging = useDatacorePaging({
         initialPage: 0,
         paging: props.paging,
         scrollOnPageChange: props.scrollOnPaging,
         elements: totalElements,
+        container: tableRef,
     });
-    const tableRef = useRef<HTMLDivElement>(null);
-
-    const setPage = useCallback(
-        (page: number) => {
-            if (page != paging.page && paging.scroll) {
-                tableRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                    inline: "nearest",
-                });
-            }
-
-            paging.setPage(page);
-        },
-        [paging.page, paging.setPage, paging.scroll, tableRef]
-    );
 
     const pagedRows = useMemo(() => {
         if (paging.enabled)
@@ -118,7 +106,9 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
                     ))}
                 </tbody>
             </table>
-            {paging.enabled && <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={setPage} />}
+            {paging.enabled && (
+                <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
+            )}
         </div>
     );
 }
