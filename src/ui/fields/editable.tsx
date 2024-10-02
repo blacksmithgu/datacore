@@ -11,7 +11,8 @@ import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { BooleanEditable } from "./boolean-field";
 import { ProgressEditable } from "./progress-field";
 import { RatingEditable } from "./rating";
-import "styles/fields.css";
+
+import "./fields.css";
 
 /** Core state for tracking an editable object. */
 export interface EditableState<T> {

@@ -34,18 +34,6 @@ export function ListView<T>(state: ListState<T>) {
     const elements = state.rows ?? [];
     const renderer = state.renderer ?? identity;
 
-    /*
-    const pageSize = useMemo(() => {
-        if (state.paging === undefined) {
-            if (settings.defaultPagingEnabled) return settings.defaultPageSize;
-            else return undefined;
-        } else if (state.paging == false) return undefined;
-        else if (state.paging == true) return settings.defaultPageSize;
-        else return state.paging;
-    }, [settings.defaultPageSize, settings.defaultPagingEnabled, state.paging]);
-    const [page, setPage] = useState<number>(0);
-    */
-
     if (type == "none") {
         return (
             <div className="datacore-list datacore-list-none">

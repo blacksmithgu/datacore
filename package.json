@@ -1,6 +1,6 @@
 {
   "name": "datacore",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "Reactive data engine for Obsidian.md.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -35,7 +35,7 @@
     "esbuild": "^0.16.11",
     "esbuild-plugin-inline-worker": "https://github.com/mitschabaude/esbuild-plugin-inline-worker",
     "jest": "^27.1.0",
-    "obsidian": "^1.4.11",
+    "obsidian": "^1.6.6",
     "prettier": "2.3.2",
     "ts-jest": "^27.0.5",
     "tslib": "^2.3.1",

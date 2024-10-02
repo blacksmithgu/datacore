@@ -6,16 +6,42 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown";
 import { Result } from "./result";
-import { Component, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
+import { App, Component, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
 import { DatacoreJSRenderer } from "ui/javascript";
 import { DatacoreLocalApi } from "./local-api";
 import Parsimmon from "parsimmon";
 import { Coerce } from "./coerce";
 import { DataArray } from "./data-array";
+import * as luxon from "luxon";
+import * as preact from "preact";
 
 /** Exterally visible API for datacore. */
 export class DatacoreApi {
     public constructor(public core: Datacore) {}
+
+    /** Get acess to luxon functions. */
+    get luxon(): typeof luxon {
+        return luxon;
+    }
+
+    /** Get access to preact functions. */
+    get preact(): typeof preact {
+        return preact;
+    }
+
+    /** Central Obsidian app object. */
+    get app(): App {
+        return this.core.app;
+    }
+
+    ///////////////
+    // Local API //
+    ///////////////
+
+    /** Construct a local API for the file at the given path. */
+    public local(path: string): DatacoreLocalApi {
+        return new DatacoreLocalApi(this, path);
+    }
 
     /////////////////////////
     // Querying + Fetching //

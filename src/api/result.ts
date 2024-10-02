@@ -73,6 +73,10 @@ export class Failure<T, E> {
     }
 }
 
+/**
+ * A monadic result type which stores either "success" or "failure". An alternative handling exceptional behavior
+ * by using the return value instead of an exception.
+ */
 export type Result<T, E> = Success<T, E> | Failure<T, E>;
 
 /** Monadic 'Result' type which encapsulates whether a procedure succeeded or failed, as well as it's return value. */
@@ -127,6 +131,15 @@ export namespace Result {
     export function trying<T>(call: () => T): Result<T, Error> {
         try {
             return Result.success(call());
+        } catch (error) {
+            return Result.failure(error);
+        }
+    }
+
+    /** Convert a promise which may throw into a promise which returns a result of the successful value or an error. */
+    export async function async<T>(promise: Promise<T>): Promise<Result<T, Error>> {
+        try {
+            return Result.success(await promise);
         } catch (error) {
             return Result.failure(error);
         }

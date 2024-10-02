@@ -1,6 +1,5 @@
 import { JsonLink, Link } from "expression/link";
 import { getExtension, getFileTitle } from "utils/normalizers";
-import { DateTime } from "luxon";
 import { CachedMetadata, FileStats, FrontMatterCache } from "obsidian";
 import { parse as parseYaml } from "yaml";
 import BTree from "sorted-btree";
@@ -12,8 +11,6 @@ import {
     extractInlineFields,
     jsonInlineField,
 } from "./inline-field";
-import { PRIMITIVES } from "expression/parser";
-import { Literal } from "expression/literal";
 import {
     JsonMarkdownBlock,
     JsonMarkdownListBlock,
@@ -26,6 +23,7 @@ import {
     JsonFrontmatterEntry,
 } from "index/types/json/markdown";
 import { JsonConversion } from "index/types/json/common";
+import { YamlConversion } from "index/types/yaml";
 import { mapObjectValues } from "utils/data";
 
 /** Matches yaml datablocks, which show up as independent objects in the datacore index. */
@@ -50,7 +48,11 @@ export function markdownImport(
 }
 
 /** Import markdown file metadata, producing all relevant markdown data. */
-export function markdownSourceImport(path: string, markdown: string, metadata: CachedMetadata): {
+export function markdownSourceImport(
+    path: string,
+    markdown: string,
+    metadata: CachedMetadata
+): {
     lines: string[];
     metadata: Metadata;
     frontmatter?: Record<string, JsonFrontmatterEntry>;
@@ -285,57 +287,12 @@ export function parseFrontmatterBlock(block: Record<string, any>): Record<string
 
         result[key.toLowerCase()] = {
             key: key,
-            value: JsonConversion.json(parseFrontmatter(value)),
+            value: JsonConversion.json(YamlConversion.literal(value)),
             raw: value,
         };
     }
 
     return result;
-}
-
-/** Recursively convert frontmatter into fields. We have to dance around YAML structure. */
-export function parseFrontmatter(value: any): Literal {
-    if (value == null) {
-        return null;
-    } else if (typeof value === "object") {
-        if (Array.isArray(value)) {
-            let result = [];
-            for (let child of value as Array<any>) {
-                result.push(parseFrontmatter(child));
-            }
-
-            return result;
-        } else if (value instanceof Date) {
-            let dateParse = DateTime.fromJSDate(value);
-            return dateParse;
-        } else {
-            let object = value as Record<string, any>;
-            let result: Record<string, Literal> = {};
-            for (let key in object) {
-                result[key] = parseFrontmatter(object[key]);
-            }
-
-            return result;
-        }
-    } else if (typeof value === "number") {
-        return value;
-    } else if (typeof value === "boolean") {
-        return value;
-    } else if (typeof value === "string") {
-        let dateParse = PRIMITIVES.date.parse(value);
-        if (dateParse.status) return dateParse.value;
-
-        let durationParse = PRIMITIVES.duration.parse(value);
-        if (durationParse.status) return durationParse.value;
-
-        let linkParse = PRIMITIVES.link.parse(value);
-        if (linkParse.status) return linkParse.value;
-
-        return value;
-    }
-
-    // Backup if we don't understand the type.
-    return null;
 }
 
 /** Finds an element which contains the given line. */
