@@ -1,5 +1,5 @@
 import { useCallback, useContext, useMemo, useState } from "preact/hooks";
-import { Fragment } from "preact";
+import { Fragment, RefObject } from "preact";
 import React from "preact/compat";
 import { SETTINGS_CONTEXT } from "ui/markdown";
 
@@ -94,17 +94,22 @@ export interface Paging {
     setPage: (page: number) => void;
 }
 
-/**  */
+/**
+ * Central paging hook which extracts page metadata out of Datacore settings, handles page overflow, current page state, and updating the page
+ * if the elements change. If a container is specified, also supports scrolling the container view on page changes.
+ */
 export function useDatacorePaging({
     initialPage = 0,
     paging,
     scrollOnPageChange,
     elements,
+    container,
 }: {
     initialPage: number;
     paging: number | boolean | undefined;
     scrollOnPageChange?: boolean | number;
     elements: number;
+    container?: RefObject<HTMLElement>;
 }): Paging {
     const settings = useContext(SETTINGS_CONTEXT);
 
@@ -114,7 +119,24 @@ export function useDatacorePaging({
         (typeof scrollOnPageChange === "number" && scrollOnPageChange >= pageSize) ||
         !!(scrollOnPageChange ?? settings.scrollOnPageChange);
 
-    const [page, totalPages, setPage] = usePaging({ initialPage, pageSize, elements });
+    const [page, totalPages, rawSetPage] = usePaging({ initialPage, pageSize, elements });
+
+    // Handle auto-scroll if a container is provided.
+    const setPage = useCallback(
+        (newPage: number) => {
+            if (page != newPage && container && shouldScroll) {
+                container.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                    inline: "nearest",
+                });
+            }
+
+            rawSetPage(page);
+        },
+        [page, container, shouldScroll, rawSetPage]
+    );
+
     return { enabled: pagingEnabled, scroll: shouldScroll, page, pageSize, totalPages, setPage };
 }
 
