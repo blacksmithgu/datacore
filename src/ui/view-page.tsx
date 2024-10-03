@@ -74,8 +74,8 @@ function DatacoreViewSettings() {
         debouncedSave();
     }, [internalState]);
     const view = useContext(CUSTOM_VIEW_CONTEXT);
-		const debouncedFetch = debounce(useStableCallback((input: string, callback: (options: string[]) => void) => {
-			callback(core.vault.getMarkdownFiles().filter(x => x.path.toLocaleLowerCase().includes(input.toLocaleLowerCase())).map((f) => f.path))
+		const debouncedFetch = debounce(useStableCallback((input: string, callback: (options: {label: string, value: string}[]) => void) => {
+			callback(core.vault.getMarkdownFiles().filter(x => x.path.toLocaleLowerCase().includes(input.toLocaleLowerCase())).map((f) => ({label: f.path, value: f.path})))
 		}, [revision]), 300)	
     return (
         <Stack align="stretch">
@@ -120,7 +120,7 @@ function DatacoreViewSettings() {
                     <small>The path returned by functions like `useCurrentPath` in this view</small>
                 </Stack>
 								<AsyncSelect 
-									loadOptions={debouncedFetch as unknown as AsyncProps<string, false, GroupBase<string>>["loadOptions"]}
+									loadOptions={debouncedFetch as unknown as AsyncProps<{value: string, label: string}, false, GroupBase<{value: string, label: string}>>["loadOptions"]}
 									menuPortalTarget={document.body}
         	        classNames={{
                     input: (props: any) => "prompt-input",
@@ -132,7 +132,7 @@ function DatacoreViewSettings() {
                 	classNamePrefix="datacore-selectable"
 									cacheOptions
 									unstyled
-									defaultOptions={[view.getState().currentFile]}
+									defaultOptions={[{value: view.getState().currentFile, label: view.getState().currentFile }]}
 								/> 
             </Group>
         </Stack>
