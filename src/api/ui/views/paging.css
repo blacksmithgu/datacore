@@ -1,25 +1,54 @@
 .dc-paging-control {
     width: 100%;
-
     display: flex;
     justify-content: center;
     align-items: center;
     margin-top: 10px;
+    margin-bottom: 10px;
+    gap: 10px;
 }
 
-.dc-paging-control-page {
-    padding: 0.5em;
-    margin: 0.5em;
-    border-radius: 0.25em;
+button.dc-paging-control-page {
+    width: var(--input-height);
+    height: var(--input-height);
+    padding: 0;
     cursor: pointer;
-
-    background-color: none;
+    background-color: unset;
+    box-shadow: none;
 }
 
-.dc-paging-control-page:hover {
-    background-color: var(--text-selection) !important;
+button.dc-paging-control-page:hover {
+    background-color: var(--text-selection);
 }
 
-.dc-paging-control-page-active {
-    background-color: var(--text-selection) !important;
+button.dc-paging-control-page-active {
+    background-color: var(--text-selection);
+}
+
+button.dc-paging-control-page[disabled] {
+    cursor: inherit;
+    opacity: 0.5;
+}
+
+button.dc-paging-control-page[disabled]:hover {
+    background-color: unset;
+    box-shadow: none;
+}
+
+.dc-paging-control-separator:hover > .dc-paging-control-ellipsis {
+    display: none;
+}
+
+.dc-paging-control-separator > .dc-paging-control-leap-left,
+.dc-paging-control-separator > .dc-paging-control-leap-right {
+    display: none;
+}
+
+.dc-paging-control-separator:hover > .dc-paging-control-leap-left,
+.dc-paging-control-separator:hover > .dc-paging-control-leap-right {
+    display: flex;
+}
+
+.dc-paging-control-separator > .dc-paging-control-leap-left {
+    transform: rotate(180deg);
 }
