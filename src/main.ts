@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
-import { DatacoreQueryView, VIEW_TYPE_DATACORE } from "ui/datacore-view-page";
+import { DatacoreQueryView, VIEW_TYPE_DATACORE } from "ui/view-page";
 import { IndexStatusBar } from "ui/index-status";
 
 /** Reactive data engine for your Obsidian.md vault. */
