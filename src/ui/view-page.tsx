@@ -243,7 +243,8 @@ export class DatacoreQueryView extends ItemView {
     }
     public async onOpen(): Promise<void> {}
     rerender(): void {
-        this.removeChild(this.jsRenderer);
+				if(this.jsRenderer)
+	        this.removeChild(this.jsRenderer);
         this.jsRenderer = new DatacoreJSRenderer(
             new DatacoreLocalApi(this.api, this.internalState.currentFile || ""),
             this.contentEl,
