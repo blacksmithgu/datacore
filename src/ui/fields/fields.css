@@ -50,9 +50,21 @@
     font-size: 1.3rem;
 }
 
-.datacore-editable-outer .prompt-input {
+.datacore-selectable__input-container,.datacore-selectable__input-container input {
+	min-width: 100% !important;
+	width: 100% !important;
+	display: inline-flex !important;
+}
+
+.datacore-editable-outer .prompt-input.datacore-selectable__input-container {
     display: inline-block !important;
     flex-grow: 1;
+}
+.datacore-selectable__input-container input {
+	width: inherit !important;
+	min-width: max-content !important;
+	display: inline-block;
+
 }
 
 .datacore-selectable__menu {
@@ -60,8 +72,12 @@
     top: 0 !important;
 }
 
-.prompt-input input:after {
+.prompt-input.datacore-selectable__input-container::after {
     content: none !important;
+}
+
+.value-container.datacore-selectable__value-container {
+
 }
 
 .suggestion-container:has(.datacore-selectable__control--menu-is-open) {
