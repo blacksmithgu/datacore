@@ -69,14 +69,25 @@ function DatacoreViewSettings() {
             value: "tsx",
         },
     ];
-		const debouncedSave = debounce(saveState, 250, true)
+    const debouncedSave = debounce(saveState, 250, true);
     useEffect(() => {
         debouncedSave();
     }, [internalState]);
     const view = useContext(CUSTOM_VIEW_CONTEXT);
-		const debouncedFetch = debounce(useStableCallback((input: string, callback: (options: {label: string, value: string}[]) => void) => {
-			callback(core.vault.getMarkdownFiles().filter(x => x.path.toLocaleLowerCase().includes(input.toLocaleLowerCase())).map((f) => ({label: f.path, value: f.path})))
-		}, [revision]), 300)	
+    const debouncedFetch = debounce(
+        useStableCallback(
+            (input: string, callback: (options: { label: string; value: string }[]) => void) => {
+                callback(
+                    core.vault
+                        .getMarkdownFiles()
+                        .filter((x) => x.path.toLocaleLowerCase().includes(input.toLocaleLowerCase()))
+                        .map((f) => ({ label: f.path, value: f.path }))
+                );
+            },
+            [revision]
+        ),
+        300
+    );
     return (
         <Stack align="stretch">
             <button
@@ -108,7 +119,7 @@ function DatacoreViewSettings() {
             <Group justify="space-between" align="center">
                 <h6>Script/View source</h6>
                 <textarea
-                    style={{resize: "vertical", minWidth: "75%", fontFamily: "monospace"}}
+                    style={{ resize: "vertical", minWidth: "75%", fontFamily: "monospace" }}
                     defaultValue={view.getState().script}
                     value={internalState.script}
                     onChange={(e) => setInternalState("script", e.currentTarget.value as string)}
@@ -119,21 +130,29 @@ function DatacoreViewSettings() {
                     <h6>Current File</h6>
                     <small>The path returned by functions like `useCurrentPath` in this view</small>
                 </Stack>
-								<AsyncSelect 
-									loadOptions={debouncedFetch as unknown as AsyncProps<{value: string, label: string}, false, GroupBase<{value: string, label: string}>>["loadOptions"]}
-									menuPortalTarget={document.body}
-        	        classNames={{
-                    input: (props: any) => "prompt-input",
-                    valueContainer: (props: any) => "suggestion-item value-container",
-                    container: (props: any) => "suggestion-container",
-                    menu: (props: any) => "suggestion-content suggestion-container",
-                    option: (props: any) => `suggestion-item${props.isSelected ? " is-selected" : ""}`,
-      	       	 	}}
-                	classNamePrefix="datacore-selectable"
-									cacheOptions
-									unstyled
-									defaultOptions={[{value: view.getState().currentFile, label: view.getState().currentFile }]}
-								/> 
+                <div style={{minWidth: "50%"}}>
+                    <AsyncSelect
+                        loadOptions={
+                            debouncedFetch as unknown as AsyncProps<
+                                { value: string; label: string },
+                                false,
+                                GroupBase<{ value: string; label: string }>
+                            >["loadOptions"]
+                        }
+                        menuPortalTarget={document.body}
+                        classNames={{
+                            input: (props: any) => "prompt-input",
+                            valueContainer: (props: any) => "suggestion-item value-container",
+                            container: (props: any) => "suggestion-container",
+                            menu: (props: any) => "suggestion-content suggestion-container",
+                            option: (props: any) => `suggestion-item${props.isSelected ? " is-selected" : ""}`,
+                        }}
+                        classNamePrefix="datacore-selectable"
+                        cacheOptions
+                        unstyled
+                        defaultOptions={[{ value: view.getState().currentFile, label: view.getState().currentFile }]}
+                    />
+                </div>
             </Group>
         </Stack>
     );
@@ -182,7 +201,7 @@ export class DatacoreQueryView extends ItemView {
         );
 
         this.id = this.leaf.serialize().id;
-				this.contentEl.addClass("markdown-rendered");
+        this.contentEl.addClass("markdown-rendered");
         this.rerender();
     }
     public onPaneMenu(menu: Menu, source: "more-options" | "tab-header" | string): void {
@@ -237,11 +256,10 @@ export class DatacoreQueryView extends ItemView {
     public async setState(state: DatacoreViewState, result: ViewStateResult): Promise<void> {
         Object.assign(this.internalState, state);
         this.leaf.tabHeaderInnerTitleEl.textContent = this.titleEl.textContent = this.getDisplayText();
-				if(!this.settingsShowing)
-					this.rerender();
+        if (!this.settingsShowing) this.rerender();
     }
-		public onunload(): void {
-				this.removeChild(this.jsRenderer);
-				this.removeChild(this.settingsRenderer);
-		}
+    public onunload(): void {
+        this.removeChild(this.jsRenderer);
+        this.removeChild(this.settingsRenderer);
+    }
 }
