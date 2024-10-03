@@ -60,11 +60,11 @@
     top: 0 !important;
 }
 
-.datacore-editable-outer .prompt-input input:after {
+.prompt-input input:after {
     content: none !important;
 }
 
-.datacore-editable-outer > .suggestion-container:has(.datacore-selectable__control--menu-is-open) {
+.suggestion-container:has(.datacore-selectable__control--menu-is-open) {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
@@ -84,13 +84,13 @@
     color: var(--text-on-accent-inverted);
 }
 
-.datacore-editable-outer .datacore-multi-select-container {
+.datacore-multi-select-container {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
 }
 
-.datacore-editable-outer .datacore-multi-select-value {
+.datacore-multi-select-value {
     background-color: var(--interactive-accent);
     border-radius: var(--tag-radius);
     padding: var(--tag-padding-y) var(--tag-padding-x);
