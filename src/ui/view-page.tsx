@@ -15,7 +15,7 @@ export const VIEW_TYPE_DATACORE = "datacore-query-view";
 
 const CUSTOM_VIEW_CONTEXT = createContext<DatacoreQueryView>(undefined!);
 
-const backButton = (
+const BACK_BUTTON = (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
@@ -91,7 +91,7 @@ function DatacoreViewSettings() {
                     view.toggleSettings(false);
                 }}
             >
-                {backButton}
+                {BACK_BUTTON}
             </button>
             <Group justify="space-between" align="center">
                 <h6>View Title</h6>
