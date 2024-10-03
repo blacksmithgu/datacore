@@ -10,6 +10,8 @@ import { Textbox, VanillaSelect } from "api/ui/basics";
 import { useIndexUpdates, useStableCallback } from "./hooks";
 import DatacorePlugin from "main";
 import { DATACORE_CONTEXT } from "./markdown";
+import AsyncSelect, { AsyncProps } from "react-select/async";
+import { GroupBase } from "react-select";
 
 export const VIEW_TYPE_DATACORE = "datacore-query-view";
 
@@ -33,17 +35,6 @@ const BACK_BUTTON = (
     </svg>
 );
 
-function useVaultFiles() {
-    const core = useContext(DATACORE_CONTEXT);
-    const { vault } = core;
-    const [fileList, setFileList] = useState<string[]>([]);
-    let revision = useIndexUpdates(core);
-    useEffect(() => {
-        setFileList(vault.getFiles().map((f) => f.path));
-    }, [revision, setFileList]);
-    return fileList;
-}
-
 function useViewState<T>(): [T, (prop: keyof T, value: any) => void, () => void] {
     const view = useContext(CUSTOM_VIEW_CONTEXT) as ItemView;
     const [state, setter] = useState(view.getEphemeralState() as T);
@@ -57,6 +48,8 @@ function useViewState<T>(): [T, (prop: keyof T, value: any) => void, () => void]
 }
 
 function DatacoreViewSettings() {
+    const core = useContext(DATACORE_CONTEXT);
+    let revision = useIndexUpdates(core);
     const [internalState, setInternalState, saveState] = useViewState<DatacoreViewState>();
     const options = [
         {
@@ -76,11 +69,14 @@ function DatacoreViewSettings() {
             value: "tsx",
         },
     ];
+		const debouncedSave = debounce(saveState, 250, true)
     useEffect(() => {
-        debounce(saveState, 250, true)();
+        debouncedSave();
     }, [internalState]);
     const view = useContext(CUSTOM_VIEW_CONTEXT);
-    const files = useVaultFiles();
+		const debouncedFetch = debounce(useStableCallback((input: string, callback: (options: string[]) => void) => {
+			callback(core.vault.getMarkdownFiles().filter(x => x.path.toLocaleLowerCase().includes(input.toLocaleLowerCase())).map((f) => f.path))
+		}, [revision]), 300)	
     return (
         <Stack align="stretch">
             <button
@@ -123,11 +119,21 @@ function DatacoreViewSettings() {
                     <h6>Current File</h6>
                     <small>The path returned by functions like `useCurrentPath` in this view</small>
                 </Stack>
-                <VanillaSelect
-                    defaultValue={view.getState().currentFile}
-                    options={files?.map((f) => ({ label: f, value: f }))}
-                    onValueChange={(s) => setInternalState("currentFile", s)}
-                />
+								<AsyncSelect 
+									loadOptions={debouncedFetch as unknown as AsyncProps<string, false, GroupBase<string>>["loadOptions"]}
+									menuPortalTarget={document.body}
+        	        classNames={{
+                    input: (props: any) => "prompt-input",
+                    valueContainer: (props: any) => "suggestion-item value-container",
+                    container: (props: any) => "suggestion-container",
+                    menu: (props: any) => "suggestion-content suggestion-container",
+                    option: (props: any) => `suggestion-item${props.isSelected ? " is-selected" : ""}`,
+      	       	 	}}
+                	classNamePrefix="datacore-selectable"
+									cacheOptions
+									unstyled
+									defaultOptions={[view.getState().currentFile]}
+								/> 
             </Group>
         </Stack>
     );
