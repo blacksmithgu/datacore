@@ -1,9 +1,9 @@
+import "./paging.css";
+
 import { useCallback, useContext, useMemo, useState } from "preact/hooks";
 import { Fragment, RefObject } from "preact";
 import React from "preact/compat";
 import { SETTINGS_CONTEXT } from "ui/markdown";
-
-import "./paging.css";
 
 /** 0-indexed page control. `page` should be the current 0-indexed page, while `totalPages` is the total number of pages. */
 function RawControlledPager({
@@ -23,14 +23,78 @@ function RawControlledPager({
 
     return (
         <div className="dc-paging-control">
-            {page != 0 && (
-                <button className="dc-paging-control-page" onClick={() => setPage(page - 1)}>
-                    &lt;
+            {
+                <button
+                    className="dc-paging-control-page"
+                    onClick={() => page != 0 && setPage(page - 1)}
+                    disabled={page == 0}
+                >
+                    <svg
+                        aria-hidden="true"
+                        fill="none"
+                        focusable="false"
+                        height="1em"
+                        role="presentation"
+                        viewBox="0 0 24 24"
+                        width="1em"
+                    >
+                        <path
+                            d="M15.5 19l-7-7 7-7"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                        ></path>
+                    </svg>
                 </button>
-            )}
+            }
             {visiblePages.map((pages, i) => (
                 <Fragment>
-                    {i > 0 && <span className="dc-paging-control-separator">...</span>}
+                    {i > 0 && (
+                        <button
+                            className="dc-paging-control-page dc-paging-control-separator"
+                            onClick={() =>
+                                setPage(realPage + (isLeftSeperator(realPage, visiblePages.length, i) ? -5 : 5))
+                            }
+                        >
+                            <svg
+                                aria-hidden="true"
+                                fill="none"
+                                height="1em"
+                                shape-rendering="geometricPrecision"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                viewBox="0 0 24 24"
+                                width="1em"
+                                class="dc-paging-control-ellipsis"
+                            >
+                                <circle cx="12" cy="12" fill="currentColor" r="1"></circle>
+                                <circle cx="19" cy="12" fill="currentColor" r="1"></circle>
+                                <circle cx="5" cy="12" fill="currentColor" r="1"></circle>
+                            </svg>
+                            <svg
+                                aria-hidden="true"
+                                fill="none"
+                                focusable="false"
+                                height="1em"
+                                role="presentation"
+                                shape-rendering="geometricPrecision"
+                                stroke="currentColor"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                viewBox="0 0 24 24"
+                                width="1em"
+                                class={`dc-paging-control-leap-${
+                                    isLeftSeperator(realPage, visiblePages.length, i) ? "left" : "right"
+                                }`}
+                            >
+                                <path d="M13 17l5-5-5-5"></path>
+                                <path d="M6 17l5-5-5-5"></path>
+                            </svg>
+                        </button>
+                    )}
                     {pages.map((p) => (
                         <button
                             className={`dc-paging-control-page ${
@@ -43,11 +107,31 @@ function RawControlledPager({
                     ))}
                 </Fragment>
             ))}
-            {page != totalPages - 1 && (
-                <button className="dc-paging-control-page" onClick={() => setPage(page + 1)}>
-                    &gt;
+            {
+                <button
+                    className="dc-paging-control-page"
+                    onClick={() => page !== totalPages - 1 && setPage(page + 1)}
+                    disabled={page === totalPages - 1}
+                >
+                    <svg
+                        aria-hidden="true"
+                        fill="none"
+                        focusable="false"
+                        height="1em"
+                        role="presentation"
+                        viewBox="0 0 24 24"
+                        width="1em"
+                    >
+                        <path
+                            d="M8.5 5l7 7-7 7"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                        ></path>
+                    </svg>
                 </button>
-            )}
+            }
         </div>
     );
 }
@@ -132,7 +216,7 @@ export function useDatacorePaging({
                 });
             }
 
-            rawSetPage(page);
+            rawSetPage(newPage);
         },
         [page, container, shouldScroll, rawSetPage]
     );
@@ -156,12 +240,13 @@ function splitPages(page: number, totalPages: number): number[][] {
     if (page < 5)
         return [
             [0, 1, 2, 3, 4, 5, 6, 7],
-            [totalPages - 1, totalPages],
+            [totalPages - 2, totalPages - 1],
         ];
-    else if (page > totalPages - 5)
+    else if (page > totalPages - 6)
         return [
             [0, 1],
             [
+                totalPages - 8,
                 totalPages - 7,
                 totalPages - 6,
                 totalPages - 5,
@@ -169,13 +254,30 @@ function splitPages(page: number, totalPages: number): number[][] {
                 totalPages - 3,
                 totalPages - 2,
                 totalPages - 1,
-                totalPages,
             ],
         ];
     else
         return [
             [0, 1],
             [page - 2, page - 1, page, page + 1, page + 2],
-            [totalPages - 1, totalPages],
+            [totalPages - 2, totalPages - 1],
         ];
+}
+
+function isLeftSeperator(realPage: number, visiblePagesLength: number, seperatorIndex: number): boolean {
+    // If we have 2 visible pages, we can determine seperator is clicked by realPage.
+    // If we have 3 visible pages, we can determine seperator is clicked by index.
+    if (visiblePagesLength === 2) {
+        if (realPage < 5) {
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        if (seperatorIndex === 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
