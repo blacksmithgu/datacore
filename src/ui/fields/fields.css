@@ -50,10 +50,11 @@
     font-size: 1.3rem;
 }
 
-.datacore-selectable__input-container,.datacore-selectable__input-container input {
-	min-width: 100% !important;
-	width: 100% !important;
-	display: inline-flex !important;
+.datacore-selectable__input-container,
+.datacore-selectable__input-container input {
+    min-width: 100% !important;
+    width: 100% !important;
+    display: inline-flex !important;
 }
 
 .datacore-editable-outer .prompt-input.datacore-selectable__input-container {
@@ -61,10 +62,9 @@
     flex-grow: 1;
 }
 .datacore-selectable__input-container input {
-	width: inherit !important;
-	min-width: max-content !important;
-	display: inline-block;
-
+    width: inherit !important;
+    min-width: max-content !important;
+    display: inline-block;
 }
 
 .datacore-selectable__menu {
@@ -77,7 +77,6 @@
 }
 
 .value-container.datacore-selectable__value-container {
-
 }
 
 .suggestion-container:has(.datacore-selectable__control--menu-is-open) {
