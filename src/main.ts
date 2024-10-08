@@ -4,7 +4,9 @@ import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
+import { DatacoreQueryView as DatacoreJSView, DatacoreQueryView, VIEW_TYPE_DATACOREJS } from "ui/view-page";
 import { IndexStatusBar } from "ui/index-status";
+import { VIEW_TYPE_DATACORE } from "ui/DatacoreQueryView";
 
 /** Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
@@ -52,6 +54,20 @@ export default class DatacorePlugin extends Plugin {
             -100
         );
 
+        // Views: DatacoreJS view.
+        this.registerView(VIEW_TYPE_DATACOREJS, (leaf) => new DatacoreJSView(leaf, this.api));
+
+        // Add a command for creating a new view page.
+        this.addCommand({
+            id: "datacore-add-view-page",
+            name: "Create View Page",
+            callback: () => {
+                const newLeaf = this.app.workspace.getLeaf("tab");
+                newLeaf.setViewState({ type: VIEW_TYPE_DATACOREJS, active: true });
+                this.app.workspace.setActiveLeaf(newLeaf, { focus: true });
+            },
+        });
+
         // Register JS highlighting for codeblocks.
         this.register(this.registerCodeblockHighlighting());
 
@@ -61,6 +77,17 @@ export default class DatacorePlugin extends Plugin {
         } else {
             this.core.initialize();
         }
+
+        this.addCommand({
+            id: "datacore-add-view-page",
+            name: "Create View Page",
+            callback: () => {
+                const newLeaf = this.app.workspace.getLeaf("tab");
+                newLeaf.setViewState({ type: VIEW_TYPE_DATACORE, active: true });
+                this.app.workspace.setActiveLeaf(newLeaf, { focus: true });
+                (newLeaf.view as DatacoreQueryView);
+            },
+        });
 
         // Make the API globally accessible from any context.
         window.datacore = this.api;
@@ -253,8 +280,8 @@ class GeneralSettingsTab extends PluginSettingTab {
         new Setting(this.containerEl)
             .setName("Maximum Recursive Render Depth")
             .setDesc(
-                "Maximum depth that objects will be rendered to (i.e., how many levels of subproperties " +
-                    "will be rendered by default). This avoids infinite recursion due to self-referential objects " +
+                "Maximum depth that objects will be rendered to (i.e., how many levels of subproperties" +
+                    "will be rendered by default). This avoids infinite recursion due to self-referential objects" +
                     "and ensures that rendering objects is acceptably performant."
             )
             .addText((text) => {
@@ -262,6 +289,37 @@ class GeneralSettingsTab extends PluginSettingTab {
                     const parsed = parseInt(value);
                     if (isNaN(parsed)) return;
                     await this.plugin.updateSettings({ maxRecursiveRenderDepth: parsed });
+                });
+            });
+
+        this.containerEl.createEl("h2", {text: "Tasks"});
+
+        new Setting(this.containerEl)
+            .setName("Task Completion Text")
+            .setDesc("Name of inline field in which to store task completion date/time")
+            .addText((text) => {
+                text.setValue(this.plugin.settings.taskCompletionText).onChange(async (value) => {
+                    await this.plugin.updateSettings({ taskCompletionText: value });
+                });
+            });
+
+        new Setting(this.containerEl)
+            .setName("Use Emoji Shorthand for Task Completion")
+            .setDesc(
+                "If enabled, automatic completion will use an emoji shorthand ✅ YYYY-MM-DD" +
+                    "instead of [completion:: date]."
+            )
+            .addToggle((tb) => {
+                tb.setValue(this.plugin.settings.taskCompletionUseEmojiShorthand).onChange(async (val) => {
+                    await this.plugin.updateSettings({ taskCompletionUseEmojiShorthand: val });
+                });
+            });
+        new Setting(this.containerEl)
+            .setName("Recursive subtask completion")
+            .setDesc("Whether or not subtasks should be completed along with their parent in datacore task views")
+            .addToggle((tb) => {
+                tb.setValue(this.plugin.settings.recursiveTaskCompletion).onChange(async (val) => {
+                    await this.plugin.updateSettings({ recursiveTaskCompletion: val });
                 });
             });
     }

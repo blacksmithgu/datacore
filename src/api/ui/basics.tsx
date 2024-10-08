@@ -9,7 +9,7 @@ import "./basics.css";
 
 /** Various intents for buttons and other interactive elements. */
 export type Intent = "error" | "warn" | "info" | "success";
-
+export type Omittable = "value" | "defaultValue"
 export const INTENT_CLASSES: Record<Intent, string> = {
     error: "dc-intent-error",
     warn: "dc-intent-warn",
@@ -89,12 +89,12 @@ export function Slider(
         value?: number;
         defaultValue?: number;
         onValueChange?: (value: number) => void;
-    } & React.HTMLProps<HTMLInputElement>
+    } & Omit<React.HTMLProps<HTMLInputElement>, Omittable>
 ) {
     const { className, min = 0, max = 10, step = 1, value, defaultValue, onValueChange, ...forwardingProps } = props;
     const [slider, setSlider] = useControlledState(defaultValue ?? 0, value, onValueChange);
 
-    const onChange = useCallback((event: any) => setSlider(event.currentTarget.value), [setSlider]);
+    const onChange = useCallback((event: any) => setSlider(parseFloat(event.currentTarget.value)), [setSlider]);
 
     return (
         <input
