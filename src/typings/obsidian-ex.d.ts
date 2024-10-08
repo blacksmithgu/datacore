@@ -3,6 +3,21 @@ import { CanvasMetadataIndex } from "index/types/json/canvas";
 import "obsidian";
 
 declare module "obsidian" {
+    interface WorkspaceLeaf {
+        serialize(): {
+            id: string;
+            type: "leaf";
+            state: {
+                type: string;
+                state: any;
+            };
+        };
+        tabHeaderEl: HTMLElement;
+        tabHeaderInnerTitleEl: HTMLElement;
+    }
+    interface ItemView {
+        titleEl: HTMLElement;
+    }
     interface FileManager {
         linkUpdaters: {
             canvas: {
