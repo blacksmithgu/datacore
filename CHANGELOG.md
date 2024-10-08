@@ -1,3 +1,10 @@
+# 0.1.19 (Beta)
+
+Adds parsing for list item symbols ($symbol), and task text ($text). In general in datacore I am trying to avoid pulling actual text contents into the index, but the task usecase is sufficiently common that
+we will add it to make search much more convenient.
+
+---
+
 # 0.1.18 (Beta)
 
 Use "\-" as the default null value, instead of just "-".

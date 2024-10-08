@@ -30,6 +30,8 @@ import { mapObjectValues } from "utils/data";
 const YAML_DATA_REGEX = /```yaml:data/i;
 /** Matches the start of any codeblock fence. */
 const CODEBLOCK_FENCE_REGEX = /^(?:```|~~~)(.*)$/im;
+/** Matches list items (including inside text blocks). */
+const LIST_ITEM_REGEX = /^[\s>]*(\d+\.|\d+\)|\*|-|\+)\s*(\[.{0,1}\])?\s*(.*)$/mu;
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -61,7 +63,7 @@ export function markdownSourceImport(
     const frontmatter: Record<string, JsonFrontmatterEntry> | undefined = metadata.frontmatter
         ? parseFrontmatterBlock(metadata.frontmatter)
         : undefined;
-    const lines = markdown.split("\n");
+    const lines = markdown.split(/\r\n|\r|\n/);
     const markdownMetadata = new Metadata();
     const sectionArray: SectionData[] = [];
     //////////////
@@ -155,13 +157,27 @@ export function markdownSourceImport(
     // All list items in lists. Start with a simple trivial pass.
     const listItems = new BTree<number, ListItemData>(undefined, (a, b) => a - b);
     for (const list of metadata.listItems || []) {
+        const line = lines[list.position.start.line];
+
+        // TODO: Implement flag which skips indexing list items.
+        const match = line.match(LIST_ITEM_REGEX);
+        let symbol = undefined,
+            text = undefined;
+        if (match) {
+            symbol = match[1];
+            text = match[3];
+        }
+
         const item = new ListItemData(
             list.position.start.line,
             list.position.end.line + 1,
             list.parent,
+            symbol,
             list.id,
-            list.task
+            list.task,
+            text
         );
+
         listItems.set(item.start, item);
     }
 
@@ -297,7 +313,7 @@ export function parseFrontmatterBlock(block: Record<string, any>): Record<string
 /** Finds an element which contains the given line. */
 export function lookup<T extends { start: number; end: number }>(line: number, tree: BTree<number, T>): T | undefined {
     const target = tree.getPairOrNextLower(line)?.[1];
-    if (target && target.end > line) return target;
+    if (target && target.end >= line) return target;
 
     return undefined;
 }
@@ -551,8 +567,10 @@ export class ListItemData {
         public start: number,
         public end: number,
         public parentLine: number,
+        public symbol?: string,
         public blockId?: string,
-        public status?: string
+        public status?: string,
+        public text?: string
     ) {}
 
     public build(): JsonMarkdownListItem {
@@ -566,6 +584,8 @@ export class ListItemData {
             $tags: this.metadata.finishTags(),
             $links: this.metadata.finishLinks(),
             $status: this.status,
+            $symbol: this.symbol,
+            $text: this.text,
         } as JsonMarkdownTaskItem;
     }
 }

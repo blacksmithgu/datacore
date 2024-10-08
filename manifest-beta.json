@@ -1,7 +1,7 @@
 {
   "id": "datacore",
   "name": "Datacore",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "minAppVersion": "1.4.11",
   "description": "Reactive data engine for Obsidian.md.",
   "author": "Michael Brenan",
