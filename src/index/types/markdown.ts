@@ -558,6 +558,10 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
      * this is a root element of the list starting at line 7.
      */
     $parentLine: number;
+    /** The marker used to start the list item (such as - or + or *). On a malformed task, may be undefined. */
+    $symbol?: string;
+    /** The text contents of the list item. */
+    $text?: string;
 
     /** Create a list item from a serialized object. */
     static from(
@@ -579,6 +583,8 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $links: object.$links.map((l) => normalizer(Link.fromObject(l))),
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
+            $text: object.$text,
+            $symbol: object.$symbol,
         });
     }
 
@@ -594,6 +600,19 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     /** The number of lines in this list item. */
     get $lineCount(): number {
         return this.$position.end - this.$position.start + 1;
+    }
+
+    /** Cleaned text that is garaunteed to be non-null and has indenation and inline fields removed. */
+    get $cleantext() {
+        if (!this.$text) return "";
+
+        return (
+            this.$text
+                // Eliminate [key:: value] annotations.
+                .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1")
+                // Trim whitespace.
+                .trim()
+        );
     }
 
     /** All of the indexed fields in this object. */
@@ -620,6 +639,8 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $links: this.$links,
             $blockId: this.$blockId,
             $parentLine: this.$parentLine,
+            $symbol: this.$symbol,
+            $text: this.$text,
         };
     }
 
@@ -658,6 +679,8 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
             $status: object.$status,
+            $symbol: object.$symbol,
+            $text: object.$text,
         });
     }
 

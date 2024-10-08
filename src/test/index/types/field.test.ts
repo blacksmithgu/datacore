@@ -1,5 +1,5 @@
 import { InlineField } from "index/import/inline-field";
-import { Extractors, INTRINSIC_PROVENANCE } from "expression/field";
+import { Extractors } from "expression/field";
 import { Indexable } from "index/types/indexable";
 import { FrontmatterEntry } from "index/types/markdown";
 
@@ -15,18 +15,11 @@ describe("Intrinsic Behavior", () => {
     const intrinsics = Extractors.intrinsics();
     const dummy = new DummyFields("Hello", 10, 20);
 
-    test("Fetch Text", () =>
-        expect(intrinsics(dummy, "$text")).toEqual([
-            { key: "$text", value: "Hello", provenance: INTRINSIC_PROVENANCE },
-        ]));
+    test("Fetch Text", () => expect(intrinsics(dummy, "$text")).toEqual([{ key: "$text", value: "Hello" }]));
 
-    test("Fetch Value", () =>
-        expect(intrinsics(dummy, "$value")).toEqual([{ key: "$value", value: 10, provenance: INTRINSIC_PROVENANCE }]));
+    test("Fetch Value", () => expect(intrinsics(dummy, "$value")).toEqual([{ key: "$value", value: 10 }]));
 
-    test("Fetch Derived", () =>
-        expect(intrinsics(dummy, "$valueSize")).toEqual([
-            { key: "$valueSize", value: 30, provenance: INTRINSIC_PROVENANCE },
-        ]));
+    test("Fetch Derived", () => expect(intrinsics(dummy, "$valueSize")).toEqual([{ key: "$valueSize", value: 30 }]));
 });
 
 class DummyMarkdown implements Indexable {
