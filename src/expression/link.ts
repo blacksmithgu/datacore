@@ -1,6 +1,8 @@
 import { getFileTitle, normalizeHeaderForLink } from "utils/normalizers";
 
-/** The Obsidian 'link', used for uniquely describing a file, header, or block. */
+/** The Obsidian 'link', used for uniquely describing a file, header, or block. 
+ * @group Common Types
+*/
 export class Link {
     /** The file path this link points to. */
     public path: string;
@@ -173,7 +175,9 @@ export class Link {
     }
 }
 
-/** Serialized form of a link. */
+/** Serialized form of a link. 
+ * @hidden
+*/
 export interface JsonLink {
     /** The file path this link points to. */
     path: string;
@@ -187,7 +191,9 @@ export interface JsonLink {
     type: "file" | "header" | "block";
 }
 
-/** Split on unescaped pipes in an inner link. */
+/** Split on unescaped pipes in an inner link.
+ * @hidden
+ */
 export function splitOnUnescapedPipe(link: string): [string, string | undefined] {
     let pipe = -1;
     while ((pipe = link.indexOf("|", pipe + 1)) >= 0) {

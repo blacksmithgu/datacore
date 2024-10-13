@@ -1,3 +1,6 @@
+/**
+ * @module indexables
+ */
 import { Link } from "expression/link";
 import { DateTime } from "luxon";
 
@@ -21,6 +24,9 @@ export interface Indexable {
 
 /** Metadata for objects which support linking. */
 export const LINKABLE_TYPE = "linkable";
+/**
+ * {@inheritDoc LINKABLE_TYPE}
+ */
 export interface Linkable {
     /** A link to this linkable object. */
     $link: Link;
@@ -28,6 +34,9 @@ export interface Linkable {
 
 /** General metadata for any file. */
 export const FILE_TYPE = "file";
+/**
+ * {@inheritDoc FILE_TYPE}
+ */
 export interface File extends Linkable {
     /** The path this file exists at. */
     $path: string;
@@ -43,6 +52,9 @@ export interface File extends Linkable {
 
 /** Metadata for taggable objects. */
 export const TAGGABLE_TYPE = "taggable";
+/**
+ * {@inheritDoc TAGGABLE_TYPE}
+ */
 export interface Taggable {
     /** The exact tags on this object. (#a/b/c or #foo/bar). */
     $tags: string[];
@@ -50,6 +62,9 @@ export interface Taggable {
 
 /** Metadata for objects which can link to other things. */
 export const LINKBEARING_TYPE = "links";
+/**
+ * {@inheritDoc LINKBEARING_TYPE}
+ */
 export interface Linkbearing {
     /** The links in this file. */
     $links: Link[];

@@ -1,3 +1,6 @@
+/** 
+ * @module ui
+ */
 import { ChangeEvent } from "preact/compat";
 import { Dispatch, useEffect, useRef } from "preact/hooks";
 import { Editable, EditableAction, EditableState } from "ui/fields/editable";
@@ -5,7 +8,9 @@ import { useStableCallback } from "ui/hooks";
 
 import "./fields.css";
 
-/** Editable field for multi-step progress. */
+/** Editable field for multi-step progress.
+ * @group Editable Components
+ */
 export function ProgressEditable(
     props: EditableState<number> & {
         sourcePath: string;

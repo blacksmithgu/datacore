@@ -1,9 +1,14 @@
+/** 
+ * @module ui
+ */
 import { useEditableDispatch } from "ui/fields/editable";
 import { FieldControlProps } from "./common-props";
 import { TargetedEvent } from "preact/compat";
 import { useStableCallback } from "ui/hooks";
 
-/** Editable field for a boolean (true/false) value. */
+/** Editable field for a boolean (true/false) value. 
+ * @group Editable Components
+*/
 export function BooleanEditable(props: FieldControlProps<boolean>) {
     const [state, dispatch] = useEditableDispatch<boolean>({
         content: props.value ?? props.defaultValue,

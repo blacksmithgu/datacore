@@ -1,3 +1,6 @@
+/** 
+ * @module api
+ */
 import { DatacoreApi } from "api/api";
 import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
@@ -23,9 +26,14 @@ import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 
-/** Local API provided to specific codeblocks when they are executing. */
+/** Local API provided to specific codeblocks when they are executing. 
+ * @group Core
+*/
 export class DatacoreLocalApi {
-    private scriptCache: ScriptCache;
+	/**
+	 * @private
+	 */
+	private scriptCache: ScriptCache;
 
     public constructor(public api: DatacoreApi, public path: string) {
         this.scriptCache = new ScriptCache(this.core.datastore);

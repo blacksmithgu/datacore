@@ -1,3 +1,6 @@
+/** 
+ * @module api
+ */
 import { Groupings, Literals } from "expression/literal";
 
 /** A function which maps an array element to some value. */
@@ -17,6 +20,7 @@ export type Ingrouped<U, T> = T extends { key: any; rows: any }
 /**
  * Proxied interface which allows manipulating array-based data. All functions on a data array produce a NEW array
  * (i.e., the arrays are immutable).
+ * @group Common Types
  */
 export interface DataArray<T> {
     /** The total number of elements in the array. */
@@ -75,8 +79,8 @@ export interface DataArray<T> {
     sortInPlace<U>(key: (v: T) => U, direction?: "asc" | "desc", comparator?: ArrayComparator<U>): DataArray<T>;
 
     /**
-     * Return an array where elements are grouped by the given key; the resulting array will have objects of the form
-     * { key: <key value>, rows: DataArray }.
+     * Return an array where elements are grouped by the given key; the resulting array will have objects of the form 
+		 * \`{ key: \<key value\>, rows: DataArray }`.
      */
     groupBy<U>(key: ArrayFunc<T, U>, comparator?: ArrayComparator<U>): DataArray<{ key: U; rows: T[] }>;
 
@@ -129,7 +133,11 @@ export interface DataArray<T> {
     [field: string]: any;
 }
 
-/** Implementation of DataArray, minus the dynamic variable access, which is implemented via proxy. */
+/** 
+ * @internal 
+ * @hidden
+ * Implementation of DataArray, minus the dynamic variable access, which is implemented via proxy. 
+ * */
 class DataArrayImpl<T> implements DataArray<T> {
     private static ARRAY_FUNCTIONS: Set<string> = new Set([
         "chain",
@@ -452,7 +460,9 @@ class DataArrayImpl<T> implements DataArray<T> {
     }
 }
 
-/** Provides utility functions for generating data arrays. */
+/** Provides utility functions for generating data arrays.
+ * @hidden
+ */
 export namespace DataArray {
     /** Create a new Dataview data array. */
     export function wrap<T>(raw: T[] | DataArray<T>): DataArray<T> {

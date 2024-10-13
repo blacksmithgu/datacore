@@ -1,3 +1,6 @@
+/**
+ * @module indexables
+ */
 /** Utilities for converting literal types to and from their YAML frontmatter representation. */
 
 import { Literal, Literals } from "expression/literal";
@@ -7,7 +10,9 @@ import { mapObjectValues } from "utils/data";
 
 /** YAML-friendly representation for a literal. */
 export type YamlLiteral = string | number | boolean | null | Record<string, any> | Array<YamlLiteral>;
-
+/**
+ * @internal
+ */
 export namespace YamlConversion {
     /** Convert a literal into a yaml friendly representation. */
     export function yaml(value: Literal): YamlLiteral {

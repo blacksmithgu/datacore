@@ -1,9 +1,17 @@
+/**
+ * @module views
+*/
+
 import { Literal } from "expression/literal";
 import { VNode } from "preact";
 import { useMemo } from "preact/hooks";
 
 import "./cards.css";
-
+/**
+ * Props for the card component
+ * 
+ * @group Props
+ */
 export interface CardProps<T> {
     /** the actual value held in this card. */
     value: T;
@@ -20,7 +28,11 @@ export interface CardProps<T> {
     /** If true, the title will be rendered centered. */
     centerTitle?: boolean;
 }
-
+/**
+ * A card with a title and content
+ * 
+ * @group Components 
+ */
 export function Card<T>(props: CardProps<T>) {
     const cardTitle = useMemo(() => {
         if (typeof props.title === "function") {

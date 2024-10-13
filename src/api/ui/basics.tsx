@@ -1,4 +1,6 @@
-/** Basic UI components that have simple Obsidian theming. */
+/** Basic UI components that have simple Obsidian theming. 
+ * @module ui
+*/
 import React, { useCallback } from "preact/compat";
 
 import { ComponentChildren } from "preact";
@@ -17,7 +19,9 @@ export const INTENT_CLASSES: Record<Intent, string> = {
     success: "dc-intent-success",
 };
 
-/** Wrapper for a regular HTML button with some default classes. */
+/** Wrapper for a regular HTML button with some default classes.
+ * @group Components
+ */
 export function Button(
     props: { className?: string; intent?: Intent; children: ComponentChildren } & React.HTMLProps<HTMLButtonElement>
 ) {
@@ -32,7 +36,10 @@ export function Button(
     );
 }
 
-/** A simple textbox which accepts text. */
+/** A simple textbox which accepts text. 
+ * 
+ * @group Components
+*/
 export function Textbox(props: { className?: string } & React.HTMLProps<HTMLInputElement>) {
     const { className, children, ...forwardingProps } = props;
     return (
@@ -40,7 +47,9 @@ export function Textbox(props: { className?: string } & React.HTMLProps<HTMLInpu
     );
 }
 
-/** A checkbox that can be checked and unchecked. */
+/** A checkbox that can be checked and unchecked. 
+ * @group Components
+*/
 export function Checkbox(
     props: {
         className?: string;
@@ -79,7 +88,9 @@ export function Checkbox(
     );
 }
 
-/** Wrapper for a slider (range input) with some default classes. */
+/** Wrapper for a slider (range input) with some default classes.
+ * @group Components
+ */
 export function Slider(
     props: {
         className?: string;
@@ -111,7 +122,9 @@ export function Slider(
     );
 }
 
-/** Wrapper for a switch (toggle) component with some default classes. */
+/** Wrapper for a switch (toggle) component with some default classes. 
+ * @group Components
+*/
 export function Switch(
     props: {
         className?: string;
@@ -148,7 +161,9 @@ export function Switch(
     );
 }
 
-/** Wrapper for a select component with some default classes. */
+/** Wrapper for a select component with some default classes.
+ * @group Components
+ */
 export function VanillaSelect(
     props: {
         className?: string;
@@ -183,7 +198,10 @@ export function VanillaSelect(
         </select>
     );
 }
-
+/**
+ * A component that renders an icon
+ * @group Components 
+ */
 export function Icon(props: { className?: string; icon: string }) {
     const { className, icon } = props;
     const ref = React.createRef<HTMLSpanElement>();
@@ -197,7 +215,11 @@ export function Icon(props: { className?: string; icon: string }) {
     return <span ref={ref} className={combineClasses("dc-icon", className)} data-icon={icon} />;
 }
 
-/** Appends additional classes to a basic fixed class. */
+/**
+ *  Appends additional classes to a basic fixed class. 
+ * 
+ * @group Utilities
+ * */
 export function combineClasses(fixed: string, ...rest: (string | undefined)[]) {
     const nonempty = rest.filter((c) => c !== undefined);
     if (nonempty.length === 0) return fixed;
