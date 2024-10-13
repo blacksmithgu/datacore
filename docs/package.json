@@ -19,6 +19,7 @@
     "@docusaurus/core": "3.5.2",
     "@docusaurus/plugin-content-docs": "^3.5.2",
     "@docusaurus/preset-classic": "3.5.2",
+    "@docusaurus/theme-classic": "^3.5.2",
     "@docusaurus/theme-common": "^3.5.2",
     "@easyops-cn/docusaurus-search-local": "^0.45.0",
     "@mdx-js/react": "^3.0.0",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.5.2",
+    "@docusaurus/plugin-debug": "^3.5.2",
     "@docusaurus/tsconfig": "3.5.2",
     "@docusaurus/types": "3.5.2",
     "docusaurus-plugin-typedoc": "^1.0.5",
