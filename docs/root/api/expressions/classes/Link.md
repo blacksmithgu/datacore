@@ -16,7 +16,7 @@ Obtain the display for this link if present, or return a simple default display.
 
 #### Defined in
 
-[src/expression/link.ts:153](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L153)
+[src/expression/link.ts:153](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L153)
 
 ***
 
@@ -36,7 +36,7 @@ Checks for link equality (i.e., that the links are pointing to the same exact lo
 
 #### Defined in
 
-[src/expression/link.ts:106](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L106)
+[src/expression/link.ts:106](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L106)
 
 ***
 
@@ -52,7 +52,7 @@ The stripped name of the file this link points to.
 
 #### Defined in
 
-[src/expression/link.ts:173](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L173)
+[src/expression/link.ts:173](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L173)
 
 ***
 
@@ -68,7 +68,7 @@ Convert this link into a non-embedded link.
 
 #### Defined in
 
-[src/expression/link.ts:139](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L139)
+[src/expression/link.ts:139](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L139)
 
 ***
 
@@ -84,7 +84,7 @@ Convert this link to markdown so it can be rendered.
 
 #### Defined in
 
-[src/expression/link.ts:144](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L144)
+[src/expression/link.ts:144](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L144)
 
 ***
 
@@ -100,7 +100,7 @@ Convert the inner part of the link to something that Obsidian can open / underst
 
 #### Defined in
 
-[src/expression/link.ts:165](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L165)
+[src/expression/link.ts:165](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L165)
 
 ***
 
@@ -116,7 +116,7 @@ Convert this link into an embedded link.
 
 #### Defined in
 
-[src/expression/link.ts:134](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L134)
+[src/expression/link.ts:134](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L134)
 
 ***
 
@@ -132,7 +132,7 @@ Convert any link into a link to its file.
 
 #### Defined in
 
-[src/expression/link.ts:129](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L129)
+[src/expression/link.ts:129](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L129)
 
 ***
 
@@ -148,7 +148,7 @@ Convert this link to a raw object which is serialization-friendly.
 
 #### Defined in
 
-[src/expression/link.ts:118](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L118)
+[src/expression/link.ts:118](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L118)
 
 ***
 
@@ -164,7 +164,7 @@ Convert this link to it's markdown representation.
 
 #### Defined in
 
-[src/expression/link.ts:113](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L113)
+[src/expression/link.ts:113](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L113)
 
 ***
 
@@ -184,7 +184,7 @@ Convert a file link into a link to a specificb lock.
 
 #### Defined in
 
-[src/expression/link.ts:101](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L101)
+[src/expression/link.ts:101](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L101)
 
 ***
 
@@ -204,7 +204,7 @@ Return a new link which points to the same location but with a new display value
 
 #### Defined in
 
-[src/expression/link.ts:84](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L84)
+[src/expression/link.ts:84](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L84)
 
 ***
 
@@ -224,7 +224,7 @@ Return a new link which has the given embedded status.
 
 #### Defined in
 
-[src/expression/link.ts:89](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L89)
+[src/expression/link.ts:89](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L89)
 
 ***
 
@@ -244,7 +244,7 @@ Convert a file link into a link to a specific header.
 
 #### Defined in
 
-[src/expression/link.ts:96](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L96)
+[src/expression/link.ts:96](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L96)
 
 ***
 
@@ -264,7 +264,7 @@ Update this link with a new path.
 
 #### Defined in
 
-[src/expression/link.ts:79](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L79)
+[src/expression/link.ts:79](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L79)
 
 ***
 
@@ -290,7 +290,7 @@ Create a link to a specific file and block in that file.
 
 #### Defined in
 
-[src/expression/link.ts:53](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L53)
+[src/expression/link.ts:53](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L53)
 
 ***
 
@@ -314,7 +314,7 @@ Create a link to a specific file.
 
 #### Defined in
 
-[src/expression/link.ts:19](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L19)
+[src/expression/link.ts:19](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L19)
 
 ***
 
@@ -334,7 +334,7 @@ Load a link from it's raw JSON representation.
 
 #### Defined in
 
-[src/expression/link.ts:64](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L64)
+[src/expression/link.ts:64](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L64)
 
 ***
 
@@ -360,7 +360,7 @@ Create a link to a specific file and header in that file.
 
 #### Defined in
 
-[src/expression/link.ts:41](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L41)
+[src/expression/link.ts:41](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L41)
 
 ***
 
@@ -384,7 +384,7 @@ Infer the type of the link from the full internal link path.
 
 #### Defined in
 
-[src/expression/link.ts:30](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L30)
+[src/expression/link.ts:30](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L30)
 
 ***
 
@@ -404,7 +404,7 @@ Create a link by parsing it's interior part (inside of the '[[]]').
 
 #### Defined in
 
-[src/expression/link.ts:69](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L69)
+[src/expression/link.ts:69](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L69)
 
 ## Properties
 
@@ -416,7 +416,7 @@ The display name associated with the link.
 
 #### Defined in
 
-[src/expression/link.ts:10](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L10)
+[src/expression/link.ts:10](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L10)
 
 ***
 
@@ -428,7 +428,7 @@ Is this link an embedded link (of form '![[hello]]')?
 
 #### Defined in
 
-[src/expression/link.ts:14](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L14)
+[src/expression/link.ts:14](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L14)
 
 ***
 
@@ -440,7 +440,7 @@ The file path this link points to.
 
 #### Defined in
 
-[src/expression/link.ts:8](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L8)
+[src/expression/link.ts:8](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L8)
 
 ***
 
@@ -452,7 +452,7 @@ The block ID or header this link points to within a file, if relevant.
 
 #### Defined in
 
-[src/expression/link.ts:12](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L12)
+[src/expression/link.ts:12](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L12)
 
 ***
 
@@ -464,4 +464,4 @@ The type of this link, which determines what 'subpath' refers to, if anything.
 
 #### Defined in
 
-[src/expression/link.ts:16](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/link.ts#L16)
+[src/expression/link.ts:16](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/link.ts#L16)

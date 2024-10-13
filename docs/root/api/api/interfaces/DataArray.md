@@ -27,7 +27,7 @@ Allow iterating directly over the array.
 
 #### Defined in
 
-[src/api/data-array.ts:128](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L128)
+[src/api/data-array.ts:128](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L128)
 
 ***
 
@@ -43,7 +43,7 @@ Convert this to a plain javascript array.
 
 #### Defined in
 
-[src/api/data-array.ts:125](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L125)
+[src/api/data-array.ts:125](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L125)
 
 ***
 
@@ -67,7 +67,7 @@ Applies the given function to the entire data array. Allows using function chain
 
 #### Defined in
 
-[src/api/data-array.ts:30](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L30)
+[src/api/data-array.ts:30](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L30)
 
 ***
 
@@ -87,7 +87,7 @@ Concatenate the values in this data array with those of another iterable / data 
 
 #### Defined in
 
-[src/api/data-array.ts:52](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L52)
+[src/api/data-array.ts:52](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L52)
 
 ***
 
@@ -113,7 +113,7 @@ Return distinct entries. If a key is provided, then rows with distinct keys are 
 
 #### Defined in
 
-[src/api/data-array.ts:96](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L96)
+[src/api/data-array.ts:96](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L96)
 
 ***
 
@@ -133,7 +133,7 @@ Return true if the predicate is true for all values.
 
 #### Defined in
 
-[src/api/data-array.ts:99](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L99)
+[src/api/data-array.ts:99](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L99)
 
 ***
 
@@ -154,7 +154,7 @@ heirarchical data like tasks with 'subtasks'.
 
 #### Defined in
 
-[src/api/data-array.ts:119](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L119)
+[src/api/data-array.ts:119](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L119)
 
 ***
 
@@ -174,7 +174,7 @@ Alias for 'where' for people who want array semantics.
 
 #### Defined in
 
-[src/api/data-array.ts:35](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L35)
+[src/api/data-array.ts:35](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L35)
 
 ***
 
@@ -194,7 +194,7 @@ Return the first element that satisfies the given predicate.
 
 #### Defined in
 
-[src/api/data-array.ts:57](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L57)
+[src/api/data-array.ts:57](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L57)
 
 ***
 
@@ -216,7 +216,7 @@ Find the index of the first element that satisfies the given predicate. Returns 
 
 #### Defined in
 
-[src/api/data-array.ts:59](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L59)
+[src/api/data-array.ts:59](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L59)
 
 ***
 
@@ -232,7 +232,7 @@ Return the first element in the data array. Returns undefined if the array is em
 
 #### Defined in
 
-[src/api/data-array.ts:106](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L106)
+[src/api/data-array.ts:106](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L106)
 
 ***
 
@@ -256,7 +256,7 @@ Map elements in the data array by applying a function to each, then flatten the 
 
 #### Defined in
 
-[src/api/data-array.ts:40](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L40)
+[src/api/data-array.ts:40](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L40)
 
 ***
 
@@ -276,7 +276,7 @@ Run a lambda on each element in the array.
 
 #### Defined in
 
-[src/api/data-array.ts:122](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L122)
+[src/api/data-array.ts:122](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L122)
 
 ***
 
@@ -311,7 +311,7 @@ Return an array where elements are grouped by the given key; the resulting array
 
 #### Defined in
 
-[src/api/data-array.ts:85](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L85)
+[src/api/data-array.ts:85](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L85)
 
 ***
 
@@ -338,7 +338,7 @@ group. This allows for top-down recursive grouping which may be easier than bott
 
 #### Defined in
 
-[src/api/data-array.ts:91](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L91)
+[src/api/data-array.ts:91](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L91)
 
 ***
 
@@ -358,7 +358,7 @@ Returns true if the array contains the given element, and false otherwise.
 
 #### Defined in
 
-[src/api/data-array.ts:61](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L61)
+[src/api/data-array.ts:61](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L61)
 
 ***
 
@@ -380,7 +380,7 @@ Return the first index of the given (optionally starting the search)
 
 #### Defined in
 
-[src/api/data-array.ts:55](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L55)
+[src/api/data-array.ts:55](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L55)
 
 ***
 
@@ -400,7 +400,7 @@ Map every element in this data array to the given key; unlike to(), does not fla
 
 #### Defined in
 
-[src/api/data-array.ts:113](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L113)
+[src/api/data-array.ts:113](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L113)
 
 ***
 
@@ -421,7 +421,7 @@ given separator (which defaults to ', ').
 
 #### Defined in
 
-[src/api/data-array.ts:67](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L67)
+[src/api/data-array.ts:67](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L67)
 
 ***
 
@@ -437,7 +437,7 @@ Return the last element in the data array. Returns undefined if the array is emp
 
 #### Defined in
 
-[src/api/data-array.ts:108](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L108)
+[src/api/data-array.ts:108](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L108)
 
 ***
 
@@ -457,7 +457,7 @@ Limit the total number of entries in the array to the given value.
 
 #### Defined in
 
-[src/api/data-array.ts:45](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L45)
+[src/api/data-array.ts:45](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L45)
 
 ***
 
@@ -481,7 +481,7 @@ Map elements in the data array by applying a function to each.
 
 #### Defined in
 
-[src/api/data-array.ts:38](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L38)
+[src/api/data-array.ts:38](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L38)
 
 ***
 
@@ -501,7 +501,7 @@ Mutably change each value in the array, returning the same array which you can f
 
 #### Defined in
 
-[src/api/data-array.ts:42](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L42)
+[src/api/data-array.ts:42](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L42)
 
 ***
 
@@ -521,7 +521,7 @@ Return true if the predicate is FALSE for all values.
 
 #### Defined in
 
-[src/api/data-array.ts:103](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L103)
+[src/api/data-array.ts:103](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L103)
 
 ***
 
@@ -544,7 +544,7 @@ to be the end of the array.
 
 #### Defined in
 
-[src/api/data-array.ts:50](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L50)
+[src/api/data-array.ts:50](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L50)
 
 ***
 
@@ -564,7 +564,7 @@ Return true if the predicate is true for at least one value.
 
 #### Defined in
 
-[src/api/data-array.ts:101](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L101)
+[src/api/data-array.ts:101](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L101)
 
 ***
 
@@ -593,7 +593,7 @@ be used to compare the keys in leiu of the default dataview comparator.
 
 #### Defined in
 
-[src/api/data-array.ts:73](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L73)
+[src/api/data-array.ts:73](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L73)
 
 ***
 
@@ -622,7 +622,7 @@ for being a little more performant. Only use this is performance is a serious co
 
 #### Defined in
 
-[src/api/data-array.ts:79](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L79)
+[src/api/data-array.ts:79](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L79)
 
 ***
 
@@ -642,7 +642,7 @@ Map every element in this data array to the given key, and then flatten it.
 
 #### Defined in
 
-[src/api/data-array.ts:111](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L111)
+[src/api/data-array.ts:111](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L111)
 
 ***
 
@@ -662,7 +662,7 @@ Filter the data array down to just elements which match the given predicate.
 
 #### Defined in
 
-[src/api/data-array.ts:33](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L33)
+[src/api/data-array.ts:33](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L33)
 
 ## Properties
 
@@ -674,4 +674,4 @@ The total number of elements in the array.
 
 #### Defined in
 
-[src/api/data-array.ts:27](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/data-array.ts#L27)
+[src/api/data-array.ts:27](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/data-array.ts#L27)

@@ -22,7 +22,7 @@ The unique ID of this table column; you cannot have multiple columns with the sa
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:21](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L21)
+[src/api/ui/views/table.tsx:21](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L21)
 
 ***
 
@@ -44,7 +44,7 @@ Called to render the given column value. Can depend on both the specific value a
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:33](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L33)
+[src/api/ui/views/table.tsx:33](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L33)
 
 ***
 
@@ -56,7 +56,7 @@ The title which will display at the top of the column if present.
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:24](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L24)
+[src/api/ui/views/table.tsx:24](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L24)
 
 ***
 
@@ -76,7 +76,7 @@ Value function which maps the row to the value being rendered.
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:30](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L30)
+[src/api/ui/views/table.tsx:30](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L30)
 
 ***
 
@@ -88,4 +88,4 @@ If present, the CSS width to apply to the column. 'minimum' will set the column 
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:27](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L27)
+[src/api/ui/views/table.tsx:27](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L27)

@@ -10,4 +10,4 @@ Maps the string type to it's external, API-facing representation.
 
 ## Defined in
 
-[src/expression/literal.ts:39](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/expression/literal.ts#L39)
+[src/expression/literal.ts:39](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/expression/literal.ts#L39)

@@ -39,7 +39,7 @@ General metadata for any file.
 
 ### Defined in
 
-[src/index/types/indexable.ts:36](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/indexable.ts#L36)
+[src/index/types/indexable.ts:36](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/indexable.ts#L36)
 
 ***
 
@@ -52,7 +52,7 @@ a fixed list at some point, especially if we add the ability to turn indexing on
 
 ### Defined in
 
-[src/index/types/indexable.ts:77](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/indexable.ts#L77)
+[src/index/types/indexable.ts:77](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/indexable.ts#L77)
 
 ***
 
@@ -64,7 +64,7 @@ Metadata for objects which support linking.
 
 ### Defined in
 
-[src/index/types/indexable.ts:26](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/indexable.ts#L26)
+[src/index/types/indexable.ts:26](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/indexable.ts#L26)
 
 ***
 
@@ -76,7 +76,7 @@ Metadata for objects which can link to other things.
 
 ### Defined in
 
-[src/index/types/indexable.ts:64](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/indexable.ts#L64)
+[src/index/types/indexable.ts:64](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/indexable.ts#L64)
 
 ***
 
@@ -88,4 +88,4 @@ Metadata for taggable objects.
 
 ### Defined in
 
-[src/index/types/indexable.ts:54](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/indexable.ts#L54)
+[src/index/types/indexable.ts:54](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/indexable.ts#L54)

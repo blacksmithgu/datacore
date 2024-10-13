@@ -27,7 +27,7 @@ Cleaned text that is garaunteed to be non-null and has indenation and inline fie
 
 #### Defined in
 
-[src/index/types/markdown.ts:609](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L609)
+[src/index/types/markdown.ts:609](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L609)
 
 ***
 
@@ -43,7 +43,7 @@ Get the line that this list item starts on.
 
 #### Defined in
 
-[src/index/types/markdown.ts:599](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L599)
+[src/index/types/markdown.ts:599](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L599)
 
 ***
 
@@ -59,7 +59,7 @@ The number of lines in this list item.
 
 #### Defined in
 
-[src/index/types/markdown.ts:604](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L604)
+[src/index/types/markdown.ts:604](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L604)
 
 ***
 
@@ -79,7 +79,7 @@ All of the indexed fields in this object.
 
 #### Defined in
 
-[src/index/types/markdown.ts:622](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L622)
+[src/index/types/markdown.ts:622](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L622)
 
 ## Methods
 
@@ -103,7 +103,7 @@ Fetch a specific field by key.
 
 #### Defined in
 
-[src/index/types/markdown.ts:627](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L627)
+[src/index/types/markdown.ts:627](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L627)
 
 ***
 
@@ -127,7 +127,7 @@ Create a list item from a serialized object.
 
 #### Defined in
 
-[src/index/types/markdown.ts:570](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L570)
+[src/index/types/markdown.ts:570](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L570)
 
 ***
 
@@ -149,7 +149,7 @@ Generate a readable ID for this item using the line number.
 
 #### Defined in
 
-[src/index/types/markdown.ts:656](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L656)
+[src/index/types/markdown.ts:656](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L656)
 
 ## Properties
 
@@ -161,7 +161,7 @@ The block ID of this list item if present.
 
 #### Defined in
 
-[src/index/types/markdown.ts:553](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L553)
+[src/index/types/markdown.ts:553](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L553)
 
 ***
 
@@ -173,7 +173,7 @@ Child elements of this list item.
 
 #### Defined in
 
-[src/index/types/markdown.ts:543](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L543)
+[src/index/types/markdown.ts:543](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L543)
 
 ***
 
@@ -189,7 +189,7 @@ The file that this indexable was derived from, if file-backed.
 
 #### Defined in
 
-[src/index/types/markdown.ts:538](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L538)
+[src/index/types/markdown.ts:538](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L538)
 
 ***
 
@@ -205,7 +205,7 @@ The unique index ID for this object.
 
 #### Defined in
 
-[src/index/types/markdown.ts:537](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L537)
+[src/index/types/markdown.ts:537](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L537)
 
 ***
 
@@ -217,7 +217,7 @@ Map of all distinct inline fields in the document, from key name -> metadata.
 
 #### Defined in
 
-[src/index/types/markdown.ts:549](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L549)
+[src/index/types/markdown.ts:549](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L549)
 
 ***
 
@@ -233,7 +233,7 @@ All links in the file.
 
 #### Defined in
 
-[src/index/types/markdown.ts:551](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L551)
+[src/index/types/markdown.ts:551](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L551)
 
 ***
 
@@ -251,7 +251,7 @@ this is a root element of the list starting at line 7.
 
 #### Defined in
 
-[src/index/types/markdown.ts:563](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L563)
+[src/index/types/markdown.ts:563](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L563)
 
 ***
 
@@ -263,7 +263,7 @@ The position of the list item in the file.
 
 #### Defined in
 
-[src/index/types/markdown.ts:541](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L541)
+[src/index/types/markdown.ts:541](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L541)
 
 ***
 
@@ -275,7 +275,7 @@ The marker used to start the list item (such as - or + or *). On a malformed tas
 
 #### Defined in
 
-[src/index/types/markdown.ts:565](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L565)
+[src/index/types/markdown.ts:565](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L565)
 
 ***
 
@@ -291,7 +291,7 @@ Exact tags on this list item.
 
 #### Defined in
 
-[src/index/types/markdown.ts:547](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L547)
+[src/index/types/markdown.ts:547](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L547)
 
 ***
 
@@ -303,7 +303,7 @@ The text contents of the list item.
 
 #### Defined in
 
-[src/index/types/markdown.ts:567](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L567)
+[src/index/types/markdown.ts:567](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L567)
 
 ***
 
@@ -315,7 +315,7 @@ The type of list item that this element is.
 
 #### Defined in
 
-[src/index/types/markdown.ts:545](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L545)
+[src/index/types/markdown.ts:545](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L545)
 
 ***
 
@@ -331,7 +331,7 @@ Textual description of the object, such as `Page` or `Section`. Used in visualiz
 
 #### Defined in
 
-[src/index/types/markdown.ts:536](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L536)
+[src/index/types/markdown.ts:536](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L536)
 
 ***
 
@@ -347,4 +347,4 @@ The object types that this indexable is.
 
 #### Defined in
 
-[src/index/types/markdown.ts:535](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L535)
+[src/index/types/markdown.ts:535](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L535)

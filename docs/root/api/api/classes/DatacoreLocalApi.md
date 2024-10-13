@@ -22,7 +22,7 @@ Creates a horizontal flexbox "grouping" of elements.
 
 #### Defined in
 
-[src/api/local-api.tsx:211](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L211)
+[src/api/local-api.tsx:211](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L211)
 
 ***
 
@@ -48,7 +48,7 @@ A component that renders an icon
 
 #### Defined in
 
-[src/api/local-api.tsx:295](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L295)
+[src/api/local-api.tsx:295](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L295)
 
 ***
 
@@ -70,7 +70,7 @@ Creates a vertical flexbox "stack" of elements.
 
 #### Defined in
 
-[src/api/local-api.tsx:209](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L209)
+[src/api/local-api.tsx:209](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L209)
 
 ## Accessors
 
@@ -86,7 +86,7 @@ Central Obsidian app object.
 
 #### Defined in
 
-[src/api/local-api.tsx:63](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L63)
+[src/api/local-api.tsx:63](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L63)
 
 ***
 
@@ -102,7 +102,7 @@ The internal plugin central datastructure.
 
 #### Defined in
 
-[src/api/local-api.tsx:68](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L68)
+[src/api/local-api.tsx:68](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L68)
 
 ***
 
@@ -118,7 +118,7 @@ Get acess to luxon functions.
 
 #### Defined in
 
-[src/api/local-api.tsx:53](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L53)
+[src/api/local-api.tsx:53](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L53)
 
 ***
 
@@ -134,7 +134,7 @@ Get access to preact functions.
 
 #### Defined in
 
-[src/api/local-api.tsx:58](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L58)
+[src/api/local-api.tsx:58](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L58)
 
 ## Methods
 
@@ -158,7 +158,7 @@ Create a data array from a regular array.
 
 #### Defined in
 
-[src/api/local-api.tsx:145](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L145)
+[src/api/local-api.tsx:145](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L145)
 
 ***
 
@@ -180,7 +180,7 @@ Create a link to a block with the given path and block ID.
 
 #### Defined in
 
-[src/api/local-api.tsx:130](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L130)
+[src/api/local-api.tsx:130](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L130)
 
 ***
 
@@ -196,7 +196,7 @@ The full markdown file metadata for the current file.
 
 #### Defined in
 
-[src/api/local-api.tsx:48](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L48)
+[src/api/local-api.tsx:48](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L48)
 
 ***
 
@@ -212,7 +212,7 @@ The current file path for the local API.
 
 #### Defined in
 
-[src/api/local-api.tsx:43](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L43)
+[src/api/local-api.tsx:43](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L43)
 
 ***
 
@@ -232,7 +232,7 @@ Create a file link pointing to the given path.
 
 #### Defined in
 
-[src/api/local-api.tsx:120](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L120)
+[src/api/local-api.tsx:120](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L120)
 
 ***
 
@@ -254,7 +254,7 @@ Create a link to a header with the given name.
 
 #### Defined in
 
-[src/api/local-api.tsx:125](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L125)
+[src/api/local-api.tsx:125](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L125)
 
 ***
 
@@ -274,7 +274,7 @@ Try to parse the given link, throwing an error if it is invalid.
 
 #### Defined in
 
-[src/api/local-api.tsx:135](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L135)
+[src/api/local-api.tsx:135](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L135)
 
 ***
 
@@ -294,7 +294,7 @@ Try to parse the given query, throwing an error if it is invalid.
 
 #### Defined in
 
-[src/api/local-api.tsx:115](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L115)
+[src/api/local-api.tsx:115](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L115)
 
 ***
 
@@ -327,7 +327,7 @@ return { MyElement };
 
 #### Defined in
 
-[src/api/local-api.tsx:92](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L92)
+[src/api/local-api.tsx:92](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L92)
 
 ***
 
@@ -349,7 +349,7 @@ Resolve a local or absolute path or link to an absolute path.
 
 #### Defined in
 
-[src/api/local-api.tsx:105](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L105)
+[src/api/local-api.tsx:105](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L105)
 
 ***
 
@@ -369,7 +369,7 @@ Try to parse a link, returning a monadic success/failure result.
 
 #### Defined in
 
-[src/api/local-api.tsx:140](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L140)
+[src/api/local-api.tsx:140](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L140)
 
 ***
 
@@ -389,7 +389,7 @@ Try to parse the given query, returning a monadic success/failure result.
 
 #### Defined in
 
-[src/api/local-api.tsx:110](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L110)
+[src/api/local-api.tsx:110](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L110)
 
 ***
 
@@ -419,7 +419,7 @@ Memoize the input automatically and process it using a DataArray; returns a vani
 
 #### Defined in
 
-[src/api/local-api.tsx:165](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L165)
+[src/api/local-api.tsx:165](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L165)
 
 ***
 
@@ -441,7 +441,7 @@ Use the file metadata for the current file. Automatically updates the view when 
 
 #### Defined in
 
-[src/api/local-api.tsx:170](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L170)
+[src/api/local-api.tsx:170](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L170)
 
 ***
 
@@ -463,7 +463,7 @@ Use the current path. Automatically updates the view if the path changes (though
 
 #### Defined in
 
-[src/api/local-api.tsx:175](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L175)
+[src/api/local-api.tsx:175](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L175)
 
 ***
 
@@ -487,7 +487,7 @@ Use the file metadata for a specific file. Automatically updates the view when t
 
 #### Defined in
 
-[src/api/local-api.tsx:181](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L181)
+[src/api/local-api.tsx:181](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L181)
 
 ***
 
@@ -512,7 +512,7 @@ execution, such as index revision and total search duration.
 
 #### Defined in
 
-[src/api/local-api.tsx:194](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L194)
+[src/api/local-api.tsx:194](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L194)
 
 ***
 
@@ -534,7 +534,7 @@ Automatically refresh the view whenever the index updates; returns the latest in
 
 #### Defined in
 
-[src/api/local-api.tsx:186](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L186)
+[src/api/local-api.tsx:186](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L186)
 
 ***
 
@@ -558,7 +558,7 @@ Run a query, automatically re-running it whenever the vault changes.
 
 #### Defined in
 
-[src/api/local-api.tsx:199](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L199)
+[src/api/local-api.tsx:199](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L199)
 
 ## Properties
 
@@ -570,7 +570,7 @@ Utilities for coercing types into one specific type for easier programming.
 
 #### Defined in
 
-[src/api/local-api.tsx:102](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L102)
+[src/api/local-api.tsx:102](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L102)
 
 ***
 
@@ -582,7 +582,7 @@ Renders an obsidian-style link directly and more effieicntly than rendering mark
 
 #### Defined in
 
-[src/api/local-api.tsx:246](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L246)
+[src/api/local-api.tsx:246](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L246)
 
 ***
 
@@ -594,7 +594,7 @@ Create a vanilla Obsidian embed for the given link.
 
 #### Defined in
 
-[src/api/local-api.tsx:249](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L249)
+[src/api/local-api.tsx:249](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L249)
 
 ***
 
@@ -606,7 +606,7 @@ Renders a literal value in a pretty way that respects settings.
 
 #### Defined in
 
-[src/api/local-api.tsx:214](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L214)
+[src/api/local-api.tsx:214](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L214)
 
 ***
 
@@ -618,7 +618,7 @@ Renders markdown using the Obsidian markdown renderer, optionally attaching addi
 
 #### Defined in
 
-[src/api/local-api.tsx:220](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L220)
+[src/api/local-api.tsx:220](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L220)
 
 ***
 
@@ -630,4 +630,4 @@ Create an explicit 'span' embed which extracts a span of lines from a markdown f
 
 #### Defined in
 
-[src/api/local-api.tsx:270](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/local-api.tsx#L270)
+[src/api/local-api.tsx:270](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/local-api.tsx#L270)

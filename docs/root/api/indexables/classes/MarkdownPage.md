@@ -30,7 +30,7 @@ The file that this indexable was derived from, if file-backed.
 
 #### Defined in
 
-[src/index/types/markdown.ts:49](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L49)
+[src/index/types/markdown.ts:49](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L49)
 
 ***
 
@@ -52,7 +52,7 @@ The unique index ID for this object.
 
 #### Defined in
 
-[src/index/types/markdown.ts:45](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L45)
+[src/index/types/markdown.ts:45](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L45)
 
 ***
 
@@ -68,7 +68,7 @@ Return the number of lines in the document.
 
 #### Defined in
 
-[src/index/types/markdown.ts:106](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L106)
+[src/index/types/markdown.ts:106](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L106)
 
 ***
 
@@ -90,7 +90,7 @@ A link to this linkable object.
 
 #### Defined in
 
-[src/index/types/markdown.ts:116](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L116)
+[src/index/types/markdown.ts:116](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L116)
 
 ***
 
@@ -106,7 +106,7 @@ The name of the file.
 
 #### Defined in
 
-[src/index/types/markdown.ts:111](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L111)
+[src/index/types/markdown.ts:111](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L111)
 
 ***
 
@@ -126,7 +126,7 @@ All of the indexed fields in this object.
 
 #### Defined in
 
-[src/index/types/markdown.ts:121](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L121)
+[src/index/types/markdown.ts:121](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L121)
 
 ## Methods
 
@@ -150,7 +150,7 @@ Get the full field definition for the given field.
 
 #### Defined in
 
-[src/index/types/markdown.ts:126](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L126)
+[src/index/types/markdown.ts:126](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L126)
 
 ***
 
@@ -166,7 +166,7 @@ Convert this page into it's partial representation for saving.
 
 #### Defined in
 
-[src/index/types/markdown.ts:136](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L136)
+[src/index/types/markdown.ts:136](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L136)
 
 ***
 
@@ -186,7 +186,7 @@ Get the value for the given field.
 
 #### Defined in
 
-[src/index/types/markdown.ts:131](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L131)
+[src/index/types/markdown.ts:131](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L131)
 
 ***
 
@@ -208,7 +208,7 @@ Create a markdown file from the given raw values.
 
 #### Defined in
 
-[src/index/types/markdown.ts:81](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L81)
+[src/index/types/markdown.ts:81](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L81)
 
 ## Properties
 
@@ -224,7 +224,7 @@ Obsidian-provided date this page was created.
 
 #### Defined in
 
-[src/index/types/markdown.ts:61](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L61)
+[src/index/types/markdown.ts:61](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L61)
 
 ***
 
@@ -240,7 +240,7 @@ The extension; for markdown files, almost always '.md'.
 
 #### Defined in
 
-[src/index/types/markdown.ts:65](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L65)
+[src/index/types/markdown.ts:65](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L65)
 
 ***
 
@@ -252,7 +252,7 @@ Frontmatter values in the file, if present. Maps lower case frontmatter key -> e
 
 #### Defined in
 
-[src/index/types/markdown.ts:54](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L54)
+[src/index/types/markdown.ts:54](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L54)
 
 ***
 
@@ -264,7 +264,7 @@ Map of all distinct inline fields in the document. Maps lower case key name -> f
 
 #### Defined in
 
-[src/index/types/markdown.ts:56](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L56)
+[src/index/types/markdown.ts:56](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L56)
 
 ***
 
@@ -280,7 +280,7 @@ All links in the file.
 
 #### Defined in
 
-[src/index/types/markdown.ts:73](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L73)
+[src/index/types/markdown.ts:73](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L73)
 
 ***
 
@@ -296,7 +296,7 @@ Obsidian-provided date this page was modified.
 
 #### Defined in
 
-[src/index/types/markdown.ts:63](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L63)
+[src/index/types/markdown.ts:63](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L63)
 
 ***
 
@@ -312,7 +312,7 @@ The path this file exists at.
 
 #### Defined in
 
-[src/index/types/markdown.ts:59](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L59)
+[src/index/types/markdown.ts:59](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L59)
 
 ***
 
@@ -324,7 +324,7 @@ The full extent of the file (start 0, end the number of lines in the file.)
 
 #### Defined in
 
-[src/index/types/markdown.ts:69](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L69)
+[src/index/types/markdown.ts:69](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L69)
 
 ***
 
@@ -337,7 +337,7 @@ named with the title of the file.
 
 #### Defined in
 
-[src/index/types/markdown.ts:78](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L78)
+[src/index/types/markdown.ts:78](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L78)
 
 ***
 
@@ -353,7 +353,7 @@ Obsidian-provided size of this page in bytes.
 
 #### Defined in
 
-[src/index/types/markdown.ts:67](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L67)
+[src/index/types/markdown.ts:67](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L67)
 
 ***
 
@@ -369,7 +369,7 @@ The exact tags in the file.
 
 #### Defined in
 
-[src/index/types/markdown.ts:71](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L71)
+[src/index/types/markdown.ts:71](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L71)
 
 ***
 
@@ -385,7 +385,7 @@ Textual description of the object, such as `Page` or `Section`. Used in visualiz
 
 #### Defined in
 
-[src/index/types/markdown.ts:42](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L42)
+[src/index/types/markdown.ts:42](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L42)
 
 ***
 
@@ -401,7 +401,7 @@ The object types that this indexable is.
 
 #### Defined in
 
-[src/index/types/markdown.ts:41](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L41)
+[src/index/types/markdown.ts:41](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L41)
 
 ***
 
@@ -413,4 +413,4 @@ All of the types that a markdown file is.
 
 #### Defined in
 
-[src/index/types/markdown.ts:38](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L38)
+[src/index/types/markdown.ts:38](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L38)

@@ -16,7 +16,7 @@ The columns to render in the table.
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:49](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L49)
+[src/api/ui/views/table.tsx:49](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L49)
 
 ***
 
@@ -28,7 +28,7 @@ Allows for grouping header columns to be overridden with custom rendering/logic.
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:55](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L55)
+[src/api/ui/views/table.tsx:55](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L55)
 
 ***
 
@@ -41,7 +41,7 @@ If set to a number, paging will be enabled with the given number of rows per pag
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:61](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L61)
+[src/api/ui/views/table.tsx:61](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L61)
 
 ***
 
@@ -53,7 +53,7 @@ The rows to render; may potentially be grouped or just a plain array.
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:52](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L52)
+[src/api/ui/views/table.tsx:52](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L52)
 
 ***
 
@@ -66,4 +66,4 @@ If a number, will scroll only if the number is greater than the current page siz
 
 #### Defined in
 
-[src/api/ui/views/table.tsx:67](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/ui/views/table.tsx#L67)
+[src/api/ui/views/table.tsx:67](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/ui/views/table.tsx#L67)

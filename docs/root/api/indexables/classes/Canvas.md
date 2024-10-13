@@ -31,7 +31,7 @@ The file that this indexable was derived from, if file-backed.
 
 #### Defined in
 
-[src/index/types/canvas.ts:42](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L42)
+[src/index/types/canvas.ts:42](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L42)
 
 ***
 
@@ -53,7 +53,7 @@ The unique index ID for this object.
 
 #### Defined in
 
-[src/index/types/canvas.ts:46](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L46)
+[src/index/types/canvas.ts:46](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L46)
 
 ***
 
@@ -75,7 +75,7 @@ A link to this linkable object.
 
 #### Defined in
 
-[src/index/types/canvas.ts:50](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L50)
+[src/index/types/canvas.ts:50](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L50)
 
 ***
 
@@ -95,7 +95,7 @@ Return a list of all fields. This may be computed eagerly, so cache this value f
 
 #### Defined in
 
-[src/index/types/canvas.ts:65](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L65)
+[src/index/types/canvas.ts:65](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L65)
 
 ## Methods
 
@@ -119,7 +119,7 @@ Fetch a field with the given name if it is present on this object.
 
 #### Defined in
 
-[src/index/types/canvas.ts:69](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L69)
+[src/index/types/canvas.ts:69](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L69)
 
 ## Properties
 
@@ -135,7 +135,7 @@ Obsidian-provided date this page was created.
 
 #### Defined in
 
-[src/index/types/canvas.ts:37](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L37)
+[src/index/types/canvas.ts:37](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L37)
 
 ***
 
@@ -151,7 +151,7 @@ The extension of the file.
 
 #### Defined in
 
-[src/index/types/canvas.ts:40](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L40)
+[src/index/types/canvas.ts:40](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L40)
 
 ***
 
@@ -167,7 +167,7 @@ The links in this file.
 
 #### Defined in
 
-[src/index/types/canvas.ts:58](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L58)
+[src/index/types/canvas.ts:58](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L58)
 
 ***
 
@@ -183,7 +183,7 @@ Obsidian-provided date this page was modified.
 
 #### Defined in
 
-[src/index/types/canvas.ts:38](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L38)
+[src/index/types/canvas.ts:38](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L38)
 
 ***
 
@@ -199,7 +199,7 @@ The path this file exists at.
 
 #### Defined in
 
-[src/index/types/canvas.ts:54](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L54)
+[src/index/types/canvas.ts:54](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L54)
 
 ***
 
@@ -215,7 +215,7 @@ Obsidian-provided size of this page in bytes.
 
 #### Defined in
 
-[src/index/types/canvas.ts:56](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L56)
+[src/index/types/canvas.ts:56](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L56)
 
 ***
 
@@ -231,7 +231,7 @@ The exact tags on this object. (#a/b/c or #foo/bar).
 
 #### Defined in
 
-[src/index/types/canvas.ts:57](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L57)
+[src/index/types/canvas.ts:57](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L57)
 
 ***
 
@@ -247,7 +247,7 @@ Textual description of the object, such as `Page` or `Section`. Used in visualiz
 
 #### Defined in
 
-[src/index/types/canvas.ts:35](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L35)
+[src/index/types/canvas.ts:35](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L35)
 
 ***
 
@@ -263,4 +263,4 @@ The object types that this indexable is.
 
 #### Defined in
 
-[src/index/types/canvas.ts:34](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L34)
+[src/index/types/canvas.ts:34](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L34)

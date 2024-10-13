@@ -31,7 +31,7 @@ A link to this linkable object.
 
 #### Defined in
 
-[src/index/types/canvas.ts:139](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L139)
+[src/index/types/canvas.ts:139](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L139)
 
 ***
 
@@ -51,7 +51,7 @@ Return a list of all fields. This may be computed eagerly, so cache this value f
 
 #### Defined in
 
-[src/index/types/canvas.ts:181](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L181)
+[src/index/types/canvas.ts:181](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L181)
 
 ## Methods
 
@@ -75,7 +75,7 @@ Fetch a field with the given name if it is present on this object.
 
 #### Defined in
 
-[src/index/types/canvas.ts:185](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L185)
+[src/index/types/canvas.ts:185](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L185)
 
 ## Properties
 
@@ -91,7 +91,7 @@ The links in this file.
 
 #### Defined in
 
-[src/index/types/canvas.ts:166](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L166)
+[src/index/types/canvas.ts:166](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L166)
 
 ***
 
@@ -107,4 +107,4 @@ The exact tags on this object. (#a/b/c or #foo/bar).
 
 #### Defined in
 
-[src/index/types/canvas.ts:167](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/canvas.ts#L167)
+[src/index/types/canvas.ts:167](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/canvas.ts#L167)

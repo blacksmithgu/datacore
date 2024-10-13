@@ -14,4 +14,4 @@ A link normalizer which takes in a raw link and produces a normalized link.
 
 ## Defined in
 
-[src/index/types/markdown.ts:780](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/markdown.ts#L780)
+[src/index/types/markdown.ts:780](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/markdown.ts#L780)

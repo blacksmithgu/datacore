@@ -16,7 +16,7 @@ Central Obsidian app object.
 
 #### Defined in
 
-[src/api/api.ts:38](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L38)
+[src/api/api.ts:38](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L38)
 
 ***
 
@@ -32,7 +32,7 @@ Get acess to luxon functions.
 
 #### Defined in
 
-[src/api/api.ts:28](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L28)
+[src/api/api.ts:28](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L28)
 
 ***
 
@@ -48,7 +48,7 @@ Get access to preact functions.
 
 #### Defined in
 
-[src/api/api.ts:33](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L33)
+[src/api/api.ts:33](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L33)
 
 ## Methods
 
@@ -72,7 +72,7 @@ Create a data array from a regular array.
 
 #### Defined in
 
-[src/api/api.ts:144](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L144)
+[src/api/api.ts:144](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L144)
 
 ***
 
@@ -94,7 +94,7 @@ Create a link to a block with the given path and block ID.
 
 #### Defined in
 
-[src/api/api.ts:126](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L126)
+[src/api/api.ts:126](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L126)
 
 ***
 
@@ -123,7 +123,7 @@ Returns a markdown render child representing the rendered object.
 
 #### Defined in
 
-[src/api/api.ts:158](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L158)
+[src/api/api.ts:158](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L158)
 
 ***
 
@@ -151,7 +151,7 @@ hit to rendering).
 
 #### Defined in
 
-[src/api/api.ts:172](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L172)
+[src/api/api.ts:172](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L172)
 
 ***
 
@@ -177,7 +177,7 @@ Similar to `executeJs`, but for TypeScript scripts. Use the TSX variant for TSX 
 
 #### Defined in
 
-[src/api/api.ts:184](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L184)
+[src/api/api.ts:184](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L184)
 
 ***
 
@@ -208,7 +208,7 @@ though beware there are a few niche cases where javascript and typescript diverg
 
 #### Defined in
 
-[src/api/api.ts:201](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L201)
+[src/api/api.ts:201](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L201)
 
 ***
 
@@ -228,7 +228,7 @@ Create a file link pointing to the given path.
 
 #### Defined in
 
-[src/api/api.ts:116](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L116)
+[src/api/api.ts:116](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L116)
 
 ***
 
@@ -248,7 +248,7 @@ Execute a textual or typed index query, returning results plus performance metad
 
 #### Defined in
 
-[src/api/api.ts:73](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L73)
+[src/api/api.ts:73](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L73)
 
 ***
 
@@ -270,7 +270,7 @@ Create a link to a header with the given name.
 
 #### Defined in
 
-[src/api/api.ts:121](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L121)
+[src/api/api.ts:121](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L121)
 
 ***
 
@@ -290,7 +290,7 @@ Construct a local API for the file at the given path.
 
 #### Defined in
 
-[src/api/api.ts:47](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L47)
+[src/api/api.ts:47](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L47)
 
 ***
 
@@ -310,7 +310,7 @@ Load a markdown file by full path or link.
 
 #### Defined in
 
-[src/api/api.ts:56](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L56)
+[src/api/api.ts:56](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L56)
 
 ***
 
@@ -330,7 +330,7 @@ Try to parse the given link, throwing an error if it is invalid.
 
 #### Defined in
 
-[src/api/api.ts:131](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L131)
+[src/api/api.ts:131](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L131)
 
 ***
 
@@ -350,7 +350,7 @@ Try to parse the given query, throwing an error if it is invalid.
 
 #### Defined in
 
-[src/api/api.ts:111](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L111)
+[src/api/api.ts:111](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L111)
 
 ***
 
@@ -370,7 +370,7 @@ Execute a textual or typed index query, returning all results.
 
 #### Defined in
 
-[src/api/api.ts:63](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L63)
+[src/api/api.ts:63](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L63)
 
 ***
 
@@ -392,7 +392,7 @@ Resolve a local or absolute path or link to an absolute path.
 
 #### Defined in
 
-[src/api/api.ts:91](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L91)
+[src/api/api.ts:91](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L91)
 
 ***
 
@@ -412,7 +412,7 @@ Execute a textual or typed index query, returning results plus performance metad
 
 #### Defined in
 
-[src/api/api.ts:78](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L78)
+[src/api/api.ts:78](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L78)
 
 ***
 
@@ -432,7 +432,7 @@ Try to parse a link, returning a monadic success/failure result.
 
 #### Defined in
 
-[src/api/api.ts:136](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L136)
+[src/api/api.ts:136](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L136)
 
 ***
 
@@ -452,7 +452,7 @@ Try to parse the given query, returning a monadic success/failure result.
 
 #### Defined in
 
-[src/api/api.ts:102](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L102)
+[src/api/api.ts:102](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L102)
 
 ***
 
@@ -472,7 +472,7 @@ Execute a textual or typed index query, returning all results.
 
 #### Defined in
 
-[src/api/api.ts:68](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L68)
+[src/api/api.ts:68](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L68)
 
 ## Properties
 
@@ -484,4 +484,4 @@ Utilities for coercing types into one specific type for easier programming.
 
 #### Defined in
 
-[src/api/api.ts:88](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/api/api.ts#L88)
+[src/api/api.ts:88](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/api/api.ts#L88)

@@ -29,7 +29,7 @@ The file that this indexable was derived from, if file-backed.
 
 #### Defined in
 
-[src/index/types/files.ts:56](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L56)
+[src/index/types/files.ts:56](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L56)
 
 ***
 
@@ -51,7 +51,7 @@ The unique index ID for this object.
 
 #### Defined in
 
-[src/index/types/files.ts:51](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L51)
+[src/index/types/files.ts:51](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L51)
 
 ***
 
@@ -73,7 +73,7 @@ A link to this linkable object.
 
 #### Defined in
 
-[src/index/types/files.ts:61](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L61)
+[src/index/types/files.ts:61](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L61)
 
 ***
 
@@ -93,7 +93,7 @@ Return a list of all fields. This may be computed eagerly, so cache this value f
 
 #### Defined in
 
-[src/index/types/files.ts:37](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L37)
+[src/index/types/files.ts:37](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L37)
 
 ## Methods
 
@@ -117,7 +117,7 @@ Fetch a field with the given name if it is present on this object.
 
 #### Defined in
 
-[src/index/types/files.ts:41](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L41)
+[src/index/types/files.ts:41](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L41)
 
 ***
 
@@ -137,7 +137,7 @@ Get the value for the given field.
 
 #### Defined in
 
-[src/index/types/files.ts:46](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L46)
+[src/index/types/files.ts:46](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L46)
 
 ## Properties
 
@@ -153,7 +153,7 @@ Obsidian-provided date this page was created.
 
 #### Defined in
 
-[src/index/types/files.ts:19](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L19)
+[src/index/types/files.ts:19](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L19)
 
 ***
 
@@ -169,7 +169,7 @@ The extension of the file.
 
 #### Defined in
 
-[src/index/types/files.ts:25](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L25)
+[src/index/types/files.ts:25](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L25)
 
 ***
 
@@ -185,7 +185,7 @@ Obsidian-provided date this page was modified.
 
 #### Defined in
 
-[src/index/types/files.ts:21](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L21)
+[src/index/types/files.ts:21](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L21)
 
 ***
 
@@ -201,7 +201,7 @@ The path this file exists at.
 
 #### Defined in
 
-[src/index/types/files.ts:17](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L17)
+[src/index/types/files.ts:17](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L17)
 
 ***
 
@@ -217,7 +217,7 @@ Obsidian-provided size of this page in bytes.
 
 #### Defined in
 
-[src/index/types/files.ts:23](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L23)
+[src/index/types/files.ts:23](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L23)
 
 ***
 
@@ -233,7 +233,7 @@ Textual description of the object, such as `Page` or `Section`. Used in visualiz
 
 #### Defined in
 
-[src/index/types/files.ts:15](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L15)
+[src/index/types/files.ts:15](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L15)
 
 ***
 
@@ -249,4 +249,4 @@ The object types that this indexable is.
 
 #### Defined in
 
-[src/index/types/files.ts:14](https://github.com/blacksmithgu/datacore/blob/68b5529e5bdbcee81e7112d11ecb8c7d40cbb0f2/src/index/types/files.ts#L14)
+[src/index/types/files.ts:14](https://github.com/GamerGirlandCo/datacore/blob/7f32893e5430e552f1b1164e828ac7a411d6e24f/src/index/types/files.ts#L14)
