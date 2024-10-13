@@ -1,5 +1,6 @@
 {
 	"plugin": ["typedoc-plugin-merge-modules", "typedoc-plugin-markdown"],
 	"mergeModulesRenameDefaults": true,
-	"mergeModulesMergeMode": "module"
+	"mergeModulesMergeMode": "module",
+	"readme": "./javascript.md"
 }

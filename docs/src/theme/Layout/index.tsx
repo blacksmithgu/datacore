@@ -40,7 +40,7 @@ export default function Layout(props: Props): JSX.Element {
 
             <Navbar />
             <div style={{ display: "flex" }}>
-                <div>
+                <div className="eternal-sidebar">
                     <DocsVersionProvider version={data.fullVersions[data.fullVersions.length - 1]}>
                         <EternalSidebar />
                     </DocsVersionProvider>

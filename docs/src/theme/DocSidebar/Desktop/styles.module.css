@@ -2,7 +2,6 @@
   .sidebar {
     display: flex;
     flex-direction: column;
-    height: 900%;
   }
 
   .sidebarWithHideableNavbar {
@@ -30,10 +29,8 @@
   }
 }
 .sidebar {
-	max-height: 100vh;
-	position: sticky;
-    width: var(--doc-sidebar-width);
-	top: 0;
+	top: var(--ifm-navbar-height);
+	width: var(--doc-sidebar-width);
 }
 
 .sidebarLogo {

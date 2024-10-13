@@ -14,10 +14,15 @@
     margin-bottom: var(--docusaurus-announcement-bar-height);
   }
 }
+@media(min-width: 1097px) {
+	nav.menu {
+	}
+}
 nav.menu {
 	width: var(--doc-sidebar-width);
-	height: inherit !important;
-	top: 0;
+	height: calc(100% - var(--ifm-navbar-height));
+	top: var(--ifm-navbar-height);
+	bottom: 0;
 	overflow-y: visible;
 }
 
