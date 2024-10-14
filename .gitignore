@@ -16,5 +16,6 @@ build/
 
 # Documentation artifacts
 
-docs/root/api/
+docs/root/api/**/*.*
+!docs/root/api/index.md
 .docuaurus/
