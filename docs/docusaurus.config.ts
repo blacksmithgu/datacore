@@ -12,7 +12,7 @@ const config: Config = {
     url: "https://blacksmithgu.github.io",
     // Set the /<baseUrl>/ pathname under which your site is served
     // For GitHub pages deployment, it is often '/<projectName>/'
-    baseUrl: "/datacore",
+    baseUrl: "/datacore/",
 
     // GitHub pages deployment config.
     // If you aren't using GitHub pages, you don't need these.
@@ -110,11 +110,11 @@ const config: Config = {
             {
                 sidebarPath: "./sidebars.ts",
                 path: "./root",
-								
+								routeBasePath: "/",
                 // Please change this to your repo.
                 // Remove this to remove the "edit this page" links.
                 editUrl: "https://github.com/blacksmithgu/datacore/tree/main/docs",
-                id: "default",
+								
             },
         ],
         [
