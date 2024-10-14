@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - master
+  release:
+    types:
+      - published
+  workflow_dispatch:
     # Review gh actions docs if you want to further define triggers, paths, etc
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 
@@ -20,22 +24,18 @@ jobs:
           node-version: 18
           cache: yarn
 
-      - name: Switch to docs directory
-        run: cd docs
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Generate api docs
-        run: yarn generate
-      
-      - name: Build website
-        run: yarn build
+      - name: Build
+        run: | 
+          cd docs
+          corepack enable
+          yarn install --frozen-lockfile
+          yarn generate
+          yarn build
 
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: docs/build
 
   deploy:
     name: Deploy to GitHub Pages

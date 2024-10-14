@@ -26,9 +26,9 @@ export function useIndexUpdates(datacore: Datacore, settings?: { debounce?: numb
     return revision;
 }
 
-/** A hook which updates whenever file metadata for a specific file updates. 
+/** A hook which updates whenever file metadata for a specific file updates.
  * @group Hooks
-*/
+ */
 export function useFileMetadata(
     datacore: Datacore,
     path: string,
@@ -40,9 +40,9 @@ export function useFileMetadata(
     return useMemo(() => datacore.datastore.load(path), [indexRevision, path]);
 }
 
-/** Settings which control how automatic query reloading should work. 
+/** Settings which control how automatic query reloading should work.
  * @group Config
-*/
+ */
 export interface UseQuerySettings {
     /**
      * If present, debounce repeated query updates so that an update only occurs every \<debounce\> milliseconds. This
@@ -51,10 +51,10 @@ export interface UseQuerySettings {
     debounce?: number;
 }
 
-/** Perform a live, synchronous query which updates its results whenever the backing query would change. 
- * 
+/** Perform a live, synchronous query which updates its results whenever the backing query would change.
+ *
  * @group Hooks
-*/
+ */
 export function tryUseFullQuery(
     datacore: Datacore,
     query: IndexQuery,
@@ -104,10 +104,10 @@ export function tryUseFullQuery(
     }, [internedQuery, indexRevision]);
 }
 
-/** Perform a live, synchronous query which updates its results whenever the backing query would change. 
- * 
+/** Perform a live, synchronous query which updates its results whenever the backing query would change.
+ *
  * @group Hooks
-*/
+ */
 export function useFullQuery(
     datacore: Datacore,
     query: IndexQuery,
@@ -116,10 +116,10 @@ export function useFullQuery(
     return tryUseFullQuery(datacore, query, settings).orElseThrow((e) => "Failed to search: " + e);
 }
 
-/** Simplier version of useFullQuery which just directly returns results. 
- * 
+/** Simplier version of useFullQuery which just directly returns results.
+ *
  * @group Hooks
-*/
+ */
 export function tryUseQuery(
     datacore: Datacore,
     query: IndexQuery,
@@ -128,16 +128,16 @@ export function tryUseQuery(
     return tryUseFullQuery(datacore, query, settings).map((result) => result.results);
 }
 
-/** Simplier version of useFullQuery which just directly returns results. 
- * 
+/** Simplier version of useFullQuery which just directly returns results.
+ *
  * @group Hooks
-*/
+ */
 export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): Indexable[] {
     return useFullQuery(datacore, query, settings).results;
 }
 
 /** Determines if the two sets of objects are the same. Only uses revision comparison for performance.
- * 
+ *
  * @hidden
  */
 function sameObjects(old: Indexable[], incoming: Indexable[]) {
@@ -161,7 +161,7 @@ function sameObjects(old: Indexable[], incoming: Indexable[]) {
  * "Interns" the incoming value, returning the oldest equal instance. This is a trick to improve React diffing
  *  behavior, as two objects which are equals via equality(a, b) will return the same object reference after being
  *  interned.
- * 
+ *
  * @group Hooks
  */
 export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T {
@@ -174,10 +174,10 @@ export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T 
     return ref.current;
 }
 
-/** Use a stable callback which hides mutable state behind a stable reference. 
- * 
+/** Use a stable callback which hides mutable state behind a stable reference.
+ *
  * @group Hooks
-*/
+ */
 export function useStableCallback<T>(callback: T, deps: any[]): T {
     const ref = useRef<T>();
 
@@ -195,10 +195,10 @@ export function useStableCallback<T>(callback: T, deps: any[]): T {
 
 const NO_OP_UPDATE = (x: any) => {};
 
-/** Use state that will default to an external controlled value if set; otherwise, will track an internal value. 
- * 
+/** Use state that will default to an external controlled value if set; otherwise, will track an internal value.
+ *
  * @group Hooks
-*/
+ */
 export function useControlledState<T>(
     initialState: T,
     override?: T,

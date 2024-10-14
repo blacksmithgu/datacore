@@ -1,4 +1,4 @@
-/** 
+/**
  * @module ui
  */
 import { ChangeEvent } from "preact/compat";

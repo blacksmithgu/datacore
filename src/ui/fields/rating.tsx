@@ -1,4 +1,4 @@
-/** 
+/**
  * @module ui
  */
 import { useMemo } from "preact/hooks";

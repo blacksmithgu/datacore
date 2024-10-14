@@ -2,7 +2,7 @@
  * @module api
  */
 /**
- *  Functional return type for error handling. 
+ *  Functional return type for error handling.
  * @hidden
  * */
 export class Success<T, E> {
@@ -41,9 +41,9 @@ export class Success<T, E> {
     }
 }
 
-/** Functional return type for error handling. 
+/** Functional return type for error handling.
  * @hidden
-*/
+ */
 export class Failure<T, E> {
     public successful: false;
 
@@ -87,10 +87,10 @@ export class Failure<T, E> {
  */
 export type Result<T, E> = Success<T, E> | Failure<T, E>;
 
-/** 
+/**
  * @hidden
- * Monadic 'Result' type which encapsulates whether a procedure succeeded or failed, as well as it's return value. 
-*/
+ * Monadic 'Result' type which encapsulates whether a procedure succeeded or failed, as well as it's return value.
+ */
 export namespace Result {
     /** Construct a new success result wrapping the given value. */
     export function success<T, E>(value: T): Result<T, E> {

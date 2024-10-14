@@ -1,13 +1,13 @@
 /**
  * @module views
-*/
+ */
 import { Literal } from "expression/literal";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 
 import { VNode, isValidElement } from "preact";
 import { useContext } from "preact/hooks";
 
-/** 
+/**
  * State for a {@link ListView}
  * @typeParam T - the type of the items contained in the list
  * @group States
@@ -18,7 +18,7 @@ export interface ListState<T> {
      *
      * Lists with no special markup just have each element rendered directly as-is without any wrapping
      * inside of a single div.
-		 * 
+     *
      */
     type?: "ordered" | "unordered" | "none";
 
@@ -36,9 +36,9 @@ export interface ListState<T> {
 }
 
 /**
- * 
- * A simple and responsive list view. 
- * @group Components 
+ *
+ * A simple and responsive list view.
+ * @group Components
  */
 export function ListView<T>(state: ListState<T>) {
     // const settings = useContext(SETTINGS_CONTEXT);
@@ -80,9 +80,9 @@ export function ListView<T>(state: ListState<T>) {
     }
 }
 
-/** No-op element renderer. 
+/** No-op element renderer.
  * @hidden
-*/
+ */
 function identity<T>(element: T): T {
     return element;
 }

@@ -1,6 +1,6 @@
-/** Basic UI components that have simple Obsidian theming. 
+/** Basic UI components that have simple Obsidian theming.
  * @module ui
-*/
+ */
 import React, { useCallback } from "preact/compat";
 
 import { ComponentChildren } from "preact";
@@ -36,10 +36,10 @@ export function Button(
     );
 }
 
-/** A simple textbox which accepts text. 
- * 
+/** A simple textbox which accepts text.
+ *
  * @group Components
-*/
+ */
 export function Textbox(props: { className?: string } & React.HTMLProps<HTMLInputElement>) {
     const { className, children, ...forwardingProps } = props;
     return (
@@ -47,9 +47,9 @@ export function Textbox(props: { className?: string } & React.HTMLProps<HTMLInpu
     );
 }
 
-/** A checkbox that can be checked and unchecked. 
+/** A checkbox that can be checked and unchecked.
  * @group Components
-*/
+ */
 export function Checkbox(
     props: {
         className?: string;
@@ -122,9 +122,9 @@ export function Slider(
     );
 }
 
-/** Wrapper for a switch (toggle) component with some default classes. 
+/** Wrapper for a switch (toggle) component with some default classes.
  * @group Components
-*/
+ */
 export function Switch(
     props: {
         className?: string;
@@ -200,7 +200,7 @@ export function VanillaSelect(
 }
 /**
  * A component that renders an icon
- * @group Components 
+ * @group Components
  */
 export function Icon(props: { className?: string; icon: string }) {
     const { className, icon } = props;
@@ -216,8 +216,8 @@ export function Icon(props: { className?: string; icon: string }) {
 }
 
 /**
- *  Appends additional classes to a basic fixed class. 
- * 
+ *  Appends additional classes to a basic fixed class.
+ *
  * @group Utilities
  * */
 export function combineClasses(fixed: string, ...rest: (string | undefined)[]) {

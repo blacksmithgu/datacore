@@ -1,6 +1,6 @@
 /**
  * @module ui
-*/
+ */
 import "./paging.css";
 
 import { useCallback, useContext, useMemo, useState } from "preact/hooks";
@@ -8,10 +8,10 @@ import { Fragment, RefObject } from "preact";
 import React from "preact/compat";
 import { SETTINGS_CONTEXT } from "ui/markdown";
 
-/** 0-indexed page control. `page` should be the current 0-indexed page, while `totalPages` is the total number of pages. 
+/** 0-indexed page control. `page` should be the current 0-indexed page, while `totalPages` is the total number of pages.
  * @group Components
  * @param props
-*/
+ */
 function RawControlledPager({
     page,
     setPage,
@@ -170,9 +170,9 @@ export function usePaging({
     return [page, totalPages, setBoundedPage];
 }
 
-/** Provides useful metadata about paging. 
+/** Provides useful metadata about paging.
  * @group Props
-*/
+ */
 export interface Paging {
     /** Whether paging is enabled. */
     enabled: boolean;
@@ -236,7 +236,7 @@ export function useDatacorePaging({
 }
 
 /**
- * @hidden 
+ * @hidden
  */
 function clamp(input: number, min: number, max: number): number {
     if (input < min) return min;
@@ -244,9 +244,9 @@ function clamp(input: number, min: number, max: number): number {
     return input;
 }
 
-/** Utility function for finding the specific page numbers to render. Always aims to render 9 or 10 page numbers with a separator. 
+/** Utility function for finding the specific page numbers to render. Always aims to render 9 or 10 page numbers with a separator.
  * @hidden
-*/
+ */
 function splitPages(page: number, totalPages: number): number[][] {
     // If less than 12 pages, show all of them.
     if (totalPages < 12) return [Array.from({ length: totalPages }, (_, i) => i)];

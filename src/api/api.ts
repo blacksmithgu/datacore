@@ -1,4 +1,4 @@
-/** 
+/**
  * @module api
  */
 import { Link } from "expression/link";
@@ -206,11 +206,11 @@ export class DatacoreApi {
     ): MarkdownRenderChild {
         return this._renderJavascript(source, container, component, sourcePath, "tsx");
     }
-		
-    /** 
-		 * @private 
-		 * Shared logic for rendering any JS/TS script. 
-		 */
+
+    /**
+     * @private
+     * Shared logic for rendering any JS/TS script.
+     */
     private _renderJavascript(
         source: string,
         container: HTMLElement,

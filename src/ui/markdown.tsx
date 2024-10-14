@@ -1,6 +1,6 @@
-/** Provides core preact / rendering utilities for all view types. 
+/** Provides core preact / rendering utilities for all view types.
  * @module ui
-*/
+ */
 import { App, MarkdownRenderer } from "obsidian";
 import { Component } from "obsidian";
 import { Link, Literal, Literals } from "expression/literal";
@@ -22,10 +22,10 @@ export const DATACORE_CONTEXT = createContext<Datacore>(undefined!);
 export const SETTINGS_CONTEXT = createContext<Settings>(undefined!);
 export const CURRENT_FILE_CONTEXT = createContext<string>("");
 
-/** More compact provider for all of the datacore react contexts. 
- * 
+/** More compact provider for all of the datacore react contexts.
+ *
  * @hidden
-*/
+ */
 export function DatacoreContextProvider({
     children,
     app,
@@ -50,7 +50,7 @@ export function DatacoreContextProvider({
 }
 
 /**
- * @hidden 
+ * @hidden
  */
 export function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | string; sourcePath?: string }) {
     const workspace = useContext(APP_CONTEXT)?.workspace;
@@ -146,7 +146,7 @@ export function RawMarkdown({
     return <span ref={container} style={style} className={cls} onClick={onClick}></span>;
 }
 
-/** 
+/**
  * Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export const Markdown = memo(RawMarkdown);
 
@@ -270,12 +270,12 @@ export function RawLit({
     return <Fragment>&lt;Unrecognized: {JSON.stringify(value)}&gt;</Fragment>;
 }
 
-/** 
+/**
  * @hidden
  * Intelligently render an arbitrary literal value. */
 export const Lit = memo(RawLit);
 
-/** 
+/**
  * @hidden
  * Render a pretty centered error message in a box. */
 export function ErrorMessage({
@@ -303,10 +303,10 @@ export function ErrorMessage({
     );
 }
 
-/** A simple error boundary which renders a message on failure. 
- * 
+/** A simple error boundary which renders a message on failure.
+ *
  * @hidden
-*/
+ */
 export function SimpleErrorBoundary({
     title,
     message,

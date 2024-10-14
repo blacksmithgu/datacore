@@ -1,4 +1,4 @@
-/** 
+/**
  * @module api
  */
 import { Literal, Literals } from "expression/literal";
@@ -11,9 +11,9 @@ export type Provenance =
     | { type: "frontmatter"; file: string; key: string }
     | { type: "inline-field"; file: string; line: number; key: string };
 
-/** 
- * General definition for a field. Provides the field key, value, as well as information on it's source and how it can be edited. 
- * @group Common Types 
+/**
+ * General definition for a field. Provides the field key, value, as well as information on it's source and how it can be edited.
+ * @group Common Types
  * */
 export interface Field {
     /** The canonical key name for the field (i.e., as it actually shows up in the data structure). */
@@ -58,9 +58,9 @@ export namespace Fieldbearings {
  */
 export type FieldExtractor<T> = (object: T, key?: string) => Field[];
 
-/** Quick utilities for generating fields and doing searches over them. 
+/** Quick utilities for generating fields and doing searches over them.
  * @hidden
-*/
+ */
 export namespace Extractors {
     /** Check if the given property in the object is not excluded and is a plain property (not a function or other special object). */
     function isValidIntrinsic(object: Record<string, any>, key: string, exclude?: Set<string>): boolean {
