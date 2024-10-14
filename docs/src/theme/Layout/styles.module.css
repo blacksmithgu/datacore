@@ -1,0 +1,35 @@
+html,
+body {
+    height: 100%;
+}
+
+.mainWrapper {
+    display: flex;
+    flex-direction: column;
+		flex-grow: 1;
+}
+
+/* Docusaurus-specific utility class */
+:global(.docusaurus-mt-lg) {
+    margin-top: 3rem;
+}
+
+:global(#__docusaurus) {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+:global(.eternal-sidebar) {
+    width: var(--doc-sidebar-width);
+		max-height: 100%;
+		position: sticky;
+		min-width: var(--doc-sidebar-width);
+		overflow-y: scroll;
+		top: var(--ifm-navbar-height);
+		max-height: calc(100vh - var(--ifm-navbar-height));
+}
+@media (max-width: 997px) {
+    :global(.eternal-sidebar) {
+        display: none;
+    }
+}

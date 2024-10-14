@@ -1,3 +1,7 @@
+/**
+ * @module ui
+ */
+
 import { useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "preact/hooks";
 import {
     APP_CONTEXT,
@@ -12,7 +16,10 @@ import { getFileTitle, lineRange } from "utils/normalizers";
 
 import "./embed.css";
 
-/** Renders an embed in the canonical Obsidian style. */
+/** Renders an embed in the canonical Obsidian style. 
+ * 
+ * @group Components
+*/
 export function Embed({
     link,
     inline,
@@ -77,6 +84,8 @@ export function Embed({
  * Note that it's possible for the file on disk to be different than it was when you first loaded the [start, end) line span
  * - generally, datacore will asynchronously reload these files in the background and fix it's index, but you may have some
  * strange artifacts otherwise.
+ * 
+ * @group Components
  */
 export function LineSpanEmbed({
     path,
@@ -129,7 +138,10 @@ export type LineSpanContent =
     | { type: "error"; message: string }
     | { type: "loaded"; content: string };
 
-/** Utility hook which loads path[start..end) as long as the target file exists. */
+/** Utility hook which loads path[start..end) as long as the target file exists.
+ * 
+ * @group Hooks
+ */
 export function useLineSpan(path: string, start: number, end: number): LineSpanContent {
     const app = useContext(APP_CONTEXT);
     const datacore = useContext(DATACORE_CONTEXT);

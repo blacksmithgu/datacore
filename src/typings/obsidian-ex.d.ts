@@ -2,6 +2,7 @@ import type { DatacoreApi } from "api/api";
 import { CanvasMetadataIndex } from "index/types/json/canvas";
 import "obsidian";
 
+/** @hidden */
 declare module "obsidian" {
     interface FileManager {
         linkUpdaters: {

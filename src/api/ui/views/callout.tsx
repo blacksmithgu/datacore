@@ -1,3 +1,6 @@
+/**
+ * @module views
+*/
 import { VNode } from "preact";
 import { PropsWithChildren } from "preact/compat";
 import { useControlledState } from "ui/hooks";
@@ -5,7 +8,9 @@ import { useControlledState } from "ui/hooks";
 import "./callout.css";
 import { combineClasses } from "../basics";
 
-/** General properties for configuring a callout. */
+/** General properties for configuring a callout.
+ * @group Props
+ */
 export interface CalloutProps {
     /** Title of the callout. */
     title: string | VNode;
@@ -27,6 +32,10 @@ export interface CalloutProps {
 /** Splits on `|<stuff>`. */
 const METADATA_SPLIT_REGEX = /\|(.*)/s;
 
+/**
+ * @group Components
+ * @param props {@inheritDoc CalloutProps}
+ */
 export function Callout({
     collapsible = true,
     open: openProp,

@@ -1,3 +1,6 @@
+/**
+ * @module ui
+*/
 import "./paging.css";
 
 import { useCallback, useContext, useMemo, useState } from "preact/hooks";
@@ -5,7 +8,10 @@ import { Fragment, RefObject } from "preact";
 import React from "preact/compat";
 import { SETTINGS_CONTEXT } from "ui/markdown";
 
-/** 0-indexed page control. `page` should be the current 0-indexed page, while `totalPages` is the total number of pages. */
+/** 0-indexed page control. `page` should be the current 0-indexed page, while `totalPages` is the total number of pages. 
+ * @group Components
+ * @param props
+*/
 function RawControlledPager({
     page,
     setPage,
@@ -139,7 +145,9 @@ function RawControlledPager({
 /** 0-indexed page control. `page` should be the current 0-indexed paeg, while `maxPage` is the maximum page (inclusive). */
 export const ControlledPager = React.memo(RawControlledPager);
 
-/** Hook which provides automatic page reflow and page state management. */
+/** Hook which provides automatic page reflow and page state management.
+ * @group Hooks
+ */
 export function usePaging({
     initialPage = 0,
     pageSize,
@@ -162,7 +170,9 @@ export function usePaging({
     return [page, totalPages, setBoundedPage];
 }
 
-/** Provides useful metadata about paging. */
+/** Provides useful metadata about paging. 
+ * @group Props
+*/
 export interface Paging {
     /** Whether paging is enabled. */
     enabled: boolean;
@@ -181,6 +191,7 @@ export interface Paging {
 /**
  * Central paging hook which extracts page metadata out of Datacore settings, handles page overflow, current page state, and updating the page
  * if the elements change. If a container is specified, also supports scrolling the container view on page changes.
+ * @group Hooks
  */
 export function useDatacorePaging({
     initialPage = 0,
@@ -224,13 +235,18 @@ export function useDatacorePaging({
     return { enabled: pagingEnabled, scroll: shouldScroll, page, pageSize, totalPages, setPage };
 }
 
+/**
+ * @hidden 
+ */
 function clamp(input: number, min: number, max: number): number {
     if (input < min) return min;
     if (input > max) return max;
     return input;
 }
 
-/** Utility function for finding the specific page numbers to render. Always aims to render 9 or 10 page numbers with a separator. */
+/** Utility function for finding the specific page numbers to render. Always aims to render 9 or 10 page numbers with a separator. 
+ * @hidden
+*/
 function splitPages(page: number, totalPages: number): number[][] {
     // If less than 12 pages, show all of them.
     if (totalPages < 12) return [Array.from({ length: totalPages }, (_, i) => i)];
@@ -263,7 +279,9 @@ function splitPages(page: number, totalPages: number): number[][] {
             [totalPages - 2, totalPages - 1],
         ];
 }
-
+/**
+ * @hidden
+ */
 function isLeftSeperator(realPage: number, visiblePagesLength: number, seperatorIndex: number): boolean {
     // If we have 2 visible pages, we can determine seperator is clicked by realPage.
     // If we have 3 visible pages, we can determine seperator is clicked by index.

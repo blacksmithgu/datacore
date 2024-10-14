@@ -1,3 +1,6 @@
+/**
+ * @module indexables
+ */
 import { Extractors, Field, Fieldbearing, FIELDBEARING_TYPE, FieldExtractor } from "expression/field";
 import { FILE_TYPE, Indexable, Linkable, LINKABLE_TYPE, Linkbearing, Taggable, TAGGABLE_TYPE } from "./indexable";
 import {

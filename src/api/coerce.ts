@@ -1,3 +1,4 @@
+/** @ignore */
 //! Utilities for forcing types to be of a specific type or returning 'undefined' if not, allowing for much more concise typing.
 
 import { Link, Literal, Literals } from "expression/literal";
