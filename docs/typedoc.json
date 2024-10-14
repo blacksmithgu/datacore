@@ -1,7 +1,0 @@
-{
-	"plugin": ["typedoc-plugin-merge-modules", "typedoc-plugin-markdown"],
-	"mergeModulesRenameDefaults": true,
-	"mergeModulesMergeMode": "module",
-	"readme": "./javascript.md",
-	"sourceLinkTemplate": "https://github.com/blacksmithgu/datacore/blob/{gitRevision}/{path}#L{line}"
-}

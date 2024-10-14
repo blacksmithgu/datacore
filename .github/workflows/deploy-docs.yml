@@ -28,8 +28,8 @@ jobs:
         run: | 
           cd docs
           yarn install --frozen-lockfile
-          yarn generate
-          yarn build
+          yarn run generate
+          yarn run build
 
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
