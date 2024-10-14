@@ -27,6 +27,7 @@ jobs:
       - name: Build
         run: | 
           cd docs
+          corepack enable
           yarn install --frozen-lockfile
           yarn generate
           yarn build
