@@ -1,4 +1,4 @@
-/** 
+/**
  * @module api
  */
 import { Groupings, Literals } from "expression/literal";
@@ -79,8 +79,8 @@ export interface DataArray<T> {
     sortInPlace<U>(key: (v: T) => U, direction?: "asc" | "desc", comparator?: ArrayComparator<U>): DataArray<T>;
 
     /**
-     * Return an array where elements are grouped by the given key; the resulting array will have objects of the form 
-		 * \`{ key: \<key value\>, rows: DataArray }`.
+     * Return an array where elements are grouped by the given key; the resulting array will have objects of the form
+     * \`{ key: \<key value\>, rows: DataArray }`.
      */
     groupBy<U>(key: ArrayFunc<T, U>, comparator?: ArrayComparator<U>): DataArray<{ key: U; rows: T[] }>;
 
@@ -133,10 +133,10 @@ export interface DataArray<T> {
     [field: string]: any;
 }
 
-/** 
- * @internal 
+/**
+ * @internal
  * @hidden
- * Implementation of DataArray, minus the dynamic variable access, which is implemented via proxy. 
+ * Implementation of DataArray, minus the dynamic variable access, which is implemented via proxy.
  * */
 class DataArrayImpl<T> implements DataArray<T> {
     private static ARRAY_FUNCTIONS: Set<string> = new Set([

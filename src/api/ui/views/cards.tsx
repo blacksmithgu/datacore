@@ -1,6 +1,6 @@
 /**
  * @module views
-*/
+ */
 
 import { Literal } from "expression/literal";
 import { VNode } from "preact";
@@ -9,7 +9,7 @@ import { useMemo } from "preact/hooks";
 import "./cards.css";
 /**
  * Props for the card component
- * 
+ *
  * @group Props
  */
 export interface CardProps<T> {
@@ -30,8 +30,8 @@ export interface CardProps<T> {
 }
 /**
  * A card with a title and content
- * 
- * @group Components 
+ *
+ * @group Components
  */
 export function Card<T>(props: CardProps<T>) {
     const cardTitle = useMemo(() => {

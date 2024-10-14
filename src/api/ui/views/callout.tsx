@@ -1,6 +1,6 @@
 /**
  * @module views
-*/
+ */
 import { VNode } from "preact";
 import { PropsWithChildren } from "preact/compat";
 import { useControlledState } from "ui/hooks";

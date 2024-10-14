@@ -1,4 +1,4 @@
-/** 
+/**
  * @module expressions
  */
 import { DateTime, Duration } from "luxon";
@@ -394,11 +394,11 @@ export namespace Literals {
  * @group Common Types
  */
 export type GroupElement<T> = { key: Literal; rows: Grouping<T> };
-/** 
+/**
  * A grouping, which can be either:
  * - an array of elements of type `T`, or
  * - an array of {@link Groupelement}s
- * 
+ *
  * @group Common Types
  */
 export type Grouping<T> = T[] | GroupElement<T>[];

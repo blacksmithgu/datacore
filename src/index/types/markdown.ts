@@ -713,9 +713,9 @@ export interface FrontmatterEntry {
     raw: string;
 }
 
-/** Convert a regular frontmatter entry into a JSON frontmatter entry. 
+/** Convert a regular frontmatter entry into a JSON frontmatter entry.
  * @hidden
-*/
+ */
 export function jsonFrontmatterEntry(raw: FrontmatterEntry): JsonFrontmatterEntry {
     return {
         key: raw.key,
@@ -735,9 +735,9 @@ export function valueFrontmatterEntry(raw: JsonFrontmatterEntry): FrontmatterEnt
     };
 }
 
-/** Normalize links deeply in the object. 
+/** Normalize links deeply in the object.
  * @hidden
-*/
+ */
 export function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T {
     return Literals.mapLeaves(input, (value) => {
         if (Literals.isLink(value)) return normalizer(value);
@@ -759,9 +759,9 @@ export function gatherLinks(input: Literal): Link[] {
     return result;
 }
 
-/** Gather tags from a datablock. 
+/** Gather tags from a datablock.
  * @hidden
-*/
+ */
 export function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
     function recurse(input: any): string[] {
         if (Literals.isString(input)) return [input.startsWith("#") ? input : "#" + input];

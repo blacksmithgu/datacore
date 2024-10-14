@@ -641,8 +641,8 @@ export function createBinaryParser<T, U>(
     });
 }
 
-/** 
- * Create a parser which parses \<function\>(\<args\>). 
+/**
+ * Create a parser which parses \<function\>(\<args\>).
  * */
 export function createFunction<T>(func: string | P.Parser<string>, args: P.Parser<T>): P.Parser<[string, T]> {
     const realFunc = typeof func === "string" ? P.string(func) : func;
