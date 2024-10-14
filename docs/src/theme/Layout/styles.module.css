@@ -6,6 +6,7 @@ body {
 .mainWrapper {
     display: flex;
     flex-direction: column;
+		flex-grow: 1;
 }
 
 /* Docusaurus-specific utility class */
