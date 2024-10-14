@@ -1,3 +1,6 @@
+/** 
+ * @module expressions
+ */
 import { DateTime, Duration } from "luxon";
 import { Link } from "expression/link";
 import { renderMinimalDate, renderMinimalDuration } from "utils/normalizers";
@@ -68,13 +71,17 @@ export type WrappedLiteral =
     | LiteralWrapper<"function">
     | LiteralWrapper<"null">;
 
-/** Combines a textual type and value; primarily useful for switching on. */
+/** Combines a textual type and value; primarily useful for switching on.
+ * @hidden
+ */
 export interface LiteralWrapper<T extends LiteralType> {
     type: T;
     value: LiteralRepr<T>;
 }
 
-/** Utility library for handling literal values. */
+/**
+ * @hidden
+ *  Utility library for handling literal values. */
 export namespace Literals {
     /** Settings used when formatting literal values to text. */
     export interface ToStringSettings {
@@ -383,10 +390,21 @@ export namespace Literals {
     }
 }
 
-/** A grouping on a type which supports recursively-nested groups. */
+/** A grouping on a type which supports recursively-nested groups.
+ * @group Common Types
+ */
 export type GroupElement<T> = { key: Literal; rows: Grouping<T> };
+/** 
+ * A grouping, which can be either:
+ * - an array of elements of type `T`, or
+ * - an array of {@link Groupelement}s
+ * 
+ * @group Common Types
+ */
 export type Grouping<T> = T[] | GroupElement<T>[];
-
+/**
+ * @hidden
+ */
 export namespace Groupings {
     /** Determines if the given group entry is a standalone value, or a grouping of sub-entries. */
     export function isElementGroup<T>(entry: any): entry is GroupElement<T> {

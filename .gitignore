@@ -2,6 +2,7 @@
 package-lock.json
 pnpm-lock.yaml
 node_modules/
+.yarn/
 
 # Build artifacts.
 build/
@@ -12,3 +13,9 @@ build/
 
 # Random crap.
 .DS_Store
+
+# Documentation artifacts
+
+docs/root/api/**/*.*
+!docs/root/api/index.md
+.docuaurus/

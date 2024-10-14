@@ -1,13 +1,18 @@
 /**
  * Collection of direct API-facing elements. This essentially serves as a layer of indirection to internal types, so that the internal types can be
  * changed without breaking the API.
+ * 
+ * @module ui
  */
 
 import { HTMLAttributes, useMemo } from "preact/compat";
 
 import "api/ui/layout.css";
 
-/** Creates a vertical flexbox "stack" of elements. */
+/** Creates a vertical flexbox "stack" of elements.
+ * 
+ * @group Components
+ */
 export function Stack(
     props: HTMLAttributes<HTMLDivElement> & {
         className?: string;
@@ -36,7 +41,10 @@ export function Stack(
     );
 }
 
-/** Creates a horizontal flexbox "grouping" of elements. */
+/** Creates a horizontal flexbox "grouping" of elements. 
+ * 
+ * @group Components
+*/
 export function Group(
     props: HTMLAttributes<HTMLDivElement> & {
         className?: string;

@@ -1,15 +1,24 @@
+/**
+ * @module views
+*/
 import { Literal } from "expression/literal";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 
 import { VNode, isValidElement } from "preact";
 import { useContext } from "preact/hooks";
 
+/** 
+ * State for a {@link ListView}
+ * @typeParam T - the type of the items contained in the list
+ * @group States
+ */
 export interface ListState<T> {
     /**
      * Whether the list should be ordered (ol), unordered (ul), or have no special markup (none).
      *
      * Lists with no special markup just have each element rendered directly as-is without any wrapping
      * inside of a single div.
+		 * 
      */
     type?: "ordered" | "unordered" | "none";
 
@@ -26,7 +35,11 @@ export interface ListState<T> {
     renderer?: (element: T, index: number) => React.ReactNode | Literal;
 }
 
-/** A simple and responsive list view. */
+/**
+ * 
+ * A simple and responsive list view. 
+ * @group Components 
+ */
 export function ListView<T>(state: ListState<T>) {
     // const settings = useContext(SETTINGS_CONTEXT);
 
@@ -67,12 +80,16 @@ export function ListView<T>(state: ListState<T>) {
     }
 }
 
-/** No-op element renderer. */
+/** No-op element renderer. 
+ * @hidden
+*/
 function identity<T>(element: T): T {
     return element;
 }
 
-/** Ensures the given element is a renderable react node. */
+/**
+ * @hidden
+ *  Ensures the given element is a renderable react node. */
 export function ensureElement<T>(element: T): VNode {
     if (isValidElement(element)) {
         return element;
@@ -81,7 +98,9 @@ export function ensureElement<T>(element: T): VNode {
     }
 }
 
-/** Default list element which just tries to render the value as a literal. */
+/**
+ * @hidden
+ *  Default list element which just tries to render the value as a literal. */
 export function DefaultListElement<T>({ element }: { element: T }) {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
 

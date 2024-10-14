@@ -1,3 +1,6 @@
+/** 
+ * @module ui
+ */
 import { useMemo } from "preact/hooks";
 import { useStableCallback } from "ui/hooks";
 import { FieldControlProps } from "./common-props";
@@ -5,7 +8,9 @@ import { useEditableDispatch } from "ui/fields/editable";
 
 import "./fields.css";
 
-/** Editable field for a star-based rating field. */
+/** Editable field for a star-based rating field.
+ * @group Editable Components
+ */
 export function RatingEditable({ value, updater, config: config, defaultValue }: FieldControlProps<number | string>) {
     const [state, dispatch] = useEditableDispatch<number | string>({
         content: value ?? defaultValue,

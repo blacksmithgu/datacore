@@ -1,3 +1,6 @@
+/**
+ * @module indexables
+ */
 import { Link } from "expression/link";
 import { FILE_TYPE, File, Indexable, LINKABLE_TYPE, Linkable } from "./indexable";
 import { DateTime } from "luxon";

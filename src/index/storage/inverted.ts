@@ -1,4 +1,4 @@
-/** Tracks an inverted index of value -> set<ids>. */
+/** Tracks an inverted index of value -> set\<ids\>. */
 export class InvertedIndex<V> {
     private inverted: Map<V, Set<string>>;
 
