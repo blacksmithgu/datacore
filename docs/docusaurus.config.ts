@@ -55,7 +55,7 @@ const config: Config = {
                     type: "docSidebar",
                     sidebarId: "global",
                     position: "left",
-                    label: "Explore",
+                    label: "Home",
                 },
                 {
                     position: "right",
