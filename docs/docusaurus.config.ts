@@ -1,177 +1,122 @@
-import { themes as prismThemes } from "prism-react-renderer";
-import type { Config } from "@docusaurus/types";
-import type * as Preset from "@docusaurus/preset-classic";
-import searchLocal from "@easyops-cn/docusaurus-search-local";
-import arounded from "./src/arounded-plugin-docs";
-// import typedocConfig from "./typedoc.json";
+import {themes as prismThemes} from 'prism-react-renderer';
+import type {Config} from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: "Datacore",
-    favicon: "img/favicon.ico",
-    // Set the production url of your site here
-    url: "https://blacksmithgu.github.io",
-    // Set the /<baseUrl>/ pathname under which your site is served
-    // For GitHub pages deployment, it is often '/<projectName>/'
-    baseUrl: "/datacore/",
+  title: 'Datacore',
+  tagline: 'Database for Obsidian power users.',
+  favicon: 'img/favicon.ico',
 
-    // GitHub pages deployment config.
-    // If you aren't using GitHub pages, you don't need these.
-    organizationName: "blacksmithgu", // Usually your GitHub org/user name.
-    projectName: "datacore", // Usually your repo name.
+  // Set the production url of your site here
+  url: 'https://blacksmithgu.github.io',
+  baseUrl: '/datacore',
+  trailingSlash: false,
 
-    onBrokenLinks: "throw",
-    onBrokenMarkdownLinks: "warn",
+  // GitHub pages deployment config.
+  organizationName: 'blacksmithgu',
+  projectName: 'datacore',
 
-    // Even if you don't use internationalization, you can use this field to set
-    // useful metadata like html lang. For example, if your site is Chinese, you
-    // may want to replace "en" with "zh-Hans".
-    i18n: {
-        defaultLocale: "en",
-        locales: ["en"],
+  onBrokenLinks: 'throw',
+  onBrokenMarkdownLinks: 'warn',
+
+  // Even if you don't use internationalization, you can use this field to set
+  // useful metadata like html lang. For example, if your site is Chinese, you
+  // may want to replace "en" with "zh-Hans".
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: './sidebars.ts',
+          routeBasePath: "/",
+          editUrl: 'https://github.com/blacksmithgu/datacore/tree/master/docs',
+        },
+        blog: {
+          showReadingTime: true,
+          feedOptions: {
+            type: ['rss', 'atom'],
+            xslt: true,
+          },
+          // Useful options to enforce blogging best practices
+          onInlineTags: 'warn',
+          onInlineAuthors: 'warn',
+          onUntruncatedBlogPosts: 'warn',
+        },
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  themeConfig: {
+    colorMode: {
+      defaultMode: 'dark',
+      respectPrefersColorScheme: true,
     },
-
-    presets: [
-        /*         [
-            "classic",
-            {
-                blog: false,
-                theme: {
-                    customCss: "./src/css/custom.css",
-                },
-            },
-        ], */
-    ],
-
-    themeConfig: {
-        // Replace with your project's social card
-        navbar: {
-            title: "Datacore",
-            logo: {
-                srcDark: "img/logo.svg",
-                src: "img/logo-light.svg",
-            },
-            items: [
-                {
-                    type: "docSidebar",
-                    sidebarId: "global",
-                    position: "left",
-                    label: "Home",
-                },
-                {
-                    position: "right",
-                    html: `<div style="display: flex; align-items: center">
-									<svg style="height: min-content;" xmlns="http://www.w3.org/2000/svg" class="github-logo" width="16" height="16" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
-										<div style="margin-left: 0.5em">View on Github</div>
-									</div>`,
-                    href: "https://github.com/blacksmithgu/datacore",
-                },
-            ],
+    navbar: {
+      title: 'Datacore',
+      logo: {
+        alt: 'Datacore',
+        src: 'img/logo.svg',
+      },
+      items: [
+        {
+          type: 'docSidebar',
+          sidebarId: 'default',
+          position: 'left',
+          label: 'Documentation',
         },
-        footer: {
-            style: "dark",
-            links: [
-                {
-                    title: "Community",
-                    items: [
-                        {
-                            label: "Discord",
-                            href: "https://discord.gg/KwZUX4BYba",
-                        },
-                    ],
-                },
-            ],
-            copyright: `Copyright © ${new Date().getFullYear()}. Built with Docusaurus. 🦖`,
+        {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          href: 'https://github.com/blacksmithgu/datacore',
+          label: 'GitHub',
+          position: 'right',
         },
-        prism: {
-            theme: prismThemes.shadesOfPurple,
-            darkTheme: prismThemes.dracula,
+      ],
+    },
+    footer: {
+      style: 'dark',
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            {
+              label: 'Documentation',
+              to: '/docs/intro',
+            },
+            {
+              label: 'Blog',
+              to: '/blog',
+            },
+          ],
         },
-    } as Preset.ThemeConfig,
-    themes: [
-        [
-            "@docusaurus/theme-classic",
+        {
+          title: 'Community',
+          items: [
             {
-                customCss: "./src/css/custom.css",
+              label: 'Github',
+              href: 'https://github.com/blacksmithgu/datacore',
             },
-        ],
-        [
-            "@easyops-cn/docusaurus-search-local",
             {
-                hashed: true,
-                language: ["en"],
-                docsDir: "./root",
+              label: 'Discord',
+              href: 'https://discord.gg/KwZUX4BYba',
             },
-        ],
-    ],
-    plugins: [
-        "@docusaurus/plugin-debug",
-        [
-            arounded,
-            {
-                sidebarPath: "./sidebars.ts",
-                path: "./root",
-								routeBasePath: "/",
-                // Please change this to your repo.
-                // Remove this to remove the "edit this page" links.
-                editUrl: "https://github.com/blacksmithgu/datacore/tree/main/docs",
-								
-            },
-        ],
-        [
-            "docusaurus-plugin-typedoc",
-            // Options
-            {
-                plugin: ["typedoc-plugin-merge-modules", "typedoc-plugin-markdown"],
-                mergeModulesRenameDefaults: true,
-                mergeModulesMergeMode: "module",
-                watch: process.env.WATCH_DOCS == "true",
-                // entryPoints: [".."],
-                tsconfig: "../tsconfig.json",
-                out: "./root/api",
-                mergeReadme: true,
-                // ...typedocConfig,
-                skipErrorChecking: true,
-                excludeExternals: true,
-                entryPointStrategy: "expand",
-                readme: "./javascript.md",
-                name: "Javascript/Typescript API",
-
-                excludeInternal: true,
-                groupOrder: ["Components", "Hooks", "Common Types", "Other"],
-                excludeNotDocumented: true,
-                externalPattern: ["**/node_modules/**", "../**/node_modules/**", "**/react-select/**"],
-                expandParameters: true,
-                outputFileStrategy: "members",
-                membersWithOwnFile: ["Function", "Class", "Interface", "TypeAlias"],
-                defaultCategory: "Other",
-                navigation: {
-                    includeFolders: false,
-                    includeGroups: true,
-                    includeCategories: true,
-                },
-                categorizeByGroup: true,
-                hideGroupHeadings: true,
-                entryPoints: [
-                    "../src/api/**/*.ts*",
-                    "../src/index/types/**/*.ts",
-                    "../src/ui/markdown.tsx",
-                    "../src/ui/fields/**/*.ts*",
-                    "../src/expression/literal.ts",
-                ],
-                exclude: [
-                    "../src/test/**/*.*",
-                    "../node_modules/react-select/dist/*.*",
-                    "../src/typings",
-                    "../src/api/coerce.ts",
-                    "../src/api/script-cache.ts",
-                    "../src/api/ui/grouping.ts",
-                    "../src/index/types/json/**/*.*",
-                    "../src/index/types/index-query.ts",
-                ],
-                preserveWatchOutput: true,
-            },
-        ],
-    ],
+          ],
+        },
+      ],
+      copyright: `Copyright Michael Brenan © ${new Date().getFullYear()} Datacore. <a href="https://obsidian.md">Obsidian.md</a> is a trademark of Obsidian.`,
+    },
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+    },
+  } satisfies Preset.ThemeConfig,
 };
 
 export default config;
