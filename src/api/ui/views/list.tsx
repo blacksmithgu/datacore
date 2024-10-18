@@ -2,10 +2,16 @@
  * @module views
  */
 import { Literal } from "expression/literal";
-import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
+import { APP_CONTEXT, CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit } from "ui/markdown";
 
 import { VNode, isValidElement } from "preact";
-import { useContext } from "preact/hooks";
+import { useContext, useMemo } from "preact/hooks";
+import { BaseFieldProps } from "ui/fields/common-props";
+import { ControlledEditable, Editable, EditableElement, EditableState, TextEditable, useEditableDispatch } from "ui/fields/editable";
+import { useStableCallback } from "ui/hooks";
+import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
+import { rewriteTask } from "utils/task";
+import { setInlineField } from "index/import/inline-field";
 
 /**
  * State for a {@link ListView}
@@ -33,6 +39,9 @@ export interface ListState<T> {
      * rendered as a literal.
      */
     renderer?: (element: T, index: number) => React.ReactNode | Literal;
+
+    /** fields to display under each item in this task list */
+    displayedFields?: (BaseFieldProps<Literal> & { key: string })[];
 }
 
 /**
@@ -105,4 +114,22 @@ export function DefaultListElement<T>({ element }: { element: T }) {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
 
     return <Lit inline={true} value={element as Literal} sourcePath={sourcePath} />;
+}
+
+export function EditableListElement<T>({
+    element: item,
+    editor,
+    onUpdate,
+		file,
+		editorProps
+}: {
+    editor: (value: T) =>EditableElement<T>; 
+    element: T;
+		file: string;
+    onUpdate: (value: T) => unknown;
+		editorProps: unknown;
+}) { 
+    return (
+			<ControlledEditable<T> props={editorProps} sourcePath={file} content={item} editor={editor(item)} onUpdate={onUpdate} defaultRender={<DefaultListElement element={item}/>} />
+    );
 }

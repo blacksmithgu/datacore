@@ -155,7 +155,10 @@ export function markdownSourceImport(
     ///////////
 
     // All list items in lists. Start with a simple trivial pass.
+    const contentRegex = /^[\t\f\v ]*[\-+\*]\s(\[.\]\s)?/;
+    const markerRegex = /^(>?\s?)*(\t|\s)*/g;
     const listItems = new BTree<number, ListItemData>(undefined, (a, b) => a - b);
+
     for (const list of metadata.listItems || []) {
         const line = lines[list.position.start.line];
 
@@ -170,7 +173,7 @@ export function markdownSourceImport(
 
         const item = new ListItemData(
             list.position.start.line,
-            list.position.end.line + 1,
+            list.position.end.line,
             list.parent,
             symbol,
             list.id,
@@ -562,7 +565,6 @@ export type BlockData = ListBlockData | CodeblockData | DatablockData | BaseBloc
 export class ListItemData {
     public metadata: Metadata = new Metadata();
     public elements: ListItemData[] = [];
-
     public constructor(
         public start: number,
         public end: number,
