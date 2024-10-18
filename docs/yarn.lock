@@ -1749,7 +1749,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@docusaurus/plugin-content-pages@npm:3.5.2":
+"@docusaurus/plugin-content-pages@npm:3.5.2, @docusaurus/plugin-content-pages@npm:^3.5.2":
   version: 3.5.2
   resolution: "@docusaurus/plugin-content-pages@npm:3.5.2"
   dependencies:
@@ -5042,6 +5042,7 @@ __metadata:
     "@docusaurus/core": "npm:3.5.2"
     "@docusaurus/module-type-aliases": "npm:3.5.2"
     "@docusaurus/plugin-content-docs": "npm:^3.5.2"
+    "@docusaurus/plugin-content-pages": "npm:^3.5.2"
     "@docusaurus/plugin-debug": "npm:^3.5.2"
     "@docusaurus/preset-classic": "npm:3.5.2"
     "@docusaurus/theme-classic": "npm:^3.5.2"
