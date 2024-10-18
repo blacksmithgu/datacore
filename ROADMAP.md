@@ -33,7 +33,7 @@ Each view will have the following general functionality:
 
 Additionally, there is potential for a few extra nice features:
 
-- [ ] **View Pages**: Special page types which are just Datacore views and which can be put into the side bar or as
+- [X] **View Pages**: Special page types which are just Datacore views and which can be put into the side bar or as
   regular pages.
 
 ## Data Input
