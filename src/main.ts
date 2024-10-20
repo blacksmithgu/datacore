@@ -178,6 +178,14 @@ class GeneralSettingsTab extends PluginSettingTab {
                     await this.plugin.updateSettings({ scrollOnPageChange: value });
                 });
             });
+        new Setting(this.containerEl)
+            .setName("Enable Javascript")
+            .setDesc("Whether Javascript codeblocks will be evaluated.")
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.settings.enableJs).onChange(async (value) => {
+                    await this.plugin.updateSettings({ enableJs: value });
+                });
+            });
 
         this.containerEl.createEl("h2", { text: "Formatting" });
 
@@ -277,6 +285,37 @@ class GeneralSettingsTab extends PluginSettingTab {
                     const parsed = parseInt(value);
                     if (isNaN(parsed)) return;
                     await this.plugin.updateSettings({ maxRecursiveRenderDepth: parsed });
+                });
+            });
+        new Setting(this.containerEl)
+            .setName("Recursive subtask completion")
+            .setDesc("Whether or not subtasks should be completed along with their parent in datacore task views")
+            .addToggle((tb) => {
+                tb.setValue(this.plugin.settings.recursiveTaskCompletion).onChange(async (val) => {
+                    await this.plugin.updateSettings({ recursiveTaskCompletion: val });
+                });
+            });
+
+        this.containerEl.createEl("h2", { text: "Tasks" });
+
+        new Setting(this.containerEl)
+            .setName("Task Completion Text")
+            .setDesc("Name of inline field in which to store task completion date/time")
+            .addText((text) => {
+                text.setValue(this.plugin.settings.taskCompletionText).onChange(async (value) => {
+                    await this.plugin.updateSettings({ taskCompletionText: value });
+                });
+            });
+
+        new Setting(this.containerEl)
+            .setName("Use Emoji Shorthand for Task Completion")
+            .setDesc(
+                "If enabled, automatic completion will use an emoji shorthand ✅ YYYY-MM-DD" +
+                    "instead of [completion:: date]."
+            )
+            .addToggle((tb) => {
+                tb.setValue(this.plugin.settings.taskCompletionUseEmojiShorthand).onChange(async (val) => {
+                    await this.plugin.updateSettings({ taskCompletionUseEmojiShorthand: val });
                 });
             });
     }
