@@ -3,6 +3,10 @@
 Datacore is a work-in-progress re-imagining of [Dataview](https://github.com/blacksmithgu/obsidian-dataview.git) with a
 focus on 2-10x better query and rendering performance, as well as fully interactable views.
 
+## Documentation
+
+You can find the current documentation at https://blacksmithgu.github.io/datacore/.
+
 ## Roadmap
 
 Datacore is a work in progress. For more details, check out the [roadmap](ROADMAP.md).
