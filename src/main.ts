@@ -4,6 +4,7 @@ import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
+import { DatacoreQueryView as DatacoreJSView, VIEW_TYPE_DATACOREJS } from "ui/view-page";
 import { IndexStatusBar } from "ui/index-status";
 
 /** Reactive data engine for your Obsidian.md vault. */
@@ -51,6 +52,20 @@ export default class DatacorePlugin extends Plugin {
             async (source: string, el, ctx) => this.api.executeTsx(source, el, ctx, ctx.sourcePath),
             -100
         );
+
+        // Views: DatacoreJS view.
+        this.registerView(VIEW_TYPE_DATACOREJS, (leaf) => new DatacoreJSView(leaf, this.api));
+
+        // Add a command for creating a new view page.
+        this.addCommand({
+            id: "datacore-add-view-page",
+            name: "Create View Page",
+            callback: () => {
+                const newLeaf = this.app.workspace.getLeaf("tab");
+                newLeaf.setViewState({ type: VIEW_TYPE_DATACOREJS, active: true });
+                this.app.workspace.setActiveLeaf(newLeaf, { focus: true });
+            },
+        });
 
         // Register JS highlighting for codeblocks.
         this.register(this.registerCodeblockHighlighting());
