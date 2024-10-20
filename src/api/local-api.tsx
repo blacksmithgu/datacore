@@ -7,7 +7,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown";
+import { MarkdownCodeblock, MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -22,9 +22,14 @@ import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { VanillaTable } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
+import { TaskList } from "./ui/views/task";
+import { Card } from "./ui/views/cards";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
+import { setTaskText, useSetField } from "utils/fields";
+import { ControlledEditableTextField, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
+import { completeTask, rewriteTask } from "utils/task";
 
 /** Local API provided to specific codeblocks when they are executing.
  * @group Core
@@ -146,6 +151,17 @@ export class DatacoreLocalApi {
         return DataArray.wrap(input);
     }
 
+    /** Sets the text of a given task programmatically. */
+
+    public setTaskText(newText: string, task: MarkdownTaskItem): void {
+        setTaskText(this.app, this.core, newText, task);
+    }
+
+    /** Sets the completion status of a given task programmatically. */
+    public setTaskCompletion(completed: boolean, task: MarkdownTaskItem): void {
+        completeTask(completed, task, this.app.vault, this.core);
+    }
+
     /////////////
     //  Hooks  //
     /////////////
@@ -160,8 +176,9 @@ export class DatacoreLocalApi {
     public useContext = hooks.useContext;
     public useRef = hooks.useRef;
     public useInterning = useInterning;
+    public useSetField = useSetField;
 
-    /** Memoize the input automatically and process it using a DataArray; returns a vanilla array back. */
+    /** Memoize the input automatically and process it using a Data Array; returns a vanilla array back. */
     public useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: any[]): U[] {
         return hooks.useMemo(() => process(DataArray.wrap(input)).array(), [input, ...(deps ?? [])]);
     }
@@ -298,7 +315,9 @@ export class DatacoreLocalApi {
     // Views //
     ///////////
 
+    public TaskList = TaskList;
     public VanillaTable = VanillaTable;
+    public Card = Card;
 
     /////////////////////////
     // Interative elements //
@@ -311,4 +330,11 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
+
+    /////////////////////////
+    //    field editors    //
+    /////////////////////////
+    public EditableFieldCheckbox = EditableFieldCheckbox;
+    public EditableFieldTextbox = EditableTextField;
+    public TextEditor = ControlledEditableTextField;
 }
