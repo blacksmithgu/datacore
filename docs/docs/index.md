@@ -8,10 +8,11 @@ Datacore is a power tool for [Obsidian.md](https://obsidian.md), allowing you to
 
 ### Getting Started
 
-All you need to get started is to download the Datacore plugin from the Obsidian Community plugins page. You may need to enable
-Community Plugins before you are able to add Datacore, and then enable the plugin in the Plugins tab of Obsidian.
+*If you just want to see something on your screen as fast as possible, follow the [quickstart](quickstart.md)! Otherwise, read on.*
 
-Once installed, Datacore will start indexing your vault, which may take several minutes - your text editor will have a section in the
+All you need to get started is to download the Datacore plugin from the Obsidian Community plugins page. You may need to enable
+Community Plugins before you are able to add Datacore, and then enable the plugin in the Plugins tab of Obsidian. Once installed, Datacore
+will start indexing your vault, which may take several minutes - your text editor will have a section in the
 gutter showing the current status of the index. Datacore is usable as soon as you install it, but results will not be complete
 until indexing finishes. Future starts of your vault will use saved data and index will be much faster.
 
