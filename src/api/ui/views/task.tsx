@@ -190,7 +190,7 @@ function CollapseIndicator({
  * @group Components
  */
 export function ListItemFields({
-    displayedFields: displayedFieldsProp = [],
+    displayedFields: displayedFieldsProp,
     item,
 }: {
     displayedFields?: TaskProps["displayedFields"];
@@ -200,7 +200,7 @@ export function ListItemFields({
     const core = useContext(DATACORE_CONTEXT);
     const { settings } = core;
     const displayedFields = useMemo(() => {
-        if (displayedFieldsProp.length) return displayedFieldsProp;
+        if (displayedFieldsProp != undefined) return displayedFieldsProp;
         else {
             return Object.values(item.$infields).map((f) => {
                 return {
