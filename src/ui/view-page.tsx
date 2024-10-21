@@ -20,25 +20,27 @@ const CUSTOM_VIEW_CONTEXT = createContext<DatacoreQueryView>(undefined!);
 /** Provides options for configuring a datacore view pane. */
 function DatacoreViewSettings() {
     const view = useContext(CUSTOM_VIEW_CONTEXT) as DatacoreQueryView;
-    const setViewState = useMemo(() => debounce((state: Partial<DatacoreViewState>) => view.setState(state, { history: false }), 500), [view]);
+    const setViewState = useMemo(
+        () => debounce((state: Partial<DatacoreViewState>) => view.setState(state, { history: false }), 500),
+        [view]
+    );
 
     const [localState, setLocalState] = useState(view.getState());
-    const setState = useCallback((state: Partial<DatacoreViewState>) => {
-        const finalState = { ...localState, ...state };
-        // Not debounced.
-        setLocalState(finalState);
+    const setState = useCallback(
+        (state: Partial<DatacoreViewState>) => {
+            const finalState = { ...localState, ...state };
+            // Not debounced.
+            setLocalState(finalState);
 
-        // Debounced.
-        setViewState(finalState);
-    }, [localState, setLocalState, view]);
+            // Debounced.
+            setViewState(finalState);
+        },
+        [localState, setLocalState, view]
+    );
 
     return (
         <Stack align="stretch">
-            <button
-                className="clickable-icon"
-                style="align-self: start"
-                onClick={() => view.view("script")}
-            >
+            <button className="clickable-icon" style="align-self: start" onClick={() => view.view("script")}>
                 {BACK_BUTTON}
             </button>
             <Group justify="space-between" align="center">
@@ -63,7 +65,7 @@ function DatacoreViewSettings() {
                     style={{ resize: "vertical", minWidth: "75%", fontFamily: "monospace" }}
                     defaultValue={localState.script}
                     value={localState.script}
-                    onChange={(e) => setState({ "script": e.currentTarget.value as string})}
+                    onChange={(e) => setState({ script: e.currentTarget.value as string })}
                 />
             </Group>
             <Group justify="space-between" align="center">
@@ -72,7 +74,10 @@ function DatacoreViewSettings() {
                     <small>The path returned by functions like `useCurrentPath` in this view</small>
                 </Stack>
                 <div style={{ minWidth: "50%" }}>
-                    <CurrentFileSelector defaultValue={localState.currentFile} onChange={(v) => setState({ currentFile: v })} />
+                    <CurrentFileSelector
+                        defaultValue={localState.currentFile}
+                        onChange={(v) => setState({ currentFile: v })}
+                    />
                 </div>
             </Group>
         </Stack>
@@ -80,7 +85,13 @@ function DatacoreViewSettings() {
 }
 
 /** React component for asynchronously showing the active set of current files to select one from. */
-function CurrentFileSelector({ defaultValue, onChange }: { defaultValue?: string; onChange: (value: string | undefined) => void }) {
+function CurrentFileSelector({
+    defaultValue,
+    onChange,
+}: {
+    defaultValue?: string;
+    onChange: (value: string | undefined) => void;
+}) {
     const core = useContext(DATACORE_CONTEXT);
     const revision = useIndexUpdates(core, { debounce: 2000 });
 
@@ -89,7 +100,9 @@ function CurrentFileSelector({ defaultValue, onChange }: { defaultValue?: string
         return core.vault.getMarkdownFiles().map((f) => ({ label: f.path, value: f.path }));
     }, [revision]);
 
-    const defaultOption = defaultValue ? { label: "No file", value: undefined} : { label: defaultValue, value: defaultValue };
+    const defaultOption = defaultValue
+        ? { label: "No file", value: undefined }
+        : { label: defaultValue, value: defaultValue };
 
     return (
         <Select
@@ -104,10 +117,10 @@ function CurrentFileSelector({ defaultValue, onChange }: { defaultValue?: string
 
 /** Selectable options for picking which language to execute the script in. */
 const LANGUAGE_OPTIONS: { label: string; value: ScriptLanguage }[] = [
-    { label: "Javascript", value: "js", },
-    { label: "Typescript", value: "ts", },
-    { label: "Javascript (JSX)", value: "jsx", },
-    { label: "Typescript JSX", value: "tsx", },
+    { label: "Javascript", value: "js" },
+    { label: "Typescript", value: "ts" },
+    { label: "Javascript (JSX)", value: "jsx" },
+    { label: "Typescript JSX", value: "tsx" },
 ];
 
 /** SVG back button shown to exit the settings view. */
@@ -149,7 +162,7 @@ export class DatacoreQueryView extends ItemView {
         title: "New view",
         script: "",
         sourceType: "js",
-        view: "settings"
+        view: "settings",
     };
 
     /** The current active view - either the settings view */
