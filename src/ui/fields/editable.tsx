@@ -1,7 +1,7 @@
 /**
  * @module ui
  */
-import { Fragment, VNode } from "preact";
+import { Fragment, FunctionComponent, VNode } from "preact";
 import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef } from "preact/hooks";
 import { ChangeEvent, useReducer } from "preact/compat";
 import Select, { ActionMeta } from "react-select";
@@ -49,6 +49,9 @@ export interface EditableProps<T> {
     state: EditableState<T>;
 }
 
+type EditableElementProps<T, P> = Omit<EditableProps<T>, "editor"> & P;
+export type EditableElement<T, P = any> = FunctionComponent<EditableElementProps<T, P> & P>;
+    
 /**
  *  Actions which update/change the state of an editable.
  *
@@ -127,6 +130,30 @@ export function Editable<T>({ sourcePath, defaultRender, editor, dispatch, state
         </span>
     );
 }
+
+export function ControlledEditable<T, P = unknown>({
+    defaultRender,
+    editor: Editor,
+    onUpdate,
+    content,
+		props,
+		sourcePath
+}: Omit<EditableProps<T>, "dispatch" | "state" | "editor"> & {
+    onUpdate: (v: T) => unknown;
+    content: T;
+    editor: EditableElement<T, P>;
+		props: P;
+		sourcePath: string;
+}) {
+    const [state, dispatch] = useEditableDispatch<T>(() => ({
+        updater: onUpdate,
+        content,
+        inline: false,
+        isEditing: false,
+    }));
+    return <Editor sourcePath={sourcePath} dispatch={dispatch} state={state} {...props} defaultRender={defaultRender}/>;
+}
+
 /** A single selectable value.
  */
 type SelectableBase = string | number;
