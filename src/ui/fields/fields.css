@@ -72,8 +72,12 @@
     top: 0 !important;
 }
 
-.prompt-input input:after {
+.prompt-input.datacore-selectable__input-container::after {
     content: none !important;
+}
+
+.value-container.datacore-selectable__value-container {
+
 }
 
 .suggestion-container:has(.datacore-selectable__control--menu-is-open) {
