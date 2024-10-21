@@ -49,7 +49,7 @@ export interface EditableProps<T> {
     state: EditableState<T>;
 }
 
-type EditableElementProps<T, P> = Omit<EditableProps<T>, "editor"> & P;
+type EditableElementProps<T, P> = EditableState<T> & P;
 export type EditableElement<T, P = any> = FunctionComponent<EditableElementProps<T, P> & P>;
     
 /**
@@ -151,7 +151,7 @@ export function ControlledEditable<T, P = unknown>({
         inline: false,
         isEditing: false,
     }));
-    return <Editor sourcePath={sourcePath} dispatch={dispatch} state={state} {...props} defaultRender={defaultRender}/>;
+    return <Editor {...props} {...state} />;
 }
 
 /** A single selectable value.
