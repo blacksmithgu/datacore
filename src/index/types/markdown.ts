@@ -623,6 +623,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
         return MarkdownListItem.FIELD_DEF(this);
     }
 
+    
     /** Fetch a specific field by key. */
     public field(key: string) {
         return MarkdownListItem.FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
