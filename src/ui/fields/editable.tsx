@@ -2,7 +2,7 @@
  * @module ui
  */
 import { Fragment, FunctionComponent, VNode } from "preact";
-import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef } from "preact/hooks";
+import { Dispatch, Reducer, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { ChangeEvent, useReducer } from "preact/compat";
 import Select, { ActionMeta } from "react-select";
 import { useStableCallback } from "../hooks";
@@ -14,6 +14,7 @@ import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { BooleanEditable } from "./boolean-field";
 import { ProgressEditable } from "./progress-field";
 import { RatingEditable } from "./rating";
+import { useFinalizer } from "utils/fields";
 
 import "./fields.css";
 
@@ -51,7 +52,7 @@ export interface EditableProps<T> {
 
 type EditableElementProps<T, P> = EditableState<T> & P;
 export type EditableElement<T, P = any> = FunctionComponent<EditableElementProps<T, P> & P>;
-    
+
 /**
  *  Actions which update/change the state of an editable.
  *
@@ -136,14 +137,14 @@ export function ControlledEditable<T, P = unknown>({
     editor: Editor,
     onUpdate,
     content,
-		props,
-		sourcePath
+    props,
+    sourcePath,
 }: Omit<EditableProps<T>, "dispatch" | "state" | "editor"> & {
     onUpdate: (v: T) => unknown;
     content: T;
     editor: EditableElement<T, P>;
-		props: P;
-		sourcePath: string;
+    props: P;
+    sourcePath: string;
 }) {
     const [state, dispatch] = useEditableDispatch<T>(() => ({
         updater: onUpdate,
@@ -151,7 +152,7 @@ export function ControlledEditable<T, P = unknown>({
         inline: false,
         isEditing: false,
     }));
-    return <Editor {...props} {...state} />;
+    return <Editor dispatch={dispatch} {...props} {...state} />;
 }
 
 /** A single selectable value.
@@ -199,6 +200,11 @@ export function SelectableEditable({
                 isMulti={config?.multi ?? false}
                 options={config?.options ?? []}
                 menuPortalTarget={document.body}
+                value={
+                    config?.options.filter((x: any) =>
+                        ((Array.isArray(content) ? content : [content]) as any[]).contains(x.value)
+                    ) || []
+                }
                 classNames={{
                     input: (props: any) => "prompt-input",
                     valueContainer: (props: any) => "suggestion-item value-container",
@@ -282,17 +288,7 @@ export function NumberEditable(props: EditableState<number>) {
         [value.current, state.content, state.updater, state.isEditing]
     );
 
-    const finalize = async () => {
-        dispatch({
-            type: "commit",
-            newValue: value.current,
-        });
-        dispatch({
-            type: "editing-toggled",
-            newValue: false,
-        });
-    };
-
+    const finalize = useFinalizer(value.current, dispatch);
     const onInput = useStableCallback(
         async (e: KeyboardEvent) => {
             if (e.key === "Enter") {
@@ -335,27 +331,11 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
 
     const text = useRef("-");
     useEffect(() => {
-        text.current = props.content;
-        dispatch({ type: "content-changed", newValue: props.content });
-    }, [props.content]);
+        text.current = state.content;
+        dispatch({ type: "content-changed", newValue: state.content });
+    }, [props.content, state.content]);
 
-    const onChangeCb = useStableCallback(
-        async (evt: ChangeEvent) => {
-            text.current = (evt.currentTarget as HTMLTextAreaElement).value;
-        },
-        [text.current, props.sourcePath, state.content, state.updater, state.isEditing]
-    );
-
-    const finalize = async () => {
-        dispatch({
-            type: "commit",
-            newValue: text.current,
-        });
-        dispatch({
-            type: "editing-toggled",
-            newValue: false,
-        });
-    };
+    const finalize = useFinalizer(state.content, dispatch);
     const onInput = useStableCallback(
         async (e: KeyboardEvent) => {
             if (props.inline) {
@@ -390,12 +370,8 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
             )}
         </Fragment>
     );
-    const editor = !state.inline ? (
-        <textarea className="datacore-editable" onChange={onChangeCb} onKeyUp={onInput}>
-            {text.current}
-        </textarea>
-    ) : (
-        <input className="datacore-editable" type="text" onChange={onChangeCb} onKeyUp={onInput} />
+    const editor = (
+        <UncontrolledTextEditable onInput={onInput} inline={props.inline} dispatch={dispatch} text={text.current} />
     );
     return (
         <span className="has-texteditable" onDblClick={dblClick}>
@@ -404,6 +380,36 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
     );
 }
 
+export function UncontrolledTextEditable({
+    inline,
+    text,
+    dispatch,
+    onInput,
+}: {
+    inline?: boolean;
+    text: string;
+    dispatch?: Dispatch<EditableAction<string>>;
+    onInput?: (e: KeyboardEvent) => unknown;
+}) {
+    const [txt, setText] = useState(text);
+    useEffect(() => {
+        dispatch && dispatch({ newValue: txt, type: "content-changed" });
+    }, [txt]);
+    const onChangeCb = useStableCallback(
+        async (evt: ChangeEvent) => {
+            setText((evt.currentTarget as HTMLTextAreaElement).value);
+        },
+        [text, dispatch]
+    );
+
+    return !inline ? (
+        <textarea className="datacore-editable" onChange={onChangeCb} onKeyUp={onInput}>
+            {txt}
+        </textarea>
+    ) : (
+        <input className="datacore-editable" type="text" onChange={onChangeCb} onKeyUp={onInput} />
+    );
+}
 /** An editable list of items.
  *
  * @group Editable Components
