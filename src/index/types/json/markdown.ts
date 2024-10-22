@@ -147,7 +147,6 @@ export interface JsonMarkdownListItem {
     $symbol?: string;
     /** The contents of the list item. May be undefined if the list item could not be parsed. */
     $text?: string;
-    
 }
 
 export interface JsonMarkdownTaskItem extends JsonMarkdownListItem {
