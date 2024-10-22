@@ -148,9 +148,12 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         content: fieldValue,
 				isEditing: false,
         updater: useStableCallback((val: Literal) => {
-					let withFields = setInlineField(item.$text, ifield.key, val ? Literals.toString(val) : undefined);
+					const dateString = (v: Literal) => v instanceof DateTime ? v.toFormat(settings.defaultDateFormat) : !!v ? Literals.toString(v) : undefined
+					
+					let withFields = setInlineField(item.$text, ifield.key, dateString(val));
+					item.$infields[ifield.key].value = val;
 					for (let field in item.$infields) {
-						withFields = setInlineField(withFields, field, item.$infields[field]?.value != undefined ? Literals.toString(item.$infields[field].value) : undefined);
+						withFields = setInlineField(withFields, field, dateString(item.$infields[field]?.value));
 					}
 					rewriteTask(app.vault, item, item.$status, withFields);
         }, [item.$infields]),
