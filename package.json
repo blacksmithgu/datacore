@@ -1,10 +1,6 @@
 {
   "name": "datacore",
-<<<<<<< HEAD
   "version": "0.1.19",
-=======
-  "version": "0.1.14",
->>>>>>> bb443f1 (Squashed commit of the following:)
   "description": "Reactive data engine for Obsidian.md.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -60,6 +56,5 @@
     "sorted-btree": "^1.8.1",
     "sucrase": "3.35.0",
     "yaml": "^2.3.3"
-  },
-  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+  }
 }
