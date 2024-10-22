@@ -112,7 +112,7 @@ function DatacoreViewSettings() {
             <Group justify="space-between" align="center">
                 <h6>Script/View source</h6>
                 <textarea
-                    style={{resize: "vertical", minWidth: "75%", fontFamily: "monospace"}}
+                    style={{ resize: "vertical", minWidth: "75%", fontFamily: "monospace" }}
                     defaultValue={view.getState().script}
                     value={internalState.script}
                     onChange={(e) => setInternalState("script", e.currentTarget.value as string)}
@@ -176,7 +176,7 @@ export class DatacoreQueryView extends ItemView {
         );
 
         this.id = this.leaf.serialize().id;
-				this.contentEl.addClass("markdown-rendered");
+        this.contentEl.addClass("markdown-rendered");
         this.rerender();
     }
     public onPaneMenu(menu: Menu, source: "more-options" | "tab-header" | string): void {
@@ -231,11 +231,10 @@ export class DatacoreQueryView extends ItemView {
     public async setState(state: DatacoreViewState, result: ViewStateResult): Promise<void> {
         Object.assign(this.internalState, state);
         this.leaf.tabHeaderInnerTitleEl.textContent = this.titleEl.textContent = this.getDisplayText();
-				if(!this.settingsShowing)
-					this.rerender();
+        if (!this.settingsShowing) this.rerender();
     }
-		public onunload(): void {
-				this.removeChild(this.jsRenderer);
-				this.removeChild(this.settingsRenderer);
-		}
+    public onunload(): void {
+        this.removeChild(this.jsRenderer);
+        this.removeChild(this.settingsRenderer);
+    }
 }
