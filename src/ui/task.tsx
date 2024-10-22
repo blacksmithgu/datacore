@@ -169,10 +169,11 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
           type={ifield.type || Literals.wrapValue(fieldValue)!.type}
           file={item.$file}
           field={item.$infields[ifield.key] || defField}
+					config={ifield.config}
           parent={item}
           updater={state2.updater}
           value={fieldValue}
-					renderNumberAs={ifield.renderNumberAs}
+					renderAs={ifield.renderAs}
         />
       );
     })
