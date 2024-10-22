@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 0.1.19 (Beta)
 
 Adds parsing for list item symbols ($symbol), and task text ($text). In general in datacore I am trying to avoid pulling actual text contents into the index, but the task usecase is sufficiently common that
@@ -29,6 +30,8 @@ Fixes field indexing, meaning you can use things like `rating >= 8` in your quer
 
 ---
 
+=======
+>>>>>>> bb443f1 (Squashed commit of the following:)
 # 0.1.14 (Beta)
 
 Fixes non-markdown files not showing up in the Datacore index when they are created while Obsidian is running.
