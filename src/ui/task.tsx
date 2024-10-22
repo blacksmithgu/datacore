@@ -148,12 +148,12 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         content: fieldValue,
 				isEditing: false,
         updater: useStableCallback((val: Literal) => {
-					let withFields = setInlineField(item.$text, ifield.key, Literals.toString(val));
+					let withFields = setInlineField(item.$text, ifield.key, val ? Literals.toString(val) : undefined);
 					for (let field in item.$infields) {
-						withFields = setInlineField(withFields, field, item.$infields[field].raw);
+						withFields = setInlineField(withFields, field, item.$infields[field]?.value != undefined ? Literals.toString(item.$infields[field].value) : undefined);
 					}
 					rewriteTask(app.vault, item, item.$status, withFields);
-        }, [item]),
+        }, [item.$infields]),
       });
 			if(ifield.key == settings.taskCompletionTextField) {
 				//@ts-ignore huh?
@@ -169,6 +169,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
           parent={item}
           updater={state2.updater}
           value={fieldValue}
+					renderNumberAs={ifield.renderNumberAs}
         />
       );
     })
