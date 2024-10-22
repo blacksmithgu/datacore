@@ -565,7 +565,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     $symbol?: string;
     /** The text contents of the list item. */
     $text?: string;
-
+ 
     /** Create a list item from a serialized object. */
     static from(
         object: JsonMarkdownListItem,
