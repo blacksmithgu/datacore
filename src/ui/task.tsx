@@ -136,18 +136,23 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 
   const editableFields = useMemo(() => {
 		return (props.displayedFields || []).map((ifield) => {
+			let defVal = typeof ifield.defaultValue == "function" ? ifield.defaultValue() : ifield.defaultValue;
       let defField: Field = {
         key: ifield.key,
-        value: ifield.defaultValue!,
-        raw: Literals.toString(ifield.defaultValue),
+        value: defVal,
+        raw: Literals.toString(defVal),
       };
-      const [fieldValue, setFieldValue] = useState<Literal>(item.$infields[ifield?.key]?.value || ifield.defaultValue!);
+      const [fieldValue, setFieldValue] = useState<Literal>(item.$infields[ifield?.key]?.value || defField.value!);
       const [state2, dispatch] = useEditableDispatch<Literal>({
         content: fieldValue,
-        isEditing: false,
-        updater: (val: Literal) => {
-						// taskDispatch({ type: "field-changed", newValue: val, fieldKey: ifield.key });
-          },
+				isEditing: false,
+        updater: useStableCallback((val: Literal) => {
+					let withFields = setInlineField(item.$text, ifield.key, Literals.toString(val));
+					for (let field in item.$infields) {
+						withFields = setInlineField(withFields, field, item.$infields[field].raw);
+					}
+					rewriteTask(app.vault, item, item.$status, withFields);
+        }, [item]),
       });
 			if(ifield.key == settings.taskCompletionTextField) {
 				//@ts-ignore huh?
@@ -172,9 +177,13 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     <li class={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={item.$status}>
       <input class="datacore task-list-item-checkbox" type="checkbox" checked={checked} onClick={onChecked} />
       <div>
-        {theElement}
-        {editableFields}
-      </div>
+				<div className="datacore-list-item-content">
+					{theElement}
+					<div class="datacore-list-item-fields">
+						{editableFields}
+					</div>
+				</div>
+			</div>
       {item.$elements.length > 0 && <TaskList {...props} rows={item.$elements} />}
     </li>
   );
