@@ -105,7 +105,7 @@ export function Slider(
     const { className, min = 0, max = 10, step = 1, value, defaultValue, onValueChange, ...forwardingProps } = props;
     const [slider, setSlider] = useControlledState(defaultValue ?? 0, value, onValueChange);
 
-    const onChange = useCallback((event: any) => setSlider(event.currentTarget.value), [setSlider]);
+    const onChange = useCallback((event: any) => setSlider(parseFloat(event.currentTarget.value)), [setSlider]);
 
     return (
         <input
