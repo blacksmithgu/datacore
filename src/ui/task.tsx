@@ -1,5 +1,5 @@
-import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
-import { DefaultListElement, ListState } from "./list";
+import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
+import { DefaultListElement, ListState } from "api/ui/views/list";
 import { useIndexUpdates, useStableCallback } from "./hooks";
 import { Fragment } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT } from "./markdown";
@@ -13,7 +13,7 @@ import {
   EditableState,
   TextEditable,
   useEditableDispatch,
-} from "./editable";
+} from "ui/fields/editable";
 import { setInlineField } from "index/import/inline-field";
 import { BaseFieldProps } from "./fields/common-props";
 import { Field } from "expression/field";
