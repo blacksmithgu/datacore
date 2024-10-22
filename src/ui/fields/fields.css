@@ -110,3 +110,31 @@
     border-radius: var(--tag-radius);
     padding: var(--tag-padding-y) var(--tag-padding-x);
 }
+
+/** groups */
+
+.datacore-group-holder {
+    display: grid;
+    gap: 0.5em;
+    grid-template-rows: auto;
+    overflow-x: scroll;
+}
+.datacore-group {
+    display: flex;
+    flex-direction: column;
+}
+.datacore-group-content {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+}
+.datacore-group-content > *:not(.is-collapsed) {
+    flex-grow: 1;
+}
+.datacore-group-content > h1 {
+    flex-grow: 0 !important;
+    flex-shrink: 1;
+}
+textarea.datacore-editable {
+    resize: vertical;
+}

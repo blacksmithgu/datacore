@@ -276,8 +276,8 @@ class GeneralSettingsTab extends PluginSettingTab {
         new Setting(this.containerEl)
             .setName("Maximum Recursive Render Depth")
             .setDesc(
-                "Maximum depth that objects will be rendered to (i.e., how many levels of subproperties " +
-                    "will be rendered by default). This avoids infinite recursion due to self-referential objects " +
+                "Maximum depth that objects will be rendered to (i.e., how many levels of subproperties" +
+                    "will be rendered by default). This avoids infinite recursion due to self-referential objects" +
                     "and ensures that rendering objects is acceptably performant."
             )
             .addText((text) => {

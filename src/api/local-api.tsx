@@ -7,7 +7,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownCodeblock, MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
+import { MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -20,16 +20,24 @@ import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
+import { TaskList } from "./ui/views/task";
 import { VanillaTable } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
-import { TaskList } from "./ui/views/task";
 import { Card } from "./ui/views/cards";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { setTaskText, useSetField } from "utils/fields";
-import { ControlledEditableTextField, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
-import { completeTask, rewriteTask } from "utils/task";
+import {
+    ControlledEditableTextField,
+    FieldCheckbox,
+    EditableTextField,
+    FieldSlider,
+    FieldSelect,
+    FieldSwitch,
+} from "ui/fields/editable-fields";
+import { completeTask } from "utils/task";
+import { TreeTableView } from "./ui/views/tree-table";
 
 /** Local API provided to specific codeblocks when they are executing.
  * @group Core
@@ -317,6 +325,7 @@ export class DatacoreLocalApi {
 
     public TaskList = TaskList;
     public VanillaTable = VanillaTable;
+    public TreeTable = TreeTableView;
     public Card = Card;
 
     /////////////////////////
@@ -334,7 +343,10 @@ export class DatacoreLocalApi {
     /////////////////////////
     //    field editors    //
     /////////////////////////
-    public EditableFieldCheckbox = EditableFieldCheckbox;
-    public EditableFieldTextbox = EditableTextField;
-    public TextEditor = ControlledEditableTextField;
+    public FieldCheckbox = FieldCheckbox;
+    public FieldSlider = FieldSlider;
+    public FieldSelect = FieldSelect;
+    public FieldSwitch = FieldSwitch;
+    public TextField = EditableTextField;
+    public VanillaTextBox = ControlledEditableTextField;
 }

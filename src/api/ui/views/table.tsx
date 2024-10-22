@@ -2,7 +2,7 @@
  * @module views
  */
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useContext, useMemo, useRef } from "preact/hooks";
+import { Dispatch, useCallback, useContext, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -10,6 +10,9 @@ import { VNode, isValidElement } from "preact";
 import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
+import { Editable, EditableAction, useEditableDispatch } from "ui/fields/editable";
+import { faSortDown, faSortUp, faSort } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /** A simple column definition which allows for custom renderers and titles.
  * @group Props
@@ -31,6 +34,15 @@ export interface VanillaColumn<T, V = Literal> {
 
     /** Called to render the given column value. Can depend on both the specific value and the row object. */
     render?: (value: V, object: T) => Literal | VNode;
+
+    /** whether this column is editable or not */
+    editable?: boolean;
+
+    /** Rendered when editing the column */
+    editor?: (value: V, object: T) => JSX.Element;
+
+    /** Called when the column value updates. */
+    onUpdate?: (value: V, object: T) => unknown;
 }
 
 /** Metadata for configuring how groupings in the data should be handled.
@@ -235,19 +247,51 @@ export function TableRow<T>({ level, row, columns }: { level: number; row: T; co
  */
 export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn<T> }) {
     const value = useMemo(() => column.value(row), [row, column.value]);
+    const [editableState, dispatch] = useEditableDispatch<typeof value>({
+        content: value,
+        isEditing: false,
+        updater: (v) => column.onUpdate && column.onUpdate(v, row),
+    });
     const renderable = useMemo(() => {
-        if (column.render) return column.render(value, row);
-        else return value;
+        if (column.render) {
+            let r = column.render(editableState.content, row);
+            if (r && typeof r == "object" && "props" in r) return { ...r, props: { ...r.props, dispatch } };
+            return r;
+        } else return value;
     }, [row, column.render, value]);
+
     const rendered = useAsElement(renderable);
 
-    return <td className="datacore-table-cell">{rendered}</td>;
+    const Editor = useMemo(() => {
+        let e;
+        if (column.editable && column.editor) e = column.editor(editableState.content, row);
+        else e = null;
+        if (e) return { ...e, props: { ...e.props, dispatch } };
+        return e;
+    }, [row, column.editor, column.editable, value]);
+    return (
+        <td
+            onDblClick={() => dispatch({ type: "editing-toggled", newValue: !editableState.isEditing })}
+            className="datacore-table-cell"
+        >
+            {column.editable ? (
+                <Editable<typeof value>
+                    defaultRender={rendered}
+                    editor={Editor}
+                    dispatch={dispatch}
+                    state={editableState}
+                />
+            ) : (
+                rendered
+            )}
+        </td>
+    );
 }
 
 /** Ensure that a given literal or element input is rendered as a JSX.Element.
  * @hidden
  */
-function useAsElement(element: VNode | Literal): VNode {
+export function useAsElement(element: VNode | Literal): VNode {
     const sourcePath = useContext(CURRENT_FILE_CONTEXT);
 
     return useMemo(() => {
@@ -258,3 +302,43 @@ function useAsElement(element: VNode | Literal): VNode {
         }
     }, [element]);
 }
+/** Provides a sort button that has a click handler. */
+export function SortButton({
+    direction,
+    onClick,
+    className,
+}: {
+    direction?: SortDirection;
+    onClick?: (evt: MouseEvent) => any;
+    className?: string;
+}) {
+    const icon = useMemo(() => {
+        if (direction == "ascending") return faSortDown;
+        else if (direction == "descending") return faSortUp;
+        return faSort;
+    }, [direction]);
+
+    return (
+        <div onClick={onClick} className={className}>
+            <FontAwesomeIcon icon={icon} />
+        </div>
+    );
+}
+
+/** Default comparator for sorting on a table column. */
+export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
+    Literals.compare(a, b);
+
+/////////////////
+// Table Hooks //
+/////////////////
+
+export type TableAction =
+    | { type: "reset-all" }
+    | { type: "set-page"; page: number }
+    | { type: "sort-column"; column: string; direction?: "ascending" | "descending" };
+
+export type SortDirection = "ascending" | "descending";
+
+/** The ways that the table can be sorted. */
+export type SortOn = { type: "column"; id: string; direction: SortDirection };
