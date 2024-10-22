@@ -15,7 +15,7 @@ import {
     Taggable,
 } from "index/types/indexable";
 import { DateTime } from "luxon";
-import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing } from "../../expression/field";
+import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing, Fieldbearings } from "../../expression/field";
 import { InlineField, jsonInlineField, valueInlineField } from "index/import/inline-field";
 import {
     LineSpan,
@@ -226,7 +226,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
 
     /** Fetch a specific field by key. */
     public field(key: string): Field {
-        return MarkdownSection.FIELD_DEF(this, key)?.[0];
+        return MarkdownSection.FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -322,7 +322,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
 
     /** Fetch a specific field by key. */
     public field(key: string) {
-        return MarkdownBlock.FIELD_DEF(this, key)?.[0];
+        return MarkdownBlock.FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -437,7 +437,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
 
     /** Fetch a specific field by key. */
     public field(key: string) {
-        return MarkdownCodeblock.SUB_FIELD_DEF(this, key)?.[0];
+        return MarkdownCodeblock.SUB_FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -505,7 +505,7 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
 
     /** Fetch a specific field by key. */
     public field(key: string) {
-        return MarkdownDatablock.SUB_FIELD_DEF(this, key)?.[0];
+        return MarkdownDatablock.SUB_FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {
@@ -625,7 +625,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
 
     /** Fetch a specific field by key. */
     public field(key: string) {
-        return MarkdownListItem.FIELD_DEF(this, key)?.[0];
+        return MarkdownListItem.FIELD_DEF(this, key)?.[0] ?? Fieldbearings.getWithDefault(this, key);
     }
 
     public value(key: string): Literal | undefined {

@@ -5,6 +5,7 @@ import { Literal, Literals } from "expression/literal";
 import { Indexable } from "../index/types/indexable";
 import { InlineField } from "index/import/inline-field";
 import { FrontmatterEntry } from "index/types/markdown";
+import { LineSpan } from "index/types/json/markdown";
 
 /** The source of a field, used when determining what files to overwrite and how. */
 export type Provenance =
@@ -48,6 +49,19 @@ export namespace Fieldbearings {
         if (isFieldbearing(object)) return object.field(key)?.value;
         else return object[key];
     }
+
+		export function getWithDefault<T extends {$position: LineSpan} & Indexable>(object: T, key: string, defaultValue?: Literal): Field {
+			return {
+        key: key,
+        value: defaultValue ?? null,
+        provenance: {
+            type: "inline-field",
+            file: object.$file!,
+            key,
+            line: object.$position.end,
+        },
+    }
+		}
 }
 
 /**
