@@ -40,6 +40,7 @@ function trimEndingLines(text: string): string {
 }
 /** Set the task completion key on check. */
 export function setTaskCompletion(
+	task: MarkdownTaskItem,
 	originalText: string,
 	useEmojiShorthand: boolean,
 	completionKey: string,
@@ -48,8 +49,10 @@ export function setTaskCompletion(
 ): string {
 	const blockIdRegex = /\^[a-z0-9\-]+/i;
 
-	if (!complete && !useEmojiShorthand)
-			return trimEndingLines(setInlineField(originalText.trimEnd(), completionKey)).trimEnd();
+	if (!complete && !useEmojiShorthand) {
+		delete task.$infields[completionKey];
+		return trimEndingLines(setInlineField(originalText.trimEnd(), completionKey)).trimEnd();
+	}
 
 	let parts = originalText.split(/\r?\n/u);
 	const matches = blockIdRegex.exec(parts[parts.length - 1]);
@@ -62,6 +65,16 @@ export function setTaskCompletion(
 			);
 	} else {
 			processedPart = setInlineField(processedPart, completionKey, DateTime.now().toFormat(completionDateFormat));
+			task.$infields[completionKey] = {
+				raw: DateTime.now().toFormat(completionDateFormat),
+				value: DateTime.now(),
+				key: completionKey,
+				position: {
+					line: task.$line,
+					start: 0, startValue: 0,
+					end: DateTime.now().toFormat(completionDateFormat).length - 1
+				}
+			}
 	}
 	processedPart = `${processedPart.trimEnd()}${matches?.length ? " " + matches[0].trim() : ""}`.trimEnd(); // add back block id
 	parts[parts.length - 1] = processedPart.trimStart();
