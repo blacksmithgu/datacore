@@ -99,43 +99,35 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
       }
       const parent = evt.currentTarget.parentElement;
       parent?.setAttribute("data-task", newStatus);
-      async function rewr() {
-				if (settings.recursiveTaskCompletion) {
-					let flatted: MarkdownTaskItem[] = [item];
-					function flatter(iitem: MarkdownTaskItem | MarkdownListItem) {
-						if (iitem instanceof MarkdownTaskItem) {
-							flatted.push(iitem);
-							iitem.$elements.forEach(flatter);
-						}
-					}
-					item.$elements.forEach(flatter);
-					flatted = flatted.flat(Infinity);
-					for(let iitem of flatted) {
-						let newText = setTaskCompletion(
-							iitem.$text,
-							// TODO: replace these next three arguments with proper settings
-							false,
-							"completed",
-							settings.defaultDateFormat,
-							newStatus?.toLowerCase() === "x"
-						);
-						await rewriteTask(app.vault, iitem, newStatus, newText);
-					}
-				} else {
-					let newText = setTaskCompletion(
-						item.$text,
-						// TODO: replace these next three arguments with proper settings
-						false,
-						"completed",
-						settings.defaultDateFormat,
-						newStatus?.toLowerCase() === "x"
-					);
-					await rewriteTask(app.vault, item, newStatus, newText);
-				}
+      async function rewr(task: MarkdownTaskItem) {
+        let newText = setTaskCompletion(
+          task.$text,
+          // TODO: replace these next three arguments with proper settings
+          false,
+          "completed",
+          settings.defaultDateFormat,
+          newStatus?.toLowerCase() === "x"
+        );
+        await rewriteTask(app.vault, task, newStatus, newText);
       }
-      rewr().then(() => {
-        taskDispatch({ type: "checked-changed", oldStatus, newStatus });
-      });
+      if (settings.recursiveTaskCompletion) {
+        let flatted: MarkdownTaskItem[] = [item];
+        function flatter(iitem: MarkdownTaskItem | MarkdownListItem) {
+          if (iitem instanceof MarkdownTaskItem) {
+            flatted.push(iitem);
+            iitem.$elements.forEach(flatter);
+          }
+        }
+        item.$elements.forEach(flatter);
+        flatted = flatted.flat(Infinity);
+        for (let iitem of flatted) {
+          await rewr(iitem);
+        }
+      } else {
+        rewr(item).then(() => {
+          taskDispatch({ type: "checked-changed", oldStatus, newStatus });
+        });
+      }
     },
     [props.rows]
   );
