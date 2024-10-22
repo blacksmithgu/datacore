@@ -155,5 +155,4 @@ export interface JsonMarkdownTaskItem extends JsonMarkdownListItem {
 
     /** The text inside of the task marker (usually '*' for checked tasks). */
     $status: string;
-    
 }
