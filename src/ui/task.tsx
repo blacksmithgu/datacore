@@ -1,6 +1,6 @@
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
 import { DefaultListElement, ListState } from "./list";
-import { useIndexUpdates, useStableCallback } from "./hooks";
+import { useIndexUpdates, useInterning, useStableCallback } from "./hooks";
 import { Fragment, h } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT, Lit } from "./markdown";
 import { JSXInternal } from "preact/src/jsx";
@@ -75,6 +75,9 @@ export function TaskList({
   renderer: listRenderer = (item, index) => <DefaultListElement element={item} />,
   ...rest
 }: TaskProps) {
+	
+  const core = useContext(DATACORE_CONTEXT);
+	useIndexUpdates(core, {debounce: 0});
   const content = useMemo(() => {
     return (
       <ul class="contains-task-list">
@@ -91,6 +94,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
   const app = useContext(APP_CONTEXT);
   const core = useContext(DATACORE_CONTEXT);
 	const {settings} = core;
+	let iu = useIndexUpdates(core)
   const [state, taskDispatch] = useTaskDispatch({
     ...props,
     status: item.$status,
@@ -116,7 +120,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
       // evt.stopPropagation();
       const completed = evt.currentTarget.checked;
       const oldStatus = item.$status;
-
+			
       let newStatus: string;
       if (evt.shiftKey) {
         newStatus = nextState!;
@@ -164,23 +168,26 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
       if (typeof val === "string") {
         let withFields = val;
         for (let field in item.$infields) {
-          setInlineField(withFields, field, item.$infields[field].raw);
+          withFields = setInlineField(withFields, field, state.fields[field].raw);
         }
-				completedRef.current && completedRef.current({type: "commit", newValue: val})
+				await rewriteTask(app.vault, item, item.$status, withFields);
+				// completedRef.current && completedRef.current({type: "commit", newValue: val})
       }
     },
     [item]
   );
-  const checked = useMemo(() => state.status !== " ", [state, item]);
+  const checked = useMemo(() => state.status !== " ", [state.status]);
   const eState: EditableState<string> = useMemo(() => {
     return {
       updater: onChanger,
       content: item.$strippedText,
       inline: false,
     } as EditableState<string>;
-  }, [item, props.rows]);
-  const theElement = useMemo(() => <TextEditable sourcePath={item.$file} {...eState} />, [eState, item, props.rows]);
-  const editableFields = (state.displayedFields || []).map((ifield) => {
+  }, [item, props.rows, iu]);
+  const theElement = useMemo(() => <TextEditable sourcePath={item.$file} {...eState} />, [eState, item, props.rows, state, iu]);
+
+  const editableFields = useMemo(() => {
+		return (state.displayedFields || []).map((ifield) => {
       let defField: Field = {
         key: ifield.key,
         value: ifield.defaultValue!,
@@ -210,7 +217,8 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
           value={fieldValue}
         />
       );
-    });
+    })
+	}, [state, props.rows, item]);
 
   return (
     <li class={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={state.status}>
