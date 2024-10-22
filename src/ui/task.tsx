@@ -75,10 +75,9 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
   const nextState = useMemo(() => {
     if (props.states && props.states?.length > 0) {
       let curIndex = props.states.findIndex((a) => a === item.$status);
-      if (curIndex == props.states.length - 1) {
+      curIndex++;
+      if (curIndex >= props.states.length) {
         curIndex = 0;
-      } else {
-        curIndex++;
       }
       return props.states[curIndex];
     } else {
