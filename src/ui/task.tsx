@@ -83,26 +83,13 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     } else {
       return item.$completed ? " " : "x";
     }
-  }, [props.states, item, item.$status, item.$completed]);
+  }, [state.states, item, item.$status, item.$completed]);
 
   const onChecked = useStableCallback(
     (evt: JSXInternal.TargetedMouseEvent<HTMLInputElement>) => {
       // evt.stopPropagation();
       const completed = evt.currentTarget.checked;
       const oldStatus = item.$status;
-
-      let flatted: MarkdownTaskItem[] = [item];
-
-      if (settings.recursiveTaskCompletion) {
-        function flatter(iitem: MarkdownTaskItem | MarkdownListItem) {
-          if (iitem instanceof MarkdownTaskItem) {
-            flatted.push(iitem);
-            iitem.$elements.forEach(flatter);
-          }
-        }
-        item.$elements.forEach(flatter);
-        flatted = flatted.flat(Infinity);
-      }
 
       let newStatus: string;
       if (evt.shiftKey) {
@@ -113,15 +100,38 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
       const parent = evt.currentTarget.parentElement;
       parent?.setAttribute("data-task", newStatus);
       async function rewr() {
-        let newText = setTaskCompletion(
-          item.$text,
-          // TODO: replace these next three arguments with proper settings
-          false,
-          "completed",
-          settings.defaultDateFormat,
-          newStatus?.toLowerCase() === "x"
-        );
-        await rewriteTask(app.vault, item, newStatus, newText);
+				if (settings.recursiveTaskCompletion) {
+					let flatted: MarkdownTaskItem[] = [item];
+					function flatter(iitem: MarkdownTaskItem | MarkdownListItem) {
+						if (iitem instanceof MarkdownTaskItem) {
+							flatted.push(iitem);
+							iitem.$elements.forEach(flatter);
+						}
+					}
+					item.$elements.forEach(flatter);
+					flatted = flatted.flat(Infinity);
+					for(let iitem of flatted) {
+						let newText = setTaskCompletion(
+							iitem.$text,
+							// TODO: replace these next three arguments with proper settings
+							false,
+							"completed",
+							settings.defaultDateFormat,
+							newStatus?.toLowerCase() === "x"
+						);
+						await rewriteTask(app.vault, iitem, newStatus, newText);
+					}
+				} else {
+					let newText = setTaskCompletion(
+						item.$text,
+						// TODO: replace these next three arguments with proper settings
+						false,
+						"completed",
+						settings.defaultDateFormat,
+						newStatus?.toLowerCase() === "x"
+					);
+					await rewriteTask(app.vault, item, newStatus, newText);
+				}
       }
       rewr().then(() => {
         taskDispatch({ type: "checked-changed", oldStatus, newStatus });
