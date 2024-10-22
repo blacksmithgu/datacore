@@ -1,6 +1,6 @@
 import { setEmojiShorthandCompletionField, setInlineField } from "index/import/inline-field";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage, MarkdownSection, MarkdownBlock, MarkdownListItem, MarkdownTaskItem } from "index/types/markdown/markdown";
+import { MarkdownPage, MarkdownSection, MarkdownBlock, MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { DateTime } from "luxon";
 import { Vault } from "obsidian";
 
