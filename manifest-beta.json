@@ -1,11 +1,7 @@
 {
   "id": "datacore",
   "name": "Datacore",
-<<<<<<< HEAD
   "version": "0.1.19",
-=======
-  "version": "0.1.14",
->>>>>>> bb443f1 (Squashed commit of the following:)
   "minAppVersion": "1.4.11",
   "description": "Reactive data engine for Obsidian.md.",
   "author": "Michael Brenan",

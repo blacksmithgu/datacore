@@ -15,7 +15,14 @@ import {
     Taggable,
 } from "index/types/indexable";
 import { DateTime } from "luxon";
-import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing, Fieldbearings } from "../../expression/field";
+import {
+    Extractors,
+    FIELDBEARING_TYPE,
+    Field,
+    FieldExtractor,
+    Fieldbearing,
+    Fieldbearings,
+} from "../../expression/field";
 import { InlineField, jsonInlineField, valueInlineField } from "index/import/inline-field";
 import {
     LineSpan,

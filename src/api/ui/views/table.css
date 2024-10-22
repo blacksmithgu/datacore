@@ -55,16 +55,17 @@
 }
 
 .datacore-table td .datacore-collapser {
-	max-width: 1.25em;
-	max-height: min-content;
-	vertical-align: middle;
-	display: flex;
+    max-width: 1.25em;
+    max-height: min-content;
+    vertical-align: middle;
+    display: flex;
 }
 .datacore-table td:has(.datacore-card-collapser) {
-	max-width: 1.25em;
+    max-width: 1.25em;
 }
 
-.datacore-table td .datacore-editable-outer, .datacore-table td .datacore-editable {
-	width: 100%;
-	display: inline-block;
+.datacore-table td .datacore-editable-outer,
+.datacore-table td .datacore-editable {
+    width: 100%;
+    display: inline-block;
 }
