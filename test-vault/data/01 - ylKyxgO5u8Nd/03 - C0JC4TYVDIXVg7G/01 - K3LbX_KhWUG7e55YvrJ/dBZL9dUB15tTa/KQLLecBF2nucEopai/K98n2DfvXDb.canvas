@@ -1,0 +1,15 @@
+{
+	"nodes":[
+		{"type":"group","label":"FRAGMENTS","id":"5002d8d9e04a1c12","x":-360,"y":-1720,"width":1920,"height":1000},
+		{"id":"b00c0e5eca02e7ec","x":180,"y":-1580,"width":290,"height":440,"type":"group","label":"next day"},
+		{"type":"group","label":"insp/ref","id":"5430ab896ce07d0f","x":-240,"y":-480,"width":1280,"height":1260,"color":"#890000"},
+		{"type":"link","url":"https://archiveofourown.org/works/27132943?view_adult=true","id":"b74977fc855bf644","x":-220,"y":-420,"width":620,"height":620},
+		{"type":"link","url":"https://archiveofourown.org/works/17357879?view_adult=true","id":"0ab2003f447f35c4","x":460,"y":-420,"width":560,"height":620},
+		{"type":"link","url":"https://archiveofourown.org/works/21118232?view_adult=true","id":"63b7dcb9ead7ca33","x":-160,"y":280,"width":400,"height":400},
+		{"type":"text","text":"“gentle...”","id":"fdba5fb347e63c62","x":-320,"y":-1680,"width":250,"height":60,"color":"#ff4d9a"},
+		{"type":"text","text":"“let me hear you baby”","id":"d735c2b91037729b","x":-320,"y":-1560,"width":250,"height":60,"color":"#2e51ff"},
+		{"type":"text","text":"Brian eats Sean out. when his tongue brushes over Sean’s clit, Sean starts humping the air.\n\nBrian smacks him and growls, “still.”\n\nSean obeys","id":"d65b2140ef9198a0","x":-160,"y":-1320,"width":250,"height":240,"color":"#810ecd"},
+		{"type":"text","text":"for good measure, i sink my teeth into the same place on his neck as last night.","id":"9651ba3b48c3d019","x":200,"y":-1560,"width":250,"height":100,"color":"#2e51ff"}
+	],
+	"edges":[]
+}

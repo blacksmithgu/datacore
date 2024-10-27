@@ -4,6 +4,7 @@
   "description": "Reactive data engine for Obsidian.md.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+	"type": "module",
   "files": [
     "lib/**/*"
   ],
@@ -11,6 +12,8 @@
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "test": "yarn run jest",
+		"test:e2e": "yarn playwright test",
+		"test-all": "yarn test && yarn test:e2e",
     "test-watch": "yarn run jest -i --watch --no-cache",
     "check-format": "yarn run prettier --check src",
     "format": "yarn run prettier --write src"
@@ -27,6 +30,7 @@
     "@codemirror/language": "https://github.com/lishid/cm-language",
     "@codemirror/state": "^6.0.1",
     "@codemirror/view": "^6.0.1",
+    "@playwright/test": "^1.48.2",
     "@types/jest": "^27.0.1",
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
@@ -34,8 +38,10 @@
     "builtin-modules": "3.3.0",
     "esbuild": "^0.16.11",
     "esbuild-plugin-inline-worker": "https://github.com/mitschabaude/esbuild-plugin-inline-worker",
-    "jest": "^27.1.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "obsidian": "^1.6.6",
+    "obsidian-testing-framework": "^0.0.4",
     "prettier": "2.3.2",
     "ts-jest": "^27.0.5",
     "ts-node": "^10.9.2",
@@ -57,5 +63,6 @@
     "sorted-btree": "^1.8.1",
     "sucrase": "3.35.0",
     "yaml": "^2.3.3"
-  }
+  },
+  "packageManager": "yarn@4.5.1"
 }

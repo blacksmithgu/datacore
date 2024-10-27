@@ -29,7 +29,7 @@ export namespace JsonConversion {
             case "object":
                 return mapObjectValues(wrapped.value, JsonConversion.json);
             case "date":
-                return { $_type: "date", value: wrapped.value.toISO({ extendedZone: true, includeOffset: true }) };
+                return { $_type: "date", value: wrapped.value.toISO({ includeOffset: true }) };
             case "link":
                 return { $_type: "link", value: wrapped.value.toObject() };
             case "duration":

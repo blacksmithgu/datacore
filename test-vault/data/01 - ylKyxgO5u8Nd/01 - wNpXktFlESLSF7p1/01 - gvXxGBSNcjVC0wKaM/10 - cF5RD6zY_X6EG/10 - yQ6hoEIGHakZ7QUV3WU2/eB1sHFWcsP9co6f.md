@@ -1,0 +1,57 @@
+---
+title: Tower
+subtitle: spiritual prequel to Out of Phase
+type: outline
+outline type: animatic
+tags: Diamond-Head medieval-tatlis-AU
+---
+
+> 12UekAjP0O6NXihcT
+>
+> 2mJ2wW6I3okJrBPGYKBuluiSUup0bbJhrpcY4O0ybllCbcDdWwPPK8jwBt4GDs8cvBqmcmU8uXZzv0CPZzwokmvhtkeHJjiXcYpuT6TMzFxAehXreK0ddA1OQS6lMiyeB9OVWYJK2iRMEILoPmsMOMiFkOXlOFp1ZIZEP8toc9WqnlEUuqnqDWIktMSJnsny9w9PzyEg6nWLe6XjrPF0LxHZmhDsp4638n2XmsdCuNZL0E5dp6Fm
+>
+> nerAOxqUQ2yUEosMRXZJBgarWWoqCOeNoAogOBnVXPy6xEVKzGjEhEDuHoU9PRvKRdELTU4a9ctdHE3maMsXusTgpD2673UDu1zprAzSCNXSvK6wqa
+>
+> hPQfmaf8qvSU5W00T4x18pLRFo0rSs5gmJpEh9Izc9XvOF94AoNIj2hp4lf7ryrACSqvQA60cgYQnNn7ZbE5qB6et019xhUxSDHL7EIg7RS2rX2kpL7NG0pJ9II4nSiQJJEveHgzu6slh984Cz67mKZeRlZUs0KH49UG3rpe8s4wsgE2Taq8yjYlOSthXqLW2K7oNcYqrVgnPVrOXB1fbP3U5kmif2mTpnho0yefcNojxcgwxGzltbgHJZsb4URGT75
+>
+> z3wdgwMPQZUVG9k8tCkrerW1CVIsUyOJXx2O4PeEmzvulI3ZZB2m97bPeQ8XR6M80oOzg8LnjlpdiItEnlIPBR6nKqAEhkpN4MLeSPmZnUU6kCMtXI
+>
+> qppqHUjH6dgIjnr3pjC8U4CAbLTrZ3UYCeBkf8nrfWBNEjYruAcBSQiVy0YBghsyhJ719wZ2TX6JWICJThC4ZyoGi0iLl25bPxLCfyMupPRbhhONHAM34IjRgZhlrUwoq5YqS45voyD8DAr4k7MUnzDpHcfCNHZr3XNwLS3Xx2WBSeTcmfYnLp04bzA2x3DE8tNawdxiHJMkx7V3Z3D2uai6m6ahptejAcXWxXznkqiyh0zXmRI
+>
+> 8hVwzPQzTHNpOtkaBgIB5vRNqRqNlGAmAG5BzLnnQFmJ13KdiLORlDwlrYNfFU558W9kH6mrGEHtFzZ2GLBXNm37BG3G88fBVjZdvuxh3iStOZk6cl
+>
+> P4itFgY568awvfvDqsLGzTAK698sCHoCDTClH4P6sqVEiqgOr1NMECfvEotGU88qLJd8tns8r7UnFrySEdek6iRHddyynQIdtiJD4JULSOnagk9nUlOnP41RZUlNxLFxveBHSlS
+
+# VNkrvVx
+
+## k83RmlqNYumxHWR9Ca
+
+# w54HoQW1
+
+# wjGIPl0
+
+> *ZeoHpMEhyzxDGBSVFSTiX6YZA1cwUzubtV36*
+
+\[shot:: POV - Brian]
+
+* LfYeZIvMjPzfnakHp9Ln96R9VDFAtxwuaP0Rb
+
+> *6qH4LoYGIckn7ym98hOrsUsZEBZMCi*
+
+\[shot:: front, facing B]
+
+* ecZQ4NT6foMOhAXgYVeQjSNZVOTD1OvtkqdGOf9BzsZKfyx
+
+n
+
+# 4VLKE1XC
+
+# PWtJ
+
+# JSlrTHl
+
+# W0qWMSag
+
+## CoCDtGY0LAumy
+
+# rXdlNV5T

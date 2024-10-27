@@ -18,6 +18,7 @@ declare module "obsidian" {
     interface App {
         appId?: string;
         plugins: {
+            enablePlugin: (id: string) => Promise<boolean>;
             enabledPlugins: Set<string>;
             plugins: {
                 datacore?: {
@@ -25,6 +26,7 @@ declare module "obsidian" {
                 };
             };
         };
+
         embedRegistry: {
             embedByExtension: {
                 [key: string]: unknown;
@@ -44,6 +46,17 @@ declare module "obsidian" {
                 subpath?: string
             ) => FileView & { loadFile: (file: TFile) => void };
         };
+    }
+    interface WorkspaceLeaf {
+        containerEl: HTMLElement;
+        resizeHandleEl: HTMLElement;
+        tabHeaderEl: HTMLElement;
+        tabHeaderInnerIconEl: HTMLElement;
+        tabHeaderInnerTitleEl: HTMLElement;
+        tabHeaderStatusContainerEl: HTMLElement;
+        tabHeaderStatusPinEl: HTMLElement;
+        tabHeaderStatusLinkEl: HTMLElement;
+        tabHeaderCloseEl: HTMLElement;
     }
 }
 

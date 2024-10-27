@@ -1,0 +1,12 @@
+{
+	"nodes":[
+		{"type":"text","text":"lolololol\n","id":"ecbdcf2c22544711","x":-443,"y":-186,"width":250,"height":60},
+		{"type":"text","text":"---\nfront: matter\nis: cool\n---\n","id":"3c4a375f3cf8d648","x":-100,"y":-20,"width":250,"height":100},
+		{"type":"file","file":"01 - creative/01 - animation/01 - Diamond Head/10 - Outlines and Scripts/10 - musical animatics/fountain scripts/Out of Phase [reanimation].fountain","id":"4bcc3031c48a771b","x":-920,"y":220,"width":400,"height":400},
+		{"type":"text","text":"[data:: is cool!]\n\n- [ ] a task lol\n\t- [ ] lol\n- [ ] lol\n\t- [ ] lol\n\t      FUCK YOU BITCH\n\t\t- [ ] kek\n- [ ] ...\n\t- [ ] W\n\t\t- [ ] wah\n\t\t- [ ] nah\n\t\t- [ ] lah\n\t\t- [ ] kah\n\t- [ ] try\n\t- [ ] catch\n\t- [ ] finallyyyyyyyyyyyyyyy\n\t      pop\n- [ ] kik\n- [ ] AGAIN\n- [ ] AGAIN\n- [ ] AGAIN\n- [ ] AGAIN","id":"fe2b42a8c86d12ee","x":-60,"y":-1200,"width":340,"height":600},
+		{"type":"file","file":"root/Untitled.md","id":"bb5b7b7c8de83f2c","x":-233,"y":200,"width":516,"height":857}
+	],
+	"edges":[
+		{"id":"e4644f04c176cf38","fromNode":"fe2b42a8c86d12ee","fromSide":"bottom","toNode":"3c4a375f3cf8d648","toSide":"top"}
+	]
+}

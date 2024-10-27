@@ -14,7 +14,7 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "importHelpers": true,
     "downlevelIteration": true,
     "esModuleInterop": true,

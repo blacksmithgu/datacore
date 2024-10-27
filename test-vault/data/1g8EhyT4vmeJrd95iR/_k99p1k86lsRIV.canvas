@@ -1,0 +1,11 @@
+{
+	"nodes":[
+		{"id":"27aab25355c0e016","x":1180,"y":-1553,"width":200,"height":246,"color":"#00c853","type":"text","text":"```dataview\ntask from \"02 - projects/10 - programming/30 - rockfic/v3.md\"\n```\n"},
+		{"id":"d5d7238bb53a423e","x":600,"y":-1460,"width":360,"height":306,"color":"#00b8d4","type":"text","text":"# nice.\n```dataview\ncalendar file.mtime from \"02 - projects\"\n```\n\n222"},
+		{"id":"36a61fbab5cf435f","x":-400,"y":-1480,"width":1380,"height":940,"type":"group","label":"hi"},
+		{"id":"4e33644ff747df34","x":-360,"y":-1307,"width":880,"height":640,"color":"#7c4dff","type":"text","text":"```dataviewjs\nawait this.view(\"85 - dataview views/project-view\", {path: \"02 - projects/10 - programming/30 - rockfic\", overviewType: \"master\"})\n```\n"}
+	],
+	"edges":[
+		{"id":"cc46795623bf5d4a","fromNode":"36a61fbab5cf435f","fromSide":"right","toNode":"27aab25355c0e016","toSide":"left"}
+	]
+}
