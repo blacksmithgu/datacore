@@ -1,0 +1,10 @@
+{
+	"nodes":[
+		{"id":"165d0b1603803287","type":"group","x":-160,"y":-120,"width":466,"height":260,"label":"hi?"},
+		{"id":"73199d10a14aa064","type":"link","url":"https://tablet.sh","x":-80,"y":-900,"width":400,"height":400},
+		{"id":"0bac333a1f96169d","type":"text","text":"ongo bongo long\ntext\n- [ ] hi!","x":-52,"y":-2,"width":250,"height":102},
+		{"id":"c2c3c33afa03a0ab","type":"text","text":"","x":-104,"y":-100,"width":355,"height":54},
+		{"id":"92875070648ea386","type":"file","file":"02 - projects/10 - programming/10 - programming.md","x":-20,"y":360,"width":380,"height":400}
+	],
+	"edges":[]
+}

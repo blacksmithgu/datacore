@@ -1,0 +1,246 @@
+---
+tags: project tasklists
+---
+
+# vDezY
+
+## 5bsnCR0urKobCTt
+
+* [ ] PloV
+* [ ] l4rQ4gxlFDSNb
+* [ ] XsZJp
+  * [ ] 4H11aMI
+  * [ ] MD0g2NM45Wi
+  * [ ] qNSYIW07GSwI
+  * [ ] LvLpernLaa0R
+  * [ ] GEewrwD5sx
+* [ ] sjKZ7mKJmg
+  * [ ] 57odqfX
+  * [ ] Vmba4w5nyEru
+  * [ ] V3a4778KIcHy
+  * [ ] Tl1mC7H84y
+
+- [ ] CWazIMfiqcnTqkF1
+  * [ ] R0jmykgnsumK
+  * [ ] QQsnJ0LP5ZKz
+  * [ ] 612P05dYbj85r0Os8m40UwElqtJF8mfJ0DVPOFBXW9SWoz6Lgv4VHY4X0xCwZOpNSNNjsxirAdSPkUbOEdLUjruxWlRu
+  - [ ] R9401O7o4p36k
+  * [ ] YyIco
+    * [ ] NGjrRtfHGbl
+    * [ ] 7nu9uQZ
+    * [ ] E12r22nBcH
+- [ ] Khn9K
+  * [ ] c3XaVRd
+  * [ ] NagI
+    * [ ] fU7xb291FDtzP
+    * [ ] eEPI8Ns
+    * [ ] OJqQbu9
+    * [ ] 6qw5BG
+    * [ ] 6MWWyN
+      * [ ] HJFVv\[completedOn:: 2023-10-01]
+      * [ ] 8Sm7dLzQ2cRV9M
+    * [ ] ZATBty
+      * [ ] 2vz48
+      * [ ] jRhXAMq9d2oH
+  * [ ] z2pLRhw
+    * [ ] mb4ZOsb
+    * [ ] fGYwBU
+      * [ ] KRNtoi
+- [ ] dHGcFK9Uq4VWPkmesZg1iYIqUf6PRnoR6Ad7FDalxIHtzOv92qdL61UATIY644oyhMV7U1zccvNtzGjKeYrjfkc7yI`isWhere`j5yD7kavF507652Bw
+- [ ] irh26t6aT
+  * [ ] FqIuZ
+  * [ ] RGGSWcj
+- [ ] 6cWSktiDv
+  * [ ] uwYIxdjU1xWG
+  * [ ] gx9DCdnJ9dLK89
+- [ ] LbOwKCzLIYSPUb
+  * [ ] Vn9Rno7Fn39HCABW
+  * [ ] 9EbLvpCA3PChByF
+- [ ] 0xW8D7H
+  * [ ] QD9Gro4jQ5Dl
+  * [ ] Td8BHHz
+  * [ ] xBFgvMKzMaU0rdsciwUx
+  * [ ] 8FEzt0B
+    * [ ] U3wcMvdNQL
+    * [ ] VBMQCvqPSyOs
+    * [ ] snxE1cP
+  * [ ] aUc4XT5PanQp5iES
+    * [ ] Fwe
+    * [ ] nOYv
+    * [ ] pwkU
+  * [ ] XoCLOFawMRX5w4QDWzOK3NB
+- [ ] O2n1NWM
+  * [ ] TXDJTS
+  * [ ] qCP0
+  * [ ] xeV
+  * [ ] Zv2By
+  * [ ] hydfptO
+- [ ] AGo7ZR
+  * [ ] BMoj6nQD13enLpE
+  * [ ] w6VEvGqU6r1AADOA
+  * [ ] NhznWKcYAzQgeyzdE
+  * [x] XERR5o4Cj7oQ
+- [ ] teiUni
+  * [ ] rVJboi2cHQk93O9NHmu
+    * [ ] LTbwiO4LRLuXyftP9R
+    * [ ] WrqSRL2
+  * [ ] VBeSPdr
+    * [ ] ikzdyb3SIZJ
+    * [ ] cI7u9bH
+  * [ ] Ec778htCDbYdpjdbO
+    * [ ] QebcUp8pwiB
+    * [ ] aF50qeD
+- [ ] LMuUSvoLPq50ZR33o0zuMnGRlGtGf8kg2
+  * [ ] W6HisqgbTPYDxw
+  * [ ] expvyLf3JkODOK98
+- [ ] gobA8rRj45xf0c5
+  * [ ] QS9a8u4JVZFG
+  * [ ] SnD
+    * [ ] d08h7Hf
+    * [ ] SPkN00C
+- [ ] k15aU
+  * [ ] fhrKy3h
+    * [ ] 3TxtpE0ipnhS
+- [ ] ypjlmcFJXjuIw
+- [ ] bFy8bZtD0Q7k0aI
+  * [ ] vcjNFj8Wr
+    * [ ] 5LYNaWf
+    * [ ] aj0uTVA
+      * [ ] ZJpED5UyYR2
+    * [ ] K7f7zbTjZHcOfIgfwq
+    * [ ] 7GnzuqA0HU57zaF
+    * [ ] teHthF
+  * [ ] xSRApwI
+    * [ ] q2OBUur
+    * [ ] BZ7mm31hHREl
+    * [ ] q6YRfH
+
+## eRdoA4e62a
+
+* [ ] JH5j
+* [ ] dcbERaG
+* [ ] eDNH0
+* [ ] XghKm
+  * [ ] PYlK9O2C23Rs8PrM0rIEl
+  * [ ] iFdzs
+    * [ ] vf8eReDITU
+    * [ ] lwQZ
+  * [ ] nrEaivBjr32BWdpdUWVr1j
+    * [ ] de7
+    * [ ] DOn
+  * [ ] 3gwsTD2wAa
+    * [ ] 3ECa0b5W
+    * [ ] Am7Wa39ugH
+    * [ ] kFWPCk
+* [ ] KE4AJwLP2oUIkP
+* [ ] 29D1UU
+  * [ ] tdkeORf
+  * [ ] j3n2kcyIg
+* [ ] gbI3nHfMTbXbrk
+  * [ ] V4wF6
+  * [ ] PmeXLR6D
+  * [ ] OoSgBJfzUCLeC6C
+  * [ ] vtm2pZRL
+    * [ ] 27UYCq
+  * [ ] VgpAD7
+* [ ] 2XlnqY
+  * [ ] BWcN
+
+- [ ] 8jpBLj2
+  * [ ] S2i9
+  * [ ] 3DP2iZHESZN2vr
+  * [ ] jBTMLTNJr0V
+  * [ ] IQXeZXk9T
+    * [ ] yiyqwsU
+    * [ ] BtnNyJd45NJn
+    * [ ] XA00u0DJ9TvRr3WG4iwp
+- [ ] vtmV14
+  * [ ] fJqS
+  * [ ] nnUsyJWmEfS
+  * [ ] 0UrLzwGn0Rrl
+- [ ] aYqGREn586I8IQJy0s
+  * [ ] UHnW
+  * [ ] AfgdJcbL
+  * [ ] RS6lwYZ7SrME
+- [ ] NnJ9R
+  * [ ] ledMm9u
+- [ ] DTZhtXqY
+  * [ ] 6ERSy14977
+  * [ ] xZFjlXsoYcF8
+  * [ ] OeznEkPiPQVs
+  * [ ] JIpq6Vhfi6vuMP
+  * [ ] neyMq8us6wgKlI
+  * [ ] Qgjn1PizO
+  * [ ] SZ74
+  * [ ] 1jLy
+- [ ] uQ6QMT
+  * [ ] oDjm
+  * [ ] D2WIKm5
+- [ ] YmDlVL6YfsWIPRx5
+  * [ ] iUZqJmG8wZX
+  * [ ] FL4gNBLmgJKQ
+  * [ ] 0JgpeRVaUSXAeMuAIcC0
+  * [ ] 2CiYMrsBgTz7a7bpDspy7Mj8dcT0km3VIl
+- [ ] koNYJMOhyMsWTVt
+  * [ ] BX8pSCggDgqOk
+  * [ ] 2wucrObQnY9N
+  * [ ] N9gASz9tLDp1xwbsI
+
+## oC4r6APzDUi3vNO
+
+* [ ] di7zEaW
+  * [ ] fG2CSlCQWzhYYZ
+    * [ ] nxHhHtTGM
+    * [ ] Wc3CreAw2e7
+    * [ ] HOL
+    * [ ] 0aIEG
+  * [ ] ynl
+  * [ ] WX9X
+    * [ ] ifuROxk
+    * [ ] V5NS
+    * [ ] AWJVp
+
+- [ ] ixELDWb0dpq
+- [ ] wH6OjAKb0iLR79Yo
+  * [ ] 05g5738
+  * [ ] jw9F
+- [ ] XDo9lo67Dt
+  * [ ] yUn66HbbfqrspIyuHUSebwSYsN27
+
+* [ ] 8VywEX5KhghUmy
+  * [ ] uyV9
+  * [ ] wdhNZeuYCYdZ
+* [ ] W6D5lkfQvU
+  * [ ] Q3TGjEae8
+    * [ ] JpH6HrKOKwY3
+    * [ ] XcXSMDtTfuHTM
+
+- [ ] Ailzf
+  * [ ] WQtMqGZGP9lycXi
+  * [ ] CZ9H
+  * [ ] eR8T
+    * [ ] baMNGcCGG
+    * [ ] D6MPgtz6VXBi
+    * [ ] iejf7ZZkZLCA
+    * [ ] kgU0gdRq69Sufk
+    * [ ] 8GK9MH
+  * [ ] 5AxH7r1
+    * [ ] tDR5
+    * [ ] KChgVgF
+      * [ ] BeCKA
+      * [ ] hYjZd
+      * [ ] FQ1w
+  * [ ] GDt4wtG8TbhD3p
+    * [ ] Stx
+    * [ ] STM
+    * [ ] Tl2nQ6heP
+- [ ] VayARYYTnoF0dGV
+  * [ ] hkbcOn0CMUaAWG
+  * [ ] XDUKDzR5qAQeZH
+  * [ ] E4AkT6rGah1Ui
+  * [ ] 1dxBsgQ4h9MNcQzb
+- [ ] o5KVkW3yryRTI2
+- [ ] r1TL0q
+  * [ ] n7vk
+  * [ ] JNa39A7m
+  * [ ] Z8sWmMtJx

@@ -1,0 +1,89 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\Corinthe\AppData\Local\node\corepack\v1\yarn\1.22.19\bin\yarn.js install
+
+PATH: 
+  C:\Program Files\PowerShell\7;C:\Program Files\Go\bin;C:\tools\ruby33\bin;C:\Program Files\BellSoft\LibericaJDK-22-Full\bin\;C:\Program Files\Java\jdk-22.0.1\bin;C:\Program Files\BellSoft\LibericaJDK-21-Full\bin\;C:\Program Files\Java\jdk-20\bin;C:\tools\ruby31\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Program Files\MongoDB\Tools;C:\Program Files\dotnet\;C:\Program Files\PowerShell\7;C:\Program Files\Python\Scripts;C:\ProgramData\chocolatey\bin;C:\ProgramData\nvm;C:\Program Files\MongoDB\Tools\100\bin;C:\Program Files\MongoDB\Server\5.0\bin;C:\Program Files\ffmpeg-master-latest-win64-gpl\bin;C:\Users\Corinthe\.apklab;C:\platform-tools;C:\Program Files\xz\bin_x86-64;C:\cmdline-tools\bin;C:\Users\Corinthe\Downloads\cmdline-tools\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Program Files\Java\jdk-17.0.3.1\bin;C:\Program Files\Microsoft VS Code\bin;C:\Program Files\Pandoc\;C:\Program Files\zippy;C:\Users\Corinthe\asdk\build-tools\32.0.0;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\ytdl;C:\Program Files\yt-dlp;C:\Program Files\curl\bin;C:\ProgramData\nvm;C:\Program Files\nodejs;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Program Files\WindowsApps\Microsoft.WindowsFileRecovery_0.1.13492.0_x64__8wekyb3d8bbwe\ntfssalv_cli_exe;C:\Program Files\Git LFS;C:\mingw-toolchain\bin;C:\Users\Corinthe\projs\DownOnSpot\target\release;C:\Program Files (x86)\oh-my-posh\bin;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Users\Corinthe\AppData\Local\pnpm;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\;C:\Program Files\Microsoft Visual Studio\2022\Community\VC;C:\Program Files\Python;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\LLVM\bin;C:\Program Files (x86)\Nmap\;C:\Program Files\BinDiff\bin;C:\Program Files (x86)\GnuPG\bin;C:\Program Files (x86)\Subversion\bin;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\LLVM\bin;C:\Program Files\Emacs\emacs-29.4\bin;C:\Program Files\Git\cmd;%PNPM_HOME%;C:\Users\Corinthe\.cargo\bin;C:\Users\Corinthe\scoop\apps\maven\current\bin;C:\Users\Corinthe\scoop\shims;C:\Program Files\openssh\;C:\Users\Corinthe\bin;C:\Program Files\PowerShell\7;C:\Program Files\Git\bin;C:\Program Files\Java\jdk-20\bin;C:\tools\ruby31\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Windows Live\Shared;C:\Program Files (x86)\Windows Live;C:\Program Files\dotnet\;C:\Program Files\PuTTY\;C:\Program Files\Animation Paper\gstreamer\bin;C:\Users\Corinthe\AppData\Roaming\Python\Python39\Scripts;C:\ProgramData\chocolatey\bin;C:\ProgramData\nvm;C:\Program Files\MongoDB\Tools\100\bin;C:\Program Files\MongoDB\Server\5.0\bin;C:\Program Files\ffmpeg-master-latest-win64-gpl\bin;C:\Users\Corinthe\.apklab;C:\platform-tools;C:\Program Files\xz\bin_x86-64;C:\cmdline-tools\bin;C:\Users\Corinthe\Downloads\cmdline-tools\bin;C:\Program Files\OpenSSL-Win64\bin;C:\Program Files\Java\jdk-1;C:\Program Files\Microsoft VS Code\bin;C:\Users\Corinthe\.bun\bin;C:\Program Files\MongoDB\Tools\;C:\Users\Corinthe\.dotnet\tools;C:\Users\Corinthe\AppData\Local\Programs\oh-my-posh\bin;C:\Users\Corinthe\AppData\Local\Microsoft\WinGet\Links;C:\Users\Corinthe\.dotnet\tools;C:\Program Files\Neovim\bin;C:\ProgramData\nvm;C:\Program Files\nodejs;C:\Users\Corinthe\AppData\Local\Pandoc\;;C:\Users\Corinthe\AppData\Local\Microsoft\WindowsApps;C:\Users\Corinthe\AppData\Local\Programs\FirefoxPWA\;C:\Users\Corinthe\go\bin;C:\Program Files (x86)\Subversion\bin;C:\tools\dart-sdk\bin;C:\Users\Corinthe\AppData\Local\Pub\Cache\bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  22.4.1
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: EPERM: operation not permitted, unlink 'C:\Users\Corinthe\AppData\Local\Yarn\Cache\v6\npm-typescript-5.6.3-5f3449e31c9d94febb17de03cc081dd56d81db5b-integrity\node_modules\typescript\.yarn-tarball.tgz'
+
+npm manifest: 
+  {
+    "name": "datacore",
+    "version": "0.1.19",
+    "description": "Reactive data engine for Obsidian.md.",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "type": "module",
+    "files": [
+      "lib/**/*"
+    ],
+    "scripts": {
+      "dev": "node esbuild.config.mjs",
+      "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+      "test": "yarn run jest && yarn playwright test",
+      "test-watch": "yarn run jest -i --watch --no-cache",
+      "check-format": "yarn run prettier --check src",
+      "format": "yarn run prettier --write src"
+    },
+    "keywords": [
+      "obsidian",
+      "datacore",
+      "dataview",
+      "pkm"
+    ],
+    "author": "Michael Brenan",
+    "license": "MIT",
+    "devDependencies": {
+      "@codemirror/language": "https://github.com/lishid/cm-language",
+      "@codemirror/state": "^6.0.1",
+      "@codemirror/view": "^6.0.1",
+      "@playwright/test": "^1.48.2",
+      "@types/jest": "^27.0.1",
+      "@types/luxon": "^2.3.2",
+      "@types/node": "^16.7.13",
+      "@types/parsimmon": "^1.10.6",
+      "builtin-modules": "3.3.0",
+      "esbuild": "^0.16.11",
+      "esbuild-plugin-inline-worker": "https://github.com/mitschabaude/esbuild-plugin-inline-worker",
+      "jest": "^29.7.0",
+      "obsidian": "^1.6.6",
+      "obsidian-testing-framework": "^0.0.4",
+      "prettier": "2.3.2",
+      "ts-jest": "^29",
+      "tslib": "^2.3.1",
+      "typescript": "^5.4.2"
+    },
+    "dependencies": {
+      "@datastructures-js/queue": "^4.2.3",
+      "@fortawesome/fontawesome-svg-core": "^6.4.0",
+      "@fortawesome/free-solid-svg-icons": "^6.4.0",
+      "@fortawesome/react-fontawesome": "^0.2.0",
+      "emoji-regex": "^10.2.1",
+      "flatqueue": "^2.0.3",
+      "localforage": "1.10.0",
+      "luxon": "^2.4.0",
+      "parsimmon": "^1.18.0",
+      "preact": "^10.17.1",
+      "react-select": "^5.8.0",
+      "sorted-btree": "^1.8.1",
+      "sucrase": "3.35.0",
+      "yaml": "^2.3.3"
+    },
+    "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

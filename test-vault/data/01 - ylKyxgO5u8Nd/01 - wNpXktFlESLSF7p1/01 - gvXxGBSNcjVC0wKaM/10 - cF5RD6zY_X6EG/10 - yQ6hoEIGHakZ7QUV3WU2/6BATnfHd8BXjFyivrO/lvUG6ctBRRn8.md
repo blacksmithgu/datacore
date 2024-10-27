@@ -1,0 +1,163 @@
+---
+title: Iron Baby
+type: outline
+outline type: animatic
+tags: Diamond-Head
+---
+
+2LJhbo1Cs25Ad2njHQGLBM
+
+# aMlWi
+
+* QpYV0j2VH5kcXZN1HmKmRqOFcAK652rXuU2wG5wYdzd2WdwEAqiR
+  * t4vILWAuDOxs1J15MfYjR
+
+## eP3StkC
+
+* V4wA48zEON7OsFpsuc8VOFRszNByT0HcQ9RNAE3rRM4FaZ
+* 9GrGWSSeAPuxDV2h86s1pyZ1MRTmdKGpNXDGxjtwRrYkv
+
+## g9fDqKyHL8
+
+# 23BvR6b
+
+> *mqpKYGdVfzSCKBUj5DscSvpaEmRzie*
+
+* 4dqqTYCiG8ptR44HP3cy7P7DwZXKpgMN3CTAZJm44YsiWuhLQ5wz8igZD7aghHjI4y677TDAoGrscUtM7bPsMlyAZ
+
+# kNNFg1KB
+
+> *R1OIw4rKCpNVFAmScwEwDOLYieWJ*
+
+* nVCQWw29bWQS6KYkJgozUGT4hyTCMyNImoijJmn2ylszYALg7tzV9AfeJ1aLEn9Qeikn
+
+> *rkxL5C3r52Gv2uRaa7JLcnTSvPI68J08Dx4vPR3rm56*
+
+* KODYmjRoXd8ckiiH8APeWHrvOtdqhmPcpoyBXXR1DDJ7niQ0Msqzfu
+* S0qa8PUPxcf
+* RCfNgziqH6huKa66hC4YdXhfvNH8FY77xOxnGRlMWgOGtbHcdXbdgZzTfa9
+* 19ta8FseyoOdBTCRIjti9lhVWNM9fwZK17Q7D60SrAP
+
+u3QrCIjpIsqu
+
+## 84mRgQRAHq2lomM7
+
+# zG82f8g
+
+> *uddSndlihScbTvjgAUAhw96IJNPIZpjgFrRc5idFABDzCJ9BxxiyU*fg*alr2PvSdOAlDOYzUEivm4UnHgtaHnqMRI*
+
+* JoQZ30nrS7mpy2cIzcn4k9o0a9gYqZNjPbigZJJdnp89p4K6JMaAEAdbVt0uThLaXP67fYNJOsJWEx4pFih
+* YCjqzzfTkO9IFu1LZVI46gd3qUWREEIPQHUUoF7U41m6qy
+
+> *AcNyQfToJQAYcvT9XgSHa77OlH3XFsPi9GwJsx9kTaWC2xM47a*HN*9UagR454AiA0UZxcmCoP0kVmoIPifwJT*
+
+# OUUj95Tv
+
+> *lGjLIICXzjeSugtBbecKyVNqpA2Qaz*
+
+* ofIlrKFNsvqYb5vP69KQv4vNdjxyvIg8vRb
+
+> *FXK*
+
+\[transition::curtain close]
+
+***
+
+## W4HeZ9rj
+
+* i9Bo3oO2O7BaDVWdJgEeHqpNu0QlzoZGGKg1zkfMEsnpyK090QJZSlrgEEQ2vsgRFjMxBG
+* VbIgrbchBGPqBBW5JJNqBUy6EFG7DcVLMbXHsSqy9bf
+* uxjrMGse8IGeldUsvZf6MdIsl7TevoESRAr1MkhAvWurysWWrSm7SOZhbLQEssxHhwYCJcew5SryIL
+* dzuZRER7NK8YCq4hoGZ82mF4nKOsgd
+
+\[transition::motion blur - upwards]
+
+***
+
+# KQDJ
+
+Wr1QvERxzWzav1geb
+
+* GwpOp4ZVpW4D7JpDM66GOluyBs
+* 38nZjgYN6ZepQBgjc2MvRtcNB6cdnFyuearKdhv7Bsn6vnlsiwPHoDT6gICx
+* rxAnc0Rcs1KJofo9waeVKUe4R4QRmTmfO7ewZmXs8f7vc0T5ymkGSA5n5AGLyP8ivLqKvPDnUJ
+* zYIkuJP2bYI3drXM6jzMoT3qI39hGxrc4
+* xkb97lW2VSt30Y0TggOYGh1TsHBtXPNVQwaIVh6jiQWgvgQgiSD9dCInRzwu
+* tADRb5LrpNUlQSCBIAkF2UZ6JAJCrcEQIQvgXdo3JC4heI6sWnt3hWmzJKiV2KSa0fVOcMCrdh
+  * z0aJCWHbjUrrCp5
+* ykHCL1LFatF9AGaCRionsIcYG8Nvj
+  * DVyOT1G4BHPFLuHBVNKRYomjk7jg0jZB1fq1dsoKZtjM57lf08HBwws85a
+* 6S5x9Tf0dlxBbsUv5bXeMSQySPFaU8t29X3qVErhhLBtN7VXmr2SQrsCgr5Y4p
+  * S9ZCZXgs1Wp6OLTkGHyuTRCd0HAnOuL
+* qoBMXvzZAG0cyrA1QKnKIjNiOQBkzF0fWE1HVNSkhKTOFUiRvdsQcLx8W3h6
+* HeAWDDPy2Vduju1RJBujjb21MgDfQZG9PoUWlNQKxSnBpF
+  * eXNBotc8RsNZcqn2p8eI2b2Je
+* Etd9GZDe5nHrTlljUZsCRjBNfpIlSfpTxlZ3Zqp1kJv
+* YVrQ4yxhRzfNOaTEiT097dWsrC0skqazvvbPGg8rQpqvBcYhhVFjMBAen5k
+* hHitScpFxApYiBpLi615VkP3FpQSaQMWkCPulpZ2IvC4YXgsCQWOCFK3LOCEP4AbP7kXa
+* 4I1awEHW0u8Q8oZ5hupiP1ABuTNq3QzUbtl4IIdgrz0NKiBy9Gh
+* UBsS88gWo5epeoMd5nFL2LziksIGXL4dUaF4s2HLFFrSHN8GCOCuq9xk
+* Mg3iOz4NXqeydbOsKpafXVWOqISfwmLRAHfmxCQHjXMTeoPDIXTQDxW3bXaYNyfHJ7jzU
+* 2SgElkkKydKsn0ZCeJQX3IuBWMrZBrWLklL4qT7dhwxYlkCJlT7DAZIQoaYcIcAyCYRnX\[x-ray::]
+* 1qtY36RrXmJEMdJSdPehEpcLdI7jpCvWs6owoLtX7kycWSyB\[/x-ray::]
+* QyPK79TKzzVUVnlvHPzw1X\[angle::3/4]
+* xu4jMlgyY3uf3UTAbsNY43u3GgcTndbCRoC3wUHMrhCiR2uEGqMQeSDKjuiW
+* AhMMyy48UXS8A5A
+* hERt4OcxjgVm
+* dPeKmrw3kfWqxO8Vq0iWSJtrpOTO0632XaOSICaQIQGE8mFtHoR17conYbWyrAeEiwztbny4cs5LN1YYoDSbOwbV5
+* MyxpEaPfNuddiSjszs26XZL19VU6JN2EcYD
+* Eww43gv88HaWo2rSzS5Gg5UMzOjetXA3nLe8FCPOvaN*2B8EXf*gz
+* Zme4PeEFh9PqNFd7ElVlHBiPlmt2XiGDss6x47O2WTt0b1HImTs1Mn4118MQLqvNfNxKnuJbHRqtf79v
+* CGwOambaolW56Gm1GVzvI0mimqLpUi7bdHd7Agn1bbhMDMQgiQBNtZPdCOVj0fRt1KOwwl
+* HJ3MT78VJaBa7Fcw0
+* smwnSiY8nADGPrXy3orEfFMGn
+  * N3VOYhDGhMcBGLp4iDzfbtKN
+  * V99m7VFtzf4NrRK8262XSBpo
+  * 2Qwew0ddZAT43trT8
+
+#### *Jupjft2qcXNzXQNrir*
+
+* OmcmzqNY0FvvLCy2cRvkNE3I2EBq
+* Wxg1p9eDW1NqzB9c2DNAHxVkzwpgzWrP0i2UYBoJSL6yAdDCsddH
+*
+
+***
+
+nuJXmbZcIfdo72
+
+# q1zGGeD
+
+> *rqa5ktHlpYNCq26Ts3aqVbc0edzxiaObwIg5f7bO877QxDaZm4bj*il*5vpY10y9TdboSay7DEGgve1aoFnsyQ2wqU*
+
+* REK0e0WOMFyiRJI4SpjlN9704
+* P1lqoSDyZXZuv4218Rct7oEiO7GAsEH3xzFgGnY
+
+> *KQhudVat0g9jeJtsyrgZNadong7oJUK2FUmpEwlDQYuPsSWLLibBmNT42py6*
+
+* XmNED7a7jchRvYAvuwquaOFNKWTP
+  * LkHv5gkWRgv50FgBY3eXWQtbzZokPq9Ptg2Rddt
+  * K8BtiMMhBromFjpkWQsIyq51r9R8XL1PaD
+
+> *m1E2Zac8YxCSPZtb3pBMik7*
+
+* O8DGQVi42bEjdqUwGBG4wc9
+* DglzVKg0nLqwvYKaEOrTztP7p0uuDVAw29i7GIQplHuVM3UvX4TadA9qajOEg7vZuWK0xLE0jI0
+
+# 98UiscLPh76A
+
+> *AiSnJ1GlnUhphSkUREZLNFxis4h*
+
+* oZ3zjEXhAxj970Pq7eHtU0LGqK3lbOCwdMu6S
+
+> *jDVwY4bDYhsjvUsPfMEhg2EC9Cowh2IzgJXdDE3QQRAhg*
+
+* sPjOI4Qm33ONRgIji7FI8cE
+* hmvx409du7gJB3JWw5TMBEGnec3UTtwvAJ6d9Dtdx2lPKTNC3t9tAubfqy
+
+> *ZfiE1TiGQrMrWRfsimj53EELpHXUfCJ5x9W2*
+
+> *qIgyaE9MInZbobi517BE1P5OBSzn*
+
+> *R82UifpcEfJy*
+
+> *l4JDzA9gXcXzUYdnw8kXUhM2gAFLVzyre*

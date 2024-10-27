@@ -19,3 +19,11 @@ build/
 docs/root/api/**/*.*
 !docs/root/api/index.md
 .docuaurus/
+
+# testing
+test-vault/.obsidian/plugins/**/*
+playwright-report/
+test-results/**/*
+
+# keep folders with .gitkeep
+!/**/.gitkeep
