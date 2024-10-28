@@ -21,7 +21,7 @@ import {
 import { setInlineField } from "index/import/inline-field";
 import { Field } from "expression/field";
 import { DateTime } from "luxon";
-import "styles/lists.css";
+import "./lists.css";
 
 /**
  * Props passed to the task list component.
