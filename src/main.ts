@@ -54,6 +54,7 @@ export default class DatacorePlugin extends Plugin {
         );
 
         // Views: DatacoreJS view.
+        // @ts-ignore be quiet
         this.registerView(VIEW_TYPE_DATACOREJS, (leaf) => new DatacoreJSView(leaf, this.api));
 
         // Add a command for creating a new view page.

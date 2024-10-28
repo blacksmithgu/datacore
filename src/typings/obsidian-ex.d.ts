@@ -16,8 +16,12 @@ declare module "obsidian" {
         tabHeaderEl: HTMLElement;
         tabHeaderInnerTitleEl: HTMLElement;
     }
+    interface View {
+        getState(): any;
+    }
     interface ItemView {
         titleEl: HTMLElement;
+        getState(): any;
     }
     interface FileManager {
         linkUpdaters: {
