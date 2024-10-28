@@ -7,6 +7,9 @@ import * as hooks from "preact/hooks";
 
 /** @hidden */
 declare module "obsidian" {
+    export interface View extends Component {
+        getState(): any;
+    }
     interface WorkspaceLeaf {
         serialize(): {
             id: string;
