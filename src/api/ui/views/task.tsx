@@ -56,7 +56,7 @@ export function TaskList({
             <ul className="datacore contains-task-list">
                 {items?.map((item, ind) =>
                     item instanceof MarkdownTaskItem ? (
-                        <Task state={{ ...rest, additionalStates: states }} item={item} />
+                        <Task key={item.$id} state={{ ...rest, additionalStates: states }} item={item} />
                     ) : (
                         <li>
                             {listRenderer(item, ind)}
@@ -111,7 +111,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         completedRef.current && completedRef.current({ type: "commit", newValue: nv });
     }, []);
 
-    const checked = useMemo(() => item.$status !== " ", [item.$status]);
+    const checked = useMemo(() => status !== " ", [item.$status, item, status]);
     const eState: EditableState<string> = useMemo(() => {
         return {
             updater: useListItemEditing(item),
@@ -132,13 +132,24 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     }, []);
 
     return (
-        <li className={"datacore task-list-item" + (checked ? " is-checked" : "")} data-task={status}>
+        <li
+            key={item.$id}
+            data-testid="datacore-task-item"
+            className={"datacore task-list-item" + (checked ? " is-checked" : "")}
+            data-task={status}
+        >
             <CollapseIndicator
                 onClick={() => setCollapsed((c) => !c)}
                 collapsed={collapsed}
                 hasChildren={hasChildren}
             />
-            <input className="datacore task-list-item-checkbox" type="checkbox" checked={checked} onClick={onChecked} />
+            <input
+                className="datacore task-list-item-checkbox"
+                type="checkbox"
+                checked={checked}
+                onClick={onChecked}
+                onChange={(e) => console.log(e.currentTarget.value)}
+            />
             <div>
                 <div className="datacore-list-item-content">
                     {theElement}
