@@ -24,6 +24,7 @@ docs/root/api/**/*.*
 test-vault/.obsidian/plugins/**/*
 playwright-report/
 test-results/**/*
+src/test/e2e/out/
 
 # keep folders with .gitkeep
 !/**/.gitkeep

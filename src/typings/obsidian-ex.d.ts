@@ -5,6 +5,29 @@ import "obsidian";
 
 /** Provides extensions used by datacore or provider to other plugins via datacore. */
 declare module "obsidian" {
+    export interface View extends Component {
+        getState(): any;
+    }
+    interface WorkspaceLeaf {
+        serialize(): {
+            id: string;
+            type: "leaf";
+            state: {
+                type: string;
+                state: any;
+            };
+        };
+        tabHeaderEl: HTMLElement;
+        tabHeaderInnerTitleEl: HTMLElement;
+    }
+    interface View {
+        getState(): any;
+    }
+    interface ItemView {
+        titleEl: HTMLElement;
+        getState(): any;
+    }
+
     interface FileManager {
         linkUpdaters?: {
             canvas?: {

@@ -6,10 +6,8 @@
     "module": "ESNext",
     "target": "es2018",
     "allowJs": false,
-    "skipLibCheck": true,
-    "noEmit": true,
     "jsx": "react-jsx",
-		"jsxImportSource": "preact",
+    "jsxImportSource": "preact",
     "noImplicitAny": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
@@ -20,10 +18,32 @@
     "importHelpers": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "lib": ["dom", "es5", "scripthost", "es2018", "DOM.Iterable"],
-		"paths": {
-      "react": ["preact/compat"],
-      "react-dom": ["preact/compat"]
+    "lib": [
+      "dom",
+      "es5",
+      "scripthost",
+      "es2018",
+      "DOM.Iterable"
+    ],
+    "paths": {
+      "react": [
+        "../node_modules/preact/compat/"
+      ],
+      "react-dom": [
+        "../node_modules/preact/compat/"
+      ],
+      "preact/src/jsx": [
+        "../node_modules/preact/src/jsx.d.ts"
+      ],
+      "obsidian-testing-framework/utils": [
+        "../node_modules/obsidian-testing-framework/lib/util"
+      ],
+      "obsidian-testing-framework/fixture": [
+        "../node_modules/obsidian-testing-framework/lib/fixtures"
+      ],
+      "obsidian-testing-framework": [
+        "../node_modules/obsidian-testing-framework/lib/index"
+      ],
     }
   },
   "include": ["src/main.ts", "src/index.ts", "src/typings/*.d.ts", "src/test/**/*.ts", "src/test/**/*.tsx"],
@@ -34,5 +54,8 @@
         "useESM": true,
       }
     }
-  }
+  },
+  "exclude": [
+    "lib/**/*"
+  ]
 }

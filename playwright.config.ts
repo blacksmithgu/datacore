@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import {ObsidianTestFixtures} from "obsidian-testing-framework/fixture";
+import {ObsidianTestFixtures} from "obsidian-testing-framework/lib/fixtures";
 import path from 'path';
 
 /**
@@ -34,7 +34,7 @@ export default defineConfig<ObsidianTestFixtures>({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 	obsidian: {
-		vault: path.resolve(process.cwd(), "test-vault")
+		vault: path.resolve(process.cwd(), "..", "public-test-vault")
 	}
 	
   },
