@@ -4,7 +4,6 @@
   "description": "Reactive data engine for Obsidian.md.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-	"type": "module",
   "files": [
     "lib/**/*"
   ],
@@ -12,8 +11,8 @@
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "test": "yarn run jest",
-		"test:e2e": "yarn playwright test",
-		"test-all": "yarn test && yarn test:e2e",
+    "test:e2e": "vitest -c ./vitest.config.ts",
+    "test-all": "yarn test && yarn test:e2e",
     "test-watch": "yarn run jest -i --watch --no-cache",
     "check-format": "yarn run prettier --check src",
     "format": "yarn run prettier --write src"
@@ -36,17 +35,18 @@
     "@types/node": "^16.7.13",
     "@types/parsimmon": "^1.10.6",
     "builtin-modules": "3.3.0",
-    "esbuild": "^0.16.11",
+    "esbuild": "^0.24.0",
     "esbuild-plugin-inline-worker": "https://github.com/mitschabaude/esbuild-plugin-inline-worker",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "obsidian": "^1.6.6",
-    "obsidian-testing-framework": "^0.0.4",
+    "obsidian-testing-framework": "^0.1.5",
     "prettier": "2.3.2",
     "ts-jest": "^27.0.5",
     "ts-node": "^10.9.2",
     "tslib": "^2.3.1",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.2",
+    "vitest": "^2.1.4"
   },
   "dependencies": {
     "@datastructures-js/queue": "^4.2.3",
@@ -64,5 +64,5 @@
     "sucrase": "3.35.0",
     "yaml": "^2.3.3"
   },
-  "packageManager": "yarn@4.5.1"
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
