@@ -51,13 +51,13 @@ describe("tables", async () => {
             false
         );
     });
-    test("table columns can be edited", { timeout: 40000 }, async ({ page }) => {
+    test("table columns can be edited", async ({ page }) => {
         const el = (await blockLang(page))[0];
         await waitForText(el, rowSelector.concat(" td"));
         const row = el.locator(rowSelector);
         const textColumn = row.locator("td").nth(1);
 
-        let values = await roundtripEdit(page, textColumn, q, `${rand(1, 10)} -- some new *value*!`);
+        let values = await roundtripEdit(page, textColumn, q, `${rand(1, 100)} -- some new *value*!`);
         const { oldText } = values;
         await waitForAnyFile(page);
 
@@ -70,7 +70,7 @@ describe("tables", async () => {
         await waitForAnyFile(page);
 
         nrow = (await query<MarkdownTaskItem>(page, q.concat(` and $id = "${values.id}"`)))[0];
-        console.log("ntxt2", nrow.$text);
+        console.log("ntxt2", nrow.$text, oldText);
         expect(nrow.$text?.includes(oldText)).toEqual(true);
         await assertLinesMatch(
             page,
