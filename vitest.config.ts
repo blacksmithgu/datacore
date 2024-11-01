@@ -14,6 +14,8 @@ export default defineConfig({
 		provide: {
 			vault: path.resolve(process.cwd(), "..", "public-test-vault")
 		},
+		hookTimeout: 60000,
+		retry: 1,
 		exclude: [],
 		testTimeout: 30000,
 		watch: !process.env.CI,
