@@ -2,6 +2,7 @@ import type { DatacorePlugin } from "main";
 import type { CanvasMetadataIndex } from "index/types/json/canvas";
 
 import "obsidian";
+import { App } from "obsidian";
 
 /** Provides extensions used by datacore or provider to other plugins via datacore. */
 declare module "obsidian" {
@@ -89,5 +90,6 @@ declare module "obsidian" {
 declare global {
     interface Window {
         datacore?: DatacoreApi;
+        app: App;
     }
 }
