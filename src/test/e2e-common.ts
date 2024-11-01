@@ -11,9 +11,25 @@ export async function waitForIndexingComplete(page: Page) {
             return new Promise((res, rej) => {
                 let resolved = false;
                 window.datacore?.core.on("initialized", () => {
+                    resolved = true;
                     res(null);
                 });
                 setTimeout(() => !resolved && rej("timeout"), 7500);
+            });
+        });
+    } catch (e) {
+        console.error(e);
+    }
+}
+export async function waitForAnyFile(page: Page) {
+    try {
+        await page.evaluate(async () => {
+            return await new Promise((res, rej) => {
+                window.app.vault.on("modify", () => {
+                    console.log("change");
+                    res(null);
+                });
+                setTimeout(() => rej("timeout"), 10000);
             });
         });
     } catch (e) {
@@ -84,10 +100,11 @@ export async function roundtripEdit<T extends Indexable & { $position: LineSpan 
     const txt = await textArea.inputValue();
     console.log("textarea", txt);
     const qr = await query<T>(page, baseQuery.concat(` and contains($cleantext, "${txt.split("\n")[0]}")`));
-    console.log("Tasks", qr);
+    console.log("Tasks", qr[0], qr.length);
     const { $id: id, $position: pos } = qr[0];
 
     clear && (await textArea.clear());
+    !clear && (await textArea.press("PageDown"));
     !clear && (await textArea.press("End"));
     let split = newValue.split("\n");
     for (let i = 0; i < split.length; i++) {

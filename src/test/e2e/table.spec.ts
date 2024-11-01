@@ -2,7 +2,17 @@ import { expect, Locator, Page } from "@playwright/test";
 import { MarkdownTaskItem } from "index/types/markdown";
 import { test } from "obsidian-testing-framework/lib/index.js";
 import { assertLinesMatch } from "obsidian-testing-framework/lib/util.js";
-import { beforeAll, blockLang, sleep, waitForText, query, regexEscape, roundtripEdit, rand } from "../e2e-common";
+import {
+    beforeAll,
+    blockLang,
+    sleep,
+    waitForText,
+    query,
+    regexEscape,
+    roundtripEdit,
+    rand,
+    waitForAnyFile,
+} from "../e2e-common";
 import { beforeEach, describe } from "vitest";
 beforeEach(async ({ page }) => beforeAll(page, "ui/table.md"));
 
@@ -23,12 +33,12 @@ describe("tables", async () => {
         console.log("txt", txt.split("\n"));
         await checkbox.click();
 
-        await sleep(10000);
+        await waitForAnyFile(page);
         const tasks = await query<MarkdownTaskItem>(
             page,
             q.concat(` and contains($cleantext, "${txt.split("\n")[0]}")`)
         );
-        console.log("tasklen", tasks, tasks.length);
+        console.log("tasklen", tasks.length);
         const task = tasks[0];
         const expectedStatus = alreadyChecked ? " " : "x";
         expect(task.$status.toLocaleLowerCase()).toEqual(expectedStatus);
@@ -49,7 +59,7 @@ describe("tables", async () => {
 
         let values = await roundtripEdit(page, textColumn, q, `${rand(1, 10)} -- some new *value*!`);
         const { oldText } = values;
-        await sleep(8000);
+        await waitForAnyFile(page);
 
         let nrow = (await query<MarkdownTaskItem>(page, q.concat(` and $id = "${values.id}"`)))[0];
         let re = /some new \*value\*!?/i;
@@ -57,7 +67,7 @@ describe("tables", async () => {
         expect(re.test(nrow.$text!)).toEqual(true);
         await assertLinesMatch(page, nrow.$file, nrow.$position.start, nrow.$position.end, re, false);
         values = await roundtripEdit(page, textColumn, q, oldText);
-        await sleep(8000);
+        await waitForAnyFile(page);
 
         nrow = (await query<MarkdownTaskItem>(page, q.concat(` and $id = "${values.id}"`)))[0];
         console.log("ntxt2", nrow.$text);
