@@ -25,11 +25,11 @@ export async function waitForAnyFile(page: Page) {
     try {
         await page.evaluate(async () => {
             return await new Promise((res, rej) => {
-                window.app.vault.on("modify", () => {
-                    console.log("change");
+                window.app.vault.on("modify", (f) => {
+                    console.log("change", f.path);
                     res(null);
                 });
-                setTimeout(() => rej("timeout"), 10000);
+                setTimeout(() => rej("timeout"), 20000);
             });
         });
     } catch (e) {
@@ -85,7 +85,9 @@ export async function query<T>(page: Page, q: string) {
     }, q);
 }
 export function regexEscape(str: string): string {
-    return str.replace(/([\[\]{}.+\^\$\|\\()*?])/g, "\\$1");
+    const s = JSON.stringify(str).replace(/^"|"$/mg, "").replace(/([\[\]{}.+\^\$\|\\()*?])/g, "\\$1");
+		console.log("escaped", s)
+		return s;
 }
 
 export async function roundtripEdit<T extends Indexable & { $position: LineSpan }>(

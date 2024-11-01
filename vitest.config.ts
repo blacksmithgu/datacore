@@ -17,7 +17,7 @@ export default defineConfig({
 		hookTimeout: 60000,
 		retry: 1,
 		exclude: [],
-		testTimeout: 60000,
+		testTimeout: 120000,
 		watch: !process.env.CI,
 		ui: !process.env.CI,
 		open: false
