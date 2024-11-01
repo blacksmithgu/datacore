@@ -42,7 +42,7 @@ export function TaskList({
     additionalStates: states,
     renderer: listRenderer = (item, index) => (
         <EditableListElement<string>
-            onUpdate={useListItemEditing(item)}
+            onUpdate={useListItemEditing(item, "")}
             element={item.$cleantext!}
             file={item.$file}
             editorProps={{ markdown: true, sourcePath: item.$file }}
@@ -114,7 +114,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     const checked = useMemo(() => status !== " ", [item.$status, item, status]);
     const eState: EditableState<string> = useMemo(() => {
         return {
-            updater: useListItemEditing(item),
+            updater: useListItemEditing(item, status),
             content: item.$cleantext,
             inline: false,
             isEditing: false,
@@ -293,10 +293,9 @@ export function ListItemFields({
     );
 }
 
-function useListItemEditing(item: MarkdownTaskItem | MarkdownListItem) {
+function useListItemEditing(item: MarkdownTaskItem | MarkdownListItem, status: string) {
     const app = useContext(APP_CONTEXT);
     const core = useContext(DATACORE_CONTEXT);
-    const status = useMemo(() => (item instanceof MarkdownTaskItem ? item.$status : " "), [item]);
     return useStableCallback(
         async (val: Literal) => {
             if (typeof val === "string") {
