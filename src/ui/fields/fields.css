@@ -28,9 +28,10 @@
     border-bottom-left-radius: inherit;
     user-select: none;
 }
-span.datacore-editable-outer, span.datacore-editable-outer textarea {
-	width: 100% !important;
-	display: inline-block !important;
+span.datacore-editable-outer,
+span.datacore-editable-outer textarea {
+    width: 100% !important;
+    display: inline-block !important;
 }
 .datacore-field .field-value {
     display: inline-block;
