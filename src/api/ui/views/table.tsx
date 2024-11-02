@@ -261,7 +261,7 @@ export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn
     });
     const renderable = useMemo(() => {
         if (column.render) {
-            let r = column.render(value, row);
+            let r = column.render(column.editable ? editableState.content : value, row);
             return r;
         } else return value;
     }, [row, column.render, editableState.content, value]);
