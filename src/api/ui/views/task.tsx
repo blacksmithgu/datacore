@@ -125,11 +125,8 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         [eState.content, item, props.rows]
     );
 
-    const [collapsed, setCollapsed] = useState<boolean>(false);
-    const hasChildren = item.$elements.length > 0;
-    useEffect(() => {
-        setCollapsed(!collapsed);
-    }, []);
+    const [collapsed, setCollapsed] = useState<boolean>(true);
+    const hasChildren = useMemo(() => item.$elements.length > 0, [item, item.$elements, item.$elements.length]);
 
     return (
         <li
