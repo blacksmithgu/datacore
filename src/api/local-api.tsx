@@ -7,7 +7,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownCodeblock, MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
+import { MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
 import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -20,9 +20,9 @@ import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
+import { TaskList } from "./ui/views/task";
 import { VanillaTable } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
-import { TaskList } from "./ui/views/task";
 import { Card } from "./ui/views/cards";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
@@ -326,6 +326,7 @@ export class DatacoreLocalApi {
 
     public TaskList = TaskList;
     public VanillaTable = VanillaTable;
+    public TreeTable = TreeTableView;
     public Card = Card;
 
     /////////////////////////
