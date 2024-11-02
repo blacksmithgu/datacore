@@ -17,30 +17,32 @@ import { beforeEach, describe } from "vitest";
 beforeEach(async ({ page }) => beforeAll(page, "ui/task.md"));
 describe("tasks", { timeout: 200000 }, async () => {
     const checkboxSelector = "input.datacore.task-list-item-checkbox";
-    const editableSelector = `${checkboxSelector} + div .datacore-list-item-content > span.has-texteditable`;
+    const subsel = `.datacore-list-item-content > span.has-texteditable`;
+    const editableSelector = `${checkboxSelector} + div ${subsel}`;
     const query = `@task and startswith($file, "data/02 - ") and regexreplace($cleantext, "^\\s+|\\s+$", "") != ""`;
     test("tasks can be completed", { timeout: 60000 }, async ({ page }) => {
         const el = (await blockLang(page))[0];
         await waitForText(el, editableSelector);
-        const firstTask = el.locator(checkboxSelector).first();
-        if (await firstTask.isChecked()) {
+        const firstTask = el.getByTestId("datacore-task-item").first();
+        const firstCheckbox = firstTask.locator(checkboxSelector);
+        await firstTask.locator(subsel).first().dblclick();
+        const txt = await firstTask.locator(subsel).locator("textarea").first().inputValue();
+        await firstTask.locator(subsel).locator("textarea").first().dblclick();
+        await sleep(3000);
+        await waitForAnyFile(page);
+
+        if (await firstCheckbox.isChecked()) {
             console.log("already checked");
-            await firstTask.click({ force: true, position: { x: 0, y: 0 } });
+            await firstCheckbox.click({ force: true, position: { x: 0, y: 0 } });
             await waitForAnyFile(page);
         }
-				
-        await el.locator(editableSelector).first().dblclick();
-        const txt = await el.locator(editableSelector).locator("textarea").first().inputValue();
-        await el.locator(editableSelector).first().dblclick();
-        await firstTask.click({ force: true });
+
+        await firstCheckbox.click({ force: true });
 
         await waitForAnyFile(page);
 
         console.log("tasktext", txt);
-        const tasks = await windowQuery<MarkdownTaskItem>(
-            page,
-            query.concat(` and contains($cleantext, "${txt.split("\n")[0]}")`)
-        );
+        const tasks = await windowQuery<MarkdownTaskItem>(page, query.concat(` and $cleantext = "${txt}"`));
         await sleep(7000);
         await assertLinesMatch(
             page,
@@ -58,18 +60,17 @@ describe("tasks", { timeout: 200000 }, async () => {
         await secondTask.locator("span.has-texteditable").first().dblclick();
         const txt = await secondTask.locator("textarea").last().inputValue();
         await secondTask.locator("span.has-texteditable").first().dblclick();
+        await sleep(5000);
+        await waitForAnyFile(page);
         console.log(txt);
         await secondTask.locator(".datacore-field").nth(0).locator(".field-value").dblclick();
         const txtArea = secondTask.locator(".datacore-field").first().locator("textarea");
         await txtArea.clear();
         await txtArea.fill(`new value ${rand(1, 100)} !`);
-				await sleep(500)
+        await sleep(500);
         await txtArea.press("Control+Enter");
         await waitForAnyFile(page);
-        const tasks = await windowQuery<MarkdownTaskItem>(
-            page,
-            query.concat(` and contains($cleantext, "${txt.split("\n")[0]}")`)
-        );
+        const tasks = await windowQuery<MarkdownTaskItem>(page, query.concat(` and $cleantext = "${txt}"`));
         let cur = tasks[0];
         console.log(tasks.length, cur.$infields);
         await assertLinesMatch(
@@ -95,7 +96,6 @@ describe("tasks", { timeout: 200000 }, async () => {
         );
 
         const { oldText } = values;
-        await waitForAnyFile(page);
 
         let nrow = (await windowQuery<MarkdownTaskItem>(page, query.concat(` and $id = "${values.id}"`)))[0];
         console.log("task-ntxt", nrow.$text);
@@ -103,7 +103,6 @@ describe("tasks", { timeout: 200000 }, async () => {
         console.log(nrow.$file, nrow.$position);
         await assertLinesMatch(page, nrow.$file, nrow.$position.start, nrow.$position.end, /magic number/i, false);
         values = await roundtripEdit(page, taskRow, query, oldText);
-        await waitForAnyFile(page);
 
         nrow = (await windowQuery<MarkdownTaskItem>(page, query.concat(` and $id = "${values.id}"`)))[0];
         console.log("task-ntxt2", nrow.$text, oldText);

@@ -57,27 +57,27 @@ describe("tables", async () => {
         const row = el.locator(rowSelector);
         const textColumn = row.locator("td").nth(1);
 
-        let values = await roundtripEdit(page, textColumn, q, `${rand(1, 100)} -- some new *value*!`);
+        let values = await roundtripEdit(page, textColumn, q, `\n${rand(1, 100)} -- some new *value*!`, false);
         const { oldText } = values;
         await waitForAnyFile(page);
 
         let nrow = (await query<MarkdownTaskItem>(page, q.concat(` and $id = "${values.id}"`)))[0];
         let re = /some new \*value\*!?/i;
-        console.log("ntxt", nrow.$text, oldText);
+        console.log("ntxt", nrow.$text, `"${oldText}"`);
         expect(re.test(nrow.$text!)).toEqual(true);
-        await assertLinesMatch(page, nrow.$file, nrow.$position.start, nrow.$position.end, re, false);
+        await assertLinesMatch(page, nrow.$file, nrow.$position.start, nrow.$position.end, re);
         values = await roundtripEdit(page, textColumn, q, oldText);
         await waitForAnyFile(page);
 
         nrow = (await query<MarkdownTaskItem>(page, q.concat(` and $id = "${values.id}"`)))[0];
-        console.log("ntxt2", nrow.$text, oldText);
+        console.log("ntxt2\n", nrow.$text, "\n---\n", oldText);
         expect(nrow.$text?.includes(oldText)).toEqual(true);
         await assertLinesMatch(
             page,
             nrow.$file,
             nrow.$position.start,
             nrow.$position.end,
-            new RegExp(regexEscape(oldText)),
+            new RegExp(regexEscape(oldText.split("\n")[0])),
             false
         );
     });

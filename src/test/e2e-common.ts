@@ -24,13 +24,21 @@ export async function waitForIndexingComplete(page: Page) {
 export async function waitForAnyFile(page: Page) {
     try {
         await page.evaluate(async () => {
-            return await new Promise((res, rej) => {
-                window.app.vault.on("modify", (f) => {
-                    console.log("change", f.path);
-                    res(null);
-                });
-                setTimeout(() => rej("timeout"), 20000);
-            });
+            return await Promise.race([
+                new Promise((res, rej) => {
+                    window.app.vault.on("modify", (f) => {
+                        console.log("change", f.path);
+                        res(null);
+                    });
+                }),
+                new Promise((res, rej) => {
+                    window.datacore?.core.on("update", () => {
+                        console.log("update");
+                        res(null);
+                    });
+                }),
+                new Promise((_res, rej) => setTimeout(rej, 10000)),
+            ]);
         });
     } catch (e) {
         console.error(e);
@@ -85,9 +93,11 @@ export async function query<T>(page: Page, q: string) {
     }, q);
 }
 export function regexEscape(str: string): string {
-    const s = JSON.stringify(str).replace(/^"|"$/mg, "").replace(/([\[\]{}.+\^\$\|\\()*?])/g, "\\$1");
-		console.log("escaped", s)
-		return s;
+    const s = JSON.stringify(str)
+        .replace(/^"|"$/gm, "")
+        .replace(/([\[\]{}.+\^\$\|\\()*?])/g, "\\$1");
+    console.log("escaped", s);
+    return s;
 }
 
 export async function roundtripEdit<T extends Indexable & { $position: LineSpan }>(
@@ -100,11 +110,13 @@ export async function roundtripEdit<T extends Indexable & { $position: LineSpan 
     await loc.dblclick();
     const textArea = loc.locator("textarea").first();
     const txt = await textArea.inputValue();
-    console.log("textarea", txt);
-    const qr = await query<T>(page, baseQuery.concat(` and contains($cleantext, "${txt.split("\n")[0]}")`));
-    console.log("Tasks", qr[0], qr.length);
+    console.log("textarea", clear, txt);
+    const qr = await query<T>(
+        page,
+        baseQuery.concat(` and (($cleantext = "${txt}") or contains($cleantext, "${txt.split("\n")[0]}"))`)
+    );
+    console.log("Tasks @ " + qr.length, qr[0], qr.length);
     const { $id: id, $position: pos } = qr[0];
-
     clear && (await textArea.clear());
     !clear && (await textArea.press("PageDown"));
     !clear && (await textArea.press("End"));
@@ -115,9 +127,11 @@ export async function roundtripEdit<T extends Indexable & { $position: LineSpan 
     }
     await textArea.press("Control+Enter");
     await sleep(5000);
+    await waitForAnyFile(page);
     return { id, pos, oldText: txt };
 }
 
 export function rand(min: number, max: number) {
     return Math.floor(Math.random() * max) + min;
 }
+export const KEY_VAL_REGEX = /(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm;
