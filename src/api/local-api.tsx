@@ -29,8 +29,17 @@ import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
 import { setTaskText, useSetField } from "utils/fields";
-import { ControlledEditableTextField, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
-import { completeTask, rewriteTask } from "utils/task";
+import {
+    FieldCheckbox,
+    EditableTextField,
+    FieldSlider,
+    FieldSelect,
+    FieldSwitch,
+    ControlledEditableTextField,
+} from "ui/fields/editable-fields";
+import { completeTask } from "utils/task";
+import { TreeTableView } from "./ui/views/tree-table";
+import { TextEditable } from "ui/fields/editable";
 
 /** Local API provided to specific codeblocks when they are executing.
  * @group Core
@@ -348,11 +357,14 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
+    public VanillaTextBox = ControlledEditableTextField;
 
     /////////////////////////
     //    field editors    //
     /////////////////////////
-    public EditableFieldCheckbox = EditableFieldCheckbox;
-    public EditableFieldTextbox = EditableTextField;
-    public TextEditor = ControlledEditableTextField;
+    public FieldCheckbox = FieldCheckbox;
+    public FieldSlider = FieldSlider;
+    public FieldSelect = FieldSelect;
+    public FieldSwitch = FieldSwitch;
+    public TextField = EditableTextField;
 }
