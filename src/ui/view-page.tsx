@@ -1,4 +1,4 @@
-import { debounce, ItemView, MarkdownRenderChild, Menu, ViewStateResult, WorkspaceLeaf } from "obsidian";
+import { debounce, ItemView, MarkdownRenderChild, Menu, Scope, ViewStateResult, WorkspaceLeaf } from "obsidian";
 import { ScriptLanguage } from "utils/javascript";
 import { DatacoreJSRenderer, ReactRenderer } from "./javascript";
 import { DatacoreLocalApi } from "api/local-api";
@@ -422,6 +422,14 @@ export class DatacoreQueryView extends ItemView {
 
     public async onload() {
         this.contentEl.addClass("markdown-rendered");
+        this.registerDomEvent(this.containerEl.parentElement!.parentElement!.parentElement!, "keydown", (k) => {
+            if (k.charCode == 27) {
+                k.preventDefault();
+                k.stopPropagation();
+            }
+        });
+        this.scope = new Scope(this.app.scope);
+        this.scope?.register(null, "Escape", (ev) => {});
         this.rerender();
     }
 
