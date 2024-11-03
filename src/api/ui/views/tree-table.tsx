@@ -444,14 +444,10 @@ export function TreeTableRowCell<T>({
         isEditing: false,
         updater: (v) => column.onUpdate && column.onUpdate(v, row.value),
     });
-    useEffect(() => {
-        dispatch({ type: "content-changed", newValue: value });
-    }, [value, updater]);
+
     let renderedColumn = column.render ? column.render(editableState.content, row.value) : value;
     const renderable = useMemo(() => {
-        if (renderedColumn && typeof renderedColumn == "object" && "props" in renderedColumn)
-            return Object.assign(renderedColumn, { props: Object.assign(renderedColumn.props, { dispatch }) });
-        else return renderedColumn;
+        return renderedColumn;
     }, [column.render, value, editableState.content, renderedColumn, row.value, updater]);
 
     const rendered = useAsElement(renderable);
@@ -465,7 +461,7 @@ export function TreeTableRowCell<T>({
             className="datacore-table-cell"
         >
             {column.editable && editableState.isEditing && Editor ? (
-                <Editor dispatch={dispatch} {...editableState} {...(column.editorProps ?? {})} />
+                <Editor dispatch={dispatch} {...(column.editorProps ?? {})} {...editableState} />
             ) : (
                 rendered
             )}
