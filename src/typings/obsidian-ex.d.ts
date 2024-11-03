@@ -35,6 +35,9 @@ declare module "obsidian" {
             };
         };
     }
+    interface Vault {
+        getConfig: (conf: string) => any;
+    }
     interface App {
         appId?: string;
         plugins: {

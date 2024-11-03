@@ -48,6 +48,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@replit/codemirror-vim": "^6.2.1",
     "codemirror": "^6.0.1",
     "emoji-regex": "^10.2.1",
     "flatqueue": "^2.0.3",
