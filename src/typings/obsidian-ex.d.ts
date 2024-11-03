@@ -3,7 +3,6 @@ import type { DatacoreApi } from "api/api";
 import { CanvasMetadataIndex } from "index/types/json/canvas";
 import "obsidian";
 import { App } from "obsidian";
-import * as hooks from "preact/hooks";
 
 /** @hidden */
 declare module "obsidian" {
