@@ -31,6 +31,7 @@ import {
 import { tagHighlighter, tags } from "@lezer/highlight";
 import { javascript } from "@codemirror/lang-javascript";
 import { EditorState } from "@codemirror/state";
+import { vim } from "@replit/codemirror-vim";
 
 /** Key for datacore JS query views. */
 export const VIEW_TYPE_DATACOREJS = "datacorejs-view";
@@ -204,6 +205,8 @@ function CodeMirrorEditor({
 }) {
     const editorRef = useRef<HTMLDivElement>(null);
     const viewRef = useRef<EditorView>(null);
+    const viewContext = useContext(CUSTOM_VIEW_CONTEXT);
+
     const langMode = useMemo(() => {
         switch (lang) {
             case "jsx":
@@ -235,7 +238,8 @@ function CodeMirrorEditor({
                         }
                     ),
                     EDITOR_HL,
-                ],
+                    viewContext.app.vault.getConfig("vimMode") && vim(),
+                ].filter((a) => !!a),
                 doc: script || "",
             });
         return () => viewRef.current?.destroy();
