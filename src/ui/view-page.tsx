@@ -5,17 +5,246 @@ import { DatacoreLocalApi } from "api/local-api";
 import { DatacoreApi } from "api/api";
 import { createContext } from "preact";
 import { Group, Stack } from "api/ui/layout";
-import { useCallback, useContext, useMemo, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { Textbox, VanillaSelect } from "api/ui/basics";
 import { useIndexUpdates } from "./hooks";
 import { DATACORE_CONTEXT, ErrorMessage } from "./markdown";
 import Select from "react-select";
+import "./view-page.css";
+import { history, defaultKeymap, historyKeymap } from "@codemirror/commands";
+import { foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap } from "@codemirror/language";
+import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
+import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete";
+import { lintKeymap } from "@codemirror/lint";
+import {
+    crosshairCursor,
+    drawSelection,
+    dropCursor,
+    EditorView,
+    highlightSpecialChars,
+    keymap,
+    lineNumbers,
+    rectangularSelection,
+    ViewPlugin,
+    ViewUpdate,
+} from "@codemirror/view";
+import { tagHighlighter, tags } from "@lezer/highlight";
+import { javascript } from "@codemirror/lang-javascript";
+import { basicSetup } from "codemirror";
+import { EditorState } from "@codemirror/state";
 
 /** Key for datacore JS query views. */
 export const VIEW_TYPE_DATACOREJS = "datacorejs-view";
 
 /** Stores the current Obsidian view object, so it can be manipulated from react. */
 const CUSTOM_VIEW_CONTEXT = createContext<DatacoreQueryView>(undefined!);
+
+const EDITOR_HL = syntaxHighlighting(
+    tagHighlighter([
+        {
+            tag: tags.link,
+            class: "cm-link",
+        },
+        {
+            tag: tags.heading,
+            class: "cm-heading",
+        },
+        {
+            tag: tags.emphasis,
+            class: "cm-emphasis",
+        },
+        {
+            tag: tags.strong,
+            class: "cm-strong",
+        },
+        {
+            tag: tags.keyword,
+            class: "cm-keyword",
+        },
+        {
+            tag: tags.atom,
+            class: "cm-atom",
+        },
+        {
+            tag: tags.bool,
+            class: "cm-bool",
+        },
+        {
+            tag: tags.url,
+            class: "cm-url",
+        },
+        {
+            tag: tags.labelName,
+            class: "cm-labelName",
+        },
+        {
+            tag: tags.inserted,
+            class: "cm-inserted",
+        },
+        {
+            tag: tags.deleted,
+            class: "cm-deleted",
+        },
+        {
+            tag: tags.literal,
+            class: "cm-literal",
+        },
+        {
+            tag: tags.string,
+            class: "cm-string",
+        },
+        {
+            tag: tags.number,
+            class: "cm-number",
+        },
+        {
+            tag: [tags.regexp, tags.escape, tags.special(tags.string)],
+            class: "cm-string2",
+        },
+        {
+            tag: tags.variableName,
+            class: "cm-variableName",
+        },
+        {
+            tag: tags.local(tags.variableName),
+            class: "cm-variableName cm-local",
+        },
+        {
+            tag: tags.definition(tags.variableName),
+            class: "cm-variableName cm-definition",
+        },
+        {
+            tag: tags.special(tags.variableName),
+            class: "cm-variableName2",
+        },
+        {
+            tag: tags.definition(tags.propertyName),
+            class: "cm-propertyName cm-definition",
+        },
+        {
+            tag: tags.typeName,
+            class: "cm-typeName",
+        },
+        {
+            tag: tags.namespace,
+            class: "cm-namespace",
+        },
+        {
+            tag: tags.className,
+            class: "cm-className",
+        },
+        {
+            tag: tags.macroName,
+            class: "cm-macroName",
+        },
+        {
+            tag: tags.propertyName,
+            class: "cm-propertyName",
+        },
+        {
+            tag: tags.operator,
+            class: "cm-operator",
+        },
+        {
+            tag: tags.comment,
+            class: "cm-comment",
+        },
+        {
+            tag: tags.meta,
+            class: "cm-meta",
+        },
+        {
+            tag: tags.invalid,
+            class: "cm-invalid",
+        },
+        {
+            tag: tags.punctuation,
+            class: "cm-punctuation",
+        },
+    ])
+);
+const EDITOR_EXTS = [
+    lineNumbers(),
+    highlightSpecialChars(),
+    history(),
+    foldGutter(),
+    drawSelection(),
+    dropCursor(),
+    EditorState.allowMultipleSelections.of(true),
+    indentOnInput(),
+    bracketMatching(),
+    closeBrackets(),
+    autocompletion(),
+    rectangularSelection(),
+    crosshairCursor(),
+    highlightSelectionMatches(),
+    keymap.of([
+        ...closeBracketsKeymap,
+        ...defaultKeymap,
+        ...searchKeymap,
+        ...historyKeymap,
+        ...foldKeymap,
+        ...completionKeymap,
+        ...lintKeymap,
+    ]),
+    EditorView.baseTheme({
+        ".cm-cursor": {
+            borderLeftColor: "var(--text)",
+        },
+    }),
+];
+/** Provides a minimal editor with syntax highlighting */
+function CodeMirrorEditor({
+    lang,
+    state: { script },
+    setState,
+}: {
+    lang?: ScriptLanguage;
+    state: DatacoreViewState;
+    setState: (state: Partial<DatacoreViewState>) => void;
+}) {
+    const editorRef = useRef<HTMLDivElement>(null);
+    const viewRef = useRef<EditorView>(null);
+    const langMode = useMemo(() => {
+        switch (lang) {
+            case "jsx":
+                return javascript({ jsx: true, typescript: false });
+            case "ts":
+                return javascript({ jsx: false, typescript: true });
+            case "tsx":
+                return javascript({ jsx: true, typescript: true });
+            case "js":
+            default:
+                return javascript({ jsx: false, typescript: false });
+        }
+    }, [lang]);
+    useEffect(() => {
+        console.log("eref", editorRef.current);
+        if (editorRef.current)
+            viewRef.current = new EditorView({
+                parent: editorRef.current,
+                extensions: [
+                    ...EDITOR_EXTS,
+                    langMode.extension,
+                    ViewPlugin.fromClass(
+                        class {
+                            constructor(view: EditorView) {}
+                            update(update: ViewUpdate) {
+                                if (update.docChanged) {
+                                    setState({ script: viewRef.current?.state.sliceDoc() || "" });
+                                }
+                            }
+                        }
+                    ),
+                    EDITOR_HL,
+                ],
+                doc: script || "",
+            });
+        return () => viewRef.current?.destroy();
+    }, [editorRef.current, lang]);
+
+    return <div className="dc-cm-editor" ref={editorRef}></div>;
+}
 
 /** Provides options for configuring a datacore view pane. */
 function DatacoreViewSettings() {
@@ -61,12 +290,9 @@ function DatacoreViewSettings() {
             </Group>
             <Group justify="space-between" align="center">
                 <h6>Script/View source</h6>
-                <textarea
-                    style={{ resize: "vertical", minWidth: "75%", fontFamily: "monospace" }}
-                    defaultValue={localState.script}
-                    value={localState.script}
-                    onChange={(e) => setState({ script: e.currentTarget.value as string })}
-                />
+                <div style={{ minWidth: "75%", fontFamily: "monospace" }}>
+                    <CodeMirrorEditor state={localState} setState={setState} lang={localState.sourceType ?? "js"} />
+                </div>
             </Group>
             <Group justify="space-between" align="center">
                 <Stack>
@@ -111,6 +337,14 @@ function CurrentFileSelector({
             defaultValue={defaultOption}
             onChange={(nv, _am) => onChange(nv?.value)}
             unstyled
+            menuPortalTarget={document.body}
+            classNames={{
+                input: (props: any) => "prompt-input",
+                valueContainer: (props: any) => "suggestion-item value-container",
+                container: (props: any) => "suggestion-container",
+                menu: (props: any) => "suggestion-content suggestion-container",
+                option: (props: any) => `suggestion-item${props.isSelected ? " is-selected" : ""}`,
+            }}
         />
     );
 }
