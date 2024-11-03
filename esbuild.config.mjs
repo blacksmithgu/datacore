@@ -28,9 +28,7 @@ async function build(prod) {
 			'@codemirror/search',
 			'@codemirror/state',
 			'@codemirror/view',
-			'@lezer/common',
 			'@lezer/highlight',
-			'@lezer/lr',
 			"pdfjs-dist",
 			...builtins],
 			alias: {

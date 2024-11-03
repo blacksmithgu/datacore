@@ -1,0 +1,18 @@
+.dc-cm-editor .cm-gutters {
+    flex: 0 0 auto;
+    background-color: transparent;
+    color: var(--text-faint) !important;
+    border-right: none !important;
+    margin-inline-end: var(--file-folding-offset);
+    font-size: var(--font-ui-smaller);
+    z-index: 1;
+    font-variant: tabular-nums;
+}
+.cm-typeName {
+    color: var(--headers);
+}
+.dc-cm-editor {
+    padding: 1em;
+    border-radius: 0.5em;
+    border: 1px solid var(--h5-color);
+}

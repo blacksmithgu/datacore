@@ -24,7 +24,8 @@
   "author": "Michael Brenan",
   "license": "MIT",
   "devDependencies": {
-    "@codemirror/language": "https://github.com/lishid/cm-language",
+    "@codemirror/autocomplete": "^6.18.2",
+    "@codemirror/language": "^6.10.3",
     "@codemirror/state": "^6.0.1",
     "@codemirror/view": "^6.0.1",
     "@types/jest": "^27.0.1",
@@ -42,10 +43,12 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.2",
     "@datastructures-js/queue": "^4.2.3",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "codemirror": "^6.0.1",
     "emoji-regex": "^10.2.1",
     "flatqueue": "^2.0.3",
     "localforage": "1.10.0",

@@ -1,6 +1,7 @@
 import type { DatacoreApi } from "api/api";
 import { CanvasMetadataIndex } from "index/types/json/canvas";
 import "obsidian";
+import { App } from "obsidian";
 
 /** @hidden */
 declare module "obsidian" {
@@ -69,5 +70,10 @@ declare module "obsidian" {
 declare global {
     interface Window {
         datacore?: DatacoreApi;
+        app: App;
+        CodeMirror: {
+            defineMode: (mode: string, conf: (config: any) => any) => unknown;
+            [key: string]: any;
+        };
     }
 }
