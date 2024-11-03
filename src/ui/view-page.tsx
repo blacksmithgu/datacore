@@ -30,7 +30,6 @@ import {
 } from "@codemirror/view";
 import { tagHighlighter, tags } from "@lezer/highlight";
 import { javascript } from "@codemirror/lang-javascript";
-import { basicSetup } from "codemirror";
 import { EditorState } from "@codemirror/state";
 
 /** Key for datacore JS query views. */
@@ -219,7 +218,6 @@ function CodeMirrorEditor({
         }
     }, [lang]);
     useEffect(() => {
-        console.log("eref", editorRef.current);
         if (editorRef.current)
             viewRef.current = new EditorView({
                 parent: editorRef.current,
