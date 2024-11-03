@@ -445,10 +445,9 @@ export function TreeTableRowCell<T>({
         updater: (v) => column.onUpdate && column.onUpdate(v, row.value),
     });
 
-    let renderedColumn = column.render ? column.render(editableState.content, row.value) : value;
     const renderable = useMemo(() => {
-        return renderedColumn;
-    }, [column.render, value, editableState.content, renderedColumn, row.value, updater]);
+				return column.render ? column.render(editableState.content, row.value) : value;
+    }, [column.render, value, editableState.content, row.value, updater]);
 
     const rendered = useAsElement(renderable);
 
