@@ -24,6 +24,23 @@ declare module "obsidian" {
         titleEl: HTMLElement;
         getState(): any;
     }
+
+    interface InternalPlugin<T> {
+        id: string;
+        name: string;
+        description: string;
+        instance: T;
+    }
+    export interface PagePreviewPlugin {
+        onLinkHover: (
+            view: View,
+            hovered: HTMLElement,
+            hoveredPath: string,
+            sourcePath: string,
+            _unknown: unknown
+        ) => void;
+    }
+
     interface FileManager {
         linkUpdaters: {
             canvas: {
@@ -48,6 +65,10 @@ declare module "obsidian" {
                 };
             };
         };
+        internalPlugins: {
+            getPluginById: <T>(id: string) => InternalPlugin<T>;
+        };
+
         embedRegistry: {
             embedByExtension: {
                 [key: string]: unknown;
