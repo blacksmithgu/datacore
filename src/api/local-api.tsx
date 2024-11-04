@@ -21,6 +21,7 @@ import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { VanillaTable } from "./ui/views/table";
+import { Card } from "./ui/views/cards";
 import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
@@ -299,6 +300,7 @@ export class DatacoreLocalApi {
     ///////////
 
     public VanillaTable = VanillaTable;
+    public Card = Card;
 
     /////////////////////////
     // Interative elements //
