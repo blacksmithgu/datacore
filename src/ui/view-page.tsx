@@ -195,11 +195,12 @@ const EDITOR_EXTS = [
         ".cm-tooltip": {
             backgroundColor: "var(--bg)",
         },
-        ":not(.cm-focused) .cm-fat-cursor": {
-            outline: "solid 1px var(--accent)",
+        "&:not(.cm-focused) .cm-fat-cursor": {
+            outline: "solid 1px var(--accent) !important",
+            background: "none",
         },
-        ".cm-fat-cursor": {
-            background: "var(--accent)",
+        "&.cm-focused .cm-fat-cursor": {
+            background: "var(--accent) !important",
         },
     }),
 ];
