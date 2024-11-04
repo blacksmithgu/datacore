@@ -16,3 +16,9 @@
     border-radius: 0.5em;
     border: 1px solid var(--h5-color);
 }
+.cm-tooltip.cm-tooltip-autocomplete {
+    background: var(--embed-bg);
+}
+.dc-cm-editor img.cm-widgetBuffer[aria-hidden="true"] {
+    display: none;
+}
