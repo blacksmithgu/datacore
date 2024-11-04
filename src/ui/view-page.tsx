@@ -322,15 +322,13 @@ function CurrentFileSelector({
 }) {
     const core = useContext(DATACORE_CONTEXT);
     const revision = useIndexUpdates(core, { debounce: 2000 });
-
+    const defaultOption = !defaultValue
+        ? { label: "No file", value: "" }
+        : { label: defaultValue!, value: defaultValue! };
     // Cached list of relevant files, which is only recomputed on vault changes.
     const options = useMemo(() => {
-        return core.vault.getMarkdownFiles().map((f) => ({ label: f.path, value: f.path }));
+        return core.vault.getMarkdownFiles().map((f) => ({ label: f.path, value: f.path })).concat(defaultOption);
     }, [revision]);
-
-    const defaultOption = defaultValue
-        ? { label: "No file", value: undefined }
-        : { label: defaultValue, value: defaultValue };
 
     return (
         <Select
