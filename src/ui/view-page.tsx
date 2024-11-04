@@ -422,7 +422,7 @@ export class DatacoreQueryView extends ItemView {
 
     public async onload() {
         this.contentEl.addClass("markdown-rendered");
-        this.registerDomEvent(this.containerEl.parentElement!.parentElement!.parentElement!, "keydown", (k) => {
+        this.registerDomEvent(this.containerEl, "keydown", (k) => {
             if (k.charCode == 27) {
                 k.preventDefault();
                 k.stopPropagation();
