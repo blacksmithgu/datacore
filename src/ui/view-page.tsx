@@ -195,6 +195,12 @@ const EDITOR_EXTS = [
         ".cm-tooltip": {
             backgroundColor: "var(--bg)",
         },
+        ":not(.cm-focused) .cm-fat-cursor": {
+            outline: "solid 1px var(--accent)",
+        },
+        ".cm-fat-cursor": {
+            background: "var(--accent)",
+        },
     }),
 ];
 /** Provides a minimal editor with syntax highlighting */
