@@ -17,6 +17,7 @@ import { Coerce } from "./coerce";
 import { DataArray } from "./data-array";
 import * as luxon from "luxon";
 import * as preact from "preact";
+import * as phooks from "preact/hooks";
 
 /** Exterally visible API for datacore.
  * @group Core
@@ -37,6 +38,9 @@ export class DatacoreApi {
     /** Central Obsidian app object. */
     get app(): App {
         return this.core.app;
+    }
+    get hooks(): typeof phooks {
+        return phooks;
     }
 
     ///////////////

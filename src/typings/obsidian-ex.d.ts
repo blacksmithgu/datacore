@@ -1,7 +1,9 @@
+import { Extension } from "@codemirror/state";
 import type { DatacoreApi } from "api/api";
 import { CanvasMetadataIndex } from "index/types/json/canvas";
 import "obsidian";
 import { App } from "obsidian";
+import * as hooks from "preact/hooks";
 
 /** @hidden */
 declare module "obsidian" {
@@ -62,6 +64,9 @@ declare module "obsidian" {
             plugins: {
                 datacore?: {
                     api: DatacoreApi;
+                };
+                "datacore-addon-autocomplete"?: {
+                    readonly extensions: Extension[];
                 };
             };
         };

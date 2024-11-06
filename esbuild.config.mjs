@@ -20,7 +20,6 @@ async function build(prod) {
 		external: [
 			'obsidian',
 			'electron',
-			'@codemirror/autocomplete',
 			'@codemirror/collab',
 			'@codemirror/commands',
 			'@codemirror/language',
