@@ -1,7 +1,7 @@
 /** Provides core preact / rendering utilities for all view types.
  * @module ui
  */
-import { App, MarkdownRenderer } from "obsidian";
+import { App, MarkdownRenderer, MarkdownView, PagePreviewPlugin } from "obsidian";
 import { Component } from "obsidian";
 import { Link, Literal, Literals } from "expression/literal";
 import { Datacore } from "index/datacore";
@@ -53,7 +53,8 @@ export function DatacoreContextProvider({
  * @hidden
  */
 export function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | string; sourcePath?: string }) {
-    const workspace = useContext(APP_CONTEXT)?.workspace;
+    const app = useContext(APP_CONTEXT);
+    const workspace = app.workspace;
     const currentPath = useContext(CURRENT_FILE_CONTEXT);
     const sourcePath = maybeSourcePath ?? currentPath ?? "";
     const parsed = useMemo(() => (Literals.isLink(link) ? link : Link.infer(link)), [link]);
@@ -65,9 +66,18 @@ export function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | st
         },
         [parsed, sourcePath]
     );
+    const linkRef = useRef<HTMLAnchorElement>(null);
+    const hoverCallback = useCallback(() => {
+        let pagePreview = app.internalPlugins.getPluginById<PagePreviewPlugin>("page-preview").instance;
+        const leaf = app.workspace.getMostRecentLeaf();
+        if (linkRef.current && leaf && !(leaf.view instanceof MarkdownView))
+            // this last condition prevents duplicate popovers in markdown views
+            pagePreview.onLinkHover(leaf.view, linkRef.current, parsed.obsidianLink(), sourcePath, null);
+    }, [linkRef.current]);
 
     return (
         <a
+            ref={linkRef}
             aria-label={parsed.displayOrDefault()}
             onClick={onClick}
             className="internal-link"
@@ -75,6 +85,7 @@ export function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | st
             rel="noopener"
             data-tooltip-position="top"
             data-href={parsed.obsidianLink()}
+            onMouseOver={hoverCallback}
         >
             {parsed.displayOrDefault()}
         </a>
