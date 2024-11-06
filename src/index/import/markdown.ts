@@ -31,7 +31,7 @@ const YAML_DATA_REGEX = /```yaml:data/i;
 /** Matches the start of any codeblock fence. */
 const CODEBLOCK_FENCE_REGEX = /^(?:```|~~~)(.*)$/im;
 /** Matches list items (including inside text blocks). */
-const LIST_ITEM_REGEX = /^[\s>]*(\d+\.|\d+\)|\*|-|\+)\s*(\[.{0,1}\])?\s*(.*)$/mu;
+const LIST_ITEM_REGEX = /^[\s>]*(\d+\.|\d+\)|\*|-|\+)\s*(\[.{0,1}\])?\s*(.*)/msu;
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -155,9 +155,12 @@ export function markdownSourceImport(
     ///////////
 
     // All list items in lists. Start with a simple trivial pass.
+    const contentRegex = /^[\t\f\v ]*[\-+\*]\s(\[.\]\s)?/;
+    const markerRegex = /^(>?\s?)*(\t|\s)*/g;
     const listItems = new BTree<number, ListItemData>(undefined, (a, b) => a - b);
+
     for (const list of metadata.listItems || []) {
-        const line = lines[list.position.start.line];
+        const line = lines.slice(list.position.start.line, list.position.end.line + 1).join("\n");
 
         // TODO: Implement flag which skips indexing list items.
         const match = line.match(LIST_ITEM_REGEX);
@@ -177,7 +180,6 @@ export function markdownSourceImport(
             list.task,
             text
         );
-
         listItems.set(item.start, item);
     }
 
@@ -562,7 +564,6 @@ export type BlockData = ListBlockData | CodeblockData | DatablockData | BaseBloc
 export class ListItemData {
     public metadata: Metadata = new Metadata();
     public elements: ListItemData[] = [];
-
     public constructor(
         public start: number,
         public end: number,
