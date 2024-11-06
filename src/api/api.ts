@@ -20,6 +20,7 @@ import * as preact from "preact";
 import { Expression } from "expression/expression";
 import { Literal } from "expression/literal";
 import { Variables } from "expression/evaluator";
+import * as phooks from "preact/hooks";
 
 /** Exterally visible API for datacore.
  * @group Core
@@ -40,6 +41,9 @@ export class DatacoreApi {
     /** Central Obsidian app object. */
     get app(): App {
         return this.core.app;
+    }
+    get hooks(): typeof phooks {
+        return phooks;
     }
 
     ///////////////

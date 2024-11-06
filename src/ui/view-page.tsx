@@ -11,10 +11,10 @@ import { useIndexUpdates } from "./hooks";
 import { DATACORE_CONTEXT, ErrorMessage } from "./markdown";
 import Select from "react-select";
 import "./view-page.css";
-import { history, defaultKeymap, historyKeymap } from "@codemirror/commands";
+import { history, defaultKeymap, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap } from "@codemirror/language";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
-import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete";
+import { closeBrackets, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete";
 import { lintKeymap } from "@codemirror/lint";
 import {
     crosshairCursor,
@@ -30,8 +30,8 @@ import {
 } from "@codemirror/view";
 import { tagHighlighter, tags } from "@lezer/highlight";
 import { javascript } from "@codemirror/lang-javascript";
-import { Compartment, EditorState } from "@codemirror/state";
 import { vim } from "@replit/codemirror-vim";
+import { Compartment, EditorState, Extension } from "@codemirror/state";
 
 /** Key for datacore JS query views. */
 export const VIEW_TYPE_DATACOREJS = "datacorejs-view";
@@ -175,11 +175,11 @@ const EDITOR_EXTS = [
     indentOnInput(),
     bracketMatching(),
     closeBrackets(),
-    autocompletion(),
     rectangularSelection(),
     crosshairCursor(),
     highlightSelectionMatches(),
     keymap.of([
+        indentWithTab,
         ...closeBracketsKeymap,
         ...defaultKeymap,
         ...searchKeymap,
@@ -206,8 +206,7 @@ const EDITOR_EXTS = [
 ];
 /** Provides a minimal editor with syntax highlighting */
 function CodeMirrorEditor({
-    lang,
-    state: { script },
+    state: { script, sourceType: lang },
     setState,
 }: {
     lang?: ScriptLanguage;
@@ -218,7 +217,7 @@ function CodeMirrorEditor({
     const viewRef = useRef<EditorView>(null);
     const viewContext = useContext(CUSTOM_VIEW_CONTEXT);
     useEffect(() => {
-        if (editorRef.current)
+        if (editorRef.current && !viewRef.current) {
             viewRef.current = new EditorView({
                 parent: editorRef.current,
                 extensions: [viewContext.app.vault.getConfig("vimMode") && vim()].concat(
@@ -237,11 +236,13 @@ function CodeMirrorEditor({
                             ),
                             EDITOR_HL,
                             viewContext.app.vault.getConfig("vimMode") && vim(),
+                            ...(viewContext.app.plugins.plugins["datacore-addon-autocomplete"]?.extensions || []),
                         ].filter((a) => !!a)
                     )
                 ),
                 doc: script || "",
             });
+        }
         return () => viewRef.current?.destroy();
     }, [editorRef.current]);
     useEffect(() => {
@@ -349,6 +350,15 @@ function CurrentFileSelector({
             onChange={(nv, _am) => onChange(nv?.value)}
             unstyled
             menuPortalTarget={document.body}
+            tabIndex={-1}
+            styles={{
+                container(base, _props) {
+                    return { ...base, minWidth: "100%" };
+                },
+                menu(base, _props) {
+                    return { ...base, minWidth: "100%" };
+                },
+            }}
             classNames={{
                 input: (props: any) => "prompt-input",
                 valueContainer: (props: any) => "suggestion-item value-container",
