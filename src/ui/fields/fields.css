@@ -114,3 +114,7 @@ span.datacore-editable-outer textarea {
     border-radius: var(--tag-radius);
     padding: var(--tag-padding-y) var(--tag-padding-x);
 }
+
+textarea.datacore-editable {
+    resize: vertical;
+}

@@ -47,7 +47,6 @@ export function Callout({
     type,
 }: PropsWithChildren<CalloutProps>) {
     const [open, setOpen] = useControlledState(initialOpen ?? true, openProp, onOpenChange);
-    const splitRegex = /\|(.*)/s;
     return (
         <div
             data-callout-metadata={type?.split(METADATA_SPLIT_REGEX)?.[1]}
