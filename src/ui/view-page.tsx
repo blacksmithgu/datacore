@@ -206,8 +206,7 @@ const EDITOR_EXTS = [
 ];
 /** Provides a minimal editor with syntax highlighting */
 function CodeMirrorEditor({
-    lang,
-    state: { script },
+    state: { script, sourceType: lang },
     setState,
 }: {
     lang?: ScriptLanguage;
