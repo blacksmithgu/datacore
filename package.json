@@ -8,6 +8,7 @@
     "lib/**/*"
   ],
   "scripts": {
+    "build-dev": "yarn run build && ./scripts/install-built ~/Obsidian/plugin-dev",
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "test": "yarn run jest",

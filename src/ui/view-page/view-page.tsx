@@ -1,15 +1,19 @@
 import { debounce, ItemView, MarkdownRenderChild, Menu, ViewStateResult, WorkspaceLeaf } from "obsidian";
 import { ScriptLanguage } from "utils/javascript";
-import { DatacoreJSRenderer, ReactRenderer } from "./javascript";
+import { DatacoreJSRenderer, ReactRenderer } from "../javascript";
 import { DatacoreLocalApi } from "api/local-api";
 import { DatacoreApi } from "api/api";
 import { createContext } from "preact";
-import { Group, Stack } from "api/ui/layout";
+import { Stack } from "api/ui/layout";
 import { useCallback, useContext, useMemo, useState } from "preact/hooks";
 import { Textbox, VanillaSelect } from "api/ui/basics";
-import { useIndexUpdates } from "./hooks";
-import { DATACORE_CONTEXT, ErrorMessage } from "./markdown";
+import { useIndexUpdates } from "../hooks";
+import { DATACORE_CONTEXT, ErrorMessage } from "../markdown";
 import Select from "react-select";
+
+import "./view-page.css";
+import { SettingsItem } from "./settings-item"; 
+import { SettingsTitle } from "./settings-title";
 
 /** Key for datacore JS query views. */
 export const VIEW_TYPE_DATACOREJS = "datacorejs-view";
@@ -40,46 +44,41 @@ function DatacoreViewSettings() {
 
     return (
         <Stack align="stretch">
-            <button className="clickable-icon" style="align-self: start" onClick={() => view.view("script")}>
-                {BACK_BUTTON}
-            </button>
-            <Group justify="space-between" align="center">
-                <h6>View Title</h6>
+            <SettingsTitle title="Datacore View Page Settings" onClick={() => view.view("script")} />
+
+            <SettingsItem label="View Title">
                 <Textbox
                     defaultValue={view.getState().title}
                     onChange={(e) => setState({ title: e.currentTarget.value as string })}
                 />
-            </Group>
-            <Group justify="space-between" align="center">
-                <h6>View Type</h6>
+            </SettingsItem>
+            <SettingsItem label="View Type">
                 <VanillaSelect
                     defaultValue={view.getState().sourceType}
                     options={LANGUAGE_OPTIONS}
                     value={localState.sourceType}
                     onValueChange={(s) => setState({ sourceType: s as ScriptLanguage })}
                 />
-            </Group>
-            <Group justify="space-between" align="center">
-                <h6>Script/View source</h6>
+            </SettingsItem>
+
+            <SettingsItem label="Script/View Source" contentBelow>
                 <textarea
-                    style={{ resize: "vertical", minWidth: "75%", fontFamily: "monospace" }}
+                    style={{ resize: "vertical", width: "100%", minHeight: "500px", fontFamily: "monospace" }}
                     defaultValue={localState.script}
                     value={localState.script}
                     onChange={(e) => setState({ script: e.currentTarget.value as string })}
                 />
-            </Group>
-            <Group justify="space-between" align="center">
-                <Stack>
-                    <h6>Current File</h6>
-                    <small>The path returned by functions like `useCurrentPath` in this view</small>
-                </Stack>
-                <div style={{ minWidth: "50%" }}>
-                    <CurrentFileSelector
-                        defaultValue={localState.currentFile}
-                        onChange={(v) => setState({ currentFile: v })}
-                    />
-                </div>
-            </Group>
+            </SettingsItem>
+            <SettingsItem
+                label="Current File"
+                description="The path returned by functions like `useCurrentPath` in this view"
+                contentBelow
+            >
+                <CurrentFileSelector
+                    defaultValue={localState.currentFile}
+                    onChange={(v) => setState({ currentFile: v })}
+                />
+            </SettingsItem>
         </Stack>
     );
 }
@@ -106,6 +105,7 @@ function CurrentFileSelector({
 
     return (
         <Select
+            className="dc-file-select"
             options={options}
             classNamePrefix="datacore-selectable"
             defaultValue={defaultOption}
@@ -122,25 +122,6 @@ const LANGUAGE_OPTIONS: { label: string; value: ScriptLanguage }[] = [
     { label: "Javascript (JSX)", value: "jsx" },
     { label: "Typescript JSX", value: "tsx" },
 ];
-
-/** SVG back button shown to exit the settings view. */
-const BACK_BUTTON = (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="svg-icon lucide-arrow-left"
-    >
-        <path d="m12 19-7-7 7-7"></path>
-        <path d="M19 12H5"></path>
-    </svg>
-);
 
 /** State for the datacore view page. */
 export interface DatacoreViewState {
