@@ -75,6 +75,7 @@ export function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | st
             rel="noopener"
             data-tooltip-position="top"
             data-href={parsed.obsidianLink()}
+            href={parsed.obsidianLink()}
         >
             {parsed.displayOrDefault()}
         </a>
