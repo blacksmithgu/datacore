@@ -6,7 +6,7 @@ import { ControlledPager, useDatacorePaging } from "./paging";
 import { DEFAULT_TABLE_COMPARATOR, SortButton, SortDirection, SortOn } from "./table";
 import { Context, createContext, Fragment, VNode } from "preact";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
-import { Editable, useEditableDispatch } from "ui/fields/editable";
+import { useEditableDispatch } from "ui/fields/editable";
 import { combineClasses } from "../basics";
 import { Indexable } from "index/types/indexable";
 
@@ -69,37 +69,6 @@ export namespace TreeUtils {
         } else {
             return elements.reduce((pv, cv) => pv + countInTreeRow(cv), 0);
         }
-    }
-
-    function sliceInTreeRow<T>(elements: TreeTableRowData<T>[], start: number, end: number): TreeTableRowData<T>[] {
-        if (end <= start) return [];
-
-        let index = 0,
-            seen = 0;
-        while (index < elements.length && seen + countInTreeRow(elements[index]) <= start) {
-            seen += countInTreeRow(elements[index]);
-            index++;
-        }
-
-        if (index >= elements.length) return [];
-
-        const result: TreeTableRowData<T>[] = [];
-        while (index < elements.length && seen < end) {
-            const group = elements[index];
-            const groupSize = countInTreeRow(group);
-            const groupStart = Math.max(seen, start);
-            const groupEnd = Math.min(groupSize + seen, end);
-
-            result.push({
-                value: group.value,
-                children: sliceInTreeRow(group.children, groupStart - seen, groupEnd - seen),
-            });
-
-            seen += groupSize;
-            index++;
-        }
-
-        return result;
     }
 
     export function slice<T>(
@@ -446,7 +415,7 @@ export function TreeTableRowCell<T>({
     });
 
     const renderable = useMemo(() => {
-				return column.render ? column.render(editableState.content, row.value) : value;
+        return column.render ? column.render(editableState.content, row.value) : value;
     }, [column.render, value, editableState.content, row.value, updater]);
 
     const rendered = useAsElement(renderable);

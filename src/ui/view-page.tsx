@@ -31,7 +31,7 @@ import {
 import { tagHighlighter, tags } from "@lezer/highlight";
 import { javascript } from "@codemirror/lang-javascript";
 import { vim } from "@replit/codemirror-vim";
-import { Compartment, EditorState, Extension } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 
 /** Key for datacore JS query views. */
 export const VIEW_TYPE_DATACOREJS = "datacorejs-view";
