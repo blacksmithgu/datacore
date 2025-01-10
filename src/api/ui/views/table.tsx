@@ -2,7 +2,7 @@
  * @module views
  */
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { Dispatch, useCallback, useContext, useMemo, useRef } from "preact/hooks";
+import { useContext, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
@@ -10,7 +10,7 @@ import { VNode, isValidElement } from "preact";
 import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
-import { Editable, EditableAction, EditableElement, useEditableDispatch } from "ui/fields/editable";
+import { EditableElement, useEditableDispatch } from "ui/fields/editable";
 import { faSortDown, faSortUp, faSort } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
