@@ -38,7 +38,6 @@ import {
 } from "ui/fields/editable-fields";
 import { completeTask } from "utils/task";
 import { TreeTableView } from "./ui/views/tree-table";
-import { TextEditable } from "ui/fields/editable";
 
 /** Local API provided to specific codeblocks when they are executing.
  * @group Core
