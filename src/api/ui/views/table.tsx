@@ -237,7 +237,11 @@ export function TableGroupHeader<T>({
  */
 export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: VanillaColumn<T>[] }) {
     return (
-        <tr className="datacore-table-row" style={level ? `padding-left: ${level * 5}px` : undefined}>
+        <tr
+            className="datacore-table-row"
+            style={level ? `padding-left: ${level * 5}px` : undefined}
+            key={"$id" in (row as any) ? (row as any).$id : undefined}
+        >
             {columns.map((col) => (
                 <TableRowCell row={row} column={col} />
             ))}
