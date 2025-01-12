@@ -220,7 +220,7 @@ function CodeMirrorEditor({
         if (editorRef.current && !viewRef.current) {
             viewRef.current = new EditorView({
                 parent: editorRef.current,
-                extensions: [viewContext.app.vault.getConfig("vimMode") && vim()].concat(
+                extensions: [viewContext.app.vault.getConfig("vimMode") && vim()].filter(Boolean).concat(
                     ...EDITOR_EXTS.concat(
                         ...[
                             LANG_COMPARTMENT.of(javascript()),
