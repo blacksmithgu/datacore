@@ -106,6 +106,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
     });
 
     const pagedRows = useMemo(() => {
+        console.log("recalc rows");
         if (paging.enabled)
             return Groupings.slice(props.rows, paging.page * paging.pageSize, (paging.page + 1) * paging.pageSize);
         else return props.rows;

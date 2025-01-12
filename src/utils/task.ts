@@ -83,7 +83,7 @@ export function setTaskCompletion(
     return parts.join("\n");
 }
 
-export const LIST_ITEM_REGEX = /^[\s>]*(\d+\.|\d+\)|\*|-|\+)\s*(\[.{0,1}\])?\s*(.*)$/mu;
+export const LIST_ITEM_REGEX = /^[\s>\t]*(\d+\.|\d+\)|\*|-|\+)\s*(\[.{0,1}\])?\s*(.*)$/mu;
 
 /** Rewrite a task with the given completion status and new text. */
 export async function rewriteTask(
@@ -93,28 +93,37 @@ export async function rewriteTask(
     desiredStatus: string,
     desiredText?: string
 ) {
-    if (
+    console.log("CHECKS");
+    console.log("status equal?", task instanceof MarkdownTaskItem && desiredStatus == task.$status);
+    console.log("text undefined?", desiredText == undefined);
+    console.log("same as prev?", desiredText == task.$text);
+    /* if (
         task instanceof MarkdownTaskItem &&
         desiredStatus == task.$status &&
-        (desiredText == undefined || desiredText == task.$text)
+        (desiredText == task.$text)
     )
-        return;
+        return; */
+    console.log("after first");
     desiredStatus = desiredStatus == "" ? " " : desiredStatus;
 
-    let rawFiletext = await vault.adapter.read(task.$file);
+    const tfile = vault.getFileByPath(task.$file)!;
+    let rawFiletext = await vault.read(tfile);
     let hasRN = rawFiletext.contains("\r");
     let filetext = rawFiletext.split(/\r\n|\r|\n/u);
 
     if (filetext.length < task.$line) return;
+    console.log("after 2nc");
     let match = LIST_ITEM_REGEX.exec(filetext[task.$line]);
     if (!match || match[2]?.length == 0) return;
 
+    console.log("after 3rd");
     let taskTextParts = task.$text!.split("\n");
     // if (taskTextParts[0].trim() != match[3].trim()) return;
 
     // We have a positive match here at this point, so go ahead and do the rewrite of the status.
     const statusPart = task instanceof MarkdownTaskItem ? `[${desiredStatus}]` : "";
     let initialSpacing = /^[\s>]*/u.exec(filetext[task.$line])!![0];
+    let cnt = 0;
     if (desiredText) {
         let desiredParts = desiredText.split("\n");
 
@@ -123,13 +132,20 @@ export async function rewriteTask(
         );
 
         filetext.splice(task.$line, task.$text!.split("\n").length, ...newTextLines);
+        cnt = newTextLines.length;
     } else {
         filetext[task.$line] = `${initialSpacing}${task.$symbol} ${statusPart} ${taskTextParts[0].trim()}`;
+        cnt = 1;
     }
 
     let newText = filetext.join(hasRN ? "\r\n" : "\n");
-    await vault.adapter.write(task.$file, newText);
-    const tfile = vault.getFileByPath(task.$file);
+    console.log("before modify");
+    try {
+        await vault.modify(tfile, newText);
+    } catch (e) {
+        console.error(e);
+    }
+    console.log(task.$file, "\n", filetext.slice(task.$position.start, task.$position.start + cnt).join("\n"));
     if (tfile) core.reload(tfile);
 }
 export async function completeTask(completed: boolean, task: MarkdownTaskItem, vault: Vault, core: Datacore) {

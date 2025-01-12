@@ -12,7 +12,7 @@ describe("Literals", () => {
 
 test("Date", () => expect(roundTrip(DateTime.fromObject({ year: 1982, month: 5, day: 25 })).day).toEqual(25));
 test("Date Timezone", () => {
-    const date = DateTime.fromObject({ year: 1941, month: 6, day: 5 }, { zone: "PST" });
+    const date = DateTime.fromObject({ year: 1941, month: 6, day: 5 }, { zone: "UTC-8" });
     expect(roundTrip(date)).toEqual(date);
 });
 
@@ -21,7 +21,7 @@ test("Link", () => expect(roundTrip(Link.file("hello"))).toEqual(Link.file("hell
 
 test("Full Date", () => {
     let date = DateTime.fromObject({ year: 1982, month: 5, day: 19 }, { zone: "UTC+8" });
-    expect(roundTrip(date).equals(date)).toBeTruthy();
+    expect(roundTrip(date)).toEqual(date);
 });
 
 /** Run a value through the transferable converter and back again. */

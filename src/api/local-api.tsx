@@ -161,13 +161,13 @@ export class DatacoreLocalApi {
 
     /** Sets the text of a given task programmatically. */
 
-    public setTaskText(newText: string, task: MarkdownTaskItem): void {
-        setTaskText(this.app, this.core, newText, task);
+    public async setTaskText(newText: string, task: MarkdownTaskItem): Promise<void> {
+        await setTaskText(this.app, this.core, newText, task);
     }
 
     /** Sets the completion status of a given task programmatically. */
-    public setTaskCompletion(completed: boolean, task: MarkdownTaskItem): void {
-        completeTask(completed, task, this.app.vault, this.core);
+    public async setTaskCompletion(completed: boolean, task: MarkdownTaskItem): Promise<void> {
+        await completeTask(completed, task, this.app.vault, this.core);
     }
 
     /////////////

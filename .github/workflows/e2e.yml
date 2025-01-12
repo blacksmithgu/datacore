@@ -1,0 +1,44 @@
+on:
+  workflow_call:
+    inputs:
+      build-path:
+        required: true
+        type: string
+      plugin-id:
+        required: true
+        type: string
+      test-vault:
+        required: true
+        type: string
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - name: Copy plugin into test vault
+      run: |
+        chmod +x ./scripts/install-built
+        ./scripts/install-built test-vault 
+    - name: Install dependencies 
+      run: |
+        yarn install
+        yarn playwright install-deps
+    - name: Install Obsidian
+      run: |
+        [ -z $(command -v sudo) ] && apt-get update && apt-get install sudo
+        sudo apt-get update
+        sudo apt-get install -y jq xdg-utils xvfb
+        curled=$(curl -L https://github.com/obsidianmd/obsidian-releases/raw/refs/heads/master/desktop-releases.json | jq .latestVersion | sed s/\"//g)
+        curl -Lo obsidian.deb "https://github.com/obsidianmd/obsidian-releases/releases/download/v$curled/obsidian_${curled}_amd64.deb"
+        sudo dpkg -i ./obsidian.deb
+    - name: Run Tests
+      run: |
+        export XDG_CONFIG_HOME=$HOME/.config
+        yarn run test:e2e
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+

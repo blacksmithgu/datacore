@@ -276,6 +276,7 @@ export class Datacore extends Component {
 
     /** Trigger an event. */
     private trigger(evt: string, ...args: any[]): void {
+        console.log("triggering", evt);
         this.events.trigger(evt, ...args);
     }
 }
