@@ -2728,7 +2728,7 @@ __metadata:
     obsidian: "npm:^1.6.6"
     obsidian-testing-framework: "npm:^0.1.5"
     parsimmon: "npm:^1.18.0"
-    preact: "npm:^10.17.1"
+    preact: "npm:^10.24.3"
     prettier: "npm:2.3.2"
     react-select: "npm:^5.8.0"
     sorted-btree: "npm:^1.8.1"
@@ -5427,7 +5427,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"preact@npm:^10.17.1":
+"preact@npm:^10.24.3":
   version: 10.24.3
   resolution: "preact@npm:10.24.3"
   checksum: 10c0/c863df6d7be6a660480189762d8a8f2d4148733fc2bb9efbd9d2fd27315d2c7ede850a16077d716c91666c915c0349bd3c9699733e4f08457226a0519f408761
