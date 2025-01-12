@@ -300,6 +300,7 @@ function useListItemEditing(item: MarkdownTaskItem | MarkdownListItem, status: s
                 for (let field in item.$infields) {
                     withFields = setInlineField(withFields, field, item.$infields[field].raw);
                 }
+                console.log("use", withFields);
                 await rewriteTask(app.vault, core, item, status, withFields);
             }
         },

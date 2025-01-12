@@ -129,7 +129,7 @@ export function markdownSourceImport(
             blocks.set(start, new DatablockData(start, end, blockOrdinal++, split, block.id));
         } else if (block.type === "code") {
             // Check if the block is fenced.
-            const match = startLine.match(CODEBLOCK_FENCE_REGEX);
+            const match = startLine?.match(CODEBLOCK_FENCE_REGEX);
             if (!match) {
                 // This is an indented-style codeblock.
                 blocks.set(start, new CodeblockData(start, end, blockOrdinal++, [], "indent", start, end, block.id));
@@ -161,7 +161,7 @@ export function markdownSourceImport(
         const line = lines.slice(list.position.start.line, list.position.end.line + 1).join("\n");
 
         // TODO: Implement flag which skips indexing list items.
-        const match = line.match(LIST_ITEM_REGEX);
+        const match = line?.match(LIST_ITEM_REGEX);
         let symbol = undefined,
             text = undefined;
         if (match) {
