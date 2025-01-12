@@ -243,7 +243,6 @@ function CodeMirrorEditor({
                 doc: script || "",
             });
         }
-        return () => viewRef.current?.destroy();
     }, [editorRef.current]);
     useEffect(() => {
         if (viewRef.current)
