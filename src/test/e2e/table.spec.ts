@@ -1,11 +1,10 @@
-import { expect, Locator, Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { MarkdownTaskItem } from "index/types/markdown";
 import { test } from "obsidian-testing-framework/lib/index.js";
 import { assertLinesMatch } from "obsidian-testing-framework/lib/util.js";
 import {
     beforeAll,
     blockLang,
-    sleep,
     waitForText,
     query,
     regexEscape,
