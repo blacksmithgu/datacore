@@ -26,7 +26,9 @@ export async function setTaskText(app: App, core: Datacore, text: string, item: 
     for (let field in item.$infields) {
         withFields = setInlineField(withFields, field, item.$infields[field].raw);
     }
+    console.log("before");
     await rewriteTask(app.vault, core, item, item.$status, withFields);
+    console.log("new text", withFields);
 }
 export function useFinalizer<T>(newValue: T, dispatch: Dispatch<EditableAction<T>>) {
     return async function () {

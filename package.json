@@ -11,6 +11,8 @@
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "test": "yarn run jest",
+    "test:e2e": "vitest -c ./vitest.config.ts",
+    "test-all": "yarn test && yarn test:e2e",
     "test-watch": "yarn run jest -i --watch --no-cache",
     "check-format": "yarn run prettier --check src",
     "format": "yarn run prettier --write src"
@@ -28,19 +30,23 @@
     "@codemirror/language": "^6.10.3",
     "@codemirror/state": "^6.0.1",
     "@codemirror/view": "^6.0.1",
+    "@playwright/test": "^1.48.2",
     "@types/jest": "^27.0.1",
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
     "@types/parsimmon": "^1.10.6",
     "builtin-modules": "3.3.0",
-    "esbuild": "^0.16.11",
+    "esbuild": "^0.24.0",
     "esbuild-plugin-inline-worker": "https://github.com/mitschabaude/esbuild-plugin-inline-worker",
-    "jest": "^27.1.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "obsidian": "^1.6.6",
+    "obsidian-testing-framework": "^0.1.5",
     "prettier": "2.3.2",
-    "ts-jest": "^27.0.5",
+    "ts-jest": "^29",
     "tslib": "^2.3.1",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.2",
+    "vitest": "^2.1.4"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.2",
@@ -61,5 +67,5 @@
     "sucrase": "3.35.0",
     "yaml": "^2.3.3"
   },
-  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+  "packageManager": "yarn@4.5.1"
 }
