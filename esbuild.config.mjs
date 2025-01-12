@@ -20,7 +20,6 @@ async function build(prod) {
 		external: [
 			'obsidian',
 			'electron',
-			'@codemirror/autocomplete',
 			'@codemirror/collab',
 			'@codemirror/commands',
 			'@codemirror/language',
@@ -28,9 +27,7 @@ async function build(prod) {
 			'@codemirror/search',
 			'@codemirror/state',
 			'@codemirror/view',
-			'@lezer/common',
 			'@lezer/highlight',
-			'@lezer/lr',
 			"pdfjs-dist",
 			...builtins],
 			alias: {
