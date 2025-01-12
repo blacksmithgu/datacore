@@ -285,6 +285,7 @@ function DatacoreViewSettings() {
             <Group justify="space-between" align="center">
                 <h6>View Title</h6>
                 <Textbox
+                    inline
                     defaultValue={view.getState().title}
                     onChange={(e) => setState({ title: e.currentTarget.value as string })}
                 />
