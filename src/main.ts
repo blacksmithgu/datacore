@@ -88,6 +88,20 @@ export default class DatacorePlugin extends Plugin {
         };
     }
 
+    public async saveData(data: any) {
+        const serialized: Record<string, any> = {};
+        Object.entries(data).forEach(([key, val]) => {
+            var serializedVal;
+            if (val instanceof Set) {
+                serializedVal = Array.from(val);
+            } else {
+                serializedVal = val;
+            }
+            serialized[key] = serializedVal;
+        });
+        super.saveData(serialized);
+    }
+
     /** Update the given settings to new values. */
     async updateSettings(settings: Partial<Settings>) {
         Object.assign(this.settings, settings);
