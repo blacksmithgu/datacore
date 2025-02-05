@@ -1,10 +1,13 @@
 import { DatacoreApi } from "api/api";
 import { Datacore } from "index/datacore";
 import { DateTime } from "luxon";
-import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Plugin, PluginSettingTab, SearchComponent, setIcon, Setting } from "obsidian";
 import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { IndexStatusBar } from "ui/index-status";
+import { FuzzyFolderSearchSuggest } from "utils/settings/fuzzy-folder-finder";
+
+import "./settings.css";
 
 /** Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
@@ -18,6 +21,7 @@ export default class DatacorePlugin extends Plugin {
 
     async onload() {
         this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) ?? {});
+        this.settings.scriptRoots = new Set([...this.settings.scriptRoots]);
         this.addSettingTab(new GeneralSettingsTab(this.app, this));
 
         // Initialize the core API for usage in all views and downstream apps.
@@ -108,6 +112,16 @@ export default class DatacorePlugin extends Plugin {
         await this.saveData(this.settings);
     }
 
+    async addScriptRootsToSettings(newRoots: string[]) {
+        newRoots.forEach((newRoot) => this.settings.scriptRoots.add(newRoot));
+        await this.saveData(this.settings);
+    }
+
+    async removeScriptRoots(rootsToRemove: string[]) {
+        rootsToRemove.forEach((root) => this.settings.scriptRoots.delete(root));
+        await this.saveData(this.settings);
+    }
+
     /** Render datacore indexing status using the index. */
     private mountIndexState(root: HTMLElement, core: Datacore): void {
         render(createElement(IndexStatusBar, { datacore: core }), root);
@@ -122,8 +136,96 @@ class GeneralSettingsTab extends PluginSettingTab {
         super(app, plugin);
     }
 
+    private async handleNewScriptRoot(component?: SearchComponent) {
+        if (!component) {
+            return;
+        }
+
+        const searchValue = component.getValue();
+        if (this.plugin.settings.scriptRoots.has(searchValue)) {
+            return;
+        }
+
+        const dirStat = await this.app.vault.adapter.stat(searchValue);
+        if (!(dirStat?.type === "folder")) {
+            return;
+        }
+
+        await this.plugin.addScriptRootsToSettings([searchValue]);
+        this.display();
+    }
+
     public display(): void {
         this.containerEl.empty();
+
+        this.containerEl.createEl("h2", { text: "Scripting" });
+
+        const importRootsDesc = new DocumentFragment();
+        importRootsDesc.createDiv().innerHTML = `
+<p>
+Provide folders in the vault to be used when resolving module and/or script file names,
+in addition to the vault root. These values are used with with
+<code>require(...)</code>/<code>await dc.require(...)</code>/<code>import ...</code> when the path
+<em>does not</em> start with some kind of indicator for resolving the root
+(such as <code>./</code> or <code>/</code>).
+</p>
+`;
+        var searchBar: SearchComponent | undefined = undefined;
+        new Setting(this.containerEl).setName("Additional Script/Module Roots").setDesc(importRootsDesc);
+        new Setting(this.containerEl)
+            .addSearch((searchComponent) => {
+                searchBar = searchComponent;
+                const searcher = new FuzzyFolderSearchSuggest(this.app, searchComponent.inputEl);
+                searcher.limit = 10;
+                searcher.onSelect(async (val, evt) => {
+                    evt.preventDefault();
+                    evt.stopImmediatePropagation();
+                    evt.stopPropagation();
+                    searcher.setValue(val);
+                    searcher.close();
+                });
+
+                searchComponent.setPlaceholder("New Script Root Folder...");
+                searchComponent.onChange((val) => {
+                    if (val.length > 0) {
+                        searcher.open();
+                    }
+                });
+
+                searchComponent.inputEl.addEventListener("keydown", (evt) => {
+                    if (evt.key === "Enter") {
+                        this.handleNewScriptRoot(searchComponent);
+                    }
+                });
+                searchComponent.inputEl.addClass("datacore-settings-full-width-search-input");
+            })
+            .addButton((buttonComponent) => {
+                buttonComponent
+                    .setIcon("plus")
+                    .setTooltip("Add Folder To Script Roots")
+                    .onClick(async () => {
+                        await this.handleNewScriptRoot(searchBar);
+                    });
+            });
+
+        this.plugin.settings.scriptRoots.forEach((root) => {
+            const folderItem = new Setting(this.containerEl);
+            const folderItemFragment = new DocumentFragment();
+            const folderItemDiv = folderItemFragment.createDiv();
+            folderItemDiv.addClasses(["datacore-settings-script-root", "setting-item-info"]);
+            setIcon(folderItemDiv, "folder");
+            folderItemDiv.createEl("h2", { text: root });
+            folderItem.infoEl.replaceWith(folderItemFragment);
+            folderItem.addButton((buttonComponent) => {
+                buttonComponent
+                    .setIcon("cross")
+                    .setTooltip("Remove Folder from Script Roots")
+                    .onClick(async () => {
+                        await this.plugin.removeScriptRoots([root]);
+                        this.display();
+                    });
+            });
+        });
 
         this.containerEl.createEl("h2", { text: "Views" });
 
