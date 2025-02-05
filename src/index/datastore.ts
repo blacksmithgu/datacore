@@ -4,7 +4,7 @@ import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
 import { IndexPrimitive, IndexQuery, IndexSource } from "index/types/index-query";
 import { Indexable, LINKABLE_TYPE, LINKBEARING_TYPE, TAGGABLE_TYPE } from "index/types/indexable";
-import { MetadataCache, Vault } from "obsidian";
+import { MetadataCache, normalizePath, Vault } from "obsidian";
 import { MarkdownPage } from "./types/markdown";
 import { extractSubtags, normalizeHeaderForLink } from "utils/normalizers";
 import FlatQueue from "flatqueue";
@@ -14,6 +14,7 @@ import { IndexResolver, execute, optimizeQuery } from "index/storage/query-execu
 import { Result } from "api/result";
 import { Evaluator } from "expression/evaluator";
 import { Settings } from "settings";
+import path from "path-browserify";
 
 /** Central, index storage for datacore values. */
 export class Datastore {
@@ -266,15 +267,44 @@ export class Datastore {
         this.revision++;
     }
 
-    /** Find the corresponding object for a given link. */
-    public resolveLink(rawLink: string | Link, sourcePath?: string): Indexable | undefined {
+    public tryNormalizeLink(rawLink: string | Link, sourcePath?: string): Link | undefined {
         let link = typeof rawLink === "string" ? Link.parseInner(rawLink) : rawLink;
-
         if (sourcePath) {
             const linkdest = this.metadataCache.getFirstLinkpathDest(link.path, sourcePath);
             if (linkdest) link = link.withPath(linkdest.path);
         }
 
+        if (this.objects.has(link.path)) {
+            return link;
+        }
+
+        const normalizedSourcePath = normalizePath(sourcePath ?? "/");
+        const normalizedModuleParentDir = normalizePath(path.join(normalizedSourcePath, path.dirname(link.path)));
+        const resolvedModuleFile = this.folder
+            .getExact(normalizedModuleParentDir, (childPath) => {
+                const moduleBasename = path.basename(link.path);
+                const childFileBasename = path.basename(childPath);
+                return childFileBasename === moduleBasename || childFileBasename.startsWith(`${moduleBasename}.`);
+            })
+            .values()
+            .next()?.value;
+        if (resolvedModuleFile) {
+            return link.withPath(resolvedModuleFile);
+        }
+
+        return undefined;
+    }
+
+    public normalizeLink(rawLink: string | Link, sourcePath?: string): Link {
+        return (
+            this.tryNormalizeLink(rawLink, sourcePath) ??
+            (typeof rawLink === "string" ? Link.parseInner(rawLink) : rawLink)
+        );
+    }
+
+    /** Find the corresponding object for a given link. */
+    public resolveLink(rawLink: string | Link, sourcePath?: string): Indexable | undefined {
+        const link = this.normalizeLink(rawLink, sourcePath);
         const file = this.objects.get(link.path);
         if (!file) return undefined;
 
@@ -288,8 +318,9 @@ export class Datastore {
                 (sec) => normalizeHeaderForLink(sec.$title) == link.subpath || sec.$title == link.subpath
             );
 
-            if (section) return section;
-            else return undefined;
+            if (section) {
+                return section;
+            } else return undefined;
         } else if (link.type === "block") {
             for (const section of file.$sections) {
                 const block = section.$blocks.find((bl) => bl.$blockId === link.subpath);

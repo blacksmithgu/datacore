@@ -985,6 +985,11 @@
   resolved "https://registry.yarnpkg.com/@types/parsimmon/-/parsimmon-1.10.9.tgz#14e60db223c1d213fea0e15985d480b5cfe1789a"
   integrity sha512-O2M2x1w+m7gWLen8i5DOy6tWRnbRcsW6Pke3j3HAsJUrPb4g0MgjksIUm2aqUtCYxy7Qjr3CzjjwQBzhiGn46A==
 
+"@types/path-browserify@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@types/path-browserify/-/path-browserify-1.0.3.tgz#25de712d4def94b3901f033c30d3d3bd16eba8d3"
+  integrity sha512-ZmHivEbNCBtAfcrFeBCiTjdIc2dey0l7oCGNGpSuRTy8jP6UVND7oUowlvDujBy8r2Hoa8bfFUOCiPWfmtkfxw==
+
 "@types/prettier@^2.1.5":
   version "2.7.3"
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-2.7.3.tgz#3e51a17e291d01d17d3fc61422015a933af7a08f"
@@ -2747,6 +2752,11 @@ parsimmon@^1.18.0:
   version "1.18.1"
   resolved "https://registry.yarnpkg.com/parsimmon/-/parsimmon-1.18.1.tgz#d8dd9c28745647d02fc6566f217690897eed7709"
   integrity sha512-u7p959wLfGAhJpSDJVYXoyMCXWYwHia78HhRBWqk7AIbxdmlrfdp5wX0l3xv/iTSH5HvhN9K7o26hwwpgS5Nmw==
+
+path-browserify@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/path-browserify/-/path-browserify-1.0.1.tgz#d98454a9c3753d5790860f16f68867b9e46be1fd"
+  integrity sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==
 
 path-exists@^4.0.0:
   version "4.0.0"

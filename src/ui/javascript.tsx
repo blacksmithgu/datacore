@@ -1,9 +1,9 @@
 import { ErrorMessage, SimpleErrorBoundary, CURRENT_FILE_CONTEXT, DatacoreContextProvider } from "ui/markdown";
 import { App, MarkdownRenderChild } from "obsidian";
 import { DatacoreLocalApi } from "api/local-api";
-import { h, render, Fragment, VNode } from "preact";
+import { render, VNode } from "preact";
 import { unmountComponentAtNode } from "preact/compat";
-import { ScriptLanguage, asyncEvalInContext, transpile } from "utils/javascript";
+import { ScriptLanguage, asyncEvalInContext, defaultScriptLoadingContext, transpile } from "utils/javascript";
 import { LoadingBoundary, ScriptContainer } from "./loading-boundary";
 import { Datacore } from "index/datacore";
 
@@ -29,13 +29,16 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 
         // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
-            const primitiveScript = transpile(this.script, this.language);
+            const primitiveScript = transpile({
+                scriptSource: this.script,
+                scriptLanguage: this.language,
+                scriptFile: this.api.app.vault.getFileByPath(this.path)!,
+            });
+            const scriptContext = defaultScriptLoadingContext(this.api);
             const renderer = async () => {
-                return await asyncEvalInContext(primitiveScript, {
-                    dc: this.api,
-                    h: h,
-                    Fragment: Fragment,
-                });
+                const loadedScript =
+                    (await asyncEvalInContext(primitiveScript, scriptContext)) ?? scriptContext.exports;
+                return loadedScript;
             };
 
             render(

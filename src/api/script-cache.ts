@@ -3,10 +3,16 @@ import { Datastore } from "index/datastore";
 import { Result } from "./result";
 import { MarkdownCodeblock, MarkdownSection } from "index/types/markdown";
 import { Deferred, deferred } from "utils/deferred";
-import { ScriptLanguage, asyncEvalInContext, transpile } from "utils/javascript";
+import {
+    ScriptDefinition,
+    ScriptLanguage,
+    asyncEvalInContext,
+    defaultScriptLoadingContext,
+    transpile,
+} from "utils/javascript";
 import { lineRange } from "utils/normalizers";
-import { TFile } from "obsidian";
-import { Fragment, h } from "preact";
+import { normalizePath, TFile } from "obsidian";
+import { DatacoreLocalApi } from "./local-api";
 
 /** A script that is currently being loaded. */
 export interface LoadingScript {
@@ -56,20 +62,34 @@ export class ScriptCache {
     public constructor(private store: Datastore) {}
 
     /** Load the given script at the given path, recursively loading any subscripts as well.  */
-    public async load(path: string | Link, context: Record<string, any>): Promise<Result<any, string>> {
+    public async load(path: string | Link, api: DatacoreLocalApi): Promise<Result<any, string>> {
+        // First, attempt to resolve the script against the script roots so we cache a canonical script path as the key.
+        var linkToLoad = undefined;
+        const roots = ["", ...api.core.settings.scriptRoots];
+        for (var i = 0; i < roots.length; i++) {
+            linkToLoad = this.store.tryNormalizeLink(path, normalizePath(roots[i]));
+            if (linkToLoad) {
+                break;
+            }
+        }
+
+        const resolvedPath = linkToLoad ?? path;
+
         // Always check the cache first.
-        const key = this.pathkey(path);
+        const key = this.pathkey(resolvedPath);
         const currentScript = this.scripts.get(key);
         if (currentScript) {
-            if (currentScript.type === "loaded") return Result.success(currentScript.object);
+            if (currentScript.type === "loaded") {
+                return Result.success(currentScript.object);
+            }
 
             // TODO: If we try to load an already-loading script, we are almost certainly doing something
             // weird. Either the caller is not `await`-ing the load and loading multiple times, OR
             // we are in a `require()` loop. Either way, we'll error out for now since we can't handle
             // either case currently.
             return Result.failure(
-                `Failed to import script "${path.toString()}", as it is in the middle of being loaded. Do you have
-                 a circular dependency in your require() calls? The currently loaded or loading scripts are: 
+                `Failed to import script "${resolvedPath.toString()}", as it is in the middle of being loaded. Do you have
+                 a circular dependency in your require() calls? The currently loaded or loading scripts are:
                  ${Array.from(this.scripts.values())
                      .map((sc) => "\t" + sc.path)
                      .join("\n")}`
@@ -80,7 +100,7 @@ export class ScriptCache {
         const deferral = deferred<Result<any, string>>();
         this.scripts.set(key, { type: "loading", promise: deferral, path: key });
 
-        const result = await this.loadUncached(path, context);
+        const result = await this.loadUncached(resolvedPath, api);
         deferral.resolve(result);
 
         if (result.successful) {
@@ -93,25 +113,30 @@ export class ScriptCache {
     }
 
     /** Load a script, directly bypassing the cache. */
-    private async loadUncached(path: string | Link, context: Record<string, any>): Promise<Result<any, string>> {
-        const maybeSource = await this.resolveSource(path);
+    private async loadUncached(scriptPath: string | Link, api: DatacoreLocalApi): Promise<Result<any, string>> {
+        var maybeSource = await this.resolveSource(scriptPath);
         if (!maybeSource.successful) return maybeSource;
 
         // Transpile to vanilla javascript first...
-        const { code, language } = maybeSource.value;
+        const scriptDefinition = maybeSource.value;
         let basic;
         try {
-            basic = transpile(code, language);
+            basic = transpile(scriptDefinition);
         } catch (error) {
-            return Result.failure(`Failed to import ${path.toString()} while transpiling from ${language}: ${error}`);
+            return Result.failure(
+                `Failed to import ${scriptPath.toString()} while transpiling from ${
+                    scriptDefinition.scriptLanguage
+                }: ${error}`
+            );
         }
 
         // Then finally execute the script to 'load' it.
-        const finalContext = Object.assign({ h: h, Fragment: Fragment }, context);
+        const scriptContext = defaultScriptLoadingContext(api);
         try {
-            return Result.success(await asyncEvalInContext(basic, finalContext));
+            const loadRet = (await asyncEvalInContext(basic, scriptContext)) ?? scriptContext.exports;
+            return Result.success(loadRet);
         } catch (error) {
-            return Result.failure(`Failed to execute script '${path.toString()}': ${error}`);
+            return Result.failure(`Failed to execute script '${scriptPath.toString()}': ${error}`);
         }
     }
 
@@ -122,10 +147,8 @@ export class ScriptCache {
     }
 
     /** Attempts to resolve the source to load given a path or link to a markdown section. */
-    private async resolveSource(
-        path: string | Link
-    ): Promise<Result<{ code: string; language: ScriptLanguage }, string>> {
-        const object = this.store.resolveLink(path);
+    private async resolveSource(path: string | Link, sourcePath?: string): Promise<Result<ScriptDefinition, string>> {
+        const object = this.store.resolveLink(path, sourcePath);
         if (!object) return Result.failure("Could not find a script at the given path: " + path.toString());
 
         const tfile = this.store.vault.getFileByPath(object.$file!);
@@ -137,7 +160,7 @@ export class ScriptCache {
 
             try {
                 const code = await this.store.vault.cachedRead(tfile);
-                return Result.success({ code, language });
+                return Result.success({ scriptFile: tfile, scriptLanguage: language, scriptSource: code });
             } catch (error) {
                 return Result.failure("Failed to load javascript/typescript source file: " + error);
             }
@@ -158,7 +181,11 @@ export class ScriptCache {
                 ScriptCache.SCRIPT_LANGUAGES[
                     maybeBlock.$languages.find((lang) => lang.toLocaleLowerCase() in ScriptCache.SCRIPT_LANGUAGES)!
                 ];
-            return (await this.readCodeblock(tfile, maybeBlock)).map((code) => ({ code, language }));
+            return (await this.readCodeblock(tfile, maybeBlock)).map((code) => ({
+                scriptFile: tfile,
+                scriptSource: code,
+                scriptLanguage: language,
+            }));
         } else if (object instanceof MarkdownCodeblock) {
             const maybeLanguage = object.$languages.find(
                 (lang) => lang.toLocaleLowerCase() in ScriptCache.SCRIPT_LANGUAGES
@@ -167,7 +194,11 @@ export class ScriptCache {
                 return Result.failure(`The codeblock referenced by '${path}' is not a JS/TS codeblock.`);
 
             const language = ScriptCache.SCRIPT_LANGUAGES[maybeLanguage];
-            return (await this.readCodeblock(tfile, object)).map((code) => ({ code, language }));
+            return (await this.readCodeblock(tfile, object)).map((code) => ({
+                scriptFile: tfile,
+                scriptSource: code,
+                scriptLanguage: language,
+            }));
         }
 
         return Result.failure(`Cannot import '${path.toString()}: not a JS/TS file or codeblock reference.`);

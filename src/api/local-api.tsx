@@ -90,7 +90,7 @@ export class DatacoreLocalApi {
      * ```
      */
     public async require(path: string | Link): Promise<any> {
-        const result = await this.scriptCache.load(path, { dc: this });
+        const result = await this.scriptCache.load(path, this);
         return result.orElseThrow();
     }
 
