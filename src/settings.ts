@@ -1,5 +1,7 @@
 /** All datacore settings. */
 export interface Settings {
+    /** Vault folders to be used when resolving required/imported scripts in addition to the vault root. */
+    scriptRoots: Set<string>;
     /** The number of threads the importer will use for importing. */
     importerNumThreads: number;
     /** The CPU utilization (between 0.1 and 1.0) that importer threads should use. */
@@ -40,6 +42,7 @@ export interface Settings {
 
 /** Default settings for the plugin. */
 export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
+    scriptRoots: new Set(),
     importerNumThreads: 2,
     importerUtilization: 0.75,
 

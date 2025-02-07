@@ -13,15 +13,24 @@ describe("Literals", () => {
 test("Date", () => expect(roundTrip(DateTime.fromObject({ year: 1982, month: 5, day: 25 })).day).toEqual(25));
 test("Date Timezone", () => {
     const date = DateTime.fromObject({ year: 1941, month: 6, day: 5 }, { zone: "PST" });
-    expect(roundTrip(date)).toEqual(date);
+    expect(
+        roundTrip(date).toISO({ extendedZone: true, includeOffset: true }) ===
+            date.toISO({ extendedZone: true, includeOffset: true })
+    ).toBeTruthy();
 });
 
 test("Duration", () => expect(roundTrip(Duration.fromMillis(10000)).toMillis()).toEqual(10000));
 test("Link", () => expect(roundTrip(Link.file("hello"))).toEqual(Link.file("hello")));
 
+// Checking the ISO string for equality here instead of the objects themselves.
+// The .equals() method does a deep equality check on every object key/value, and
+// the serialized object ends up with a different Zone than the deserialized one.
 test("Full Date", () => {
     let date = DateTime.fromObject({ year: 1982, month: 5, day: 19 }, { zone: "UTC+8" });
-    expect(roundTrip(date).equals(date)).toBeTruthy();
+    expect(
+        roundTrip(date).toISO({ extendedZone: true, includeOffset: true }) ===
+            date.toISO({ extendedZone: true, includeOffset: true })
+    ).toBeTruthy();
 });
 
 /** Run a value through the transferable converter and back again. */

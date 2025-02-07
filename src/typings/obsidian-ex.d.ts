@@ -4,6 +4,10 @@ import "obsidian";
 
 /** @hidden */
 declare module "obsidian" {
+    interface MetadataCache {
+        isUserIgnored(path: string): boolean;
+    }
+
     interface FileManager {
         linkUpdaters: {
             canvas: {

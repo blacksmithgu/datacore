@@ -1,0 +1,29 @@
+.setting-item-control:has(.datacore-settings-full-width-search-input),
+.search-input-container:has(.datacore-settings-full-width-search-input),
+.datacore-settings-full-width-search-input {
+    width: 100%;
+}
+
+.setting-item:has(.datacore-settings-full-width-search-input) {
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 15px;
+}
+
+.setting-item:has(.datacore-settings-full-width-search-input) .setting-item-info {
+    margin-inline-end: 0;
+    display: none;
+}
+
+.setting-item:has(.datacore-settings-script-root) {
+    border: none;
+    padding: 0;
+    margin-bottom: 10px;
+}
+
+.datacore-settings-script-root {
+    display: inline-flex !important;
+    align-items: center;
+}
+.datacore-settings-script-root h2 {
+    margin: 8px;
+}
