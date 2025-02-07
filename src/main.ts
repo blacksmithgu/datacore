@@ -142,6 +142,10 @@ class GeneralSettingsTab extends PluginSettingTab {
         }
 
         const searchValue = component.getValue();
+        if (!searchValue || searchValue.length === 0) {
+            return;
+        }
+
         if (this.plugin.settings.scriptRoots.has(searchValue)) {
             return;
         }
