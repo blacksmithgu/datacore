@@ -46,6 +46,12 @@ export class Datacore extends Component {
         this.datastore = new Datastore(app.vault, app.metadataCache, settings);
         this.initialized = false;
 
+        if (this.settings.enableTailwind) {
+            const cdnScriptElement = document.createElement("script");
+            cdnScriptElement.src = "https://unpkg.com/@tailwindcss/browser@4";
+            document.head.appendChild(cdnScriptElement);
+        }
+
         this.addChild(
             (this.importer = new FileImporter(app.vault, app.fileManager, app.metadataCache, () => {
                 return {

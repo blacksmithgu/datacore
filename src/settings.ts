@@ -7,6 +7,7 @@ export interface Settings {
 
     /** Are JS views enabled? */
     enableJs: boolean;
+    enableTailwind: boolean;
 
     /**
      * Whether views are paged by default. This is an important performance optimization,
@@ -54,6 +55,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
     importerUtilization: 0.75,
 
     enableJs: false,
+    enableTailwind: false,
 
     defaultPagingEnabled: true,
     defaultPageSize: 50,

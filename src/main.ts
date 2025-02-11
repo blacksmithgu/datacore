@@ -188,6 +188,15 @@ class GeneralSettingsTab extends PluginSettingTab {
                 });
             });
 
+        new Setting(this.containerEl)
+            .setName("Enable Tailwind")
+            .setDesc("Whether Tailwind classNames will be evaluated. Reload Obsidian to see this change.")
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.settings.enableTailwind).onChange(async (value) => {
+                    await this.plugin.updateSettings({ enableTailwind: value });
+                });
+            });
+
         this.containerEl.createEl("h2", { text: "Formatting" });
 
         new Setting(this.containerEl)
