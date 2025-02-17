@@ -16,7 +16,16 @@ import * as hooks from "preact/hooks";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
-import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
+import {
+    APP_CONTEXT,
+    COMPONENT_CONTEXT,
+    CURRENT_FILE_CONTEXT,
+    DATACORE_CONTEXT,
+    Lit,
+    Markdown,
+    ObsidianLink,
+    SETTINGS_CONTEXT,
+} from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
@@ -168,6 +177,26 @@ export class DatacoreLocalApi {
     /** Sets the completion status of a given task programmatically. */
     public async setTaskCompletion(completed: boolean, task: MarkdownTaskItem): Promise<void> {
         await completeTask(completed, task, this.app.vault, this.core);
+    }
+
+    //////////////
+    // Contexts //
+    //////////////
+
+    // export the necessary contexts to enable rendering
+    // datacore components outside the datacore plugin
+    // itself
+    get SETTINGS_CONTEXT(): typeof SETTINGS_CONTEXT {
+        return SETTINGS_CONTEXT;
+    }
+    get COMPONENT_CONTEXT(): typeof COMPONENT_CONTEXT {
+        return COMPONENT_CONTEXT;
+    }
+    get DATACORE_CONTEXT(): typeof DATACORE_CONTEXT {
+        return DATACORE_CONTEXT;
+    }
+    get APP_CONTEXT(): typeof APP_CONTEXT {
+        return APP_CONTEXT;
     }
 
     /////////////
