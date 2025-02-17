@@ -16,7 +16,7 @@ import * as hooks from "preact/hooks";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
-import { CURRENT_FILE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink } from "ui/markdown";
+import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink, SETTINGS_CONTEXT } from "ui/markdown";
 import { CSSProperties, Suspense } from "preact/compat";
 import { Literal, Literals } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
@@ -189,6 +189,25 @@ export class DatacoreLocalApi {
     public tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         return this.api.tryFullQuery(query);
+		}
+    //////////////
+    // Contexts //
+    //////////////
+
+    // export the necessary contexts to enable rendering
+    // datacore components outside the datacore plugin
+    // itself
+    get SETTINGS_CONTEXT(): typeof SETTINGS_CONTEXT {
+        return SETTINGS_CONTEXT;
+    }
+    get COMPONENT_CONTEXT(): typeof COMPONENT_CONTEXT {
+        return COMPONENT_CONTEXT;
+    }
+    get DATACORE_CONTEXT(): typeof DATACORE_CONTEXT {
+        return DATACORE_CONTEXT;
+    }
+    get APP_CONTEXT(): typeof APP_CONTEXT {
+        return APP_CONTEXT;
     }
 
     /////////////
