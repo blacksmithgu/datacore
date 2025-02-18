@@ -165,7 +165,7 @@ export function lineReplace(text: string, start: number, end: number, func: (lin
     if (!offset) return text;
 
     return (
-        data.substring(0, offset.start) + func(data.substring(offset.start, offset.end)) + data.substring(offset.end)
+        text.substring(0, offset.start) + func(text.substring(offset.start, offset.end)) + text.substring(offset.end)
     );
 }
 
