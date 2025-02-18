@@ -14,6 +14,7 @@ import { Literal, Literals } from "expression/literal";
 import {
     EditableAction,
     EditableListField,
+    editableReducer,
     EditableState,
     TextEditable,
     useEditableDispatch,
@@ -231,8 +232,8 @@ export function ListItemFields({
                     value: defVal,
                     raw: Literals.toString(defVal),
                 };
-                const [fieldValue] = useState<Literal>(item.$infields[ifield?.key]?.value || defField.value!);
-                const [state2, dispatch] = useEditableDispatch<Literal>({
+                const fieldValue = item.$infields[ifield?.key]?.value || defField.value!;
+                let [state2, dispatch] = useEditableDispatch<Literal>(() => ({
                     content: fieldValue,
                     isEditing: false,
                     updater: useStableCallback(
@@ -266,11 +267,12 @@ export function ListItemFields({
                         },
                         [item.$infields]
                     ),
-                });
+                }));
                 if (ifield.key == settings.taskCompletionText) {
                     //@ts-ignore huh?
                     completedRef.current = dispatch;
                 }
+                state2 = editableReducer<Literal>(state2, { type: "content-changed", newValue: fieldValue });
                 return (
                     <EditableListField
                         props={state2}
