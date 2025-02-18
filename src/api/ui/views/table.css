@@ -29,6 +29,7 @@
     border: none;
     font-weight: 400;
     max-width: 100%;
+    vertical-align: middle;
 }
 
 .datacore-table ul:not(.contains-task-list),

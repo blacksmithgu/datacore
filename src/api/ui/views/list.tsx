@@ -2,23 +2,12 @@
  * @module views
  */
 import { Literal } from "expression/literal";
-import { APP_CONTEXT, CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, Lit } from "ui/markdown";
+import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 
 import { VNode, isValidElement } from "preact";
-import { useContext, useMemo } from "preact/hooks";
+import { useContext } from "preact/hooks";
 import { BaseFieldProps } from "ui/fields/common-props";
-import {
-    ControlledEditable,
-    Editable,
-    EditableElement,
-    EditableState,
-    TextEditable,
-    useEditableDispatch,
-} from "ui/fields/editable";
-import { useStableCallback } from "ui/hooks";
-import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
-import { rewriteTask } from "utils/task";
-import { setInlineField } from "index/import/inline-field";
+import { ControlledEditable, EditableElement } from "ui/fields/editable";
 
 /**
  * State for a {@link ListView}
