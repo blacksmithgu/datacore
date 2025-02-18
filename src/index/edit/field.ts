@@ -42,7 +42,7 @@ export async function editInlineField(
     if (!content) return Result.failure(`File with path ${file.path} does not exist.`);
 
     // Find the extent of the given line (0-indexed), extract it and update.
-    const updated = lineReplace(content, line, line + 1, (line) => {
+    const updated = lineReplace(content, line - 1, line, (line) => {
         // TODO: This stringif-ication of the value is not correct and will not work
         // for arrays or objects, but will serve purpose for now...
         if (value == null) return setInlineField(line, key, undefined);
