@@ -272,7 +272,10 @@ export function ListItemFields({
                     //@ts-ignore huh?
                     completedRef.current = dispatch;
                 }
-                state2 = editableReducer<Literal>(state2, { type: "content-changed", newValue: fieldValue });
+                {
+                    let temp = editableReducer<Literal>(state2, { type: "content-changed", newValue: fieldValue });
+                    if (temp.content != state2.content) state2 = temp;
+                }
                 return (
                     <EditableListField
                         props={state2}
