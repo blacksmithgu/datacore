@@ -275,7 +275,7 @@ export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn
             className="datacore-table-cell"
         >
             {column.editable && editableState.isEditing && Editor ? (
-                <Editor dispatch={dispatch} {...(column.editorProps ?? {})} {...editableState} />
+                <Editor field={value} dispatch={dispatch} {...(column.editorProps ?? {})} {...editableState} />
             ) : (
                 rendered
             )}
