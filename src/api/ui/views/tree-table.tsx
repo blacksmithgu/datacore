@@ -429,7 +429,7 @@ export function TreeTableRowCell<T>({
             className="datacore-table-cell"
         >
             {column.editable && editableState.isEditing && Editor ? (
-                <Editor dispatch={dispatch} {...(column.editorProps ?? {})} {...editableState} />
+                <Editor field={value} dispatch={dispatch} {...(column.editorProps ?? {})} {...editableState} />
             ) : (
                 rendered
             )}
