@@ -6,6 +6,7 @@ node_modules/
 
 # Build artifacts.
 build/
+dist/
 
 # Various editor preferences.
 .vscode
@@ -18,4 +19,4 @@ build/
 
 docs/root/api/**/*.*
 !docs/root/api/index.md
-.docuaurus/
+.docusaurus/
