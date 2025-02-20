@@ -44,6 +44,8 @@ export interface File extends Linkable {
     $ctime: DateTime;
     /** Obsidian-provided date this page was modified. */
     $mtime: DateTime;
+    /** Timestamp of last file access, as determined by inspecting `file-open` workspace events */
+    $atime?: DateTime;
     /** Obsidian-provided size of this page in bytes. */
     $size: number;
     /** The extension of the file. */

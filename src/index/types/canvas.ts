@@ -34,6 +34,7 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
     $types: string[] = Canvas.TYPES;
     $typename: string = "Canvas";
 
+    $atime?: DateTime;
     $ctime: DateTime;
     $mtime: DateTime;
 
@@ -75,6 +76,7 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
             $cards: this.$cards.map((x) => x.json()) as JsonCanvasCard[],
             $ctime: this.$ctime.toMillis(),
             $mtime: this.$mtime.toMillis(),
+            $atime: this.$atime?.toMillis(),
             $size: this.$size,
             $links: this.$links,
             $path: this.$path,
@@ -101,6 +103,7 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
             $cards: cards,
             $ctime: DateTime.fromMillis(raw.$ctime),
             $mtime: DateTime.fromMillis(raw.$mtime),
+            $atime: raw.$atime ? DateTime.fromMillis(raw.$atime) : undefined,
             $size: raw.$size,
             $extension: "canvas",
             $path: raw.$path,
