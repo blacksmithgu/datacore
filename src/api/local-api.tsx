@@ -9,7 +9,7 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown";
 import { App } from "obsidian";
-import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
+import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery, useLastOpenedFiles } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
@@ -180,6 +180,13 @@ export class DatacoreLocalApi {
     /** Use the file metadata for a specific file. Automatically updates the view when the file changes. */
     public useFile(path: string, settings?: { debounce?: number }): Indexable | undefined {
         return useFileMetadata(this.core, path, settings)!;
+    }
+
+    /** Get the list of opened files. Defaults the 10 most recent files. Can be overridden by setting `settings.limit` to
+     * the desired amount.
+     */
+    public useLastOpenedFiles(settings?: { limit?: number; debounce?: number }): Indexable[] {
+        return useLastOpenedFiles(this.core, settings);
     }
 
     /** Automatically refresh the view whenever the index updates; returns the latest index revision ID. */
