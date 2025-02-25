@@ -100,7 +100,9 @@ export class Datacore extends Component {
         this.registerEvent(
             this.vault.on("delete", (file) => {
                 if (file instanceof TFile) {
-                    this.datastore.delete(file.path);
+                    if (this.datastore.delete(file.path)) {
+                        this.trigger("update", this.revision);
+                    }
                 }
             })
         );
