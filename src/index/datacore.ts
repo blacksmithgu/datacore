@@ -99,10 +99,10 @@ export class Datacore extends Component {
         // File creation does cause a metadata change, but deletes do not. Clear the caches for this.
         this.registerEvent(
             this.vault.on("delete", (file) => {
-                if (file instanceof TFile) {
-                    if (this.datastore.delete(file.path)) {
-                        this.trigger("update", this.revision);
-                    }
+                if (!(file instanceof TFile)) return;
+
+                if (this.datastore.delete(file.path)) {
+                    this.trigger("update", this.revision);
                 }
             })
         );
