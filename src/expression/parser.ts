@@ -555,7 +555,8 @@ export const QUERY = P.createLanguage<QueryLanguage>({
     queryLinked: (q) =>
         createFunction(P.regexp(/linksto|linkedfrom|connected/i).desc("connected"), q.query).map(([func, source]) => ({
             type: "linked",
-            source,
+            // When writing syntax like `linksto([[link]])`, [[link]] will also be interpreted as a linked query, so unwrap it if present.
+            source: source.type == "linked" && source.source.type == "link" ? source.source : source,
             direction:
                 func.toLowerCase() == "linksto" ? "incoming" : func.toLowerCase() == "linkedfrom" ? "outgoing" : "both",
         })),

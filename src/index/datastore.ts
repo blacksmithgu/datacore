@@ -562,7 +562,7 @@ export class Datastore {
                 if (visited.has(neighbor)) continue;
 
                 visited.add(neighbor);
-                if (dist < distance) queue.push(neighbor, dist + 1);
+                if (dist + 1 < distance) queue.push(neighbor, dist + 1);
             }
         }
 
