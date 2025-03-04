@@ -1,3 +1,10 @@
+# 0.1.20
+
+- Fix connected link searches - searching for `linksto([[File]])` will now correctly search around that file, for example.
+- Datacore now provides update events on file deletions; in practice, this means your views will update when files are deleted.
+
+---
+
 # 0.1.19 (Beta)
 
 Adds parsing for list item symbols ($symbol), and task text ($text). In general in datacore I am trying to avoid pulling actual text contents into the index, but the task usecase is sufficiently common that
