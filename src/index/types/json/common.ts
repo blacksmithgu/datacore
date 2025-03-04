@@ -61,7 +61,7 @@ export namespace JsonConversion {
             const type = json["$_type"];
             switch (type) {
                 case "date":
-                    return normalizer(DateTime.fromISO(json.value));
+                    return normalizer(DateTime.fromISO(json.value, { setZone: true }));
                 case "duration":
                     return normalizer(Duration.fromISO(json.value));
                 case "link":
