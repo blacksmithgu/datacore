@@ -19,15 +19,18 @@ export class GenericFile implements File, Indexable, Fieldbearing, Linkable {
     $ctime: DateTime;
     /** Obsidian-provided date this page was modified. */
     $mtime: DateTime;
+    /** Timestamp of last file access, as determined by inspecting `file-open` workspace events */
+    $atime?: DateTime;
     /** Obsidian-provided size of this page in bytes. */
     $size: number;
     /** The extension of the file. */
     $extension: string;
 
-    public constructor(path: string, ctime: DateTime, mtime: DateTime, size: number) {
+    public constructor(path: string, ctime: DateTime, mtime: DateTime, size: number, atime?: DateTime) {
         this.$path = path;
         this.$ctime = ctime;
         this.$mtime = mtime;
+        this.$atime = atime;
         this.$size = size;
 
         const lastDot = path.lastIndexOf(".");

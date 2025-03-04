@@ -33,6 +33,8 @@ export interface JsonMarkdownPage {
     $ctime: number;
     /** Obsidian-provided date this page was modified. */
     $mtime: number;
+    /** Timestamp of last file access, as determined by inspecting `file-open` workspace events */
+    $atime?: number;
     /** The extension; for markdown files, almost always '.md'. */
     $extension: string;
     /** Obsidian-provided size of this page in bytes. */

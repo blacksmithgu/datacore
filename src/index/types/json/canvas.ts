@@ -36,6 +36,8 @@ export interface JsonCanvas {
     $ctime: number;
     /** Last modified time as a UNIX epoch time in milliseconds. */
     $mtime: number;
+    /** Last access time as a UNIX epoch time in milliseconds. */
+    $atime?: number;
     /** All tags in the canvas. */
     $tags: string[];
     /** All links in the canvas. */
