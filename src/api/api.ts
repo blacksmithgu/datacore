@@ -4,7 +4,7 @@
 import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
-import { PRIMITIVES, QUERY } from "expression/parser";
+import { EXPRESSION, PRIMITIVES, QUERY } from "expression/parser";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown";
@@ -17,6 +17,9 @@ import { Coerce } from "./coerce";
 import { DataArray } from "./data-array";
 import * as luxon from "luxon";
 import * as preact from "preact";
+import { Expression } from "expression/expression";
+import { Literal } from "expression/literal";
+import { Variables } from "expression/evaluator";
 
 /** Exterally visible API for datacore.
  * @group Core
@@ -143,6 +146,30 @@ export class DatacoreApi {
     /** Create a data array from a regular array. */
     public array<T>(input: T[] | DataArray<T>): DataArray<T> {
         return DataArray.wrap(input);
+    }
+
+    /** Evaluate an expression and return it's evaluated value. */
+    public evaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal> | any,
+        sourcePath?: string
+    ): Result<Literal, string> {
+        if (typeof expression === "string") {
+            const parsed = EXPRESSION.expression.parse(expression);
+            if (!parsed.status) return Result.failure(Parsimmon.formatError(expression, parsed));
+            expression = parsed.value;
+        }
+
+        return this.core.datastore.evaluator(sourcePath).evaluate(expression, Variables.infer(variables));
+    }
+
+    /** Evaluate an expression and return it's evaluated value, throwing an exception on failure. */
+    public tryEvaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal> | any,
+        sourcePath?: string
+    ): Literal {
+        return this.evaluate(expression, sourcePath, variables).orElseThrow();
     }
 
     /////////////////////

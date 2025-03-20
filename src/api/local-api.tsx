@@ -25,6 +25,7 @@ import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
+import { Expression } from "expression/expression";
 
 /** Local API provided to specific codeblocks when they are executing.
  * @group Core
@@ -144,6 +145,24 @@ export class DatacoreLocalApi {
     /** Create a data array from a regular array. */
     public array<T>(input: T[] | DataArray<T>): DataArray<T> {
         return DataArray.wrap(input);
+    }
+
+    /** Evaluate an expression and return it's evaluated value. */
+    public evaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal> | any,
+        sourcePath?: string
+    ): Result<Literal, string> {
+        return this.api.evaluate(expression, variables, sourcePath ?? this.path);
+    }
+
+    /** Evaluate an expression and return it's evaluated value, throwing an exception on failure. */
+    public tryEvaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal> | any,
+        sourcePath?: string
+    ): Literal {
+        return this.api.tryEvaluate(expression, variables, sourcePath ?? this.path);
     }
 
     /////////////
