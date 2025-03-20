@@ -16,6 +16,14 @@ lower("YES")  // -> "yes"
 replace("yes", "e", "a")  // -> "yas"
 ```
 
+Datacore also supports 'postfix' function calling style, allowing you to chain them instead. When using postfix function style,
+the object you are calling the function on implicitly becomes the first argument:
+
+```js
+"YES".lower() // Same as lower("YES")
+"YES".lower().replace("e", "a") // Same as replace(lower("YES"), "e", "a")
+```
+
 Datacore functions support "vectorization", meaning you can also replace any argument with a _list_ of arguments instead; the function will return
 a list of results instead of a single value:
 
