@@ -111,32 +111,55 @@ export class Evaluator {
 
                     return ctx.evaluate(expr.value, Variables.lambda(variables, locals)).orElseThrow();
                 });
+            case "method":
+                const maybeTarget = this.evaluate(expr.target, variables);
+                if (!maybeTarget.successful) return maybeTarget;
+                const target = maybeTarget.value;
+
+                // Check if the target is an object with the given defined function on it. Otherwise,
+                // it becomes a regular function call.
+                if (Literals.isObject(target)) {
+                    const method = (target as Record<string, Literal>)[expr.func];
+                    if (method && Literals.isFunction(method)) {
+                        return this.evaluateFunctionCall(method, expr.arguments, variables);
+                    }
+                }
+
+                return this.evaluateFunctionCall(expr.func, [expr.target, ...expr.arguments], variables);
             case "function":
                 let rawFunc =
                     expr.func.type == "variable"
                         ? Result.success<string, string>(expr.func.name)
                         : this.evaluate(expr.func, variables);
                 if (!rawFunc.successful) return rawFunc;
-                let func = rawFunc.value;
 
-                let args: Literal[] = [];
-                for (let arg of expr.arguments) {
-                    let resolved = this.evaluate(arg, variables);
-                    if (!resolved.successful) return resolved;
-                    args.push(resolved.value);
-                }
+                return this.evaluateFunctionCall(rawFunc.value, expr.arguments, variables);
+        }
+    }
 
-                let call: FunctionImpl;
-                if (Literals.isFunction(func)) call = func as FunctionImpl;
-                else if (Literals.isString(func) && func in this.functions) call = this.functions[func];
-                else if (Literals.isString(func)) return Result.failure(`Unrecognized function name '${func}'`);
-                else return Result.failure(`Cannot call type '${Literals.typeOf(func)}' as a function`);
+    /** General logic for making a function call. */
+    private evaluateFunctionCall(
+        func: Literal,
+        incomingArgs: Expression[],
+        variables: Variables
+    ): Result<Literal, string> {
+        const args: Literal[] = [];
+        for (const arg of incomingArgs) {
+            const resolved = this.evaluate(arg, variables);
+            if (!resolved.successful) return resolved;
+            args.push(resolved.value);
+        }
 
-                try {
-                    return Result.success(call(this, ...args));
-                } catch (e) {
-                    return Result.failure(e.message);
-                }
+        let call: FunctionImpl;
+        if (Literals.isFunction(func)) call = func as FunctionImpl;
+        else if (Literals.isString(func) && func in this.functions) call = this.functions[func];
+        else if (Literals.isString(func)) return Result.failure(`Unrecognized function name '${func}'`);
+        else return Result.failure(`Cannot call type '${Literals.typeOf(func)}' as a function`);
+
+        try {
+            return Result.success(call(this, ...args));
+        } catch (e) {
+            return Result.failure(e.message);
         }
     }
 }
