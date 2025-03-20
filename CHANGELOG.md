@@ -1,3 +1,17 @@
+# 0.1.21 (Beta)
+
+- Adds `dc.evaluate()` and `dc.tryEvaluate()` for evaluating the datacore expression language programmatically.
+- Adds postfix function calls to the datacore syntax. This allows you to chain functions:
+
+```js
+lower("YES") => "YES".lower()
+replace(lower("YES"), "e", a") => "YES".lower().replace("e", a")
+```
+
+Postfix syntax implicitly adds the callee object as the first argument.
+
+---
+
 # 0.1.20
 
 - Fix connected link searches - searching for `linksto([[File]])` will now correctly search around that file, for example.
