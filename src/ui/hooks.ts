@@ -2,11 +2,12 @@
 import { Datacore } from "index/datacore";
 import { debounce } from "obsidian";
 import { IndexQuery } from "index/types/index-query";
-import { Indexable } from "index/types/indexable";
+import { Indexable, File, isFile } from "index/types/indexable";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { SearchResult } from "index/datastore";
 import { Literals } from "expression/literal";
 import { Result } from "api/result";
+import { QUERY } from "expression/parser";
 
 /** Hook that updates the view whenever the revision updates, returning the newest revision.
  * @group Hooks
@@ -24,6 +25,37 @@ export function useIndexUpdates(datacore: Datacore, settings?: { debounce?: numb
     }, []);
 
     return revision;
+}
+
+export function useLastOpenedFiles(datacore: Datacore, settings?: { limit?: number; debounce?: number }): Indexable[] {
+    const limit = settings?.limit ?? 10;
+    const indexRevision = useIndexUpdates(datacore, settings);
+    const query = useRef(QUERY.query.tryParse("@file AND exists($atime)"));
+
+    return useMemo(() => {
+        return datacore.datastore
+            .search(query.current)
+            .map(
+                (result) =>
+                    (result.results.filter((file) => isFile(file) && file.$atime !== undefined) as unknown as File[])
+                        .sort((left, right) => {
+                            return right.$atime!.toMillis() - left.$atime!.toMillis();
+                        })
+                        .slice(0, limit !== 0 ? limit : undefined) as unknown as Indexable[]
+            )
+            .orElse(
+                datacore.app.workspace
+                    .getLastOpenFiles()
+                    .reduce((indexables: Indexable[], path: string) => {
+                        const file = datacore.datastore.load(path);
+                        if (file) {
+                            indexables.push(file);
+                        }
+                        return indexables;
+                    }, [])
+                    .slice(0, limit !== 0 ? limit : undefined)
+            );
+    }, [settings?.limit, indexRevision]);
 }
 
 /** A hook which updates whenever file metadata for a specific file updates.
