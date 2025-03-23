@@ -4,24 +4,26 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
 import { useContext, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
-import { useInterning } from "ui/hooks";
+import { useAsElement, useInterning } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
-import { VNode, isValidElement } from "preact";
+import { ReactNode } from "preact/compat";
+
 import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
 
-/** A simple column definition which allows for custom renderers and titles.
+/**
+ * A simple column definition which allows for custom renderers and titles.
  * @group Props
  * @typeParam T - the type of each row
  * @typeParam V - the type of the value in this column
  */
-export interface VanillaColumn<T, V = Literal> {
+export interface TableColumn<T, V = Literal> {
     /** The unique ID of this table column; you cannot have multiple columns with the same ID in a given table. */
     id: string;
 
     /** The title which will display at the top of the column if present. */
-    title?: string | VNode | (() => string | VNode);
+    title?: string | ReactNode | (() => string | ReactNode);
 
     /** If present, the CSS width to apply to the column. 'minimum' will set the column size to it's smallest possible value, while 'maximum' will do the opposite. */
     width?: "minimum" | "maximum" | string;
@@ -30,29 +32,31 @@ export interface VanillaColumn<T, V = Literal> {
     value: (object: T) => V;
 
     /** Called to render the given column value. Can depend on both the specific value and the row object. */
-    render?: (value: V, object: T) => Literal | VNode;
+    render?: (value: V, object: T) => Literal | ReactNode;
 }
 
-/** Metadata for configuring how groupings in the data should be handled.
+/**
+ * Metadata for configuring how groupings in the data should be handled.
  * @group Props
  */
 export interface GroupingConfig<T> {
     /** How a grouping with the given key and set of rows should be handled. */
-    render?: (key: Literal, rows: Grouping<T>) => Literal | VNode;
+    render?: (key: Literal, rows: Grouping<T>) => Literal | ReactNode;
 }
 
-/** All available props for a vanilla table.
+/**
+ * All available props for a table.
  * @group Props
  */
-export interface VanillaTableProps<T> {
+export interface TableViewProps<T> {
     /** The columns to render in the table. */
-    columns: VanillaColumn<T>[];
+    columns: TableColumn<T>[];
 
     /** The rows to render; may potentially be grouped or just a plain array. */
     rows: Grouping<T>;
 
     /** Allows for grouping header columns to be overridden with custom rendering/logic. */
-    groupings?: GroupingConfig<T> | GroupingConfig<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | VNode);
+    groupings?: GroupingConfig<T> | GroupingConfig<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | ReactNode);
 
     /**
      * If set to a boolean - enables or disables paging.
@@ -67,11 +71,12 @@ export interface VanillaTableProps<T> {
     scrollOnPaging?: boolean | number;
 }
 
-/** A simple table which supports grouping, sorting, paging, and custom columns.
+/**
+ * A simple table which supports grouping, sorting, paging, and custom columns.
  * @group Components
  * @param props
  */
-export function VanillaTable<T>(props: VanillaTableProps<T>) {
+export function TableView<T>(props: TableViewProps<T>) {
     // Cache columns by reference equality of the specific columns. Columns have various function references
     // inside them and so cannot be compared by value equality.
     const columns = useInterning(props.columns, (a, b) => {
@@ -110,7 +115,7 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
                 <thead>
                     <tr className="datacore-table-header-row">
                         {columns.map((col) => (
-                            <VanillaTableHeaderCell column={col} />
+                            <TableViewHeaderCell column={col} />
                         ))}
                     </tr>
                 </thead>
@@ -127,11 +132,12 @@ export function VanillaTable<T>(props: VanillaTableProps<T>) {
     );
 }
 
-/** An individual column cell in the table.
+/**
+ * An individual header cell in the table.
  * @hidden
  */
-export function VanillaTableHeaderCell<T>({ column }: { column: VanillaColumn<T> }) {
-    const header: string | VNode = useMemo(() => {
+export function TableViewHeaderCell<T>({ column }: { column: TableColumn<T> }) {
+    const header: string | ReactNode = useMemo(() => {
         if (!column.title) {
             return column.id;
         } else if (typeof column.title === "function") {
@@ -154,7 +160,8 @@ export function VanillaTableHeaderCell<T>({ column }: { column: VanillaColumn<T>
     );
 }
 
-/** A grouping in the table, or an individual row.
+/**
+ * A grouping in the table, or an individual row.
  * @hidden
  */
 export function VanillaRowGroup<T>({
@@ -164,12 +171,12 @@ export function VanillaRowGroup<T>({
     groupings,
 }: {
     level: number;
-    columns: VanillaColumn<T>[];
+    columns: TableColumn<T>[];
     element: T | GroupElement<T>;
     groupings?: GroupingConfig<T>[];
 }) {
     if (Groupings.isElementGroup(element)) {
-        const groupingConfig = groupings ? groupings[Math.min(groupings.length - 1, level)] : undefined;
+        const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
 
         return (
             <Fragment>
@@ -184,7 +191,8 @@ export function VanillaRowGroup<T>({
     }
 }
 
-/** A header of a grouped set of columns.
+/**
+ * A header of a grouped set of columns.
  * @hidden
  */
 export function TableGroupHeader<T>({
@@ -217,10 +225,11 @@ export function TableGroupHeader<T>({
     );
 }
 
-/** A single row inside the table.
+/**
+ * A single row inside the table.
  * @hidden
  */
-export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: VanillaColumn<T>[] }) {
+export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: TableColumn<T>[] }) {
     return (
         <tr className="datacore-table-row" style={level ? `padding-left: ${level * 5}px` : undefined}>
             {columns.map((col) => (
@@ -230,10 +239,11 @@ export function TableRow<T>({ level, row, columns }: { level: number; row: T; co
     );
 }
 
-/** A single cell inside of a row of the table.
+/**
+ * A single cell inside of a row of the table.
  * @hidden
  */
-export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn<T> }) {
+export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T> }) {
     const value = useMemo(() => column.value(row), [row, column.value]);
     const renderable = useMemo(() => {
         if (column.render) return column.render(value, row);
@@ -242,19 +252,4 @@ export function TableRowCell<T>({ row, column }: { row: T; column: VanillaColumn
     const rendered = useAsElement(renderable);
 
     return <td className="datacore-table-cell">{rendered}</td>;
-}
-
-/** Ensure that a given literal or element input is rendered as a JSX.Element.
- * @hidden
- */
-function useAsElement(element: VNode | Literal): VNode {
-    const sourcePath = useContext(CURRENT_FILE_CONTEXT);
-
-    return useMemo(() => {
-        if (isValidElement(element)) {
-            return element as VNode;
-        } else {
-            return <Lit sourcePath={sourcePath} inline={true} value={element as any} />;
-        }
-    }, [element]);
 }

@@ -20,12 +20,13 @@ import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
-import { VanillaTable } from "./ui/views/table";
+import { TableView } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
+import { ListView } from "./ui/views/list";
 
 /** Local API provided to specific codeblocks when they are executing.
  * @group Core
@@ -317,7 +318,13 @@ export class DatacoreLocalApi {
     // Views //
     ///////////
 
-    public VanillaTable = VanillaTable;
+    /** @deprecated - Use just `Table` instead. */
+    public VanillaTable = TableView;
+    /** A simple and configurable table view that supports rendering paged and grouped data. */
+    public Table = TableView;
+
+    /** A simple and configurable list view that supports rendering paged and grouped data. */
+    public List = ListView;
 
     /////////////////////////
     // Interative elements //

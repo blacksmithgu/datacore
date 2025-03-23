@@ -49,8 +49,8 @@ return function View() {
     // Selecting `#game` pages, for example.
     const pages = dc.useQuery("@page and #game");
 
-    // Uses the built in 'vanilla table' component for showing objects in a table!
-    return <dc.VanillaTable columns={COLUMNS} rows={pages} />;
+    // Uses the built in table component for showing objects in a table!
+    return <dc.Table columns={COLUMNS} rows={pages} />;
 }
 ```
 ~~~
