@@ -29,6 +29,7 @@ a list of results instead of a single value:
 
 ```js
 lower(["YES", "NO"]) // -> ["yes", "no"]
+["YES", "NO"].lower() // vectorization + postfix calling style.
 ```
 
 ## Constructors
@@ -46,6 +47,14 @@ object("a", 6) => object which maps "a" to 6
 object("a", 4, "c", "yes") => object which maps a to 4, and c to "yes"
 ```
 
+Objects can also be created using object literal syntax, which is usually preferred:
+
+```js
+{} => // empty object
+{ a: 6 } // object which maps "a" to 6
+{ a: 4, c: "yes" } // a => 4, and c => "yes"
+```
+
 ### `list(value1, value2, ...)`
 
 Creates a new list with the given values in it. `array` can be used an alias for `list`.
@@ -56,13 +65,23 @@ list(1, 2, 3) => list with 1, 2, and 3
 array("a", "b", "c") => list with "a", "b", and "c"
 ```
 
+Note that you can also make lists directly with list syntax, which is generally preferred:
+
+```js
+[] // => empty list
+[1, 2, 3] // => list with 1, 2, and 3
+```
+
 ### `date(any)`
 
 Parses a date from the provided string, date, or link object, if possible, returning null otherwise.
 
 ```js
-date("2020-04-18") = <date object representing April 18th, 2020>
-date([[2021-04-16]]) = <date object for the given page, referring to file.day>
+date("2020-04-18") // = <date object representing April 18th, 2020>
+date([[2021-04-16]]) // = <date object for the given page, referring to file.day>
+
+// Postfix style:
+"2020-04-18".date()
 ```
 
 ### `date(text, format)`
@@ -74,6 +93,9 @@ Uses [Luxon tokens](https://moment.github.io/luxon/#/formatting?id=table-of-toke
 date("12/31/2022", "MM/dd/yyyy") => DateTime for December 31th, 2022
 date("210313", "yyMMdd") => DateTime for March 13th, 2021
 date("946778645000", "x") => DateTime for "2000-01-02T03:04:05"
+
+// Postfix style:
+"210313".date("yyMMdd") = DateTime for March 13th, 2021
 ```
 
 ### `dur(any)`
@@ -84,6 +106,9 @@ Parses a duration from the provided string or duration, returning null on failur
 dur(8 minutes) = <8 minutes>
 dur("8 minutes, 4 seconds") = <8 minutes, 4 seconds>
 dur(dur(8 minutes)) = dur(8 minutes) = <8 minutes>
+
+// Postfix style:
+"8 minutes, 4 seconds".dur() = <8 minutes, 4 seconds>
 ```
 
 ### `number(string)`
@@ -95,6 +120,9 @@ string.
 number("18 years") = 18
 number(34) = 34
 number("hmm") = null
+
+// Postfix style.
+"18 years".number() = 18
 ```
 
 ### `string(any)`
@@ -107,6 +135,9 @@ manipulation.
 string(18) = "18"
 string(dur(8 hours)) = "8 hours"
 string(date(2021-08-15)) = "August 15th, 2021"
+
+// Postfix style:
+18.string() = "18"
 ```
 
 ### `link(path, [display])`
@@ -115,8 +146,11 @@ Construct a link object from the given file path or name. If provided with two a
 display name for the link.
 
 ```js
-link("Hello") => link to page named 'Hello'
-link("Hello", "Goodbye") => link to page named 'Hello', displays as 'Goodbye'
+link("Hello") // => link to page named 'Hello'
+link("Hello", "Goodbye") // => link to page named 'Hello', displays as 'Goodbye'
+
+// Postfix style:
+"Hello".link() // => link to page named 'Hello'
 ```
 
 ### `embed(link, [embed?])`
@@ -126,6 +160,9 @@ Embedded links will be rendered as an Obsidian embed where possible, where as un
 
 ```js
 embed(link("Hello.png")) => embedded link to the "Hello.png" image, which will render as an actual image.
+
+// Postfix style:
+link("Hello.png").embed()
 ```
 
 ### `elink(url, [display])`
@@ -136,6 +173,9 @@ argument is the display name for the link.
 ```js
 elink("www.google.com") => link element to google.com
 elink("www.google.com", "Google") => link element to google.com, displays as "Google"
+
+// Postfix style:
+"www.google.com".elink()
 ```
 
 ### `typeof(any)`
@@ -228,6 +268,9 @@ sum([1, 2, 3]) = 6
 sum([]) = null
 
 sum(nonnull([null, 1, 8])) = 9
+
+// Postfix style:
+[1, 2, 3].sum() = 6
 ```
 
 ### `product(array)`
@@ -239,6 +282,9 @@ product([1,2,3]) = 6
 product([]) = null
 
 product(nonnull([null, 1, 2, 4])) = 8
+
+// Postfix style:
+[1, 2, 3].product() = 6
 ```
 
 ### `reduce(array, operand)`
@@ -253,6 +299,18 @@ reduce(values, this.operand) = Applies the local field operand to each of the va
 reduce(["⭐", 3], "*") = "⭐⭐⭐", same as "⭐" * 3
 
 reduce([1]), "+") = 1, has the side effect of reducing the list into a single element
+
+// Postfix style.
+[1].reduce("+")
+```
+
+Reduce can also take a lambda function, which it will apply element by element, left to right:
+
+```js
+reduce([100, 20, 3], (accum, curr) => accum * curr) = 6000 // multiplies elements.
+
+// Postfix style.
+[100, 200, 300, 100].reduce((accum, curr) => max(accum, curr)) = 300 // max of an array via reduce.
 ```
 
 ### `average(array)`
@@ -265,6 +323,9 @@ average([1, 2, 3]) = 2
 average([]) = null
 
 average(nonnull([null, 1, 2])) = 1.5
+
+// Postfix style.
+[1, 2, 3].average() = 2
 ```
 
 ### `minby(array, function)`
@@ -276,6 +337,9 @@ minby([1, 2, 3], (k) => k) = 1
 minby([1, 2, 3], (k) => 0 - k) => 3
 
 minby(this.file.tasks, (k) => k.due) => (earliest due)
+
+// Postfix style.
+this.file.tasks.minby((k) => k.due) => (earliest due)
 ```
 
 ### `maxby(array, function)`
@@ -287,6 +351,9 @@ maxby([1, 2, 3], (k) => k) = 3
 maxby([1, 2, 3], (k) => 0 - k) => 1
 
 maxby(this.file.tasks, (k) => k.due) => (latest due)
+
+// Postfix style.
+this.file.tasks.maxby((k) => k.due) => (latest due)
 ```
 
 --
@@ -297,20 +364,7 @@ Operations that manipulate values inside of container objects.
 
 ### `contains()` and friends
 
-For a quick summary, here are some examples:
-
-```js
-contains("Hello", "Lo") = false
-contains("Hello", "lo") = true
-
-icontains("Hello", "Lo") = true
-icontains("Hello", "lo") = true
-
-econtains("Hello", "Lo") = false
-econtains("Hello", "lo") = true
-econtains(["this","is","example"], "ex") = false
-econtains(["this","is","example"], "is") = true
-```
+There are three distinct variants of `contains`, whose behavior mostly matters on how they treat strings and lists.
 
 #### `contains(object|list|string, value)`
 
@@ -319,19 +373,19 @@ the first argument is an object, a list, or a string.
 This function is case-sensitive.
 
 - For objects, checks if the object has a key with the given name. For example,
-    ```
-    contains(file, "ctime") = true
-    contains(file, "day") = true (if file has a date in its title, false otherwise)
+    ```js
+    file.contains("$ctime") = true
+    file.contains("day") = true (if file has a 'date' field, false otherwise)
     ```
 - For lists, checks if any of the array elements equals the given value. For example,
-    ```
-    contains(list(1, 2, 3), 3) = true
-    contains(list(), 1) = false
-    ```
+    ```js
+    [1, 2, 3].contains(3) = true
+    [].contains(1) = false
+    ```js
 - For strings, checks if the given value is a substring (i.e., inside) the string.
-    ```
-    contains("hello", "lo") = true
-    contains("yes", "no") = false
+    ```js
+    "hello".contains("lo") = true
+    "yes".contains("no") = false
     ```
 
 #### `icontains(object|list|string, value)`
@@ -344,95 +398,111 @@ Case insensitive version of `contains()`.
 This function is case sensitive.
 
 - For strings, it behaves exactly like [`contains()`](#containsobjectliststring-value).
-    ```
-    econtains("Hello", "Lo") = false
-    econtains("Hello", "lo") = true
+    ```js
+    "Hello".econtains("Lo") = false
+    "Hello".econtains("lo") = true
     ```
 
 - For lists, it checks if the exact word is in the list.
-    ```
-    econtains(["These", "are", "words"], "word") = false
-    econtains(["These", "are", "words"], "words") = true
+    ```js
+    ["These", "are", "words"].econtains("word") = false
+    ["These", "are", "words"].econtains("words") = true
     ```
 
 - For objects, it checks if the exact key name is present in the object. It does **not** do recursive checks.
-    ```
-    econtains({key:"value", pairs:"here"}, "here") = false
-    econtains({key:"value", pairs:"here"}, "key") = true
-    econtains({key:"value", recur:{recurkey: "val"}}, "value") = false
-    econtains({key:"value", recur:{recurkey: "val"}}, "Recur") = false
-    econtains({key:"value", recur:{recurkey: "val"}}, "recurkey") = false
+    ```js
+    {key:"value", pairs:"here"}.econtains("here") = false
+    :key:"value", pairs:"here"}.econtains("key") = true
+    {key:"value", recur:{recurkey: "val"}}.econtains("value") = false
+    {key:"value", recur:{recurkey: "val"}}.econtains("Recur") = false
+    {key:"value", recur:{recurkey: "val"}}.econtains("recurkey") = false
     ```
 
 ### `containsword(list|string, value)`
 
-Checks if `value` has an exact word match in `string` or `list`.
-This is case insensitive.
-The outputs are different for different types of input, see examples.
+Checks if `value` has an exact word match in a string.
 
-- For strings, it checks if the word is present in the given string.
-    ```
-    containsword("word", "word") = true
-    containsword("word", "Word") = true
-    containsword("words", "Word") = false
-    containsword("Hello there!", "hello") = true
-    containsword("Hello there!", "HeLLo") = true
-    containsword("Hello there chaps!", "chap") = false
-    containsword("Hello there chaps!", "chaps") = true
-    ```
+```js
+"word".containsword("word") = true
+"word".containsword("Word") = true
+"words".containsword("Word") = false
+"Hello there!".containsword("hello") = true
+"Hello there!".containsword("HeLLo") = true
+"Hello there chaps!".containsword("chap") = false
+"Hello there chaps!".containsword("chaps") = true
+```
 
-- For lists, it returns a list of booleans indicating if the word's exact case insensitive match was found.
-    ```
-    containsword(["I have no words.", "words"], "Word") = [false, false]
-    containsword(["word", "Words"], "Word") = [true, false]
-    containsword(["Word", "Words in word"], "WORD") = [true, true]
-    ```
+Note that `containsword` does not work directly on lists - passing a list argument will apply the functiont to each element in the list:
+
+```js
+["hello", "hello there", "no"].containsword("hello") = [true, true, false]
+```
+
+If you want to look for a word in any element in the list, combine `containsword` with `any`:
+
+```js
+["hello", "hello there", "no"].containsword("hello").any() = true
+```
 
 ### `extract(object, key1, key2, ...)`
 
 Pulls multiple fields out of an object, creating a new object with just those fields.
 
-```
-extract(file, "ctime", "mtime") = object("ctime", file.ctime, "mtime", file.mtime)
-extract(object("test", 1)) = object()
+```js
+extract(file, "$ctime", "$mtime") = { "$ctime": file.ctime, "$mtime": file.mtime }
+
+// Postfix style.
+file.extract("$ctime", "$mtime") = { "$ctime": file.ctime, "$mtime": file.mtime }
 ```
 
 ### `sort(list)`
 
 Sorts a list, returning a new list in sorted order.
 
-```
-sort(list(3, 2, 1)) = list(1, 2, 3)
-sort(list("a", "b", "aa")) = list("a", "aa", "b")
+```js
+sort([3, 2, 1]) = [1, 2, 3]
+sort(["a", "b", "aa"]) = ["a", "b", "aa"]
+
+// Postfix style.
+["a", "b", "aa"].sort() = ["a", "b", "aa"]
 ```
 
 ### `reverse(list)`
 
 Reverses a list, returning a new list in reversed order.
 
-```
-reverse(list(1, 2, 3)) = list(3, 2, 1)
-reverse(list("a", "b", "c")) = list("c", "b", "a")
+```js
+reverse([1, 2, 3]) = [3, 2, 1]
+reverse(["a", "b", "c"]) = ["c", "b", "a"]
+
+// Postfix style.
+["a", "b", "c"].reverse() = ["c", "b", "a"]
 ```
 
 ### `length(object|array)`
 
 Returns the number of fields in an object, or the number of entries in an array.
 
-```
+```js
 length([]) = 0
 length([1, 2, 3]) = 3
-length(object("hello", 1, "goodbye", 2)) = 2
+length({"hello": 1, "goodbye": 2}) = 2
+
+// Postfix style.
+[1, 2, 3].length() = 3
 ```
 
 ### `nonnull(array)`
 
 Return a new array with all null values removed.
 
-```
+```js
 nonnull([]) = []
 nonnull([null, false]) = [false]
 nonnull([1, 2, 3]) = [1, 2, 3]
+
+// Postfix style.
+[null, false].nonnull() = [false]
 ```
 
 ### `all(array)`
@@ -440,19 +510,25 @@ nonnull([1, 2, 3]) = [1, 2, 3]
 Returns `true` only if ALL values in the array are truthy. You can also pass multiple arguments to this function, in
 which case it returns `true` only if all arguments are truthy.
 
-```
+```js
 all([1, 2, 3]) = true
 all([true, false]) = false
 all(true, false) = false
 all(true, true, true) = true
+
+// Postfix style.
+[true, true, true].all() = true
 ```
 
 You can pass a function as second argument to return only true if all elements in the array matches the predicate.
 
-```
+```js
 all([1, 2, 3], (x) => x > 0) = true
 all([1, 2, 3], (x) => x > 1) = false
 all(["apple", "pie", 3], (x) => typeof(x) = "string") = false
+
+// Postfix style.
+["apple", "pie", 3].all((x) => typeof(x) = "string") = false
 ```
 
 ### `any(array)`
@@ -460,38 +536,50 @@ all(["apple", "pie", 3], (x) => typeof(x) = "string") = false
 Returns `true` if ANY of the values in the array are truthy. You can also pass multiple arguments to this function, in
 which case it returns `true` if any of the arguments are truthy.
 
-```
-any(list(1, 2, 3)) = true
-any(list(true, false)) = true
-any(list(false, false, false)) = false
+```js
+any([1, 2, 3]) = true
+any([true, false]) = true
+any([false, false, false]) = false
 any(true, false) = true
 any(false, false) = false
+
+// Postfix style.
+[true, false].any() = true
 ```
 
 You can pass a function as second argument to return only true if any element in the array matches the predicate.
 
-```
-any(list(1, 2, 3), (x) => x > 2) = true
-any(list(1, 2, 3), (x) => x = 0) = false
+```js
+any([1, 2, 3], (x) => x > 2) = true
+any([1, 2, 3], (x) => x = 0) = false
+
+// Postfix style.
+[1, 2, 3].any((x) => x = 0) = false
 ```
 
 ### `none(array)`
 
 Returns `true` if NONE of the values in the array are truthy.
 
-```
+```js
 none([]) = true
 none([false, false]) = true
 none([false, true]) = false
 none([1, 2, 3]) = false
+
+// Postfix style.
+[1, 2, 3].none() = false
 ```
 
 You can pass a function as second argument to return only true if none of the elements in the array matches the predicate.
 
-```
+```js
 none([1, 2, 3], (x) => x = 0) = true
 none([true, true], (x) => x = false) = true
 none(["Apple", "Pi", "Banana"], (x) => startswith(x, "A")) = false
+
+// Postfix style.
+["Apple", "Pi", "Banana"].none((x) => startswith(x, "A")) = false
 ```
 
 ### `join(array, [delimiter])`
@@ -499,11 +587,14 @@ none(["Apple", "Pi", "Banana"], (x) => startswith(x, "A")) = false
 Joins elements in an array into a single string (i.e., rendering them all on the same line). If provided with a second
 argument, then each element will be separated by the given separator.
 
-```
-join(list(1, 2, 3)) = "1, 2, 3"
-join(list(1, 2, 3), " ") = "1 2 3"
+```js
+join([1, 2, 3]) = "1, 2, 3"
+join([1, 2, 3], " ") = "1 2 3"
 join(6) = "6"
-join(list()) = ""
+join([]) = ""
+
+// Postfix style.
+[1, 2, 3].join(" ") = "1 2 3"
 ```
 
 ### `filter(array, predicate)`
@@ -513,6 +604,9 @@ Filters elements in an array according to the predicate, returning a new list of
 ```js
 filter([1, 2, 3], (x) => x >= 2) = [2, 3]
 filter(["yes", "no", "yas"], (x) => startswith(x, "y")) = ["yes", "yas"]
+
+// Postfix style.
+["yes", "no", "yas"].filter((x) => startswith(x, "y")) = ["yes", "yas"]
 ```
 
 ### `map(array, func)`
@@ -522,6 +616,9 @@ Applies the function to each element in the array, returning a list of the mappe
 ```js
 map([1, 2, 3], (x) => x + 2) = [3, 4, 5]
 map(["yes", "no"], (x) => x + "?") = ["yes?", "no?"]
+
+// Postfix style.
+["yes", "no"].map((x) => x + "?") = ["yes?", "no?"]
 ```
 
 ### `flat(array, [depth])`
@@ -531,9 +628,12 @@ concatenate multiple levels. E.g. Can be used to reduce array depth on `rows` li
 doing `GROUP BY`.
 
 ```js
-flat(list(1, 2, 3, list(4, 5), 6)) => list(1, 2, 3, 4, 5, 6)
-flat(list(1, list(21, 22), list(list (311, 312, 313))), 4) => list(1, 21, 22, 311, 312, 313)
+flat([1, 2, 3, [4, 5], 6]) => [1, 2, 3, 4, 5, 6]
+flat([1, [21, 22], [[311, 312, 313]]], 4) => list(1, 21, 22, 311, 312, 313)
 flat(rows.file.outlinks)) => All the file outlinks at first level in output
+
+// Postfix style.
+rows.file.outlinks.flat() => All the file outlinks at first level in output
 ```
 
 ### `slice(array, [start, [end]])`
@@ -546,6 +646,9 @@ slice([1, 2, 3, 4, 5], 3) = [4, 5] => All items from given position, 0 as first
 slice(["ant", "bison", "camel", "duck", "elephant"], 0, 2) = ["ant", "bison"] => First two items
 slice([1, 2, 3, 4, 5], -2) = [4, 5] => counts from the end, last two items
 slice(someArray) => a copy of someArray
+
+// Postfix style.
+[1, 2, 3, 4, 5].slice(-2) = [4, 5] => counts from the end, last two items
 ```
 
 ---
@@ -593,6 +696,9 @@ Replace all instances of `pattern` in `string` with `replacement`.
 replace("what", "wh", "h") = "hat"
 replace("The big dog chased the big cat.", "big", "small") = "The small dog chased the small cat."
 replace("test", "test", "no") = "no"
+
+// Postfix style.
+"The big dog chased the big cat.".replace("big", "small") = "The small dog chased the small cat."
 ```
 
 ### `lower(string)`
@@ -602,6 +708,9 @@ Convert a string to all lower case.
 ```js
 lower("Test") = "test"
 lower("TEST") = "test"
+
+// Postfix style.
+"Test".lower() = "test"
 ```
 
 ### `upper(string)`
@@ -611,6 +720,9 @@ Convert a string to all upper case.
 ```js
 upper("Test") = "TEST"
 upper("test") = "TEST"
+
+// Postfix style.
+"Test".upper() = "TEST"
 ```
 
 ### `split(string, delimiter, [limit])`
@@ -619,11 +731,14 @@ Split a string on the given delimiter string. If a third argument is provided, i
 
 
 ```js
-split("hello world", " ") = list("hello", "world")
-split("hello  world", "\s") = list("hello", "world")
-split("hello there world", " ", 2) = list("hello", "there")
-split("hello there world", "(t?here)") = list("hello ", "there", " world")
-split("hello there world", "( )(x)?") = list("hello", " ", "", "there", " ", "", "world")
+split("hello world", " ") = ["hello", "world"]
+split("hello  world", "\s") = ["hello", "world"]
+split("hello there world", " ", 2) = ["hello", "there"]
+split("hello there world", "(t?here)") = ["hello ", "there", " world"]
+split("hello there world", "( )(x)?") = ["hello", " ", "", "there", " ", "", "world"]
+
+// Postfix style.
+"hello there world".split("( )(x)?") = ["hello", " ", "", "there", " ", "", "world"]
 ```
 
 ### `startswith(string, prefix)`
@@ -634,6 +749,9 @@ Checks if a string starts with the given prefix.
 startswith("yes", "ye") = true
 startswith("path/to/something", "path/") = true
 startswith("yes", "no") = false
+
+// Postfix style.
+"yes".startswith("no") = false
 ```
 
 ### `endswith(string, suffix)`
@@ -644,6 +762,9 @@ Checks if a string ends with the given suffix.
 endswith("yes", "es") = true
 endswith("path/to/something", "something") = true
 endswith("yes", "ye") = false
+
+// Postfix style.
+"yes".endswith("ye") = false
 ```
 
 ### `padleft(string, length, [padding])`
@@ -654,6 +775,9 @@ will be used by default.
 ```js
 padleft("hello", 7) = "  hello"
 padleft("yes", 5, "!") = "!!yes"
+
+// Postfix style.
+"yes".padleft(5, "!") = "!!yes"
 ```
 
 ### `padright(string, length, [padding])`
@@ -663,6 +787,9 @@ Equivalent to `padleft`, but pads to the right instead.
 ```js
 padright("hello", 7) = "hello  "
 padright("yes", 5, "!") = "yes!!"
+
+// Postfix style.
+"yes".padright(5, "!") = "yes!!"
 ```
 
 ### `substring(string, start, [end])`
@@ -674,6 +801,9 @@ substring("hello", 0, 2) = "he"
 substring("hello", 2, 4) = "ll"
 substring("hello", 2) = "llo"
 substring("hello", 0) = "hello"
+
+// Postfix style.
+"hello".substring(0, 2) = "he"
 ```
 
 ### `truncate(string, length, [suffix])`
@@ -687,6 +817,9 @@ truncate("Hello there!", 8, "/") = "Hello t/"
 truncate("Hello there!", 10) = "Hello t..."
 truncate("Hello there!", 10, "!") = "Hello the!"
 truncate("Hello there!", 20) = "Hello there!"
+
+// Postfix style.
+"Hello there!".truncate(8) = "Hello..."
 ```
 
 ## Utility Functions
@@ -703,8 +836,8 @@ Default is vectorized in both arguments; if you need to use default explicitly o
 is the same as default but is not vectorized.
 
 ```js
-default(list(1, 2, null), 3) = list(1, 2, 3)
-ldefault(list(1, 2, null), 3) = list(1, 2, null)
+default([1, 2, null], 3) = [1, 2, 3]
+ldefault([1, 2, null], 3) = [1, 2, null]
 ```
 
 ### `choice(bool, left, right)`
@@ -777,6 +910,9 @@ durationformat(dur("3 days 7 hours 43 seconds"), "ddd'd' hh'h' ss's'") = "003d 0
 durationformat(dur("365 days 5 hours 49 minutes"), "yyyy ddd hh mm ss") = "0001 000 05 49 00"
 durationformat(dur("2000 years"), "M months") = "24000 months"
 durationformat(dur("14d"), "s 'seconds'") = "1209600 seconds"
+
+// Postfix format.
+dur("14d").durationformat("s 'seconds'") = "1209600 seconds"
 ```
 
 ### `currencyformat(number, [currency])`
@@ -788,6 +924,9 @@ number = 123456.789
 currencyformat(number, "EUR") =  €123,456.79   // in locale: en_US
 currencyformat(number, "EUR") =  123.456,79 €  // in locale: de_DE
 currencyformat(number, "EUR") =  € 123 456,79  // in locale: nb
+
+// Postfix format.
+number.currencyformat("EUR") =  € 123 456,79  // in locale: nb
 ```
 
 ### `localtime(date)`

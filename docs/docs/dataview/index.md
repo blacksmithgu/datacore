@@ -15,5 +15,4 @@ over it's predecessor:
 to the addition of the React API and a more expansive plugin and view API.
     - Datacore also adds support for importing code files to allow code reuse.
     - Datacore also adds support for directly using JSX as well as Typescript to fully make use of React.
-- **Datacore views have more features by default**: All datacore views support paging, embedding complex components in other components,
-    special columns like rating.
+- **Datacore views have more features by default**: All datacore views support paging and embedding complex components in other components.
