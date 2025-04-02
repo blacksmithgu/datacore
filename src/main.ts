@@ -6,6 +6,8 @@ import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { IndexStatusBar } from "ui/index-status";
 
+import * as _Obsidian from "obsidian";
+
 /** Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
     /** Plugin-wide default settings. */
@@ -17,6 +19,19 @@ export default class DatacorePlugin extends Plugin {
     public api: DatacoreApi;
 
     async onload() {
+        const obsidianFreeFunctions: Record<string, any> = {};
+        for (const property in _Obsidian) {
+            const mod = _Obsidian as Record<string, any>;
+            if (mod[property] && typeof mod[property] === "function") {
+                const fun = mod[property];
+                const isClass = !!Object.keys(fun.prototype).length || /^[A-Z]/.test(property);
+                if (!isClass) {
+                    obsidianFreeFunctions[property] = fun;
+                }
+            }
+        }
+        this.app.functions = obsidianFreeFunctions;
+
         this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) ?? {});
         this.addSettingTab(new GeneralSettingsTab(this.app, this));
 
