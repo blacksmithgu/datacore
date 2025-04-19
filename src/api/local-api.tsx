@@ -33,8 +33,15 @@ import { Modal, Modals, SubmittableModal, useModalContext } from "./ui/views/mod
 import * as obsidian from "obsidian";
 import { ControlledEditable } from "ui/fields/editable";
 import { setTaskText, useSetField } from "utils/fields";
-import { ControlledEditableTextField, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
 import { completeTask } from "utils/task";
+import {
+    ControlledEditableTextField,
+    EditableTextField,
+    FieldCheckbox,
+    FieldSelect,
+    FieldSlider,
+    FieldSwitch,
+} from "ui/fields/editable-fields";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -477,6 +484,7 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
+    public VanillaTextBox = ControlledEditableTextField;
 
     ////////////////////////////////////
     // Stateful / internal components //
@@ -493,7 +501,9 @@ export class DatacoreLocalApi {
     /////////////////////////
     //    field editors    //
     /////////////////////////
-    public EditableFieldCheckbox = EditableFieldCheckbox;
-    public EditableFieldTextbox = EditableTextField;
-    public TextEditor = ControlledEditableTextField;
+    public FieldCheckbox = FieldCheckbox;
+    public FieldSlider = FieldSlider;
+    public FieldSelect = FieldSelect;
+    public FieldSwitch = FieldSwitch;
+    public TextField = EditableTextField;
 }
