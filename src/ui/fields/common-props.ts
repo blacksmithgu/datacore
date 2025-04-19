@@ -24,6 +24,7 @@ export interface BaseFieldProps<T> {
     type: LiteralType;
     defaultValue?: T | (() => T);
     renderAs?: "progress" | "rating" | "select" | "raw";
+    editable?: boolean;
     // TODO: type this better
     config?: Record<string, any>;
 }
