@@ -40,6 +40,7 @@ import {
     FieldSlider,
     FieldSwitch,
 } from "ui/fields/editable-fields";
+import { TreeTableView } from "./ui/views/tree-table";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -461,6 +462,7 @@ export class DatacoreLocalApi {
     /** A single card which can be composed into a grid view. */
     public Card = Card;
     public TaskList = TaskList;
+		public TreeTable = TreeTableView;
 
     /////////////////////////
     // Interative elements //
