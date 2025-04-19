@@ -26,6 +26,7 @@ import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
+import { Card } from "./ui/views/cards";
 
 /** Local API provided to specific codeblocks when they are executing.
  * @group Core
@@ -318,6 +319,7 @@ export class DatacoreLocalApi {
     ///////////
 
     public VanillaTable = VanillaTable;
+    public Card = Card;
 
     /////////////////////////
     // Interative elements //
