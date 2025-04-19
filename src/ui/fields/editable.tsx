@@ -388,7 +388,7 @@ export function UncontrolledTextEditable({
     text,
     dispatch,
     onInput,
-		toggler
+    toggler,
 }: {
     inline?: boolean;
     text: string;
