@@ -30,7 +30,7 @@ import {
 } from "@codemirror/view";
 import { tagHighlighter, tags } from "@lezer/highlight";
 import { javascript } from "@codemirror/lang-javascript";
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 import { vim } from "@replit/codemirror-vim";
 
 /** Key for datacore JS query views. */
@@ -163,6 +163,7 @@ const EDITOR_HL = syntaxHighlighting(
         },
     ])
 );
+const LANG_COMPARTMENT = new Compartment();
 const EDITOR_EXTS = [
     lineNumbers(),
     highlightSpecialChars(),
@@ -191,6 +192,9 @@ const EDITOR_EXTS = [
         ".cm-cursor": {
             borderLeftColor: "var(--text)",
         },
+        ".cm-tooltip": {
+            backgroundColor: "var(--bg)",
+        },
     }),
 ];
 /** Provides a minimal editor with syntax highlighting */
@@ -206,44 +210,41 @@ function CodeMirrorEditor({
     const editorRef = useRef<HTMLDivElement>(null);
     const viewRef = useRef<EditorView>(null);
     const viewContext = useContext(CUSTOM_VIEW_CONTEXT);
-
-    const langMode = useMemo(() => {
-        switch (lang) {
-            case "jsx":
-                return javascript({ jsx: true, typescript: false });
-            case "ts":
-                return javascript({ jsx: false, typescript: true });
-            case "tsx":
-                return javascript({ jsx: true, typescript: true });
-            case "js":
-            default:
-                return javascript({ jsx: false, typescript: false });
-        }
-    }, [lang]);
     useEffect(() => {
         if (editorRef.current)
             viewRef.current = new EditorView({
                 parent: editorRef.current,
-                extensions: [
-                    ...EDITOR_EXTS,
-                    langMode.extension,
-                    ViewPlugin.fromClass(
-                        class {
-                            constructor(view: EditorView) {}
-                            update(update: ViewUpdate) {
-                                if (update.docChanged) {
-                                    setState({ script: viewRef.current?.state.sliceDoc() || "" });
+                extensions: [viewContext.app.vault.getConfig("vimMode") && vim()].concat(
+                    ...EDITOR_EXTS.concat(
+                        ...[
+                            LANG_COMPARTMENT.of(javascript()),
+                            ViewPlugin.fromClass(
+                                class {
+                                    constructor(public view: EditorView) {}
+                                    update(update: ViewUpdate) {
+                                        if (update.docChanged) {
+                                            setState({ script: this.view.state.sliceDoc() || "" });
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                    ),
-                    EDITOR_HL,
-                    viewContext.app.vault.getConfig("vimMode") && vim(),
-                ].filter((a) => !!a),
+                            ),
+                            EDITOR_HL,
+                            viewContext.app.vault.getConfig("vimMode") && vim(),
+                        ].filter((a) => !!a)
+                    )
+                ),
                 doc: script || "",
             });
         return () => viewRef.current?.destroy();
-    }, [editorRef.current, lang]);
+    }, [editorRef.current]);
+    useEffect(() => {
+        if (viewRef.current)
+            viewRef.current.dispatch({
+                effects: LANG_COMPARTMENT.reconfigure(
+                    javascript({ jsx: lang?.endsWith("x"), typescript: lang?.startsWith("ts") })
+                ),
+            });
+    }, [lang]);
 
     return <div className="dc-cm-editor" ref={editorRef}></div>;
 }
@@ -327,7 +328,10 @@ function CurrentFileSelector({
         : { label: defaultValue!, value: defaultValue! };
     // Cached list of relevant files, which is only recomputed on vault changes.
     const options = useMemo(() => {
-        return core.vault.getMarkdownFiles().map((f) => ({ label: f.path, value: f.path })).concat(defaultOption);
+        return core.vault
+            .getMarkdownFiles()
+            .map((f) => ({ label: f.path, value: f.path }))
+            .concat(defaultOption);
     }, [revision]);
 
     return (
