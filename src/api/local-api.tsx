@@ -29,6 +29,8 @@ import { Expression } from "expression/expression";
 import { Card } from "./ui/views/cards";
 import { ListView } from "./ui/views/list";
 import { ControlledEditable } from "ui/fields/editable";
+import { TaskList } from "./ui/views/task";
+import { ListView } from "./ui/views/list";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -413,6 +415,8 @@ export class DatacoreLocalApi {
     public List = ListView;
     /** A single card which can be composed into a grid view. */
     public Card = Card;
+    public TaskList = TaskList;
+    public List = ListView;
 
     /////////////////////////
     // Interative elements //
