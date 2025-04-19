@@ -335,20 +335,19 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
         dispatch({ type: "content-changed", newValue: state.content });
     }, [props.content, state.content]);
 
-    const finalize = useFinalizer(state.content, dispatch);
-    const onInput = useStableCallback(
-        async (e: KeyboardEvent) => {
-            if (props.inline) {
-                if (e.key === "Enter") {
-                    await finalize();
-                }
-            } else {
-                if (e.key === "Enter" && e.ctrlKey) {
-                    e.preventDefault();
-                    await finalize();
-                }
+    const onInput = async (e: KeyboardEvent) => {
+        const finalize = useFinalizer(state.content, dispatch);
+        if (props.inline) {
+            if (e.key === "Enter") {
+                await finalize();
             }
-    }, [props.inline]);
+        } else {
+            if (e.key === "Enter" && e.ctrlKey) {
+                e.preventDefault();
+                await finalize();
+            }
+        }
+    };
 
     const dblClick = useStableCallback(
         (e: MouseEvent) => {
@@ -369,7 +368,13 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
         </Fragment>
     );
     const editor = (
-        <UncontrolledTextEditable onInput={onInput} inline={props.inline} dispatch={dispatch} text={text.current} />
+        <UncontrolledTextEditable
+            toggler={dblClick}
+            onInput={onInput}
+            inline={props.inline}
+            dispatch={dispatch}
+            text={text.current}
+        />
     );
     return (
         <span className="has-texteditable" onDblClick={dblClick}>
@@ -383,11 +388,13 @@ export function UncontrolledTextEditable({
     text,
     dispatch,
     onInput,
+		toggler
 }: {
     inline?: boolean;
     text: string;
     dispatch?: Dispatch<EditableAction<string>>;
     onInput?: (e: KeyboardEvent) => unknown;
+    toggler?: (e: MouseEvent) => void;
 }) {
     const [txt, setText] = useState(text);
     useEffect(() => {
@@ -401,11 +408,11 @@ export function UncontrolledTextEditable({
     );
 
     return !inline ? (
-        <textarea className="datacore-editable" onChange={onChangeCb} onKeyUp={onInput}>
+        <textarea onDblClick={toggler} className="datacore-editable" onChange={onChangeCb} onKeyUp={onInput}>
             {txt}
         </textarea>
     ) : (
-        <input className="datacore-editable" type="text" onChange={onChangeCb} onKeyUp={onInput} />
+        <input onDblClick={toggler} className="datacore-editable" type="text" onChange={onChangeCb} onKeyUp={onInput} />
     );
 }
 /** An editable list of items.
