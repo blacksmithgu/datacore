@@ -348,15 +348,13 @@ export function TextEditable(props: EditableState<string> & { markdown?: boolean
                     await finalize();
                 }
             }
-        },
-        [text.current, props.sourcePath, state.updater, state.content, state.isEditing]
-    );
+    }, [props.inline]);
 
     const dblClick = useStableCallback(
         (e: MouseEvent) => {
             dispatch({
                 type: "editing-toggled",
-                newValue: true,
+                newValue: !state.isEditing,
             });
         },
         [text.current, props.sourcePath, state.updater, state.isEditing, state.content]

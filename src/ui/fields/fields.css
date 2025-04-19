@@ -28,7 +28,11 @@
     border-bottom-left-radius: inherit;
     user-select: none;
 }
-
+span.datacore-editable-outer,
+span.datacore-editable-outer textarea {
+    width: 100% !important;
+    display: inline-block !important;
+}
 .datacore-field .field-value {
     display: inline-block;
 }
@@ -94,4 +98,8 @@
     background-color: var(--interactive-accent);
     border-radius: var(--tag-radius);
     padding: var(--tag-padding-y) var(--tag-padding-x);
+}
+
+textarea.datacore-editable {
+    resize: vertical;
 }
