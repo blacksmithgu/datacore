@@ -1,5 +1,4 @@
 import { Datacore } from "index/datacore";
-import { Substorer } from "index/datastore";
 import { setEmojiShorthandCompletionField, setInlineField } from "index/import/inline-field";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage, MarkdownSection, MarkdownBlock, MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
