@@ -40,7 +40,6 @@ import {
     FieldSlider,
     FieldSwitch,
 } from "ui/fields/editable-fields";
-import { setInlineField } from "index/import/inline-field";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
