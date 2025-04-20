@@ -262,7 +262,7 @@ export function TreeTableHeaderCell<T>({
         [column.width]
     );
     return (
-        <th width={realWidth} className="datacore-table-header-cell">
+        <th style={{ width: realWidth }} className="datacore-table-header-cell">
             <div className="datacore-table-header-cell-content">
                 {sortable && <SortButton className="datacore-table-sort" direction={sort} onClick={sortClicked} />}
                 <div onClick={sortClicked} className="datacore-table-header-title">
@@ -506,7 +506,7 @@ export function ControlledTreeTableView<T>(
                 <table className="datacore-table">
                     <thead>
                         <tr className="datacore-table-header-row">
-                            <th className="datacore-table-header-cell" width="1px"></th>
+                            <th className="datacore-table-header-cell" style="width: 1px"></th>
                             {columns.map((x) => (
                                 <TreeTableHeaderCell<T>
                                     sort={props.sortOn?.find((s) => s.id === x.id)?.direction}
