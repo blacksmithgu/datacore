@@ -7,7 +7,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown";
+import { MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
 import { useAsync, useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -22,14 +22,16 @@ import { Literal, Literals } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { TableView } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
+import { TaskList } from "./ui/views/task";
+import { Card } from "./ui/views/cards";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
-import { Card } from "./ui/views/cards";
-import { ListView } from "./ui/views/list";
 import { ControlledEditable } from "ui/fields/editable";
-import { TaskList } from "./ui/views/task";
+import { setTaskText, useSetField } from "utils/fields";
+import { ControlledEditableTextField, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
+import { completeTask } from "utils/task";
 import { ListView } from "./ui/views/list";
 
 /**
@@ -193,6 +195,16 @@ export class DatacoreLocalApi {
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         return this.api.tryFullQuery(query);
 		}
+    /** Sets the text of a given task programmatically. */
+    public setTaskText(newText: string, task: MarkdownTaskItem): void {
+        setTaskText(this.app, this.core, newText, task);
+    }
+
+    /** Sets the completion status of a given task programmatically. */
+    public setTaskCompletion(completed: boolean, task: MarkdownTaskItem): void {
+        completeTask(completed, task, this.app.vault, this.core);
+    }
+
     //////////////
     // Contexts //
     //////////////
@@ -242,6 +254,7 @@ export class DatacoreLocalApi {
      */
     public useInterning = useInterning;
     public useAsync = useAsync;
+    public useSetField = useSetField;
 
     /** Memoize the input automatically and process it using a DataArray; returns a vanilla array back. */
     public useArray<T, U>(
@@ -428,7 +441,6 @@ export class DatacoreLocalApi {
     /** A single card which can be composed into a grid view. */
     public Card = Card;
     public TaskList = TaskList;
-    public List = ListView;
 
     /////////////////////////
     // Interative elements //
@@ -442,4 +454,23 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
+
+    ////////////////////////////////////
+    // Stateful / internal components //
+    ////////////////////////////////////
+
+    /**
+     * Updates the path for the local API; usually only called by the top-level script renderer on
+     * path changes (such as renaming a file).
+     * @internal
+     */
+    updatePath(path: string): void {
+        this.path = path;
+    }
+    /////////////////////////
+    //    field editors    //
+    /////////////////////////
+    public EditableFieldCheckbox = EditableFieldCheckbox;
+    public EditableFieldTextbox = EditableTextField;
+    public TextEditor = ControlledEditableTextField;
 }
