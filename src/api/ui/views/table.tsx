@@ -2,7 +2,7 @@
  * @module views
  */
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { Dispatch, useCallback, useContext, useMemo, useRef } from "preact/hooks";
+import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
 import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useAsElement, useInterning, useStableCallback } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
