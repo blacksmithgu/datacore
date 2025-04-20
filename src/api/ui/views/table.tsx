@@ -148,7 +148,7 @@ export function VanillaTableHeaderCell<T>({ column }: { column: VanillaColumn<T>
 
     // We use an internal div to avoid flex messing with the table layout.
     return (
-        <th width={realWidth} className="datacore-table-header-cell">
+        <th style={{ width: realWidth }} className="datacore-table-header-cell">
             <div className="datacore-table-header-title">{header}</div>
         </th>
     );
