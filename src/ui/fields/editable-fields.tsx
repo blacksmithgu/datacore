@@ -2,11 +2,10 @@ import { Checkbox } from "api/ui/basics";
 import { Field } from "expression/field";
 import { Dispatch, useState } from "preact/hooks";
 import { useFinalizer, useSetField } from "utils/fields";
-import { EditableAction, TextEditable, UncontrolledTextEditable, useEditableDispatch } from "./editable";
-import { useStableCallback } from "ui/hooks";
+import { EditableAction, UncontrolledTextEditable } from "./editable";
 
 export function EditableFieldCheckbox(
-    props: { className?: string; field: Field; defaultChecked?: boolean } & React.HTMLProps<HTMLInputElement>
+    props: { className?: string; field: Field; defaultChecked?: boolean } & React.ComponentProps<"input">
 ) {
     const { field, defaultChecked, ...rest } = props;
     const [checked, setChecked] = useState(field.value as boolean);
