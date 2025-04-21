@@ -106,6 +106,9 @@ export class DatacoreLocalApi {
             return Result.success(obsidian);
         }
         const result = await this.scriptCache.load(path, { dc: this });
+				if (typeof path === "string" && path === "obsidian") {
+            return Result.success(obsidian);
+        }
         return result.orElseThrow();
     }
 
