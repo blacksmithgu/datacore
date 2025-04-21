@@ -30,6 +30,7 @@ import { Card } from "./ui/views/cards";
 import { ListView } from "./ui/views/list";
 import { Modal, Modals, SubmittableModal, useModalContext } from "./ui/views/modal";
 import * as obsidian from "obsidian";
+import { ControlledEditable } from "ui/fields/editable";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -449,6 +450,7 @@ export class DatacoreLocalApi {
     // Interative elements //
     /////////////////////////
 
+    public ControlledEditable = ControlledEditable;
     public Button = Button;
     public Textbox = Textbox;
     public Callout = Callout;
