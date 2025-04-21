@@ -28,6 +28,7 @@ import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
 import { Card } from "./ui/views/cards";
 import { ListView } from "./ui/views/list";
+import { ControlledEditable } from "ui/fields/editable";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -417,6 +418,7 @@ export class DatacoreLocalApi {
     // Interative elements //
     /////////////////////////
 
+    public ControlledEditable = ControlledEditable;
     public Button = Button;
     public Textbox = Textbox;
     public Callout = Callout;
