@@ -214,3 +214,27 @@ export function useAsElement(element: ReactNode | Literal): ReactNode {
         }
     }, [element]);
 }
+/**
+ * a simple hook that leverages `useEffect` and `useState` to
+ * return some async data and its fulfillment status.
+ *
+ * @param loader a parameterless function that returns a promise
+ * @param deps optional deps to pass to useEffect
+ * @returns a tuple containing the resolved promise's value
+ * and a boolean indicating whether the promise has resolved.
+ */
+export function useAsync<T>(loader: () => Promise<T>, deps: any[] = []): [T, boolean] {
+    const [value, setValue] = useState<T | null>(null);
+    const [done, setDone] = useState<boolean>(false);
+    useEffect(() => {
+        loader()
+            .then((a) => {
+                setValue(a);
+                setDone(true);
+            })
+            .catch(() => {
+                setDone(true);
+            });
+    }, [...deps, setValue, setDone]);
+    return [value!, done];
+}
