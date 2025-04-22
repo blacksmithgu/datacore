@@ -9,7 +9,7 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown";
 import { App } from "obsidian";
-import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
+import { useAsync, useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
@@ -219,6 +219,7 @@ export class DatacoreLocalApi {
      * React's reference-equality-based caching.
      */
     public useInterning = useInterning;
+    public useAsync = useAsync;
 
     /** Memoize the input automatically and process it using a DataArray; returns a vanilla array back. */
     public useArray<T, U>(
@@ -278,6 +279,21 @@ export class DatacoreLocalApi {
     public Stack = Stack;
     /** Horizontal flexbox container; good for putting items together in a row. */
     public Group = Group;
+
+    /** A component that only renders its children if `loaded` is true, otherwise defaulting to the `fallback` prop.
+     * Primarily intended to be used with `useAsync`.
+     */
+    public Suspend({
+        loaded: loaded,
+        children,
+        fallback,
+    }: {
+        loaded: boolean;
+        children: preact.ComponentChildren;
+        fallback: preact.ComponentChild;
+    }) {
+        return <>{loaded ? children : fallback}</>;
+    }
 
     /** Renders a literal value in a pretty way that respects settings. */
     public Literal = (({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) => {
