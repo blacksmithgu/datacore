@@ -354,7 +354,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
 
 /** Special block for markdown lists (of either plain list entries or tasks). */
 export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbearing {
-    static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE];
+    static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListBlock.TYPES;
     $typename: string = "List Block";
