@@ -385,14 +385,14 @@ function CreateButton({
 }) {
     return (
         <tr>
-            {isGroup ? <td colSpan={1}></td> : null}
+            {!isGroup ? <td colSpan={1}></td> : null}
             <td
                 colSpan={isGroup ? cols + 1 : cols}
                 className="datacore-table-row"
                 style={`padding-left: ${1.2 * level}em`}
             >
                 <button className="dashed-default" style="padding: 0.75em; width: 100%" onClick={clickCallback}>
-                    Create new row
+                    Add item
                 </button>
             </td>
         </tr>
@@ -649,14 +649,16 @@ export function ControlledTreeTableView<T>(
                                 key={keyFn(row)}
                             />
                         ))}
-                        <CreateButton
-                            cols={columns.length}
-                            clickCallback={clickCallbackFactory(
-                                rows.length ? rows[rows.length - 1] : null,
-                                null,
-                                rows.length ? rows[rows.length - 1] : null
-                            )}
-                        />
+                        {!Groupings.isGrouping(rows) && (
+                            <CreateButton
+                                cols={columns.length}
+                                clickCallback={clickCallbackFactory(
+                                    rows.length ? rows[rows.length - 1] : null,
+                                    null,
+                                    rows.length ? rows[rows.length - 1] : null
+                                )}
+                            />
+                        )}
                     </tbody>
                 </table>
                 {paging.enabled && (
