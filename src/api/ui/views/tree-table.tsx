@@ -622,7 +622,7 @@ export function ControlledTreeTableView<T>(
                 };
                 if (groupConfig) {
                     const prevGroup = Groupings.isElementGroup(previousElement) ? previousElement : null;
-                    await groupConfig.create?.(prevGroup, app);
+                    await groupConfig.create?.(prevGroup, group!, app);
                 } else await props.createRow?.(getLastActualItem(previousElement), parent, group, app);
             },
         [app, props.createRow, props.creatable, props.rows].filter((a) => !!a)
