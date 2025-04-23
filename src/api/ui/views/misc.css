@@ -1,3 +1,4 @@
 .dashed-default {
     border: 2px dashed currentColor;
+    box-shadow: none;
 }
