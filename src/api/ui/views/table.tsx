@@ -283,7 +283,7 @@ export function VanillaRowGroup<T>({
                         previousElement={i == 0 ? null : a[i - 1]}
                         callbackFactory={callbackFactory}
                     />
-                ))} 
+                ))}
             </Fragment>
         );
     } else {
