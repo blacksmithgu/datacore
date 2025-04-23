@@ -30,7 +30,7 @@ import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
 import { ControlledEditable } from "ui/fields/editable";
 import { setTaskText, useSetField } from "utils/fields";
-import { completeTask } from "utils/task";
+import { completeTask, insertListOrTaskItemAt } from "utils/task";
 import { ListView } from "./ui/views/list";
 import {
     ControlledEditableTextField,
@@ -235,30 +235,7 @@ export class DatacoreLocalApi {
         path?: string,
         fields: Record<string, any> = {}
     ) {
-        const realPath = typeof parent == "number" ? path : parent.$file;
-        const file = this.app.vault.getFileByPath(realPath!);
-        if (file == null) return;
-        const previousItem = typeof parent == "number" ? null : parent.$elements[parent.$elements.length - 1];
-        const content = await this.app.vault.read(file);
-        const filetext = content.split("\n");
-
-        let initialSpacing = typeof parent == "number" ? "" : /^[\s>]*/u.exec(filetext[parent.$line])!![0];
-        const statusPart = status ? `[${status}] ` : "";
-        let insertedText = `${initialSpacing}- ${statusPart}${text}`;
-        if (Object.keys(fields).length) insertedText += `\n${initialSpacing}\t`;
-        for (let field in fields) {
-            insertedText = setInlineField(insertedText, field, fields[field]);
-        }
-        let spliceIndex: number;
-        if (previousItem && atEnd) {
-            spliceIndex = previousItem.$line + (previousItem.$text ?? "").split("\n").length;
-        } else if (typeof parent != "number") {
-            spliceIndex = parent.$line + parent.$lineCount;
-        } else {
-            spliceIndex = parent;
-        }
-        filetext.splice(spliceIndex, 0, insertedText);
-        await this.app.vault.modify(file, filetext.join("\n"));
+        await insertListOrTaskItemAt(this.app, parent, atEnd, status, text, path, fields);
     }
 
     //////////////
