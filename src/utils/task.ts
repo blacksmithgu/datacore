@@ -3,7 +3,7 @@ import { setEmojiShorthandCompletionField, setInlineField } from "index/import/i
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage, MarkdownSection, MarkdownBlock, MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { DateTime } from "luxon";
-import { Vault } from "obsidian";
+import { App, Vault } from "obsidian";
 
 export function parseDotField(raw: string, obj: any) {
     if (obj === null) return obj;
@@ -152,4 +152,38 @@ export async function completeTask(completed: boolean, task: MarkdownTaskItem, v
         );
         await rewriteTask(vault, core, t, completed ? "x" : " ", newText);
     }
+}
+export async function insertListOrTaskItemAt(
+    app: App,
+    parent: MarkdownTaskItem | MarkdownListItem | number,
+    atEnd: boolean,
+    status: string,
+    text: string,
+    path?: string,
+    fields: Record<string, any> = {}
+) {
+    const realPath = typeof parent == "number" ? path : parent.$file;
+    const file = app.vault.getFileByPath(realPath!);
+    if (file == null) return;
+    const previousItem = typeof parent == "number" ? null : parent.$elements[parent.$elements.length - 1];
+    const content = await app.vault.read(file);
+    const filetext = content.split("\n");
+
+    let initialSpacing = typeof parent == "number" ? "" : /^[\s>]*/u.exec(filetext[parent.$line])!![0];
+    const statusPart = status ? `[${status}] ` : "";
+    let insertedText = `${initialSpacing}- ${statusPart}${text}`;
+    if (Object.keys(fields).length) insertedText += `\n${initialSpacing}\t`;
+    for (let field in fields) {
+        insertedText = setInlineField(insertedText, field, fields[field]);
+    }
+    let spliceIndex: number;
+    if (previousItem && atEnd) {
+        spliceIndex = previousItem.$line + (previousItem.$text ?? "").split("\n").length;
+    } else if (typeof parent != "number") {
+        spliceIndex = parent.$line + parent.$lineCount;
+    } else {
+        spliceIndex = parent;
+    }
+    filetext.splice(spliceIndex, 0, insertedText);
+    await app.vault.modify(file, filetext.join("\n"));
 }
