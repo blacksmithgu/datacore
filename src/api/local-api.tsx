@@ -218,11 +218,11 @@ export class DatacoreLocalApi {
         const file = this.app.vault.getFileByPath(path);
         if (file != null) {
             const content = await this.app.vault.read(file);
-            const lines = content.split("\n");
+            const lines = content.split(/\r\n|\r|\n/u);
             if (line < lines.length) {
                 if (line < 0) line = lines.length + line;
                 lines.splice(line, 0, markdown);
-                await this.app.vault.modify(file, lines.join("\n"));
+                await this.app.vault.modify(file, lines.join(content.contains("\r") ? "\r\n" : "\n"));
             }
         }
     }
