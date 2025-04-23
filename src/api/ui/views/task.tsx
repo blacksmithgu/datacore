@@ -40,7 +40,14 @@ export interface TaskProps extends ListViewProps<MarkdownTaskItem | MarkdownList
  * @param props
  * @group Components
  */
-export function TaskList({
+export function TaskList(props: TaskProps) {
+    return <InnerTaskList parent={null} {...props} />;
+}
+/**
+ * @hidden 
+ * @group Components
+ */
+function InnerTaskList({
     rows: items,
     additionalStates: states,
     renderer: listRenderer = (item) => (
@@ -52,8 +59,18 @@ export function TaskList({
             editor={(it) => TextEditable}
         />
     ),
+    parent,
     ...rest
-}: TaskProps) {
+}: TaskProps & { parent: MarkdownTaskItem | MarkdownListItem | null }) {
+    const app = useContext(APP_CONTEXT);
+    const create = useStableCallback(async () => {
+        const parentOrRootSibling = (parent ? parent : items![items!.length - 1]) as MarkdownListItem | MarkdownTaskItem;
+        const at = parent ? parent : (parentOrRootSibling.$line + parentOrRootSibling.$lineCount);
+        const nfields = Object.fromEntries(
+            rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
+        );
+        await insertListOrTaskItemAt(app, at, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
+    }, [parent, rest.displayedFields, items, app]);
     const content = useMemo(() => {
         return (
             <ul className="datacore contains-task-list">
@@ -72,7 +89,14 @@ export function TaskList({
             </ul>
         );
     }, [items, states]);
-    return <Fragment>{!!items && content}</Fragment>;
+    return (
+        <Fragment>
+            {!!items && content}
+            <button className="dashed-default" style="width: 100%" onClick={create}>
+                Add item
+            </button>
+        </Fragment>
+    );
 }
 /**
  * Represents a single item in a task listing.
