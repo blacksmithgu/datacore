@@ -7,7 +7,7 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
+import { MarkdownListItem, MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
 import { useAsync, useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
@@ -40,6 +40,8 @@ import {
     FieldSlider,
     FieldSwitch,
 } from "ui/fields/editable-fields";
+import { LineSpan } from "index/types/json/markdown";
+import { setInlineField } from "index/import/inline-field";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -210,6 +212,53 @@ export class DatacoreLocalApi {
     /** Sets the completion status of a given task programmatically. */
     public setTaskCompletion(completed: boolean, task: MarkdownTaskItem): void {
         completeTask(completed, task, this.app.vault, this.core);
+    }
+
+    /** inserts the provided markdown string at the given position in a file. */
+    public async insertMarkdownAt(line: number, path: string, markdown: string) {
+        const file = this.app.vault.getFileByPath(path);
+        if (file != null) {
+            const content = await this.app.vault.read(file);
+            const lines = content.split("\n");
+            if (line < lines.length) {
+                lines.splice(line, 0, markdown);
+                await this.app.vault.modify(file, lines.join("\n"));
+            }
+        }
+    }
+
+    public async insertListOrTaskItemAt(
+        parent: MarkdownTaskItem | MarkdownListItem | number,
+        atEnd: boolean,
+        status: string,
+        text: string,
+        path?: string,
+        fields: Record<string, any> = {}
+    ) {
+        const realPath = typeof parent == "number" ? path : parent.$file;
+        const file = this.app.vault.getFileByPath(realPath!);
+        if (file == null) return;
+        const previousItem = typeof parent == "number" ? null : parent.$elements[parent.$elements.length - 1];
+        const content = await this.app.vault.read(file);
+        const filetext = content.split("\n");
+
+        let initialSpacing = typeof parent == "number" ? "" : /^[\s>]*/u.exec(filetext[parent.$line])!![0];
+        const statusPart = status ? `[${status}] ` : "";
+        let insertedText = `${initialSpacing}- ${statusPart}${text}`;
+        if (Object.keys(fields).length) insertedText += `\n${initialSpacing}\t`;
+        for (let field in fields) {
+            insertedText = setInlineField(insertedText, field, fields[field]);
+        }
+        let spliceIndex: number;
+        if (previousItem && atEnd) {
+            spliceIndex = previousItem.$line + (previousItem.$text ?? "").split("\n").length;
+        } else if (typeof parent != "number") {
+            spliceIndex = parent.$line + parent.$lineCount;
+        } else {
+            spliceIndex = parent;
+        }
+        filetext.splice(spliceIndex, 0, insertedText);
+        await this.app.vault.modify(file, filetext.join("\n"));
     }
 
     //////////////
