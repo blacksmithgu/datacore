@@ -3,8 +3,8 @@
  */
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
 import { Dispatch, useCallback, useContext, useMemo, useRef } from "preact/hooks";
-import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
-import { useAsElement, useInterning } from "ui/hooks";
+import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
+import { useAsElement, useInterning, useStableCallback } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
 import { ReactNode } from "preact/compat";
 
@@ -12,8 +12,10 @@ import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
 import { EditableElement, useEditableDispatch } from "ui/fields/editable";
+import "./misc.css";
 import { faSortDown, faSortUp, faSort } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { App } from "obsidian";
 
 /**
  * A simple column definition which allows for custom renderers and titles.
@@ -84,6 +86,11 @@ export interface TableViewProps<T> {
      * If a number, will scroll only if the number is greater than the current page size.
      **/
     scrollOnPaging?: boolean | number;
+
+    /** whether this table allows creation new elements. */
+    creatable?: boolean;
+    /** called to create a new item in a grouping */
+    createRow?: (prevElement: T | null, parentGroup: GroupElement<T> | null, app: App) => Promise<unknown>;
 }
 
 /**
@@ -135,8 +142,15 @@ export function TableView<T>(props: TableViewProps<T>) {
                     </tr>
                 </thead>
                 <tbody>
-                    {pagedRows.map((row) => (
-                        <VanillaRowGroup level={0} groupings={groupings} columns={columns} element={row} />
+                    {pagedRows.map((row, i, a) => (
+                        <VanillaRowGroup
+                            level={0}
+                            groupings={groupings}
+                            columns={columns}
+                            element={row}
+                            createRow={props.creatable && props.createRow ? props.createRow : undefined}
+                            previousElement={i == 0 ? null : a[i - 1]}
+                        />
                     ))}
                 </tbody>
             </table>
@@ -184,21 +198,57 @@ export function VanillaRowGroup<T>({
     columns,
     element,
     groupings,
+    createRow,
+    previousElement,
 }: {
     level: number;
     columns: TableColumn<T>[];
     element: T | GroupElement<T>;
     groupings?: GroupingConfig<T>[];
+    createRow?: TableViewProps<T>["createRow"];
+    previousElement: T | GroupElement<T> | null;
 }) {
+    const app = useContext(APP_CONTEXT);
+    const clickCallback = useStableCallback(async () => {
+        if (!createRow) {
+            return;
+        }
+        const group = Groupings.isElementGroup(element) ? element : null;
+        const getLastActualItem = (item: GroupElement<T> | T | null): T | null => {
+            if (item == null) return null;
+            if (!Groupings.isElementGroup(item)) {
+                return item;
+            } else if (item.rows.length) {
+                return getLastActualItem(item.rows[item.rows.length - 1]);
+            } else {
+                return null;
+            }
+        };
+        await createRow(getLastActualItem(previousElement), group, app);
+    }, [app, previousElement, createRow]);
     if (Groupings.isElementGroup(element)) {
         const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
 
         return (
             <Fragment>
                 <TableGroupHeader level={level} value={element} width={columns.length} config={groupingConfig} />
-                {element.rows.map((row) => (
-                    <VanillaRowGroup level={level + 1} columns={columns} element={row} />
+                {element.rows.map((row, i, a) => (
+                    <VanillaRowGroup
+                        level={level + 1}
+                        columns={columns}
+                        element={row}
+                        previousElement={i == 0 ? null : a[i - 1]}
+                    />
                 ))}
+                {createRow ? (
+                    <tr>
+                        <td colSpan={columns.length}>
+                            <button className="dashed-default" style="padding: 0.75em" onClick={clickCallback}>
+                                Create new row
+                            </button>
+                        </td>
+                    </tr>
+                ) : null}
             </Fragment>
         );
     } else {
