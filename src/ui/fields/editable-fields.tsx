@@ -10,7 +10,7 @@ export function FieldCheckbox(
         field: Field;
         defaultChecked?: boolean;
         dispatch: Dispatch<EditableAction<Field>>;
-    } & React.ComponentProps<'input'>
+    } & React.ComponentProps<"input">
 ) {
     const { field, defaultChecked = false, dispatch, ...rest } = props;
     return (
@@ -76,7 +76,7 @@ export function FieldSlider(
         defaultValue: number;
         field: Field;
         dispatch: Dispatch<EditableAction<Field>>;
-    } & React.ComponentProps<'input'>
+    } & React.ComponentProps<"input">
 ) {
     const { field, dispatch, defaultValue = 0, min, max, step, ...rest } = props;
     const value = (field?.value ?? defaultValue) as number;
@@ -103,7 +103,7 @@ export function FieldSwitch(
         defaultValue: boolean;
         field: Field;
         dispatch: Dispatch<EditableAction<Field>>;
-    } & React.ComponentProps<'input'>
+    } & React.ComponentProps<"input">
 ) {
     const { field, dispatch, defaultValue = false, ...rest } = props;
     return (
