@@ -5,10 +5,11 @@ import { Dispatch, Reducer, useCallback, useContext, useEffect, useMemo, useRedu
 import { ControlledPager, useDatacorePaging } from "./paging";
 import { DEFAULT_TABLE_COMPARATOR, SortButton, SortDirection, SortOn } from "./table";
 import { Context, createContext, Fragment, VNode } from "preact";
-import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
+import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useEditableDispatch } from "ui/fields/editable";
 import { combineClasses } from "../basics";
 import { Indexable } from "index/types/indexable";
+import { App } from "obsidian";
 
 export interface TreeTableRowData<T> {
     value: T;
@@ -172,6 +173,13 @@ export interface TreeTableProps<T> {
     sortOn?: SortOn[];
     childSelector: (raw: T) => T[];
     id?: (obj: T) => string;
+    creatable?: boolean;
+    createRow?: (
+        prevElement: TreeTableRowData<T> | null,
+        parentElement: TreeTableRowData<T> | null,
+        parentGroup: GroupElement<TreeTableRowData<T>> | null,
+        app: App
+    ) => Promise<unknown>;
 }
 
 export type TreeTableAction<T> =
@@ -309,11 +317,19 @@ export function TreeTableRowGroup<T>({
     columns,
     element,
     groupings,
+    previousElement,
+    clickCallbackFactory,
 }: {
     level: number;
     columns: TreeTableColumn<T>[];
     element: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T>;
     groupings?: GroupingConfig<TreeTableRowData<T>>[];
+    clickCallbackFactory: (
+        previousElement: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
+        parent: TreeTableRowData<T> | null,
+        maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null
+    ) => () => Promise<void>;
+    previousElement: TreeTableRowData<T> | GroupElement<TreeTableRowData<T>> | null;
 }) {
     const { id } = useContext(TypedExpandedContext<T>());
     const keyFn = useKeyFn(id);
@@ -323,14 +339,64 @@ export function TreeTableRowGroup<T>({
         return (
             <Fragment key={keyFn(element)}>
                 <TreeTableGroupHeader level={level} value={element} width={columns.length} config={groupingConfig} />
-                {element.rows.map((row) => (
-                    <TreeTableRowGroup<T> level={level + 1} columns={columns} element={row} groupings={groupings} />
+                {element.rows.map((row, i, arr) => (
+                    <TreeTableRowGroup<T>
+                        level={level + 1}
+                        columns={columns}
+                        element={row}
+                        groupings={groupings}
+                        clickCallbackFactory={clickCallbackFactory}
+                        previousElement={i == 0 ? null : arr[i - 1]}
+                    />
                 ))}
+                <CreateButton
+                    cols={columns.length}
+                    clickCallback={clickCallbackFactory(previousElement, null, element)}
+                    level={level}
+                    isGroup={true}
+                />
             </Fragment>
         );
     } else {
-        return <TreeTableRow row={element} columns={columns} level={level - groupIndex + 1} key={keyFn(element)} />;
+        return (
+            <TreeTableRow<T>
+                previous={previousElement as TreeTableRowData<T>}
+                row={element}
+                columns={columns}
+                level={level - groupIndex + 1}
+                key={keyFn(element)}
+                clickCallbackFactory={clickCallbackFactory}
+                parent={null}
+            />
+        );
     }
+}
+
+function CreateButton({
+    clickCallback,
+    cols,
+    level = 0,
+    isGroup = false,
+}: {
+    clickCallback: () => Promise<unknown>;
+    cols: number;
+    level?: number;
+    isGroup?: boolean;
+}) {
+    return (
+        <tr>
+            {isGroup ? <td colSpan={1}></td> : null}
+            <td
+                colSpan={isGroup ? cols + 1 : cols}
+                className="datacore-table-row"
+                style={`padding-left: ${1.2 * level}em`}
+            >
+                <button className="dashed-default" style="padding: 0.75em; width: 100%" onClick={clickCallback}>
+                    Create new row
+                </button>
+            </td>
+        </tr>
+    );
 }
 
 export function TreeTableRowExpander<T>({ row, level }: { row: T; level: number }) {
@@ -365,10 +431,21 @@ export function TreeTableRow<T>({
     level,
     row,
     columns,
+    parent,
+    previous,
+    clickCallbackFactory,
 }: {
     level: number;
     row: TreeTableRowData<T>;
     columns: TreeTableColumn<T>[];
+    parent: TreeTableRowData<T> | null;
+    previous: TreeTableRowData<T> | null;
+
+    clickCallbackFactory: (
+        previousElement: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
+        parent: TreeTableRowData<T> | null,
+        maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null
+    ) => () => Promise<void>;
 }) {
     const { openMap, id } = useContext(TypedExpandedContext<T>());
     const open = useMemo(() => openMap.get(id(row.value)), [openMap, openMap.get(id(row.value)), row, row.value]);
@@ -382,10 +459,25 @@ export function TreeTableRow<T>({
                 ))}
             </tr>
             {open
-                ? row.children.map((child) => (
-                      <TreeTableRow row={child} columns={columns} level={level + 1} key={id(child.value)} />
+                ? row.children.map((child, i, a) => (
+                      <TreeTableRow
+                          row={child}
+                          columns={columns}
+                          level={level + 1}
+                          key={id(child.value)}
+                          parent={row}
+                          previous={i == 0 ? null : a[i - 1]}
+                          clickCallbackFactory={clickCallbackFactory}
+                      />
                   ))
                 : null}
+            {open ? (
+                <CreateButton
+                    level={level}
+                    clickCallback={clickCallbackFactory(previous, row, null)}
+                    cols={columns.length}
+                />
+            ) : null}
         </Fragment>
     );
 }
@@ -500,6 +592,35 @@ export function ControlledTreeTableView<T>(
 
     const keyFn = useKeyFn(props.id, pagedRows);
     const Context = TypedExpandedContext<T>();
+    const app = useContext(APP_CONTEXT);
+    const clickCallbackFactory = useCallback(
+        (
+                previousElement: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
+                parent: TreeTableRowData<T> | null,
+                maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null
+            ) =>
+            async () => {
+                if (!props.createRow && !props.creatable) {
+                    return;
+                }
+
+                const group = Groupings.isElementGroup(maybeGroup) ? maybeGroup : null;
+                const getLastActualItem = (
+                    item: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null
+                ): TreeTableRowData<T> | null => {
+                    if (item == null) return null;
+                    if (!Groupings.isElementGroup(item)) {
+                        return item;
+                    } else if (item.rows.length) {
+                        return getLastActualItem(item.rows[item.rows.length - 1]);
+                    } else {
+                        return null;
+                    }
+                };
+                await props.createRow?.(getLastActualItem(previousElement), parent, group, app);
+            },
+        [app, props.createRow, props.creatable, props.rows].filter((a) => !!a)
+    );
     return (
         <Context.Provider value={{ openMap: props.openMap!, dispatch: props.dispatch, id: props.id }}>
             <div ref={tableRef}>
@@ -517,15 +638,25 @@ export function ControlledTreeTableView<T>(
                         </tr>
                     </thead>
                     <tbody>
-                        {pagedRows.map((row) => (
+                        {pagedRows.map((row, i, a) => (
                             <TreeTableRowGroup<T>
                                 element={row}
                                 columns={columns}
                                 level={0}
+                                clickCallbackFactory={clickCallbackFactory}
+                                previousElement={i == 0 ? null : a[i - 1]}
                                 groupings={groupings}
                                 key={keyFn(row)}
                             />
                         ))}
+                        <CreateButton
+                            cols={columns.length}
+                            clickCallback={clickCallbackFactory(
+                                rows.length ? rows[rows.length - 1] : null,
+                                null,
+                                rows.length ? rows[rows.length - 1] : null
+                            )}
+                        />
                     </tbody>
                 </table>
                 {paging.enabled && (
