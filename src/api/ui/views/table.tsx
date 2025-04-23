@@ -325,19 +325,6 @@ export function VanillaRowGroup<T>({
                         callbackFactory={callbackFactory}
                     />
                 ))}
-                {creatable ? (
-                    <tr>
-                        <td colSpan={columns.length}>
-                            <button
-                                className="dashed-default"
-                                style="padding: 0.75em"
-                                onClick={callbackFactory(previousElement, element, groupingConfig)}
-                            >
-                                Create new row
-                            </button>
-                        </td>
-                    </tr>
-                ) : null}
             </Fragment>
         );
     } else {

@@ -9,7 +9,7 @@ import { Fragment, RefObject } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT } from "ui/markdown";
 import { JSXInternal } from "preact/src/jsx";
 import { Dispatch, useContext, useMemo, useRef, useState } from "preact/hooks";
-import { completeTask, rewriteTask } from "utils/task";
+import { completeTask, insertListOrTaskItemAt, rewriteTask } from "utils/task";
 import { Literal, Literals } from "expression/literal";
 import {
     EditableAction,
@@ -23,6 +23,8 @@ import { setInlineField } from "index/import/inline-field";
 import { Field } from "expression/field";
 import { DateTime } from "luxon";
 import "./lists.css";
+import "./misc.css";
+import { Stack } from "../layout";
 
 /**
  * Props passed to the task list component.
@@ -52,6 +54,15 @@ export function TaskList({
     ),
     ...rest
 }: TaskProps) {
+    const app = useContext(APP_CONTEXT);
+    const create = useStableCallback(async () => {
+        const parentOrRootSibling = (parent ? parent : items![items!.length - 1]) as MarkdownListItem | MarkdownTaskItem;
+        const at = (parent ? parent : (parentOrRootSibling.$line + parentOrRootSibling.$lineCount)) as MarkdownListItem | MarkdownTaskItem | number;
+        const nfields = Object.fromEntries(
+            rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
+        );
+        await insertListOrTaskItemAt(app, at, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
+    }, [parent, rest.displayedFields, items, app]);
     const content = useMemo(() => {
         return (
             <ul className="datacore contains-task-list">
@@ -77,7 +88,14 @@ export function TaskList({
             </ul>
         );
     }, [items, states]);
-    return <Fragment>{!!items && content}</Fragment>;
+    return (
+        <Fragment>
+            {!!items && content}
+            <button className="dashed-default" style="width: 100%" onClick={create}>
+                Add item
+            </button>
+        </Fragment>
+    );
 }
 /**
  * Represents a single item in a task listing.
@@ -136,7 +154,12 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 
     const [collapsed, setCollapsed] = useState<boolean>(true);
     const hasChildren = useMemo(() => item.$elements.length > 0, [item, item.$elements, item.$elements.length]);
-
+    const create = useStableCallback(async () => {
+        const nfields = Object.fromEntries(
+            props.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
+        );
+        await insertListOrTaskItemAt(app, item, true, " ", props.defaultText ?? "...", item.$file, nfields);
+    }, [parent, props.displayedFields, item, app]);
     return (
         <li
             key={item.$id}
@@ -147,7 +170,6 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
             <CollapseIndicator
                 onClick={() => setCollapsed((c) => !c)}
                 collapsed={collapsed}
-                hasChildren={hasChildren}
             />
             <input
                 className="datacore task-list-item-checkbox"
@@ -164,7 +186,14 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                     </div>
                 </div>
             </div>
-            {hasChildren && !collapsed && <TaskList {...props} rows={item.$elements} />}
+            {!collapsed && (
+                <Stack>
+                    {hasChildren && <TaskList {...props} rows={item.$elements} />}
+                    <button className="dashed-default" style="width: 100%" onClick={create}>
+                        Add item
+                    </button>
+                </Stack>
+            )}
         </li>
     );
 }
@@ -172,15 +201,12 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 function CollapseIndicator({
     collapsed,
     onClick,
-    hasChildren,
 }: {
     collapsed: boolean;
     onClick: () => void;
-    hasChildren: boolean;
 }) {
     const toggleCnames = ["datacore-collapser"];
     if (collapsed) toggleCnames.push("is-collapsed");
-    if (!hasChildren) toggleCnames.push("no-children");
     return (
         <div onClick={onClick} className={toggleCnames.join(" ")} dir="auto">
             <svg

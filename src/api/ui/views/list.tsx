@@ -12,6 +12,7 @@ import { CSSProperties, ReactNode } from "preact/compat";
 import { MarkdownListItem } from "index/types/markdown";
 import { BaseFieldProps } from "ui/fields/common-props";
 import { ControlledEditable, EditableElement } from "ui/fields/editable";
+import { App } from "obsidian";
 
 /** The render type of the list view. */
 export type ListViewType = "ordered" | "unordered" | "block";
@@ -63,6 +64,12 @@ export interface ListViewProps<T> {
     childSource?: null | string | string[] | ((row: T) => T[]);
 		/** fields to display under each item in this task list */
 		displayedFields?: (BaseFieldProps<Literal> & { key: string })[];
+    /** Sets the default text when creating a new item */
+    defaultText?: string;
+		/** whether to show the button for creating a new item */
+		showCreateButton?: boolean;
+    /** called to create a root-level item in this list */
+    create?: (app: App) => Promise<void>;
 }
 
 /**
