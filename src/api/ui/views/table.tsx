@@ -166,7 +166,25 @@ export function TableView<T>(props: TableViewProps<T>) {
         if (Literals.isFunction(props.groupings)) return [{ render: props.groupings }];
         else return [props.groupings];
     }, [props.groupings]);
-
+    const app = useContext(APP_CONTEXT);
+    const clickCallbackFactory = useStableCallback(
+        (previousElement: GroupElement<T> | T | null, maybeParent: GroupElement<T> | T | null) => async () => {
+            if (!props.createRow && !props.creatable) return;
+            const group = Groupings.isElementGroup(maybeParent) ? maybeParent : null;
+            const getLastActualItem = (item: GroupElement<T> | T | null): T | null => {
+                if (item == null) return null;
+                if (!Groupings.isElementGroup(item)) {
+                    return item;
+                } else if (item.rows.length) {
+                    return getLastActualItem(item.rows[item.rows.length - 1]);
+                } else {
+                    return null;
+                }
+            };
+            await props.createRow?.(getLastActualItem(previousElement), group, app);
+        },
+        [app, props.createRow, props.creatable]
+    );
     return (
       <TableContextProvider dispatch={dispatch} sorts={tableState.sorts}>
         <div ref={tableRef}>
@@ -180,15 +198,23 @@ export function TableView<T>(props: TableViewProps<T>) {
                 </thead>
                 <tbody>
                     {pagedRows.map((row, i, a) => (
-                        <VanillaRowGroup
+                        <VanillaRowGroup<T>
                             level={0}
                             groupings={groupings}
                             columns={columns}
                             element={row}
-                            createRow={props.creatable && props.createRow ? props.createRow : undefined}
+                            callbackFactory={clickCallbackFactory}
+                            creatable={props.creatable ?? false}
                             previousElement={i == 0 ? null : a[i - 1]}
                         />
                     ))}
+                    <CreateButton
+                        cols={columns.length}
+                        clickCallback={clickCallbackFactory(
+                            props.rows.length ? props.rows[props.rows.length - 1] : null,
+                            null
+                        )}
+                    />
                 </tbody>
             </table>
             {paging.enabled && (
@@ -196,6 +222,20 @@ export function TableView<T>(props: TableViewProps<T>) {
             )}
         </div>
       </TableContextProvider>
+    );
+}
+/**
+ * @hidden
+ */
+function CreateButton({ clickCallback, cols }: { clickCallback: () => Promise<unknown>; cols: number }) {
+    return (
+        <tr>
+            <td colSpan={cols}>
+                <button className="dashed-default" style="padding: 0.75em; width: 100%" onClick={clickCallback}>
+                    Add item
+                </button>
+            </td>
+        </tr>
     );
 }
 
@@ -239,7 +279,8 @@ export function VanillaRowGroup<T>({
     columns,
     element,
     groupings,
-    createRow,
+    callbackFactory,
+    creatable = false,
     previousElement,
 }: {
     level: number;
@@ -247,26 +288,13 @@ export function VanillaRowGroup<T>({
     element: T | GroupElement<T>;
     groupings?: GroupingConfig<T>[];
     createRow?: TableViewProps<T>["createRow"];
+    creatable: boolean;
+    callbackFactory: (
+        previousElement: GroupElement<T> | T | null,
+        element: GroupElement<T> | T | null
+    ) => () => Promise<void>;
     previousElement: T | GroupElement<T> | null;
 }) {
-    const app = useContext(APP_CONTEXT);
-    const clickCallback = useStableCallback(async () => {
-        if (!createRow) {
-            return;
-        }
-        const group = Groupings.isElementGroup(element) ? element : null;
-        const getLastActualItem = (item: GroupElement<T> | T | null): T | null => {
-            if (item == null) return null;
-            if (!Groupings.isElementGroup(item)) {
-                return item;
-            } else if (item.rows.length) {
-                return getLastActualItem(item.rows[item.rows.length - 1]);
-            } else {
-                return null;
-            }
-        };
-        await createRow(getLastActualItem(previousElement), group, app);
-    }, [app, previousElement, createRow]);
     if (Groupings.isElementGroup(element)) {
         const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
 
@@ -278,13 +306,19 @@ export function VanillaRowGroup<T>({
                         level={level + 1}
                         columns={columns}
                         element={row}
+                        creatable={creatable}
                         previousElement={i == 0 ? null : a[i - 1]}
+                        callbackFactory={callbackFactory}
                     />
                 ))}
-                {createRow ? (
+                {creatable ? (
                     <tr>
                         <td colSpan={columns.length}>
-                            <button className="dashed-default" style="padding: 0.75em" onClick={clickCallback}>
+                            <button
+                                className="dashed-default"
+                                style="padding: 0.75em"
+                                onClick={callbackFactory(previousElement, element)}
+                            >
                                 Create new row
                             </button>
                         </td>
