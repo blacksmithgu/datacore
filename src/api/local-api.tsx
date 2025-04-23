@@ -220,7 +220,7 @@ export class DatacoreLocalApi {
             const content = await this.app.vault.read(file);
             const lines = content.split("\n");
             if (line < lines.length) {
-                if (line < 0) line = lines.length - 1 + line;
+                if (line < 0) line = lines.length + line;
                 lines.splice(line, 0, markdown);
                 await this.app.vault.modify(file, lines.join("\n"));
             }
