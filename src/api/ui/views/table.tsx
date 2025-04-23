@@ -131,7 +131,7 @@ export function TableView<T>(props: TableViewProps<T>) {
         else return [props.groupings];
     }, [props.groupings]);
     const app = useContext(APP_CONTEXT);
-    const clickCallbackFactory = useStableCallback(
+    const clickCallbackFactory = useCallback(
         (previousElement: GroupElement<T> | T | null, maybeParent: GroupElement<T> | T | null) => async () => {
             if (!props.createRow && !props.creatable) return;
             const group = Groupings.isElementGroup(maybeParent) ? maybeParent : null;
