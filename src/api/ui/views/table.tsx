@@ -171,13 +171,15 @@ export function TableView<T>(props: TableViewProps<T>) {
                             previousElement={i == 0 ? null : a[i - 1]}
                         />
                     ))}
-                    <CreateButton
-                        cols={columns.length}
-                        clickCallback={clickCallbackFactory(
-                            props.rows.length ? props.rows[props.rows.length - 1] : null,
-                            null
-                        )}
-                    />
+                    {props.creatable && (
+                        <CreateButton
+                            cols={columns.length}
+                            clickCallback={clickCallbackFactory(
+                                props.rows.length ? props.rows[props.rows.length - 1] : null,
+                                null
+                            )}
+                        />
+                    )}
                 </tbody>
             </table>
             {paging.enabled && (
