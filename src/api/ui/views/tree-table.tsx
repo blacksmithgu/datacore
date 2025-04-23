@@ -327,7 +327,8 @@ export function TreeTableRowGroup<T>({
     clickCallbackFactory: (
         previousElement: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
         parent: TreeTableRowData<T> | null,
-        maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null
+        maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
+        groupConfig?: GroupingConfig<TreeTableRowData<T>>
     ) => () => Promise<void>;
     previousElement: TreeTableRowData<T> | GroupElement<TreeTableRowData<T>> | null;
 }) {
@@ -351,7 +352,7 @@ export function TreeTableRowGroup<T>({
                 ))}
                 <CreateButton
                     cols={columns.length}
-                    clickCallback={clickCallbackFactory(previousElement, null, element)}
+                    clickCallback={clickCallbackFactory(previousElement, null, element, groupingConfig)}
                     level={level}
                     isGroup={true}
                 />
@@ -444,7 +445,8 @@ export function TreeTableRow<T>({
     clickCallbackFactory: (
         previousElement: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
         parent: TreeTableRowData<T> | null,
-        maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null
+        maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
+        groupConfig?: GroupingConfig<TreeTableRowData<T>>
     ) => () => Promise<void>;
 }) {
     const { openMap, id } = useContext(TypedExpandedContext<T>());
@@ -474,7 +476,7 @@ export function TreeTableRow<T>({
             {open ? (
                 <CreateButton
                     level={level}
-                    clickCallback={clickCallbackFactory(previous, row, null)}
+                    clickCallback={clickCallbackFactory(previous, row, null, undefined)}
                     cols={columns.length}
                 />
             ) : null}
@@ -597,7 +599,8 @@ export function ControlledTreeTableView<T>(
         (
                 previousElement: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
                 parent: TreeTableRowData<T> | null,
-                maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null
+                maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
+                groupConfig?: GroupingConfig<TreeTableRowData<T>>
             ) =>
             async () => {
                 if (!props.createRow && !props.creatable) {
@@ -617,7 +620,11 @@ export function ControlledTreeTableView<T>(
                         return null;
                     }
                 };
-                await props.createRow?.(getLastActualItem(previousElement), parent, group, app);
+                if (groupConfig) {
+                    const prevGroup = Groupings.isElementGroup(previousElement) ? previousElement : null;
+                    const parentGroup = Groupings.isElementGroup(maybeGroup) ? maybeGroup : null;
+                    await groupConfig.create?.(prevGroup, parentGroup, app);
+                } else await props.createRow?.(getLastActualItem(previousElement), parent, group, app);
             },
         [app, props.createRow, props.creatable, props.rows].filter((a) => !!a)
     );
