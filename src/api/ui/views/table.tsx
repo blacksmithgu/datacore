@@ -59,6 +59,8 @@ export interface TableColumn<T, V = Literal> {
 export interface GroupingConfig<T> {
     /** How a grouping with the given key and set of rows should be handled. */
     render?: (key: Literal, rows: Grouping<T>) => Literal | ReactNode;
+    /** How creating a new element in this group should be handled. */
+    create?: (prevGroup: GroupElement<T> | null, parentGroup: GroupElement<T> | null, app: App) => Promise<unknown>;
 }
 
 /**
@@ -132,21 +134,30 @@ export function TableView<T>(props: TableViewProps<T>) {
     }, [props.groupings]);
     const app = useContext(APP_CONTEXT);
     const clickCallbackFactory = useCallback(
-        (previousElement: GroupElement<T> | T | null, maybeParent: GroupElement<T> | T | null) => async () => {
-            if (!props.createRow && !props.creatable) return;
-            const group = Groupings.isElementGroup(maybeParent) ? maybeParent : null;
-            const getLastActualItem = (item: GroupElement<T> | T | null): T | null => {
-                if (item == null) return null;
-                if (!Groupings.isElementGroup(item)) {
-                    return item;
-                } else if (item.rows.length) {
-                    return getLastActualItem(item.rows[item.rows.length - 1]);
-                } else {
-                    return null;
-                }
-            };
-            await props.createRow?.(getLastActualItem(previousElement), group, app);
-        },
+        (
+                previousElement: GroupElement<T> | T | null,
+                maybeParent: GroupElement<T> | T | null,
+                groupConfig?: GroupingConfig<T>
+            ) =>
+            async () => {
+                if (!props.createRow && !props.creatable) return;
+                const group = Groupings.isElementGroup(maybeParent) ? maybeParent : null;
+                const getLastActualItem = (item: GroupElement<T> | T | null): T | null => {
+                    if (item == null) return null;
+                    if (!Groupings.isElementGroup(item)) {
+                        return item;
+                    } else if (item.rows.length) {
+                        return getLastActualItem(item.rows[item.rows.length - 1]);
+                    } else {
+                        return null;
+                    }
+                };
+                if (groupConfig) {
+                    const prevGroup = Groupings.isElementGroup(previousElement) ? previousElement : null;
+                    const parent = Groupings.isElementGroup(maybeParent) ? maybeParent : null;
+                    await groupConfig.create?.(prevGroup, parent, app);
+                } else await props.createRow?.(getLastActualItem(previousElement), group, app);
+            },
         [app, props.createRow, props.creatable]
     );
     return (
@@ -176,7 +187,8 @@ export function TableView<T>(props: TableViewProps<T>) {
                             cols={columns.length}
                             clickCallback={clickCallbackFactory(
                                 props.rows.length ? props.rows[props.rows.length - 1] : null,
-                                null
+                                null,
+                                undefined
                             )}
                         />
                     )}
@@ -252,7 +264,8 @@ export function VanillaRowGroup<T>({
     creatable: boolean;
     callbackFactory: (
         previousElement: GroupElement<T> | T | null,
-        element: GroupElement<T> | T | null
+        element: GroupElement<T> | T | null,
+        groupConfig?: GroupingConfig<T>
     ) => () => Promise<void>;
     previousElement: T | GroupElement<T> | null;
 }) {
@@ -278,7 +291,7 @@ export function VanillaRowGroup<T>({
                             <button
                                 className="dashed-default"
                                 style="padding: 0.75em"
-                                onClick={callbackFactory(previousElement, element)}
+                                onClick={callbackFactory(previousElement, element, groupingConfig)}
                             >
                                 Create new row
                             </button>
