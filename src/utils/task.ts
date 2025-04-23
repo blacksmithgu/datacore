@@ -163,27 +163,34 @@ export async function insertListOrTaskItemAt(
     fields: Record<string, any> = {}
 ) {
     const realPath = typeof parent == "number" ? path : parent.$file;
+    const symbol = typeof parent == "number" ? "-" : parent.$symbol!;
     const file = app.vault.getFileByPath(realPath!);
     if (file == null) return;
-    const previousItem = typeof parent == "number" ? null : parent.$elements[parent.$elements.length - 1];
+    const previousItem = typeof parent == "number" ? null : parent.$elements[atEnd ? parent.$elements.length - 1 : 0];
     const content = await app.vault.read(file);
-    const filetext = content.split("\n");
+    const sep = content.contains("\r") ? "\r\n" : "\n";
+    const filetext = content.split(/\r\n|\r|\n/u);
 
-    let initialSpacing = typeof parent == "number" ? "" : /^[\s>]*/u.exec(filetext[parent.$line])!![0];
+    let initialSpacing = typeof parent == "number" ? "" : /^[\s>]*/u.exec(filetext[previousItem!.$line])!![0];
+    let desiredParts = text.split(/\r\n|\r|\n/u);
     const statusPart = status ? `[${status}] ` : "";
-    let insertedText = `${initialSpacing}- ${statusPart}${text}`;
-    if (Object.keys(fields).length) insertedText += `\n${initialSpacing}\t`;
+    const rest = desiredParts
+        .slice(1)
+        .map((l) => initialSpacing + "\t" + l.trimStart())
+        .join(sep);
+    let insertedText = [`${initialSpacing}${symbol} ${statusPart}${desiredParts[0]}`, rest].join(sep);
+    if (Object.keys(fields).length) insertedText += `${sep}${initialSpacing}\t`;
     for (let field in fields) {
         insertedText = setInlineField(insertedText, field, fields[field]);
     }
     let spliceIndex: number;
     if (previousItem && atEnd) {
-        spliceIndex = previousItem.$line + (previousItem.$text ?? "").split("\n").length;
+        spliceIndex = previousItem.$line + (previousItem.$text ?? "").split("\n").length + 1;
     } else if (typeof parent != "number") {
-        spliceIndex = parent.$line + parent.$lineCount;
+        spliceIndex = parent.$line + parent.$lineCount + 1;
     } else {
         spliceIndex = parent;
     }
     filetext.splice(spliceIndex, 0, insertedText);
-    await app.vault.modify(file, filetext.join("\n"));
+    await app.vault.modify(file, filetext.join(sep));
 }
