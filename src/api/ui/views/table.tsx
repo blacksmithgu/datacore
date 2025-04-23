@@ -69,7 +69,7 @@ export interface GroupingConfig<T> {
     /** How a grouping with the given key and set of rows should be handled. */
     render?: (key: Literal, rows: Grouping<T>) => Literal | ReactNode;
     /** How creating a new element in this group should be handled. */
-    create?: (prevGroup: GroupElement<T> | null, app: App) => Promise<unknown>;
+    create?: (prevGroup: GroupElement<T> | null, currentGroup: GroupElement<T>, app: App) => Promise<unknown>;
 }
 
 /**
@@ -190,7 +190,7 @@ export function TableView<T>(props: TableViewProps<T>) {
                 };
                 if (groupConfig) {
                     const prevGroup = Groupings.isElementGroup(previousElement) ? previousElement : null;
-                    await groupConfig.create?.(prevGroup, app);
+                    await groupConfig.create?.(prevGroup, group!, app);
                 } else await props.createRow?.(getLastActualItem(previousElement), group, app);
             },
         [app, props.createRow, props.creatable]
