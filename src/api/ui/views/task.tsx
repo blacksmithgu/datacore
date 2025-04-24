@@ -64,11 +64,10 @@ function InnerTaskList({
     const app = useContext(APP_CONTEXT);
     const create = useStableCallback(async () => {
         const parentOrRootSibling = parent ? parent : items![items!.length - 1];
-        const at = parent ? parent : (parentOrRootSibling.$line + parentOrRootSibling.$lineCount);
         const nfields = Object.fromEntries(
             rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
         );
-        await insertListOrTaskItemAt(app, at, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
+        await insertListOrTaskItemAt(app, parentOrRootSibling.$line + parentOrRootSibling.$lineCount, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
     }, [parent, rest.displayedFields, items, app]);
     const content = useMemo(() => {
         return (
