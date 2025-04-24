@@ -166,12 +166,14 @@ export async function insertListOrTaskItemAt(
     const symbol = typeof parent == "number" ? "-" : parent.$symbol!;
     const file = app.vault.getFileByPath(realPath!);
     if (file == null) return;
-    const previousItem = typeof parent == "number" ? null : parent.$elements[atEnd ? parent.$elements.length - 1 : 0];
+    let previousItem = typeof parent == "number" ? null : parent.$elements[atEnd ? parent.$elements.length - 1 : 0];
     const content = await app.vault.read(file);
     const sep = content.contains("\r") ? "\r\n" : "\n";
     const filetext = content.split(/\r\n|\r|\n/u);
-
-    let initialSpacing = typeof parent == "number" ? "" : /^[\s>]*/u.exec(filetext[previousItem!.$line])!![0];
+		if(!previousItem) {
+			previousItem = parent as MarkdownListItem | MarkdownTaskItem
+		}
+    let initialSpacing = typeof parent == "number" ? "" : /^[\s>]*/u.exec(filetext[previousItem.$line])!![0];
     let desiredParts = text.split(/\r\n|\r|\n/u);
     const statusPart = status ? `[${status}] ` : "";
     const rest = desiredParts
