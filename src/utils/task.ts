@@ -185,9 +185,9 @@ export async function insertListOrTaskItemAt(
     }
     let spliceIndex: number;
     if (previousItem && atEnd) {
-        spliceIndex = previousItem.$line + previousItem.$lineCount;
+        spliceIndex = previousItem.$line + previousItem.$lineCount - 1;
     } else if (typeof parent != "number") {
-        spliceIndex = parent.$line + parent.$lineCount;
+        spliceIndex = parent.$line + parent.$lineCount - 1;
     } else {
         spliceIndex = parent;
     }
