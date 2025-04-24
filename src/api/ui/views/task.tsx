@@ -54,7 +54,6 @@ export function TaskList({
     ),
     ...rest
 }: TaskProps) {
-    const app = useContext(APP_CONTEXT);
     const content = useMemo(() => {
         return (
             <ul className="datacore contains-task-list">
@@ -147,7 +146,6 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
             <CollapseIndicator
                 onClick={() => setCollapsed((c) => !c)}
                 collapsed={collapsed}
-                hasChildren={hasChildren}
             />
             <input
                 className="datacore task-list-item-checkbox"
@@ -179,15 +177,12 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 function CollapseIndicator({
     collapsed,
     onClick,
-    hasChildren,
 }: {
     collapsed: boolean;
     onClick: () => void;
-    hasChildren: boolean;
 }) {
     const toggleCnames = ["datacore-collapser"];
     if (collapsed) toggleCnames.push("is-collapsed");
-    if (!hasChildren) toggleCnames.push("no-children");
     return (
         <div onClick={onClick} className={toggleCnames.join(" ")} dir="auto">
             <svg
