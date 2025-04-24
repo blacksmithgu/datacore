@@ -24,6 +24,7 @@ import { Field } from "expression/field";
 import { DateTime } from "luxon";
 import "./lists.css";
 import "./misc.css";
+import { Stack } from "../layout";
 
 /**
  * Props passed to the task list component.
@@ -39,14 +40,7 @@ export interface TaskProps extends ListViewProps<MarkdownTaskItem | MarkdownList
  * @param props
  * @group Components
  */
-export function TaskList(props: TaskProps) {
-    return <InnerTaskList parent={null} {...props} />;
-}
-/**
- * @hidden 
- * @group Components
- */
-function InnerTaskList({
+export function TaskList({
     rows: items,
     additionalStates: states,
     renderer: listRenderer = (item) => (
@@ -58,18 +52,9 @@ function InnerTaskList({
             editor={(it) => TextEditable}
         />
     ),
-    parent,
     ...rest
-}: TaskProps & { parent: MarkdownTaskItem | MarkdownListItem | null }) {
+}: TaskProps) {
     const app = useContext(APP_CONTEXT);
-    const create = useStableCallback(async () => {
-        const parentOrRootSibling = parent ? parent : items![items!.length - 1];
-        const nfields = Object.fromEntries(
-            rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
-        );
-				const at = parent ? parent : parentOrRootSibling.$line + parentOrRootSibling.$lineCount
-        await insertListOrTaskItemAt(app, at, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
-    }, [parent, rest.displayedFields, items, app]);
     const content = useMemo(() => {
         return (
             <ul className="datacore contains-task-list">
@@ -88,15 +73,7 @@ function InnerTaskList({
             </ul>
         );
     }, [items, states]);
-    return (
-        <Fragment>
-            {!!items && content}
-						{(<button className="dashed-default" style="width: 100%" onClick={create}>
-                Add item
-            </button>)
-						}
-        </Fragment>
-    );
+    return <Fragment>{!!items && content}</Fragment>;
 }
 /**
  * Represents a single item in a task listing.
@@ -154,7 +131,12 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
 
     const [collapsed, setCollapsed] = useState<boolean>(true);
     const hasChildren = useMemo(() => item.$elements.length > 0, [item, item.$elements, item.$elements.length]);
-
+    const create = useStableCallback(async () => {
+        const nfields = Object.fromEntries(
+            props.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
+        );
+        await insertListOrTaskItemAt(app, item, true, " ", props.defaultText ?? "...", item.$file, nfields);
+    }, [parent, props.displayedFields, item, app]);
     return (
         <li
             key={item.$id}
@@ -182,7 +164,14 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                     </div>
                 </div>
             </div>
-            {hasChildren && !collapsed && <InnerTaskList {...props} rows={item.$elements} parent={item}/>}
+            {!collapsed && (
+                <Stack>
+                    {hasChildren && <TaskList {...props} rows={item.$elements} />}
+                    <button className="dashed-default" style="width: 100%" onClick={create}>
+                        Add item
+                    </button>
+                </Stack>
+            )}
         </li>
     );
 }
