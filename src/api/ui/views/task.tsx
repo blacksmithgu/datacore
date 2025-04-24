@@ -67,7 +67,8 @@ function InnerTaskList({
         const nfields = Object.fromEntries(
             rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
         );
-        await insertListOrTaskItemAt(app, parentOrRootSibling.$line + parentOrRootSibling.$lineCount, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
+				const at = parent ? parent : parentOrRootSibling.$line + parentOrRootSibling.$lineCount + 1
+        await insertListOrTaskItemAt(app, at, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
     }, [parent, rest.displayedFields, items, app]);
     const content = useMemo(() => {
         return (
@@ -90,9 +91,10 @@ function InnerTaskList({
     return (
         <Fragment>
             {!!items && content}
-            <button className="dashed-default" style="width: 100%" onClick={create}>
+						{parent == null && (<button className="dashed-default" style="width: 100%" onClick={create}>
                 Add item
-            </button>
+            </button>)
+						}
         </Fragment>
     );
 }
@@ -180,7 +182,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                     </div>
                 </div>
             </div>
-            {hasChildren && !collapsed && <TaskList {...props} rows={item.$elements} />}
+            {hasChildren && !collapsed && <InnerTaskList {...props} rows={item.$elements} parent={item}/>}
         </li>
     );
 }
