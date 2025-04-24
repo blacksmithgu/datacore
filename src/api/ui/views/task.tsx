@@ -67,7 +67,7 @@ function InnerTaskList({
         const nfields = Object.fromEntries(
             rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
         );
-				const at = parent ? parent : parentOrRootSibling.$line + parentOrRootSibling.$lineCount + 1
+				const at = parent ? parent : parentOrRootSibling.$line + parentOrRootSibling.$lineCount
         await insertListOrTaskItemAt(app, at, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
     }, [parent, rest.displayedFields, items, app]);
     const content = useMemo(() => {
