@@ -40,14 +40,7 @@ export interface TaskProps extends ListViewProps<MarkdownTaskItem | MarkdownList
  * @param props
  * @group Components
  */
-export function TaskList(props: TaskProps) {
-    return <InnerTaskList parent={null} {...props} />;
-}
-/**
- * @hidden 
- * @group Components
- */
-function InnerTaskList({
+export function TaskList({
     rows: items,
     additionalStates: states,
     renderer: listRenderer = (item) => (
@@ -59,13 +52,12 @@ function InnerTaskList({
             editor={(it) => TextEditable}
         />
     ),
-    parent,
     ...rest
-}: TaskProps & { parent: MarkdownTaskItem | MarkdownListItem | null }) {
+}: TaskProps) {
     const app = useContext(APP_CONTEXT);
     const create = useStableCallback(async () => {
         const parentOrRootSibling = (parent ? parent : items![items!.length - 1]) as MarkdownListItem | MarkdownTaskItem;
-        const at = parent ? parent : (parentOrRootSibling.$line + parentOrRootSibling.$lineCount);
+        const at = (parent ? parent : (parentOrRootSibling.$line + parentOrRootSibling.$lineCount)) as MarkdownListItem | MarkdownTaskItem | number;
         const nfields = Object.fromEntries(
             rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
         );
