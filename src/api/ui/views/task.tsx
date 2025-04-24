@@ -91,7 +91,7 @@ function InnerTaskList({
     return (
         <Fragment>
             {!!items && content}
-						{parent == null && (<button className="dashed-default" style="width: 100%" onClick={create}>
+						{(<button className="dashed-default" style="width: 100%" onClick={create}>
                 Add item
             </button>)
 						}
