@@ -170,10 +170,14 @@ export async function insertListOrTaskItemAt(
     const content = await app.vault.read(file);
     const sep = content.contains("\r") ? "\r\n" : "\n";
     const filetext = content.split(/\r\n|\r|\n/u);
-		if(!previousItem) {
-			previousItem = parent as MarkdownListItem | MarkdownTaskItem
-		}
+    const isChildless = !previousItem;
+    if (!previousItem) {
+        previousItem = parent as MarkdownListItem | MarkdownTaskItem;
+    }
     let initialSpacing = typeof parent == "number" ? "" : /^[\s>]*/u.exec(filetext[previousItem.$line])!![0];
+    if (isChildless) {
+        initialSpacing += "\t";
+    }
     let desiredParts = text.split(/\r\n|\r|\n/u);
     const statusPart = status ? `[${status}] ` : "";
     const rest = desiredParts
