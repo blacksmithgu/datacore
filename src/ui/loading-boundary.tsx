@@ -2,7 +2,7 @@ import { Datacore } from "index/datacore";
 import { PropsWithChildren, useEffect, useState } from "preact/compat";
 import { useIndexUpdates } from "./hooks";
 import { Literal } from "expression/literal";
-import { VNode, createElement, isValidElement } from "preact";
+import { JSX, VNode, createElement, isValidElement } from "preact";
 import { ErrorMessage, Lit } from "./markdown";
 
 import "./errors.css";

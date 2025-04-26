@@ -37,10 +37,17 @@ export function ProgressEditable(
         },
         [val.current, props.sourcePath]
     );
-    const readOnly = <progress value={val.current} min={props.min} max={props.max} step={props.step} />;
+    const readOnly = <progress value={val.current} max={props.max} />;
 
     const editor = (
-        <input type="range" className="datacore-progress-editable" value={val.current} onChange={changeCB} />
+        <input
+            type="range"
+            className="datacore-progress-editable"
+            min={props.min}
+            value={val.current}
+            onChange={changeCB}
+            step={props.step}
+        />
     );
 
     return (

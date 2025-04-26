@@ -391,10 +391,10 @@ class DataArrayImpl<T> implements DataArray<T> {
     }
 
     public first(): T {
-        return this.values.length > 0 ? this.values[0] : undefined;
+        return this.values.length > 0 ? this.values[0] : (undefined as T);
     }
     public last(): T {
-        return this.values.length > 0 ? this.values[this.values.length - 1] : undefined;
+        return this.values.length > 0 ? this.values[this.values.length - 1] : (undefined as T);
     }
 
     public to(key: string): DataArray<any> {
