@@ -28,13 +28,12 @@ import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
 import { ListView } from "./ui/views/list";
 
-/** Local API provided to specific codeblocks when they are executing.
+/**
+ * Local API provided to specific codeblocks when they are executing.
  * @group Core
  */
 export class DatacoreLocalApi {
-    /**
-     * @private
-     */
+    /** @private The cache of all currently loaded scripts in this context. */
     private scriptCache: ScriptCache;
 
     public constructor(public api: DatacoreApi, public path: string) {

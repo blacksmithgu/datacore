@@ -404,9 +404,6 @@ export type GroupElement<T> = { key: Literal; rows: Grouping<T> };
  */
 export type Grouping<T> = T[] | GroupElement<T>[];
 
-/** Utility type which groups together sequences of all group elements and all leaf elements. */
-export type GroupCluster<T> = { type: "grouping"; element: GroupElement<T> } | { type: "leaf"; elements: T[] };
-
 /**
  * @hidden
  */
@@ -475,33 +472,6 @@ export namespace Groupings {
             index++;
         }
 
-        return result;
-    }
-
-    /**
-     * Split up a grouping into a sequence of grouping elements and leaf elements,
-     * where the leaf elements are all collected together. Mainly useful for weird
-     * heterogenous mixes of group elements and leaf elements, where we want to
-     * render as many leaf elements together as possible.
-     */
-    export function cluster<T>(elements: Grouping<T>): GroupCluster<T>[] {
-        let result: GroupCluster<T>[] = [];
-        let current: T[] = [];
-
-        for (const element of elements) {
-            if (Groupings.isElementGroup(element)) {
-                if (current.length > 0) {
-                    result.push({ type: "leaf", elements: current });
-                    current = [];
-                }
-
-                result.push({ type: "grouping", element });
-            } else {
-                current.push(element);
-            }
-        }
-
-        if (current.length > 0) result.push({ type: "leaf", elements: current });
         return result;
     }
 }

@@ -103,9 +103,9 @@ export interface DataArray<T> {
     none(f: ArrayFunc<T, boolean>): boolean;
 
     /** Return the first element in the data array. Returns undefined if the array is empty. */
-    first(): T;
+    first(): T | undefined;
     /** Return the last element in the data array. Returns undefined if the array is empty. */
-    last(): T;
+    last(): T | undefined;
 
     /** Map every element in this data array to the given key, and then flatten it.*/
     to(key: string): DataArray<any>;
