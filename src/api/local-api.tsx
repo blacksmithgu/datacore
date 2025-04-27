@@ -280,7 +280,17 @@ export class DatacoreLocalApi {
         children: preact.ComponentChildren;
         fallback: preact.ComponentChild;
     }) {
-        return <>{loaded ? children : fallback}</>;
+        return (
+            <>
+                {loaded ? (
+                    children
+                ) : (
+                    <div className="datacore-loading-boundary">
+                        <div className="datacore-loading-content">{fallback}</div>
+                    </div>
+                )}
+            </>
+        );
     }
 
     /** Renders a literal value in a pretty way that respects settings. */
