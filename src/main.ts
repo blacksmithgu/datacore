@@ -2,9 +2,7 @@ import { DatacoreApi } from "api/api";
 import { Datacore } from "index/datacore";
 import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
-import { createElement, render } from "preact";
 import { DEFAULT_SETTINGS, Settings } from "settings";
-import { IndexStatusBar } from "ui/index-status";
 
 /** Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
@@ -23,9 +21,6 @@ export default class DatacorePlugin extends Plugin {
         // Initialize the core API for usage in all views and downstream apps.
         this.addChild((this.core = new Datacore(this.app, this.manifest.version, this.settings)));
         this.api = new DatacoreApi(this.core);
-
-        // Add a visual aid for what datacore is currently doing.
-        this.mountIndexState(this.addStatusBarItem(), this.core);
 
         // Primary visual elements (DatacoreJS and Datacore blocks).
         this.registerMarkdownCodeBlockProcessor(
@@ -92,13 +87,6 @@ export default class DatacorePlugin extends Plugin {
     async updateSettings(settings: Partial<Settings>) {
         Object.assign(this.settings, settings);
         await this.saveData(this.settings);
-    }
-
-    /** Render datacore indexing status using the index. */
-    private mountIndexState(root: HTMLElement, core: Datacore): void {
-        render(createElement(IndexStatusBar, { datacore: core }), root);
-
-        this.register(() => render(null, root));
     }
 }
 
