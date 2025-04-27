@@ -32,6 +32,14 @@ export interface Linkable {
     $link: Link;
 }
 
+export function isLinkable(obj: any): obj is Linkable {
+    if (obj && obj.$types !== undefined && Array.isArray(obj.$types) && obj.$types.contains(LINKABLE_TYPE)) {
+        return true;
+    }
+
+    return false;
+}
+
 /** General metadata for any file. */
 export const FILE_TYPE = "file";
 /**
@@ -44,10 +52,20 @@ export interface File extends Linkable {
     $ctime: DateTime;
     /** Obsidian-provided date this page was modified. */
     $mtime: DateTime;
+    /** Timestamp of last file access, as determined by inspecting `file-open` workspace events */
+    $atime?: DateTime;
     /** Obsidian-provided size of this page in bytes. */
     $size: number;
     /** The extension of the file. */
     $extension: string;
+}
+
+export function isFile(obj: any): obj is File {
+    if (obj && obj.$types !== undefined && Array.isArray(obj.$types) && obj.$types.contains(FILE_TYPE)) {
+        return true;
+    }
+
+    return false;
 }
 
 /** Metadata for taggable objects. */
@@ -60,6 +78,14 @@ export interface Taggable {
     $tags: string[];
 }
 
+export function isTaggable(obj: any): obj is Taggable {
+    if (obj && obj.$types !== undefined && Array.isArray(obj.$types) && obj.$types.contains(TAGGABLE_TYPE)) {
+        return true;
+    }
+
+    return false;
+}
+
 /** Metadata for objects which can link to other things. */
 export const LINKBEARING_TYPE = "links";
 /**
@@ -68,6 +94,14 @@ export const LINKBEARING_TYPE = "links";
 export interface Linkbearing {
     /** The links in this file. */
     $links: Link[];
+}
+
+export function isLinkbearing(obj: any): obj is Linkbearing {
+    if (obj && obj.$types !== undefined && Array.isArray(obj.$types) && obj.$types.contains(LINKBEARING_TYPE)) {
+        return true;
+    }
+
+    return false;
 }
 
 /**

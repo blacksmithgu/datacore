@@ -61,6 +61,8 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
     $ctime: DateTime;
     /** Obsidian-provided date this page was modified. */
     $mtime: DateTime;
+    /** Timestamp of last file access, as determined by inspecting `file-open` workspace events */
+    $atime?: DateTime;
     /** The extension; for markdown files, almost always '.md'. */
     $extension: string;
     /** Obsidian-provided size of this page in bytes. */
@@ -89,6 +91,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
             $infields: mapObjectValues(raw.$infields, (field) => normalizeLinks(valueInlineField(field), normalizer)),
             $ctime: DateTime.fromMillis(raw.$ctime),
             $mtime: DateTime.fromMillis(raw.$mtime),
+            $atime: raw.$atime ? DateTime.fromMillis(raw.$atime) : undefined,
             $extension: raw.$extension,
             $size: raw.$size,
             $position: raw.$position,
@@ -140,6 +143,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
             $infields: mapObjectValues(this.$infields, jsonInlineField),
             $ctime: this.$ctime.toMillis(),
             $mtime: this.$mtime.toMillis(),
+            $atime: this.$atime?.toMillis(),
             $extension: this.$extension,
             $size: this.$size,
             $position: this.$position,

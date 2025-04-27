@@ -1,7 +1,7 @@
 import { deferred, Deferred } from "utils/deferred";
 import { Datastore, Substorer } from "index/datastore";
 import { LocalStorageCache } from "index/persister";
-import { Indexable, INDEXABLE_EXTENSIONS } from "index/types/indexable";
+import { Indexable, INDEXABLE_EXTENSIONS, isFile } from "index/types/indexable";
 import { FileImporter, ImportThrottle } from "index/web-worker/importer";
 import { ImportResult } from "index/web-worker/message";
 import { App, Component, EventRef, Events, MetadataCache, TAbstractFile, TFile, Vault } from "obsidian";
@@ -68,6 +68,23 @@ export class Datacore extends Component {
     initialize() {
         // Metadata cache handles markdown file updates.
         this.registerEvent(this.metadataCache.on("resolve", (file) => this.reload(file)));
+
+        this.registerEvent(
+            this.app.workspace.on("file-open", (file) => {
+                if (file instanceof TFile) {
+                    const maybeMetadata: Indexable | undefined = this.datastore.load(file.path);
+                    if (isFile(maybeMetadata)) {
+                        maybeMetadata.$atime = DateTime.now();
+                        // we just update the top-level store, we don't need to recursively re-store everything.
+                        this.datastore.store(maybeMetadata);
+                        if (maybeMetadata instanceof MarkdownPage || maybeMetadata instanceof Canvas) {
+                            this.persister.storeFile(maybeMetadata.$path, maybeMetadata.json());
+                        }
+                        this.trigger("update", this.revision);
+                    }
+                }
+            })
+        );
 
         // Renames do not set off the metadata cache; catch these explicitly.
         this.registerEvent(this.vault.on("rename", this.rename, this));
