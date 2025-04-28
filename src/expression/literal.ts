@@ -394,6 +394,7 @@ export namespace Literals {
  * @group Common Types
  */
 export type GroupElement<T> = { key: Literal; rows: Grouping<T> };
+
 /**
  * A grouping, which can be either:
  * - an array of elements of type `T`, or
@@ -402,6 +403,7 @@ export type GroupElement<T> = { key: Literal; rows: Grouping<T> };
  * @group Common Types
  */
 export type Grouping<T> = T[] | GroupElement<T>[];
+
 /**
  * @hidden
  */

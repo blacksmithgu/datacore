@@ -114,7 +114,7 @@ rating >= 9
 @section and $name != "Daily"
 
 // Find all sections whose name contains `Daily`.
-@section and contains($name, "Daily")
+@section and $name.contains("Daily")
 ```
 
 ## Query Combinators

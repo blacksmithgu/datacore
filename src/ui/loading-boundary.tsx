@@ -7,6 +7,7 @@ import { ErrorMessage, Lit } from "./markdown";
 
 import "./errors.css";
 
+/** Simple view which shows datacore's current loading progress when it is still indexing on startup. */
 function LoadingProgress({ datacore }: { datacore: Datacore }) {
     useIndexUpdates(datacore, { debounce: 250 });
 
