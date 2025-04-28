@@ -21,15 +21,33 @@ export type ListViewType = "ordered" | "unordered" | "block";
  */
 export interface ListState<T> {
     /**
-     * Whether the list should be ordered (ol), unordered (ul), or block.
+     * Whether the list should be ordered, unordered, or block.
      *
      * Block lists do not use an actual list element and instead just render a series of contiguous
      * div elements with no other annotations.
      */
-    type?: ListViewType;
+    type?: "ordered" | "unordered" | "block";
 
     /** The full collection of elements in the list. */
     rows: Grouping<T>;
+
+    /** Allows for grouping header lines to be overridden with custom rendering/logic. */
+    groupings?: GroupingConfig<T> | GroupingConfig<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | VNode);
+
+    /**
+     * Custom render function to use for rendering each leaf element. Can produce either JSX or a plain value which will be
+     * rendered as a literal.
+     */
+    renderer?: (row: T) => React.ReactNode | Literal;
+
+    /** Controls whether paging is enabled for this element. If true, uses default page size. If a number, paging is enabled with the given page size. */
+    paging?: boolean | number;
+
+    /**
+     * Whether the view will scroll to the top automatically on page changes. If true, will always scroll on page changes.
+     * If a number, will scroll only if the number is greater than the current page size.
+     **/
+    scrollOnPaging?: boolean | number;
 
     /** Maximum level of children that will be rendered; a level of 0 means no children expansion will occur. */
     maxChildDepth?: number;
@@ -41,24 +59,6 @@ export interface ListState<T> {
      * If null, child extraction is disabled and no children will be fetched. If undefined, uses the default.
      */
     childProp?: null | string | string[] | ((row: T) => T[]);
-
-    /** Allows for grouping header lines to be overridden with custom rendering/logic. */
-    groupings?: GroupingConfig<T> | GroupingConfig<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | VNode);
-
-    /** Controls whether paging is enabled for this element. If true, uses default page size. If a number, paging is enabled with the given page size. */
-    paging?: boolean | number;
-
-    /**
-     * Whether the view will scroll to the top automatically on page changes. If true, will always scroll on page changes.
-     * If a number, will scroll only if the number is greater than the current page size.
-     **/
-    scrollOnPaging?: boolean | number;
-
-    /**
-     * Custom render function to use for rendering each leaf element. Can produce either JSX or a plain value which will be
-     * rendered as a literal.
-     */
-    renderer?: (row: T) => React.ReactNode | Literal;
 }
 
 /**
