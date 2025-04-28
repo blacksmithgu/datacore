@@ -1,3 +1,11 @@
+# 0.1.22 (Beta)
+
+- Several bugfixes thanks to @GamerGirlAndCo.
+- Adds a new <dc.List/> view with full documentation.
+- Removes the unnecessary object count widget in the editor view.
+
+---
+
 # 0.1.21 (Beta)
 
 - Adds `dc.evaluate()` and `dc.tryEvaluate()` for evaluating the datacore expression language programmatically.
