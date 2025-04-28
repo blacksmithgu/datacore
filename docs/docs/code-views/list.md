@@ -55,7 +55,7 @@ Which will produce a simple list like so:
 - Second
 - Third
 
-### List Types (`type`)
+## List Types (`type`)
 
 You can control which of the list types you want via the `type` property.
 
@@ -74,7 +74,7 @@ The three options available are:
 - **Block**: (`block`): A list with no additional formatting - just shows elements in a vertical list of 'blocks'.
     - Block formatting is best for embeds or other use cases where you do not want visible formatting from a regular list.
 
-### Specifying How To Render Data (`renderer`)
+## Specifying How To Render Data (`renderer`)
 
 When working with queries and any other non-trivial object, you will likely want to specify exactly what to render and how. This can be done via the `renderer` prop, which accepts a function that maps
 each row to the value or JSX to render.
@@ -102,7 +102,7 @@ return function View() {
 }
 ```
 
-### Paging (`paging` / `scrollOnPaging`)
+## Paging (`paging`)
 
 You can add paging to any list using the `paging` prop, which accepts several options.
 
@@ -120,7 +120,22 @@ You can add paging to any list using the `paging` prop, which accepts several op
 If `paging` is not specified, it defaults to whatever your default paging configuration is in
 the Datacore settings.
 
-### Grouping (`groupings`)
+### Scroll on Page (`scrollOnPaging`)
+
+By default, changing the page will retain the current scroll position, meaning you will continue
+to look at your current page position when you change pages. For large pages, this can mean
+needing to manually scroll back to the top of the table after each page; this can instead
+happen automatically by setting `scrollOnPaging`:
+
+```js
+// Always scroll to the top of the view when the page changes.
+<dc.List scrollOnPaging={true} ... />
+
+// Only scroll to the top of the page if the old page had at least 10 entries.
+<dc.List scrollOnPaging={10} ... />
+```
+
+## Grouping (`groupings`)
 
 List views automatically support rendering grouped data; grouped data can be created most easily
 using [Data Array](data-array) syntax.
@@ -170,7 +185,7 @@ return function View() {
 
 If you group multiple times, you can specify a separate rendering for each grouping level by passing an array of grouping configurations to `groupings`.
 
-### Sublists (`childSource` / `maxChildDepth`)
+## Heirarchies (`childSource` / `maxChildDepth`)
 
 Lists can recursively contain sublists to create full heirarchies of entries. By default, datacore
 will look for the `$children` and `children` properties on rows to determine sublists to render.

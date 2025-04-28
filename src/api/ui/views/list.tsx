@@ -19,7 +19,7 @@ export type ListViewType = "ordered" | "unordered" | "block";
  * @typeParam T - the type of the items contained in the list
  * @group States
  */
-export interface ListState<T> {
+export interface ListViewProps<T> {
     /**
      * Whether the list should be ordered, unordered, or block.
      *
@@ -74,7 +74,7 @@ export interface GroupingConfig<T> {
  * A simple and responsive list view.
  * @group Components
  */
-export function ListView<T>(props: ListState<T>) {
+export function ListView<T>(props: ListViewProps<T>) {
     const type = props.type ?? "unordered";
     const renderer = props.renderer ?? ((x: T) => x as Literal);
 
