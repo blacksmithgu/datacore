@@ -170,7 +170,78 @@ return function View() {
 
 If you group multiple times, you can specify a separate rendering for each grouping level by passing an array of grouping configurations to `groupings`.
 
-### Heirarchies / Children (`childProp` / `maxChildDepth`)
+### Sublists (`childSource` / `maxChildDepth`)
+
+Lists can recursively contain sublists to create full heirarchies of entries. By default, datacore
+will look for the `$children` and `children` properties on rows to determine sublists to render.
+For example, this will produce a nested list of two top level items (`Hello` and `Goodbye`), each with three subitems.
+
+```jsx
+const DATA = [
+    {
+        title: "Hello",
+        children: [
+            { title: "One" },
+            { title: "Two" },
+            { title: "Three" }
+        ]
+    },
+    {
+        title: "Goodbye",
+        children: [
+            { title: "Four" },
+            { title: "Five" },
+            { title: "Six" }
+        ]
+    }
+];
+
+return function View() {
+    return <dc.List rows={DATA} renderer={item => item.title} />;
+}
+```
+
+If you want to use another field instead, you can override the `childSource` property to provide
+either a different property, list of properties, or even an arbitrary function:
+
+```jsx
+return function View() {
+    // Provide an alternative property to use.
+    return <dc.List rows={...} childSource={"items"} ... />;
+    // Provide a list of alternative properties.
+    return <dc.List rows={...} childSource={["items", "things"]} ... />;
+    // Provide an arbitrary function.
+    return <dc.List rows={...} childSource={item => item.value("doodads")} ... />;
+}
+```
+
+You can also control the maximum depth of children to show via `maxChildDepth`; this defaults to
+a small constant (<20) by default.
+
+```jsx
+return function View() {
+    // Show only at most two levels of children.
+    return <dc.List rows={...} childSource={"items"} maxChildDepth={2} ... />;
+}
+```
+
+Children and grouping can be combined to create very interesting views, such as this one which
+dynamically generates a list of books as well as all pages/sections immediately linking to that book:
+
+```jsx
+// Finds all things linked to book that themselves can be linked to.
+function findLinked(book) {
+	return dc.query(`[[${book.$path}]] and $types.econtains("linkable")`);
+}
+
+return function View() {
+    // Groups both by 
+    const books = dc.useQuery("@page and #book");
+    const groupedBooks = dc.useArray(books, array => array.groupBy(book => book.value("genre") ?? "No Genre"));
+
+    return <dc.List rows={groupedBooks} renderer={(book) => book.$link} maxChildDepth={1} childSource={findLinked} />;
+}
+```
 
 ## Full Reference
 
@@ -216,7 +287,7 @@ export interface ListState<T> {
      *
      * If null, child extraction is disabled and no children will be fetched. If undefined, uses the default.
      */
-    childProp?: null | string | string[] | ((row: T) => T[]);
+    childSource?: null | string | string[] | ((row: T) => T[]);
 }
 
 export interface GroupingConfig<T> {

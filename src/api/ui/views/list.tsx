@@ -58,7 +58,7 @@ export interface ListState<T> {
      *
      * If null, child extraction is disabled and no children will be fetched. If undefined, uses the default.
      */
-    childProp?: null | string | string[] | ((row: T) => T[]);
+    childSource?: null | string | string[] | ((row: T) => T[]);
 }
 
 /**
@@ -104,7 +104,7 @@ export function ListView<T>(props: ListState<T>) {
 
     // Maximum amount of recursion we'll allow when expanding children.
     const maxChildDepth = useMemo(() => props.maxChildDepth ?? 12, [props.maxChildDepth]);
-    const childFunc = useMemo(() => ensureChildrenFunc(props.childProp), [props.childProp]);
+    const childFunc = useMemo(() => ensureChildrenFunc(props.childSource), [props.childSource]);
 
     return (
         <div ref={containerRef} className="datacore-list">
@@ -165,23 +165,14 @@ function ListGroup<T>({
         );
     } else {
         // This is a leaf cluster. Render it directly.
-        if (type === "ordered") {
+        if (type === "ordered" || type === "unordered") {
             return (
                 <HtmlList<T>
-                    type="ordered"
+                    type={type}
                     rows={rows}
                     renderer={renderer}
-                    maxChildDepth={maxChildDepth}
-                    childFunc={childFunc}
-                />
-            );
-        } else if (type === "unordered") {
-            return (
-                <HtmlList<T>
-                    type="unordered"
-                    rows={rows}
-                    renderer={renderer}
-                    maxChildDepth={maxChildDepth}
+                    maxDepth={maxChildDepth}
+                    depth={0}
                     childFunc={childFunc}
                 />
             );
@@ -222,13 +213,15 @@ function HtmlList<T>({
     type,
     rows,
     renderer,
-    maxChildDepth,
+    maxDepth,
+    depth,
     childFunc,
 }: {
     type: "ordered" | "unordered";
     rows: T[];
     renderer: (row: T) => React.ReactNode | Literal;
-    maxChildDepth: number;
+    maxDepth: number;
+    depth: number;
     childFunc: (element: T) => T[];
 }) {
     if (type === "ordered") {
@@ -236,11 +229,12 @@ function HtmlList<T>({
             <ol className={"datacore-list datacore-list-ordered"}>
                 {rows.map((element, index) => (
                     <HtmlListItem<T>
+                        type={type}
                         element={element}
                         key={index}
                         renderer={renderer}
-                        maxDepth={maxChildDepth}
-                        depth={0}
+                        maxDepth={maxDepth}
+                        depth={depth}
                         childFunc={childFunc}
                     />
                 ))}
@@ -251,11 +245,12 @@ function HtmlList<T>({
             <ul className={"datacore-list datacore-list-unordered"}>
                 {rows.map((element, index) => (
                     <HtmlListItem<T>
+                        type={type}
                         element={element}
                         key={index}
                         renderer={renderer}
-                        maxDepth={maxChildDepth}
-                        depth={0}
+                        maxDepth={maxDepth}
+                        depth={depth}
                         childFunc={childFunc}
                     />
                 ))}
@@ -266,12 +261,14 @@ function HtmlList<T>({
 
 /** A single <li> item (potentially with children) in an HTML list. */
 function HtmlListItem<T>({
+    type,
     element,
     renderer,
     maxDepth,
     depth,
     childFunc,
 }: {
+    type: "ordered" | "unordered";
     element: T;
     renderer: (row: T) => React.ReactNode | Literal;
     maxDepth: number;
@@ -286,16 +283,16 @@ function HtmlListItem<T>({
     return (
         <li className={"datacore-list-item"}>
             {ensureListElement(renderer(element))}
-            {children?.map((child, index) => (
-                <HtmlListItem<T>
-                    element={child}
-                    key={index}
+            {children && (
+                <HtmlList<T>
+                    type={type}
+                    rows={children}
                     maxDepth={maxDepth}
                     depth={depth + 1}
                     renderer={renderer}
                     childFunc={childFunc}
                 />
-            ))}
+            )}
         </li>
     );
 }

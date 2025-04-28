@@ -166,6 +166,26 @@ export class DatacoreLocalApi {
         return this.api.tryEvaluate(expression, variables, sourcePath ?? this.path);
     }
 
+    /** Execute a textual or typed index query, returning all results. */
+    public query(query: string | IndexQuery): Indexable[] {
+        return this.api.query(query);
+    }
+
+    /** Execute a textual or typed index query, returning all results. */
+    public tryQuery(query: string | IndexQuery): Result<Indexable[], string> {
+        return this.api.tryQuery(query);
+    }
+
+    /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public fullquery(query: string | IndexQuery): SearchResult<Indexable> {
+        return this.api.fullquery(query);
+    }
+
+    /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
+        return this.api.tryFullQuery(query);
+    }
+
     /////////////
     //  Hooks  //
     /////////////
