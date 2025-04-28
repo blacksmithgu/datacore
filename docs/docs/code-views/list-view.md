@@ -216,7 +216,7 @@ return function View() {
 ```
 
 You can also control the maximum depth of children to show via `maxChildDepth`; this defaults to
-a small constant (<20) by default.
+a small constant (less than 20) by default.
 
 ```jsx
 return function View() {
