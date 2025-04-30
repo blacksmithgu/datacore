@@ -1,6 +1,6 @@
 ---
 title: Queries
-sidebar_position: 100
+sidebar_position: 400
 ---
 import { CodeExample } from "@site/src/figure";
 
