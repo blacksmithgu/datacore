@@ -1,5 +1,5 @@
 ---
-title: Markdown Pages
+title: Pages
 sidebar_position: 100
 ---
 
