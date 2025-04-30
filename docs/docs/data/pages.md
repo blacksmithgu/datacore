@@ -1,6 +1,6 @@
 ---
 title: Pages
-sidebar_position: 100
+sidebar_position: 300
 ---
 
 Datacore tracks all markdown pages as well as a substantial amount of metadata about them. Markdown pages can be queried by the `@page` type.
@@ -40,7 +40,7 @@ You can reference page fields in queries and expressions directly by case-insens
 
 ## In Javascript
 
-In javascript, you can use the [fields API](/code-views/fields) to easily access typed fields. This is case-insensitive:
+In javascript, you can use the [fields API](fields) to easily access typed fields. This is case-insensitive:
 
 ```js
 page.value("rating") => 7
