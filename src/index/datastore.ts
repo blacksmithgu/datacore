@@ -318,9 +318,8 @@ export class Datastore {
                 (sec) => normalizeHeaderForLink(sec.$title) == link.subpath || sec.$title == link.subpath
             );
 
-            if (section) {
-                return section;
-            } else return undefined;
+            if (section) return section;
+            else return undefined;
         } else if (link.type === "block") {
             for (const section of file.$sections) {
                 const block = section.$blocks.find((bl) => bl.$blockId === link.subpath);

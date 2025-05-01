@@ -79,9 +79,7 @@ export class ScriptCache {
         const key = this.pathkey(resolvedPath);
         const currentScript = this.scripts.get(key);
         if (currentScript) {
-            if (currentScript.type === "loaded") {
-                return Result.success(currentScript.object);
-            }
+            if (currentScript.type === "loaded") return Result.success(currentScript.object);
 
             // TODO: If we try to load an already-loading script, we are almost certainly doing something
             // weird. Either the caller is not `await`-ing the load and loading multiple times, OR

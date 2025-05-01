@@ -43,7 +43,6 @@ export interface Settings {
 
 /** Default settings for the plugin. */
 export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
-    scriptRoots: new Set(),
     importerNumThreads: 2,
     importerUtilization: 0.75,
 
@@ -52,6 +51,8 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
     defaultPagingEnabled: true,
     defaultPageSize: 50,
     scrollOnPageChange: false,
+
+    scriptRoots: [],
 
     maxRecursiveRenderDepth: 5,
 
