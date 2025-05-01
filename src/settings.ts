@@ -1,7 +1,5 @@
 /** All datacore settings. */
 export interface Settings {
-    /** Vault folders to be used when resolving required/imported scripts in addition to the vault root. */
-    scriptRoots: Set<string>;
     /** The number of threads the importer will use for importing. */
     importerNumThreads: number;
     /** The CPU utilization (between 0.1 and 1.0) that importer threads should use. */
@@ -19,6 +17,9 @@ export interface Settings {
     defaultPageSize: number;
     /** If set, views will scroll to the top of the view on page changes. */
     scrollOnPageChange: boolean;
+
+    /** Vault folders to be used when resolving required/imported scripts in addition to the vault root. */
+    scriptRoots: string[];
 
     /**
      * Maximum depth that objects will be rendered to (i.e., how many levels of subproperties

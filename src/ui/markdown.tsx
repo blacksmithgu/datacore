@@ -144,7 +144,11 @@ export function RawMarkdown({
         });
     }, [content, sourcePath, inline, container.current]);
 
-    return <span ref={container} style={style} className={cls} onClick={onClick}></span>;
+    return (
+        <span ref={container} style={style} className={cls} onClick={onClick}>
+            {content}
+        </span>
+    );
 }
 
 /**

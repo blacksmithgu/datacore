@@ -3,12 +3,17 @@ import { Datacore } from "index/datacore";
 import { debounce } from "obsidian";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { SearchResult } from "index/datastore";
-import { Literals } from "expression/literal";
+import { Literal, Literals } from "expression/literal";
 import { Result } from "api/result";
+import { CURRENT_FILE_CONTEXT } from "./markdown";
+import { isValidElement } from "preact";
+import { ReactNode } from "preact/compat";
+import { Lit } from "ui/markdown";
 
-/** Hook that updates the view whenever the revision updates, returning the newest revision.
+/**
+ * Hook that updates the view whenever the revision updates, returning the newest revision.
  * @group Hooks
  */
 export function useIndexUpdates(datacore: Datacore, settings?: { debounce?: number }): number {
@@ -26,7 +31,8 @@ export function useIndexUpdates(datacore: Datacore, settings?: { debounce?: numb
     return revision;
 }
 
-/** A hook which updates whenever file metadata for a specific file updates.
+/**
+ * A hook which updates whenever file metadata for a specific file updates.
  * @group Hooks
  */
 export function useFileMetadata(
@@ -40,7 +46,8 @@ export function useFileMetadata(
     return useMemo(() => datacore.datastore.load(path), [indexRevision, path]);
 }
 
-/** Settings which control how automatic query reloading should work.
+/**
+ * Settings which control how automatic query reloading should work.
  * @group Config
  */
 export interface UseQuerySettings {
@@ -51,8 +58,8 @@ export interface UseQuerySettings {
     debounce?: number;
 }
 
-/** Perform a live, synchronous query which updates its results whenever the backing query would change.
- *
+/**
+ * Perform a live, synchronous query which updates its results whenever the backing query would change.
  * @group Hooks
  */
 export function tryUseFullQuery(
@@ -104,8 +111,8 @@ export function tryUseFullQuery(
     }, [internedQuery, indexRevision]);
 }
 
-/** Perform a live, synchronous query which updates its results whenever the backing query would change.
- *
+/**
+ * Perform a live, synchronous query which updates its results whenever the backing query would change.
  * @group Hooks
  */
 export function useFullQuery(
@@ -116,8 +123,8 @@ export function useFullQuery(
     return tryUseFullQuery(datacore, query, settings).orElseThrow((e) => "Failed to search: " + e);
 }
 
-/** Simplier version of useFullQuery which just directly returns results.
- *
+/**
+ * Simplier version of useFullQuery which just directly returns results.
  * @group Hooks
  */
 export function tryUseQuery(
@@ -128,18 +135,15 @@ export function tryUseQuery(
     return tryUseFullQuery(datacore, query, settings).map((result) => result.results);
 }
 
-/** Simplier version of useFullQuery which just directly returns results.
- *
+/**
+ * Simplier version of useFullQuery which just directly returns results.
  * @group Hooks
  */
 export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): Indexable[] {
     return useFullQuery(datacore, query, settings).results;
 }
 
-/** Determines if the two sets of objects are the same. Only uses revision comparison for performance.
- *
- * @hidden
- */
+/** Determines if the two sets of objects are the same. Only uses revision comparison for performance. */
 function sameObjects(old: Indexable[], incoming: Indexable[]) {
     if (old.length != incoming.length) return false;
 
@@ -174,8 +178,8 @@ export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T 
     return ref.current;
 }
 
-/** Use a stable callback which hides mutable state behind a stable reference.
- *
+/**
+ * Use a stable callback which hides mutable state behind a stable reference. Reduces react re-renders.
  * @group Hooks
  */
 export function useStableCallback<T>(callback: T, deps: any[]): T {
@@ -195,8 +199,8 @@ export function useStableCallback<T>(callback: T, deps: any[]): T {
 
 const NO_OP_UPDATE = (x: any) => {};
 
-/** Use state that will default to an external controlled value if set; otherwise, will track an internal value.
- *
+/**
+ * Use state that will default to an external controlled value if set; otherwise, will track an internal value.
  * @group Hooks
  */
 export function useControlledState<T>(
@@ -220,4 +224,20 @@ export function useControlledState<T>(
     );
 
     return [state, setStateWithUpdate];
+}
+
+/**
+ * Ensure that a given literal or element input is rendered as a JSX.Element.
+ * @hidden
+ */
+export function useAsElement(element: ReactNode | Literal): ReactNode {
+    const sourcePath = useContext(CURRENT_FILE_CONTEXT);
+
+    return useMemo(() => {
+        if (isValidElement(element)) {
+            return element as ReactNode;
+        } else {
+            return <Lit sourcePath={sourcePath} inline={true} value={element as any} />;
+        }
+    }, [element]);
 }

@@ -325,7 +325,8 @@ export const DATE_SHORTHANDS = {
 export type PostfixFragment =
     | { type: "dot"; expr: string }
     | { type: "index"; expr: Expression }
-    | { type: "function"; exprs: Expression[] };
+    | { type: "function"; exprs: Expression[] }
+    | { type: "method"; func: string; exprs: Expression[] };
 
 export interface ExpressionLanguage {
     variable: VariableExpression;
@@ -349,6 +350,7 @@ export interface ExpressionLanguage {
     dotPostfix: PostfixFragment;
     indexPostfix: PostfixFragment;
     functionPostfix: PostfixFragment;
+    methodPostfix: PostfixFragment;
 
     // Binary op parsers.
     binaryMulDiv: Expression;
@@ -422,24 +424,31 @@ export const EXPRESSION = P.createLanguage<ExpressionLanguage>({
             q.variable
         ),
     index: (q) =>
-        P.seqMap(q.atom, P.alt(q.dotPostfix, q.indexPostfix, q.functionPostfix).many(), (obj, postfixes) => {
-            let result = obj;
-            for (let post of postfixes) {
-                switch (post.type) {
-                    case "dot":
-                        result = Expressions.index(result, Expressions.literal(post.expr));
-                        break;
-                    case "index":
-                        result = Expressions.index(result, post.expr);
-                        break;
-                    case "function":
-                        result = Expressions.func(result, post.exprs);
-                        break;
+        P.seqMap(
+            q.atom,
+            P.alt(q.methodPostfix, q.functionPostfix, q.indexPostfix, q.dotPostfix).many(),
+            (obj, postfixes) => {
+                let result = obj;
+                for (let post of postfixes) {
+                    switch (post.type) {
+                        case "dot":
+                            result = Expressions.index(result, Expressions.literal(post.expr));
+                            break;
+                        case "index":
+                            result = Expressions.index(result, post.expr);
+                            break;
+                        case "function":
+                            result = Expressions.func(result, post.exprs);
+                            break;
+                        case "method":
+                            result = Expressions.method(result, post.func, post.exprs);
+                            break;
+                    }
                 }
-            }
 
-            return result;
-        }),
+                return result;
+            }
+        ),
     negated: (q) => P.seqMap(P.string("!"), q.index, (_, field) => Expressions.negate(field)).desc("negated field"),
     parens: (q) => q.expression.trim(P.optWhitespace).wrap(P.string("("), P.string(")")),
     lambda: (q) =>
@@ -454,27 +463,38 @@ export const EXPRESSION = P.createLanguage<ExpressionLanguage>({
             }
         ),
 
-    dotPostfix: (q) => P.seqMap(P.string("."), PRIMITIVES.identifier, (_, expr) => ({ type: "dot", expr })),
+    dotPostfix: (q) =>
+        P.string(".")
+            .then(PRIMITIVES.identifier)
+            .map((expr) => ({ type: "dot", expr })),
+    // Indexing into something: a[b].
     indexPostfix: (q) =>
-        P.seqMap(
-            P.string("["),
-            P.optWhitespace,
-            q.expression,
-            P.optWhitespace,
-            P.string("]"),
-            (_, _2, expr, _3, _4) => {
+        q.expression
+            .trim(P.optWhitespace)
+            .wrap(P.string("["), P.string("]"))
+            .map((expr) => {
                 return { type: "index", expr };
-            }
-        ),
+            }),
+    // Call on a variable directly: var().
     functionPostfix: (q) =>
-        P.seqMap(
-            P.string("("),
-            P.optWhitespace,
-            q.expression.sepBy(P.string(",").trim(P.optWhitespace)),
-            P.optWhitespace,
-            P.string(")"),
-            (_, _1, exprs, _2, _3) => {
+        q.expression
+            .sepBy(P.string(",").trim(P.optWhitespace))
+            .trim(P.optWhitespace)
+            .wrap(P.string("("), P.string(")"))
+            .map((exprs) => {
                 return { type: "function", exprs };
+            }),
+    // Full method call: .thing().
+    methodPostfix: (q) =>
+        P.seqMap(
+            P.string("."),
+            PRIMITIVES.identifier.trim(P.optWhitespace),
+            q.expression
+                .sepBy(P.string(",").trim(P.optWhitespace))
+                .trim(P.optWhitespace)
+                .wrap(P.string("("), P.string(")")),
+            (_, func, exprs) => {
+                return { type: "method", func, exprs };
             }
         ),
 
@@ -555,7 +575,8 @@ export const QUERY = P.createLanguage<QueryLanguage>({
     queryLinked: (q) =>
         createFunction(P.regexp(/linksto|linkedfrom|connected/i).desc("connected"), q.query).map(([func, source]) => ({
             type: "linked",
-            source,
+            // When writing syntax like `linksto([[link]])`, [[link]] will also be interpreted as a linked query, so unwrap it if present.
+            source: source.type == "linked" && source.source.type == "link" ? source.source : source,
             direction:
                 func.toLowerCase() == "linksto" ? "incoming" : func.toLowerCase() == "linkedfrom" ? "outgoing" : "both",
         })),

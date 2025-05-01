@@ -2,13 +2,14 @@ import { Datacore } from "index/datacore";
 import { PropsWithChildren, useEffect, useState } from "preact/compat";
 import { useIndexUpdates } from "./hooks";
 import { Literal } from "expression/literal";
-import { VNode, createElement, isValidElement } from "preact";
+import { JSX, VNode, createElement, isValidElement } from "preact";
 import { ErrorMessage, Lit } from "./markdown";
 
 import "./errors.css";
 
 type Renderable = Literal | VNode | Function;
 
+/** Simple view which shows datacore's current loading progress when it is still indexing on startup. */
 function LoadingProgress({ datacore }: { datacore: Datacore }) {
     useIndexUpdates(datacore, { debounce: 250 });
 

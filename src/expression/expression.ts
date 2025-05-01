@@ -17,6 +17,7 @@ export type Expression =
     | ObjectExpression
     | BinaryOpExpression
     | FunctionExpression
+    | MethodExpression
     | LambdaExpression
     | NegatedExpression;
 
@@ -58,6 +59,17 @@ export interface FunctionExpression {
     /** Either the name of the function being called or a Function object. */
     func: Expression;
     /** The list of arguments being passed to the function. */
+    arguments: Expression[];
+}
+
+/** A method call of the form `expr.function()`. Checks if the expression is an object which has that function; otherwise, falls back to a function call. */
+export interface MethodExpression {
+    type: "method";
+    /** The target the method is being called on. */
+    target: Expression;
+    /** The name of the function being called. */
+    func: string;
+    /** The list of arguments being passed to the function call. */
     arguments: Expression[];
 }
 
@@ -113,6 +125,10 @@ export namespace Expressions {
         return { type: "lambda", arguments: args, value };
     }
 
+    export function method(target: Expression, func: string, args: Expression[]): MethodExpression {
+        return { type: "method", target, func, arguments: args };
+    }
+
     export function func(func: Expression, args: Expression[]): FunctionExpression {
         return { type: "function", func, arguments: args };
     }
@@ -152,7 +168,13 @@ export namespace Expressions {
                 // Otherwise just check left and right.
                 return Filters.setUnion([unboundVariables(expr.left, bound), unboundVariables(expr.right, bound)]);
             case "function":
-                return Filters.setUnion(expr.arguments.map((a) => unboundVariables(a, bound)));
+                const funcArgsBound = expr.arguments.map((a) => unboundVariables(a, bound));
+                const funcExprBound = unboundVariables(expr.func, bound);
+                return Filters.setUnion(funcArgsBound.concat(funcExprBound));
+            case "method":
+                const methodArgsBound = expr.arguments.map((a) => unboundVariables(a, bound));
+                const targetBound = unboundVariables(expr.target, bound);
+                return Filters.setUnion(methodArgsBound.concat(targetBound));
             case "lambda":
                 const newBound = bound ?? new Set();
                 for (const arg of expr.arguments) newBound.add(arg);
@@ -183,6 +205,8 @@ export namespace Expressions {
                 return `${toString(expr.left)} ${expr.op} ${toString(expr.right)}`;
             case "function":
                 return `${toString(expr.func)}(${expr.arguments.map(toString).join(", ")})`;
+            case "method":
+                return `${toString(expr.target)}.${expr.func}(${expr.arguments.map(toString).join(", ")})`;
             case "lambda":
                 return `(${expr.arguments.join(", ")}) => ${toString(expr.value)}`;
             case "list":
