@@ -14,6 +14,7 @@ Datacore tracks each section in markdown files and canvases; sections can be que
 | `$position` | The position of the section. Datacore positions are recorded as `{ start, end }` line numbers, where start is inclusive and end is exclusive. | `{ start: 0, end: 7 }` |
 | `$lineCount` | The length of the section in lines. | `7` |
 | `$tags` | A list of unique tags in the section. | `["#game", "#todo/revisit"]` |
+| `$links` | A list of all unique links in the section. | A list of links. |
 | `$link` | A Link object that links to this section. | `[[Dark Souls#Thoughts]]` |
 | `$blocks` | A list of markdown blocks inside this section. See the documentation for [blocks](blocks). | See documentation. |
 | `$infields` | A list of inline fields for this section. | `{ "field 1": { key: "field 1", value: "value", raw: "raw unparsed value", position: ... }, ... }` |
