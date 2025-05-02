@@ -10,7 +10,7 @@ string operations, list operations, and so on).
 
 - [X] **Table**: The standard columnar table view.
 - [X] **List**: The standard list view, which just lists elements.
-- [ ] **Embed List**: A special list which just renders a list of embedded pages 
+- [X] **Embed List**: A special list which just renders a list of embedded pages 
 - [ ] **Card**: A card-based view which supports a title and card content.
 - [ ] **Grouped**: A special view which allows for splitting query results into subgroups, and render a separate
   table / list / card view for each group.
@@ -27,7 +27,7 @@ Each view will have the following general functionality:
 - [X] **Pagination**: For performance reasons, all views are paginated (configurable to 10, 20, 50, 100, 250 or a custom
   granularity).
 - [X] **Live Reloading**: Views automatically update whenever the result of their query changes.
-- [ ] **Embed Support**: Most views should play nice with embeds (images, PDFs, other markdown files).
+- [X] **Embed Support**: Most views should play nice with embeds (images, PDFs, other markdown files).
 - [ ] **Add New Element**: Views will support adding new pages automatically via a template; this template can be
   configured or use an existing Obsidian template file.
 
@@ -73,7 +73,7 @@ The kind of metadata that Datacore will index.
 - [X] **Sections**: Every section in markdown pages will be parsed, including the implicit "root" section (the first
   part of the page before any section headers).
 - [X] **Tasks**: Tasks inside markdown pages will be parsed, along with various metadata from the **Tasks** plugin.
-- [ ] **Canvas Files**: Canvas files will be indexed; each text node will be available to load, as well as all linked
+- [X] **Canvas Files**: Canvas files will be indexed; each text node will be available to load, as well as all linked
   pages inside of the file.
 - [ ] **Images**: Basic metadata - name, dimensions, format.
 - [ ] **Videos**: Basic metadata - name, dimensions, format.
@@ -85,7 +85,7 @@ The kind of metadata that Datacore will index.
   re-renders, and also allows for access to Datacore visual components.
 - [X] **Index Queries**: Skip the "query rendering" step and directly access the backing database, which allows for much
   faster queries in exchange for less flexibility.
-- [ ] **Script Imports**: Support `require()` inside of codeblocks; note that this will generally only works for scripts
+- [X] **Script Imports**: Support `require()` inside of codeblocks; note that this will generally only works for scripts
   inside of the vault.
 
 ## Technical

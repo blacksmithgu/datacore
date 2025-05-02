@@ -4,12 +4,10 @@
   "description": "Reactive data engine for Obsidian.md.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "files": [
-    "lib/**/*"
-  ],
   "scripts": {
-    "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "build": "tsc && tsc --project tsconfig.library.json && node esbuild.config.mjs production all",
+    "build-plugin": "tsc && node esbuild.config.mjs production plugin",
+    "build-library": "tsc --project tsconfig.library.json && api-extractor run --local --verbose && node esbuild.config.mjs production library",
     "test": "yarn run jest",
     "test-watch": "yarn run jest -i --watch --no-cache",
     "check-format": "yarn run prettier --check src",
@@ -27,6 +25,7 @@
     "@codemirror/language": "https://github.com/lishid/cm-language",
     "@codemirror/state": "^6.0.1",
     "@codemirror/view": "^6.0.1",
+    "@microsoft/api-extractor": "^7.52.7",
     "@types/jest": "^27.0.1",
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
@@ -57,5 +56,8 @@
     "sorted-btree": "^1.8.1",
     "sucrase": "3.35.0",
     "yaml": "^2.3.3"
+  },
+  "peerDependencies": {
+    "preact": "^10.17.1"
   }
 }

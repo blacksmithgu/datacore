@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
     "baseUrl": "src",
-    "inlineSourceMap": true,
-    "inlineSources": true,
     "module": "ESNext",
     "target": "es2018",
     "allowJs": false,
+    "declaration": true,
+    "sourceMap": true,
+    "declarationMap": true,
     "skipLibCheck": true,
-    "noEmit": true,
+    "emitDeclarationOnly": true,
     "jsx": "react-jsx",
 		"jsxImportSource": "preact",
     "noImplicitAny": true,
@@ -24,7 +25,8 @@
 		"paths": {
       "react": ["preact/compat"],
       "react-dom": ["preact/compat"]
-    }
+    },
+    "outDir": "build/declarations"
   },
-  "include": ["src/main.ts", "src/typings/*.d.ts"],
+  "include": ["src/index.ts", "src/typings/*.d.ts"],
 }

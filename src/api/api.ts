@@ -21,7 +21,8 @@ import { Expression } from "expression/expression";
 import { Literal } from "expression/literal";
 import { Variables } from "expression/evaluator";
 
-/** Exterally visible API for datacore.
+/**
+ * Exterally visible API for datacore.
  * @group Core
  */
 export class DatacoreApi {

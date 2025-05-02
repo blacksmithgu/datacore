@@ -47,7 +47,7 @@ export function LoadingBoundary({ children, datacore }: PropsWithChildren<{ data
 }
 
 /**
- * Executes a vanilla javasript function lazily one time. Mainly useful to only run a script
+ * Executes a vanilla javascript function lazily one time. Mainly useful to only run a script
  * once the parent loading boundary is actually ready.
  */
 export function ScriptContainer({
