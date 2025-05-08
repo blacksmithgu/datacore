@@ -52,3 +52,6 @@ li.datacore.task-list-item .datacore-collapser {
 li.datacore.task-list-item .datacore-collapser.no-children {
     visibility: hidden;
 }
+li.add-button-row::marker {
+	content: "";
+}
