@@ -3,7 +3,7 @@
  */
 
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
-import { EditableListElement, ListState } from "api/ui/views/list";
+import { EditableListElement, ListViewProps } from "api/ui/views/list";
 import { useStableCallback } from "ui/hooks";
 import { Fragment } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT } from "ui/markdown";
@@ -28,7 +28,7 @@ import "./lists.css";
  * Props passed to the task list component.
  * @group Props
  */
-export interface TaskProps extends ListState<MarkdownTaskItem | MarkdownListItem> {
+export interface TaskProps extends ListViewProps<MarkdownTaskItem | MarkdownListItem> {
     /** task states to cycle through, if specified */
     additionalStates?: string[];
 }
@@ -41,7 +41,7 @@ export interface TaskProps extends ListState<MarkdownTaskItem | MarkdownListItem
 export function TaskList({
     rows: items,
     additionalStates: states,
-    renderer: listRenderer = (item, index) => (
+    renderer: listRenderer = (item) => (
         <EditableListElement<string>
             onUpdate={useListItemEditing(item, "")}
             element={item.$cleantext!}
@@ -55,14 +55,14 @@ export function TaskList({
     const content = useMemo(() => {
         return (
             <ul className="datacore contains-task-list">
-                {items?.map((item, ind) =>
+                {items?.map((item) =>
                     item instanceof MarkdownTaskItem ? (
-                        <Task key={item.$id} state={{ ...rest, additionalStates: states }} item={item} />
+                        <Task key={item.$id} state={{ ...rest, additionalStates: states, rows: item.$elements }} item={item} />
                     ) : (
                         <li>
-                            {listRenderer(item, ind)}
+                            {listRenderer(item as MarkdownListItem | MarkdownTaskItem)}
                             <div className="datacore-list-item-fields">
-                                <ListItemFields displayedFields={rest.displayedFields} item={item} />
+                                <ListItemFields displayedFields={rest.displayedFields} item={item as MarkdownListItem | MarkdownTaskItem} />
                             </div>
                         </li>
                     )
