@@ -1,5 +1,6 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { GroupingConfig, useAsElement, VanillaColumn, VanillaTableProps } from "./table";
+import { GroupingConfig, TableColumn, TableViewProps } from "./table";
+import { useAsElement } from "ui/hooks";
 import { useInterning, useStableCallback } from "ui/hooks";
 import { Dispatch, Reducer, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "preact/hooks";
 import { ControlledPager, useDatacorePaging } from "./paging";
@@ -152,7 +153,7 @@ function useKeyFn<T>(id: TreeTableState<T>["id"], ...deps: any[]) {
     return ret;
 }
 
-export interface TreeTableColumn<T, V = Literal> extends VanillaColumn<T, V> {
+export interface TreeTableColumn<T, V = Literal> extends TableColumn<T, V> {
     sortable?: boolean;
 
     comparator?: (first: V, second: V, firstObject: T, secondObject: T) => number;
@@ -169,7 +170,7 @@ export interface TreeTableProps<T> {
     rows: T[] | Grouping<T>;
     paging?: boolean | number;
     scrollOnPaging?: boolean | number;
-    groupings?: VanillaTableProps<TreeTableRowData<T>>["groupings"];
+    groupings?: TableViewProps<TreeTableRowData<T>>["groupings"];
     sortOn?: SortOn[];
     childSelector: (raw: T) => T[];
     id?: (obj: T) => string;
