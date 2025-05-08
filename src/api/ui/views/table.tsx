@@ -200,6 +200,7 @@ export function TableView<T>(props: TableViewProps<T>) {
     );
 }
 /**
+ * Button that creates a new element when clicked.
  * @hidden
  */
 function CreateButton({ clickCallback, cols }: { clickCallback: () => Promise<unknown>; cols: number }) {
@@ -270,7 +271,7 @@ export function VanillaRowGroup<T>({
 }) {
     if (Groupings.isElementGroup(element)) {
         const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
-
+				const onClick = callbackFactory(previousElement, element, groupingConfig);
         return (
             <Fragment>
                 <TableGroupHeader level={level} value={element} width={columns.length} config={groupingConfig} />
@@ -284,6 +285,7 @@ export function VanillaRowGroup<T>({
                         callbackFactory={callbackFactory}
                     />
                 ))}
+								<CreateButton clickCallback={onClick} cols={columns.length}/>
             </Fragment>
         );
     } else {
