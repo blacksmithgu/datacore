@@ -15,7 +15,10 @@ import { Result } from "api/result";
 import { Evaluator } from "expression/evaluator";
 import { Settings } from "settings";
 
-/** Central, index storage for datacore values. */
+/**
+ * Central, index storage for datacore values.
+ * @internal
+ */
 export class Datastore {
     /** The current store revision. */
     public revision: number;

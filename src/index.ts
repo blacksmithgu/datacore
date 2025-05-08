@@ -22,6 +22,23 @@ export type * from "index/types/index-query";
 export type * from "index/types/files";
 export type * from "index/types/canvas";
 
+export { InlineField } from "index/import/inline-field";
+export { SearchResult } from "index/datastore";
+
+export { CardPos, CardDimensions } from "index/types/json/canvas";
+
+// Expressions and functional types.
+export type * from "expression/expression";
+
+// Preact component types.
+export type * from "api/ui/basics";
+export type { Stack, Group } from "api/ui/layout";
+export type { Callout, CalloutProps } from "api/ui/views/callout";
+export type { Card, CardProps } from "api/ui/views/cards";
+export type { ListViewType, ListViewProps, ListView } from "api/ui/views/list";
+export type { TableColumn, TableViewProps, TableView } from "api/ui/views/table";
+export type { Lit, Markdown } from "ui/markdown";
+
 // Utilities in the API. These are fine to expose the implementations for.
 export * from "api/data-array";
 export * from "api/result";

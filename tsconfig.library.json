@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "build/declarations",
+    "baseUrl": "src",
     "module": "ESNext",
     "target": "es2018",
     "allowJs": false,
@@ -28,5 +28,5 @@
     },
     "outDir": "build/declarations"
   },
-  "include": ["src/index.ts", "src/typings/*.d.ts", "node_modules/localforage/typings/localforage.d.ts"],
+  "include": ["src/index.ts", "src/typings/*.d.ts"],
 }

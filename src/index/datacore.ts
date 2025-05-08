@@ -22,15 +22,15 @@ export class Datacore extends Component {
     /** Datacore events, mainly used to update downstream views. This object is shadowed by the Datacore object itself. */
     events: Events;
 
-    /** In-memory index over all stored metadata. */
+    /** @internal In-memory index over all stored metadata. */
     datastore: Datastore;
-    /** Asynchronous multi-threaded file importer with throttling. */
+    /** @internal Asynchronous multi-threaded file importer with throttling. */
     importer: FileImporter;
-    /** Queue of asynchronous read requests; ensures we limit the maximum number of concurrent file loads. */
+    /** @internal Queue of asynchronous read requests; ensures we limit the maximum number of concurrent file loads. */
     reads: EmbedQueue;
-    /** Local-storage backed cache of metadata objects. */
+    /** @internal Local-storage backed cache of metadata objects. */
     persister: LocalStorageCache;
-    /** Only set when datacore is in the midst of initialization; tracks current progress. */
+    /** @internal Only set when datacore is in the midst of initialization; tracks current progress. */
     initializer?: DatacoreInitializer;
     /** If true, datacore is fully hydrated and all files have been indexed. */
     initialized: boolean;
@@ -215,6 +215,7 @@ export class Datacore extends Component {
         throw new Error("Encountered unrecognized import result type: " + (result as any).type);
     }
 
+    /** Store a canvas document. */
     public storeCanvas(data: Canvas) {
         this.datastore.store(data, (object, store) => {
             store(object.$cards, (card, store) => {

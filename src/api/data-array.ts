@@ -455,7 +455,7 @@ class DataArrayImpl<T> implements DataArray<T> {
     }
 }
 
-/** @internal Provides utility functions for generating data arrays. */
+/** @public Provides utility functions for generating data arrays. */
 export namespace DataArray {
     /** Create a new Dataview data array. */
     export function wrap<T>(raw: T[] | DataArray<T>): DataArray<T> {

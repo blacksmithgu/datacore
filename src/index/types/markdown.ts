@@ -77,7 +77,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
      */
     $sections: MarkdownSection[] = [];
 
-    /** Create a markdown file from the given raw values. */
+    /** @internal Create a markdown file from the given raw values. */
     static from(raw: JsonMarkdownPage, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownPage {
         const sections = raw.$sections.map((sect) => MarkdownSection.from(sect, raw.$path, normalizer));
 
@@ -132,7 +132,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
         return this.field(key)?.value;
     }
 
-    /** Convert this page into it's partial representation for saving. */
+    /** @internal Convert this page into it's partial representation for saving. */
     public json(): JsonMarkdownPage {
         return {
             $path: this.$path,
@@ -183,7 +183,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     /** Map of all distinct inline fields in the document, from key name -> metadata. */
     $infields: Record<string, InlineField>;
 
-    /** Convert raw markdown section data to the appropriate class. */
+    /** @internal Convert raw markdown section data to the appropriate class. */
     static from(raw: JsonMarkdownSection, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownSection {
         const blocks = raw.$blocks.map((block) => MarkdownBlock.from(block, file, normalizer));
         return new MarkdownSection({
@@ -233,6 +233,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownSection {
         return {
             $ordinal: this.$ordinal,
@@ -283,6 +284,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     /** The type of block - paragraph, list, and so on. */
     $type: string;
 
+    /** @internal */
     static from(object: JsonMarkdownBlock, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownBlock {
         if (object.$type === "list") {
             return MarkdownListBlock.from(object as JsonMarkdownListBlock, file, normalizer);
@@ -329,6 +331,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownBlock {
         return {
             $ordinal: this.$ordinal,
@@ -362,7 +365,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     /** The list items inside of this block. */
     $elements: MarkdownListItem[];
 
-    /** Create a list block from a serialized value. */
+    /** @internal Create a list block from a serialized value. */
     static from(
         object: JsonMarkdownListBlock,
         file: string,
@@ -384,6 +387,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
         });
     }
 
+    /** @internal */
     public json(): JsonMarkdownListBlock {
         return Object.assign(super.json(), {
             $elements: this.$elements.map((elem) => elem.json()),
@@ -408,6 +412,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
         super(init);
     }
 
+    /** @internal */
     static from(
         object: JsonMarkdownCodeblock,
         file: string,
@@ -440,10 +445,12 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
         return MarkdownCodeblock.SUB_FIELD_DEF(this, key)?.[0];
     }
 
+    /** Fetch the value of a specific field. */
     public value(key: string): Literal | undefined {
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownCodeblock {
         return Object.assign(super.json(), {
             $languages: this.$languages,
@@ -472,6 +479,7 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
         super(init);
     }
 
+    /** @internal */
     static from(
         object: JsonMarkdownDatablock,
         file: string,
@@ -512,6 +520,7 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownDatablock {
         return Object.assign(super.json(), {
             $data: mapObjectValues(this.$data, jsonFrontmatterEntry),
@@ -566,7 +575,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     /** The text contents of the list item. */
     $text?: string;
 
-    /** Create a list item from a serialized object. */
+    /** @internal Create a list item from a serialized object. */
     static from(
         object: JsonMarkdownListItem,
         file: string,
@@ -632,6 +641,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownListItem {
         return {
             $position: this.$position,
@@ -668,6 +678,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     /** The text inside of the task item. */
     $status: string;
 
+    /** @internal */
     public static from(object: JsonMarkdownTaskItem, file: string, normalizer: LinkNormalizer): MarkdownTaskItem {
         const elements = object.$elements.map((elem) => MarkdownListItem.from(elem, file, normalizer));
         return new MarkdownTaskItem({
@@ -691,6 +702,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
         super(init);
     }
 
+    /** @internal */
     public json(): JsonMarkdownListItem {
         return Object.assign(super.json(), {
             $status: this.$status,
@@ -713,9 +725,7 @@ export interface FrontmatterEntry {
     raw: string;
 }
 
-/** Convert a regular frontmatter entry into a JSON frontmatter entry.
- * @hidden
- */
+/** @internal Convert a regular frontmatter entry into a JSON frontmatter entry. */
 export function jsonFrontmatterEntry(raw: FrontmatterEntry): JsonFrontmatterEntry {
     return {
         key: raw.key,
@@ -724,9 +734,7 @@ export function jsonFrontmatterEntry(raw: FrontmatterEntry): JsonFrontmatterEntr
     };
 }
 
-/** Convert a json frontmatter entry to a regular frontmatter entry.
- * @hidden
- */
+/** @internal Convert a json frontmatter entry to a regular frontmatter entry. */
 export function valueFrontmatterEntry(raw: JsonFrontmatterEntry): FrontmatterEntry {
     return {
         key: raw.key,
@@ -735,9 +743,7 @@ export function valueFrontmatterEntry(raw: JsonFrontmatterEntry): FrontmatterEnt
     };
 }
 
-/** Normalize links deeply in the object.
- * @hidden
- */
+/** @internal Normalize links deeply in the object. */
 export function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T {
     return Literals.mapLeaves(input, (value) => {
         if (Literals.isLink(value)) return normalizer(value);
@@ -745,9 +751,7 @@ export function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNorm
     }) as T;
 }
 
-/** Recursively gather links from a literal object.
- * @hidden
- */
+/** @internal Recursively gather links from a literal object. */
 export function gatherLinks(input: Literal): Link[] {
     const result: Link[] = [];
 
@@ -759,9 +763,7 @@ export function gatherLinks(input: Literal): Link[] {
     return result;
 }
 
-/** Gather tags from a datablock.
- * @hidden
- */
+/** @internal Gather tags from a datablock. */
 export function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
     function recurse(input: any): string[] {
         if (Literals.isString(input)) return [input.startsWith("#") ? input : "#" + input];

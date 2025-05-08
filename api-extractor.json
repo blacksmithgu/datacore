@@ -54,7 +54,7 @@
      * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
      * DEFAULT VALUE: "<projectFolder>/tsconfig.json"
      */
-    "tsconfigFilePath": "<projectFolder>/tsconfig.library.json",
+    "tsconfigFilePath": "<projectFolder>/tsconfig.api-extractor.json",
     "skipLibCheck": true
   },
 

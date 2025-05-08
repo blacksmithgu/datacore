@@ -7,6 +7,7 @@
 import { App } from 'obsidian';
 import { Component } from 'obsidian';
 import { ComponentChildren } from 'preact';
+import { CSSProperties } from 'preact/compat';
 import { DateTime } from 'luxon';
 import { Duration } from 'luxon';
 import { EventRef } from 'obsidian';
@@ -32,34 +33,95 @@ import { Vault } from 'obsidian';
 import { VNode } from 'preact';
 
 // @public
+export type ArithmeticOp = "+" | "-" | "*" | "/" | "%" | "&" | "|";
+
+// @public
 export type ArrayComparator<T> = (a: T, b: T) => number;
 
 // @public
 export type ArrayFunc<T, O> = (elem: T, index: number, arr: T[]) => O;
 
 // @public
-export class Canvas implements Linkable, File_2, Linkbearing, Taggable, Indexable, Fieldbearing {
-    // Warning: (ae-forgotten-export) The symbol "BaseCanvasCard" needs to be exported by the entry point index.d.ts
-    //
+export abstract class BaseCanvasCard implements Indexable, Linkable {
     // (undocumented)
-    $cards: BaseCanvasCard[];
+    $color?: string;
     // (undocumented)
-    $ctime: DateTime;
+    $dimensions: CardDimensions;
     // (undocumented)
-    $extension: string;
+    $file: string;
     // (undocumented)
-    get $file(): string;
-    // (undocumented)
-    get $id(): string;
-    // Warning: (ae-forgotten-export) The symbol "InlineField" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    $infields: Record<string, InlineField>;
+    $id: string;
     // (undocumented)
     get $link(): Link;
     // (undocumented)
-    $links: Link[];
+    $parent?: Indexable;
     // (undocumented)
+    $position: CardPos;
+    // (undocumented)
+    $revision?: number | undefined;
+    // (undocumented)
+    abstract readonly $type: string;
+    // (undocumented)
+    abstract $typename: string;
+    // (undocumented)
+    abstract $types: string[];
+    constructor(init: Partial<BaseCanvasCard>);
+    // Warning: (ae-forgotten-export) The symbol "JsonBaseCanvasCard" needs to be exported by the entry point index.d.ts
+    //
+    // @internal (undocumented)
+    json(): JsonBaseCanvasCard;
+}
+
+// @public
+export type BinaryOp = CompareOp | ArithmeticOp | LogicalOp;
+
+// @public
+export interface BinaryOpExpression {
+    // (undocumented)
+    left: Expression;
+    // (undocumented)
+    op: BinaryOp;
+    // (undocumented)
+    right: Expression;
+    // (undocumented)
+    type: "binaryop";
+}
+
+// @public
+export function Button(props: {
+    className?: string;
+    intent?: Intent;
+    children: ComponentChildren;
+} & React_2.ComponentProps<"button">): React_2.JSX.Element;
+
+// @public
+export function Callout({ collapsible, open: openProp, initialOpen, onOpenChange, title, icon, children, type, }: PropsWithChildren<CalloutProps>): JSX_4.Element;
+
+// @public
+export interface CalloutProps {
+    collapsible?: boolean;
+    icon?: VNode;
+    initialOpen?: boolean;
+    onOpenChange?: (value: boolean) => void;
+    open: boolean;
+    title: string | VNode;
+    type?: string;
+}
+
+// @public
+export class Canvas implements Linkable, File_2, Linkbearing, Taggable, Indexable, Fieldbearing {
+    // (undocumented)
+    $cards: BaseCanvasCard[];
+    $ctime: DateTime;
+    $extension: string;
+    get $file(): string;
+    // (undocumented)
+    get $id(): string;
+    // (undocumented)
+    $infields: Record<string, InlineField>;
+    get $link(): Link;
+    // (undocumented)
+    $links: Link[];
     $mtime: DateTime;
     // (undocumented)
     $path: string;
@@ -98,11 +160,11 @@ export class CanvasFileCard extends BaseCanvasCard implements Indexable {
     $typename: string;
     // (undocumented)
     $types: string[];
-    // (undocumented)
+    // @internal (undocumented)
     static from(raw: JsonCanvasFileCard): CanvasFileCard;
     // Warning: (ae-forgotten-export) The symbol "JsonCanvasFileCard" needs to be exported by the entry point index.d.ts
     //
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonCanvasFileCard;
     // (undocumented)
     static TYPES: string[];
@@ -110,8 +172,6 @@ export class CanvasFileCard extends BaseCanvasCard implements Indexable {
 
 // @public
 export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Taggable, Indexable, Fieldbearing {
-    // Warning: (ae-forgotten-export) The symbol "CardDimensions" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     $dimensions: CardDimensions;
     // (undocumented)
@@ -146,11 +206,11 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
     static FIELD_DEF: FieldExtractor<CanvasTextCard>;
     // (undocumented)
     get fields(): Field[];
-    // (undocumented)
+    // @internal (undocumented)
     static from(raw: JsonCanvasTextCard, file: string, normalizer?: LinkNormalizer): CanvasTextCard;
     // Warning: (ae-forgotten-export) The symbol "JsonCanvasTextCard" needs to be exported by the entry point index.d.ts
     //
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonCanvasTextCard;
     // (undocumented)
     static TYPES: string[];
@@ -166,15 +226,59 @@ export class CanvasWebCard extends BaseCanvasCard implements Indexable {
     $types: string[];
     // (undocumented)
     $url: string;
-    // (undocumented)
+    // @internal (undocumented)
     static from(raw: JsonCanvasWebCard, file: string): CanvasWebCard;
     // Warning: (ae-forgotten-export) The symbol "JsonCanvasWebCard" needs to be exported by the entry point index.d.ts
     //
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonCanvasWebCard;
     // (undocumented)
     static TYPES: string[];
 }
+
+// @public
+export function Card<T>(props: CardProps<T>): JSX_4.Element;
+
+// @public
+export interface CardDimensions {
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    width: number;
+}
+
+// @public
+export interface CardPos {
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public
+export interface CardProps<T> {
+    centerTitle?: boolean;
+    content: Literal | ((val: T) => Literal | VNode);
+    footer?: Literal | ((val: T) => Literal | VNode);
+    title: Literal | ((val: T) => Literal | VNode);
+    value: T;
+}
+
+// @public
+export function Checkbox(props: {
+    className?: string;
+    disabled?: boolean;
+    checked?: boolean;
+    defaultChecked?: boolean;
+    onCheckChange?: (checked: boolean) => void;
+    children?: ComponentChildren;
+} & React_2.ComponentProps<"input">): React_2.JSX.Element;
+
+// @public
+export function combineClasses(fixed: string, ...rest: (string | undefined)[]): string;
+
+// @public
+export type CompareOp = ">" | ">=" | "<=" | "<" | "=" | "!=";
 
 // @public
 export interface DataArray<T> {
@@ -228,14 +332,19 @@ export class Datacore extends Component {
     constructor(app: App, version: string, settings: Settings);
     // (undocumented)
     app: App;
+    // @internal
     datastore: Datastore;
     events: Events;
     // Warning: (ae-forgotten-export) The symbol "FileImporter" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     importer: FileImporter;
     index(): void;
     initialize(): void;
     initialized: boolean;
     // Warning: (ae-forgotten-export) The symbol "DatacoreInitializer" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     initializer?: DatacoreInitializer;
     metadataCache: MetadataCache;
     off(evt: string, callback: (...data: any) => any): void;
@@ -244,15 +353,18 @@ export class Datacore extends Component {
     // (undocumented)
     on(evt: "initialized", callback: () => any, context?: any): EventRef;
     // Warning: (ae-forgotten-export) The symbol "LocalStorageCache" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     persister: LocalStorageCache;
     read(file: TFile): Promise<string>;
     // Warning: (ae-forgotten-export) The symbol "EmbedQueue" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     reads: EmbedQueue;
     reload(file: TFile): Promise<Indexable>;
     get revision(): number;
     // (undocumented)
     settings: Settings;
-    // (undocumented)
     storeCanvas(data: Canvas): void;
     storeMarkdown(data: MarkdownPage): void;
     vault: Vault;
@@ -270,14 +382,12 @@ export class DatacoreApi {
     coerce: typeof Coerce;
     // (undocumented)
     core: Datacore;
-    // Warning: (ae-forgotten-export) The symbol "Expression" needs to be exported by the entry point index.d.ts
     evaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Result<Literal, string>;
     executeJs(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     executeJsx(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     executeTs(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     executeTsx(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     fileLink(path: string): Link;
-    // Warning: (ae-forgotten-export) The symbol "SearchResult" needs to be exported by the entry point index.d.ts
     fullquery(query: string | IndexQuery): SearchResult<Indexable>;
     headerLink(path: string, header: string): Link;
     local(path: string): DatacoreLocalApi;
@@ -303,18 +413,11 @@ export class DatacoreLocalApi {
     get app(): App;
     array<T>(input: T[] | DataArray<T>): DataArray<T>;
     blockLink(path: string, block: string): Link;
-    // Warning: (ae-forgotten-export) The symbol "Button" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     Button: typeof Button;
-    // Warning: (ae-forgotten-export) The symbol "Callout" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     Callout: typeof Callout;
-    // Warning: (ae-forgotten-export) The symbol "Card" needs to be exported by the entry point index.d.ts
     Card: typeof Card;
-    // Warning: (ae-forgotten-export) The symbol "Checkbox" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     Checkbox: typeof Checkbox;
     coerce: typeof Coerce;
@@ -326,17 +429,14 @@ export class DatacoreLocalApi {
     evaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Result<Literal, string>;
     fileLink(path: string): Link;
     fullquery(query: string | IndexQuery): SearchResult<Indexable>;
-    // Warning: (ae-forgotten-export) The symbol "Group" needs to be exported by the entry point index.d.ts
     Group: typeof Group;
     headerLink(path: string, header: string): Link;
-    // Warning: (ae-forgotten-export) The symbol "Icon" needs to be exported by the entry point index.d.ts
     Icon: typeof Icon;
     Link: ({ link, sourcePath: maybeSourcePath }: {
         link: string | Link;
         sourcePath?: string | undefined;
     }) => preact_2.JSX.Element;
     LinkEmbed: any;
-    // Warning: (ae-forgotten-export) The symbol "ListView" needs to be exported by the entry point index.d.ts
     List: typeof ListView;
     Literal: any;
     get luxon(): typeof luxon_2;
@@ -349,20 +449,13 @@ export class DatacoreLocalApi {
     query(query: string | IndexQuery): Indexable[];
     require(path: string | Link): Promise<any>;
     resolvePath(path: string | Link, sourcePath?: string): string;
-    // Warning: (ae-forgotten-export) The symbol "Slider" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     Slider: typeof Slider;
     SpanEmbed: any;
-    // Warning: (ae-forgotten-export) The symbol "Stack" needs to be exported by the entry point index.d.ts
     Stack: typeof Stack;
-    // Warning: (ae-forgotten-export) The symbol "Switch" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     Switch: typeof Switch;
     Table: typeof TableView;
-    // Warning: (ae-forgotten-export) The symbol "Textbox" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     Textbox: typeof Textbox;
     tryEvaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Literal;
@@ -398,12 +491,8 @@ export class DatacoreLocalApi {
     useReducer: typeof hooks.useReducer;
     useRef: typeof hooks.useRef;
     useState: typeof hooks.useState;
-    // Warning: (ae-forgotten-export) The symbol "VanillaSelect" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     VanillaSelect: typeof VanillaSelect;
-    // Warning: (ae-forgotten-export) The symbol "TableView" needs to be exported by the entry point index.d.ts
-    //
     // @deprecated (undocumented)
     VanillaTable: typeof TableView;
 }
@@ -447,6 +536,41 @@ export class Datastore {
     touch(): void;
     // (undocumented)
     vault: Vault;
+}
+
+// @public (undocumented)
+export type Expression = LiteralExpression | VariableExpression | ListExpression | ObjectExpression | BinaryOpExpression | FunctionExpression | MethodExpression | LambdaExpression | NegatedExpression;
+
+// @public (undocumented)
+export namespace Expressions {
+    const ROW: string;
+    // (undocumented)
+    export function binaryOp(left: Expression, op: BinaryOp, right: Expression): Expression;
+    // (undocumented)
+    export function func(func: Expression, args: Expression[]): FunctionExpression;
+    // (undocumented)
+    export function index(obj: Expression, index: Expression): Expression;
+    export function indexVariable(name: string): Expression;
+    // (undocumented)
+    export function isCompareOp(op: BinaryOp): op is CompareOp;
+    // (undocumented)
+    export function lambda(args: string[], value: Expression): LambdaExpression;
+    // (undocumented)
+    export function list(values: Expression[]): ListExpression;
+    // (undocumented)
+    export function literal(value: Literal): LiteralExpression;
+    // (undocumented)
+    export function method(target: Expression, func: string, args: Expression[]): MethodExpression;
+    // (undocumented)
+    export function negate(child: Expression): NegatedExpression;
+    // (undocumented)
+    export function object(values: Record<string, Expression>): ObjectExpression;
+    export function toString(expr: Expression): string;
+    export function unboundVariables(expr: Expression, bound?: Set<string>): Set<string>;
+    // (undocumented)
+    export function variable(name: string): VariableExpression;
+    const // (undocumented)
+    NULL: LiteralExpression;
 }
 
 // @public
@@ -528,9 +652,21 @@ export interface FrontmatterEntry {
 }
 
 // @public
+export interface FunctionExpression {
+    arguments: Expression[];
+    func: Expression;
+    // (undocumented)
+    type: "function";
+}
+
+// Warning: (ae-internal-missing-underscore) The name "gatherLinks" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function gatherLinks(input: Literal): Link[];
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "gatherTags" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function gatherTags(data: Record<string, FrontmatterEntry>): string[];
 
 // @public
@@ -559,6 +695,14 @@ export class GenericFile implements File_2, Indexable, Fieldbearing, Linkable {
 }
 
 // @public
+export function Group(props: HTMLAttributes<HTMLDivElement> & {
+    className?: string;
+    justify?: string;
+    align?: string;
+    style?: string;
+}): JSX_2.Element;
+
+// @public
 export type GroupElement<T> = {
     key: Literal;
     rows: Grouping<T>;
@@ -575,6 +719,12 @@ export namespace Groupings {
     export function isLeaf<T>(entry: Grouping<T>): entry is T[];
     export function slice<T>(elements: Grouping<T>, start: number, end: number): Grouping<T>;
 }
+
+// @public
+export function Icon(props: {
+    className?: string;
+    icon: string;
+}): React_2.JSX.Element;
 
 // @public
 export const INDEX_ALL: IndexQuery;
@@ -742,10 +892,39 @@ export type Ingrouped<U, T> = T extends {
     rows: T[];
 };
 
-// Warning: (ae-forgotten-export) The symbol "JsonFrontmatterEntry" needs to be exported by the entry point index.d.ts
-//
 // @public
+export interface InlineField {
+    key: string;
+    position: {
+        line: number;
+        start: number;
+        startValue: number;
+        end: number;
+    };
+    raw: string;
+    value: Literal;
+    wrapping?: string;
+}
+
+// @public
+export type Intent = "error" | "warn" | "info" | "success";
+
+// @public
+export const INTENT_CLASSES: Record<Intent, string>;
+
+// Warning: (ae-forgotten-export) The symbol "JsonFrontmatterEntry" needs to be exported by the entry point index.d.ts
+// Warning: (ae-internal-missing-underscore) The name "jsonFrontmatterEntry" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function jsonFrontmatterEntry(raw: FrontmatterEntry): JsonFrontmatterEntry;
+
+// @public
+export interface LambdaExpression {
+    arguments: string[];
+    // (undocumented)
+    type: "lambda";
+    value: Expression;
+}
 
 // @public
 export class Link {
@@ -798,7 +977,47 @@ export const LINKBEARING_TYPE = "links";
 export type LinkNormalizer = (link: Link) => Link;
 
 // @public
+export interface ListExpression {
+    // (undocumented)
+    type: "list";
+    // (undocumented)
+    values: Expression[];
+}
+
+// @public
+export function ListView<T>(props: ListViewProps<T>): JSX_4.Element;
+
+// @public
+export interface ListViewProps<T> {
+    childSource?: null | string | string[] | ((row: T) => T[]);
+    // Warning: (ae-forgotten-export) The symbol "GroupingConfig_2" needs to be exported by the entry point index.d.ts
+    groupings?: GroupingConfig_2<T> | GroupingConfig_2<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | VNode);
+    maxChildDepth?: number;
+    paging?: boolean | number;
+    renderer?: (row: T) => React.ReactNode | Literal;
+    rows: Grouping<T>;
+    scrollOnPaging?: boolean | number;
+    type?: "ordered" | "unordered" | "block";
+}
+
+// @public
+export type ListViewType = "ordered" | "unordered" | "block";
+
+// Warning: (ae-forgotten-export) The symbol "RawLit" needs to be exported by the entry point index.d.ts
+//
+// @public
+export const Lit: typeof RawLit;
+
+// @public
 export type Literal = boolean | number | string | DateTime | Duration | Link | Array<Literal> | DataObject | Function | null;
+
+// @public
+export interface LiteralExpression {
+    // (undocumented)
+    type: "literal";
+    // (undocumented)
+    value: Literal;
+}
 
 // @public
 export type LiteralRepr<T extends LiteralType> = T extends "boolean" ? boolean : T extends "number" ? number : T extends "string" ? string : T extends "duration" ? Duration : T extends "date" ? DateTime : T extends "null" ? null : T extends "link" ? Link : T extends "array" ? Array<Literal> : T extends "object" ? DataObject : T extends "function" ? Function : any;
@@ -843,10 +1062,18 @@ export interface LiteralWrapper<T extends LiteralType> {
 }
 
 // @public
+export type LogicalOp = "index";
+
+// @public
 export type LowestKey<T> = T extends {
     key: any;
     rows: any;
 } ? LowestKey<T["rows"][0]> : T;
+
+// Warning: (ae-forgotten-export) The symbol "RawMarkdown" needs to be exported by the entry point index.d.ts
+//
+// @public
+export const Markdown: typeof RawMarkdown;
 
 // @public
 export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbearing {
@@ -874,9 +1101,9 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     get fields(): Field[];
     // Warning: (ae-forgotten-export) The symbol "JsonMarkdownBlock" needs to be exported by the entry point index.d.ts
     //
-    // (undocumented)
+    // @internal (undocumented)
     static from(object: JsonMarkdownBlock, file: string, normalizer?: LinkNormalizer): MarkdownBlock;
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonMarkdownBlock;
     static readableId(file: string, ordinal: number): string;
     // (undocumented)
@@ -903,9 +1130,9 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
     get fields(): Field[];
     // Warning: (ae-forgotten-export) The symbol "JsonMarkdownCodeblock" needs to be exported by the entry point index.d.ts
     //
-    // (undocumented)
+    // @internal (undocumented)
     static from(object: JsonMarkdownCodeblock, file: string, normalizer?: LinkNormalizer): MarkdownCodeblock;
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonMarkdownCodeblock;
     // (undocumented)
     static readableId(file: string, line: number): string;
@@ -913,7 +1140,6 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
     static SUB_FIELD_DEF: FieldExtractor<MarkdownCodeblock>;
     // (undocumented)
     static TYPES: string[];
-    // (undocumented)
     value(key: string): Literal | undefined;
 }
 
@@ -928,9 +1154,9 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
     get fields(): Field[];
     // Warning: (ae-forgotten-export) The symbol "JsonMarkdownDatablock" needs to be exported by the entry point index.d.ts
     //
-    // (undocumented)
+    // @internal (undocumented)
     static from(object: JsonMarkdownDatablock, file: string, normalizer?: LinkNormalizer): MarkdownDatablock;
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonMarkdownDatablock;
     // (undocumented)
     static readableId(file: string, line: number): string;
@@ -951,8 +1177,10 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     $types: string[];
     constructor(init: Partial<MarkdownListBlock>);
     // Warning: (ae-forgotten-export) The symbol "JsonMarkdownListBlock" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     static from(object: JsonMarkdownListBlock, file: string, normalizer?: LinkNormalizer): MarkdownListBlock;
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonMarkdownListBlock;
     // (undocumented)
     static TYPES: string[];
@@ -985,8 +1213,10 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     field(key: string): Field;
     get fields(): Field[];
     // Warning: (ae-forgotten-export) The symbol "JsonMarkdownListItem" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     static from(object: JsonMarkdownListItem, file: string, normalizer?: LinkNormalizer): MarkdownListItem;
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonMarkdownListItem;
     static readableId(file: string, line: number): string;
     // (undocumented)
@@ -1022,7 +1252,10 @@ export class MarkdownPage implements File_2, Linkbearing, Taggable, Indexable, F
     field(key: string): Field | undefined;
     get fields(): Field[];
     // Warning: (ae-forgotten-export) The symbol "JsonMarkdownPage" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     static from(raw: JsonMarkdownPage, normalizer?: LinkNormalizer): MarkdownPage;
+    // @internal
     json(): JsonMarkdownPage;
     static TYPES: string[];
     value(key: string): Literal | undefined;
@@ -1051,8 +1284,10 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     field(key: string): Field;
     get fields(): Field[];
     // Warning: (ae-forgotten-export) The symbol "JsonMarkdownSection" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     static from(raw: JsonMarkdownSection, file: string, normalizer?: LinkNormalizer): MarkdownSection;
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonMarkdownSection;
     static readableId(file: string, title: string, ordinal: number): string;
     static TYPES: string[];
@@ -1071,19 +1306,45 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     constructor(init: Partial<MarkdownTaskItem>);
     // Warning: (ae-forgotten-export) The symbol "JsonMarkdownTaskItem" needs to be exported by the entry point index.d.ts
     //
-    // (undocumented)
+    // @internal (undocumented)
     static from(object: JsonMarkdownTaskItem, file: string, normalizer: LinkNormalizer): MarkdownTaskItem;
-    // (undocumented)
+    // @internal (undocumented)
     json(): JsonMarkdownListItem;
     // (undocumented)
     static TYPES: string[];
 }
 
+// @public
+export interface MethodExpression {
+    arguments: Expression[];
+    func: string;
+    target: Expression;
+    // (undocumented)
+    type: "method";
+}
+
+// @public
+export interface NegatedExpression {
+    child: Expression;
+    // (undocumented)
+    type: "negated";
+}
+
 // @public (undocumented)
 export const NOOP_NORMALIZER: LinkNormalizer;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "normalizeLinks" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T;
+
+// @public
+export interface ObjectExpression {
+    // (undocumented)
+    type: "object";
+    // (undocumented)
+    values: Record<string, Expression>;
+}
 
 // @public
 export type Provenance = {
@@ -1112,6 +1373,14 @@ export namespace Result {
 }
 
 // @public
+export interface SearchResult<O> {
+    duration: number;
+    query: IndexQuery;
+    results: O[];
+    revision: number;
+}
+
+// @public
 export interface Settings {
     defaultDateFormat: string;
     defaultDateTimeFormat: string;
@@ -1126,6 +1395,25 @@ export interface Settings {
     renderNullAs: string;
     scrollOnPageChange: boolean;
 }
+
+// @public
+export function Slider(props: {
+    className?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    value?: number;
+    defaultValue?: number;
+    onValueChange?: (value: number) => void;
+} & React_2.ComponentProps<"input">): React_2.JSX.Element;
+
+// @public
+export function Stack(props: HTMLAttributes<HTMLDivElement> & {
+    className?: string;
+    justify?: string;
+    align?: string;
+    style?: string;
+}): JSX_2.Element;
 
 // @public
 export class Success<T, E> {
@@ -1151,6 +1439,37 @@ export class Success<T, E> {
 }
 
 // @public
+export function Switch(props: {
+    className?: string;
+    disabled?: boolean;
+    checked?: boolean;
+    defaultChecked?: boolean;
+    onToggleChange?: (checked: boolean) => void;
+} & React_2.ComponentProps<"input">): React_2.JSX.Element;
+
+// @public
+export interface TableColumn<T, V = Literal> {
+    id: string;
+    render?: (value: V, object: T) => Literal | ReactNode;
+    title?: string | ReactNode | (() => string | ReactNode);
+    value: (object: T) => V;
+    width?: "minimum" | "maximum" | string;
+}
+
+// @public
+export function TableView<T>(props: TableViewProps<T>): JSX_3.Element;
+
+// @public
+export interface TableViewProps<T> {
+    columns: TableColumn<T>[];
+    // Warning: (ae-forgotten-export) The symbol "GroupingConfig" needs to be exported by the entry point index.d.ts
+    groupings?: GroupingConfig<T> | GroupingConfig<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | ReactNode);
+    paging?: boolean | number;
+    rows: Grouping<T>;
+    scrollOnPaging?: boolean | number;
+}
+
+// @public
 export interface Taggable {
     $tags: string[];
 }
@@ -1159,7 +1478,34 @@ export interface Taggable {
 export const TAGGABLE_TYPE = "taggable";
 
 // @public
+export function Textbox(props: React_2.ComponentProps<"input"> & {
+    className?: string;
+}): React_2.JSX.Element;
+
+// Warning: (ae-internal-missing-underscore) The name "valueFrontmatterEntry" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function valueFrontmatterEntry(raw: JsonFrontmatterEntry): FrontmatterEntry;
+
+// @public
+export function VanillaSelect(props: {
+    className?: string;
+    options: {
+        value: string;
+        label: string;
+    }[];
+    value?: string;
+    defaultValue?: string;
+    onValueChange?: (value: string) => void;
+} & React_2.ComponentProps<"select">): React_2.JSX.Element;
+
+// @public
+export interface VariableExpression {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    type: "variable";
+}
 
 // @public
 export type WrappedLiteral = LiteralWrapper<"string"> | LiteralWrapper<"number"> | LiteralWrapper<"boolean"> | LiteralWrapper<"date"> | LiteralWrapper<"duration"> | LiteralWrapper<"link"> | LiteralWrapper<"array"> | LiteralWrapper<"object"> | LiteralWrapper<"function"> | LiteralWrapper<"null">;
