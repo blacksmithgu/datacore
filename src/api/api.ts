@@ -23,7 +23,7 @@ import { Variables } from "expression/evaluator";
 
 /**
  * Exterally visible API for datacore.
- * @group Core
+ * @public
  */
 export class DatacoreApi {
     public constructor(public core: Datacore) {}

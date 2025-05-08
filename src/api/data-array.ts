@@ -3,24 +3,23 @@
  */
 import { Groupings, Literals } from "expression/literal";
 
-/** A function which maps an array element to some value. */
+/** @public A function which maps an array element to some value. */
 export type ArrayFunc<T, O> = (elem: T, index: number, arr: T[]) => O;
 
-/** A function which compares two types. */
+/** @public A function which compares two types. */
 export type ArrayComparator<T> = (a: T, b: T) => number;
 
-/** Finds the value of the lowest value type in a grouping. */
+/** @public Finds the value of the lowest value type in a grouping. */
 export type LowestKey<T> = T extends { key: any; rows: any } ? LowestKey<T["rows"][0]> : T;
 
-/** A ridiculous type which properly types the result of the 'groupIn' command. */
+/** @public A ridiculous type which properly types the result of the 'groupIn' command. */
 export type Ingrouped<U, T> = T extends { key: any; rows: any }
     ? { key: T["key"]; rows: Ingrouped<U, T["rows"][0]> }
     : { key: U; rows: T[] };
 
 /**
- * Proxied interface which allows manipulating array-based data. All functions on a data array produce a NEW array
+ * @public Proxied interface which allows manipulating array-based data. All functions on a data array produce a NEW array
  * (i.e., the arrays are immutable).
- * @group Common Types
  */
 export interface DataArray<T> {
     /** The total number of elements in the array. */
@@ -133,11 +132,7 @@ export interface DataArray<T> {
     [field: string]: any;
 }
 
-/**
- * @internal
- * @hidden
- * Implementation of DataArray, minus the dynamic variable access, which is implemented via proxy.
- * */
+/** @internal Implementation of DataArray, minus the dynamic variable access, which is implemented via proxy. */
 class DataArrayImpl<T> implements DataArray<T> {
     private static ARRAY_FUNCTIONS: Set<string> = new Set([
         "chain",
@@ -460,9 +455,7 @@ class DataArrayImpl<T> implements DataArray<T> {
     }
 }
 
-/** Provides utility functions for generating data arrays.
- * @hidden
- */
+/** @internal Provides utility functions for generating data arrays. */
 export namespace DataArray {
     /** Create a new Dataview data array. */
     export function wrap<T>(raw: T[] | DataArray<T>): DataArray<T> {

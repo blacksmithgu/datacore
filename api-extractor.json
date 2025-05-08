@@ -107,7 +107,7 @@
      * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
      * DEFAULT VALUE: "<projectFolder>/etc/"
      */
-    "reportFolder": "<projectFolder>/api-report/",
+    "reportFolder": "<projectFolder>/",
 
     /**
      * Specifies the folder where the temporary report file is written.  The file name portion is determined by
@@ -122,7 +122,7 @@
      * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
      * DEFAULT VALUE: "<projectFolder>/temp/"
      */
-    "reportTempFolder": "<projectFolder>/build/api-report",
+    "reportTempFolder": "<projectFolder>/build/api-report"
   },
 
   /**
@@ -204,7 +204,7 @@
      *
      * DEFAULT VALUE: true
      */
-    // "enabled": true,
+    "enabled": false,
     /**
      * Specifies where the TSDoc metadata file should be written.
      *
@@ -218,7 +218,7 @@
      * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
      * DEFAULT VALUE: "<lookup>"
      */
-    // "tsdocMetadataFilePath": "<projectFolder>/dist/tsdoc-metadata.json"
+    "tsdocMetadataFilePath": "<projectFolder>/build/tsdoc-metadata.json"
   },
 
   /**

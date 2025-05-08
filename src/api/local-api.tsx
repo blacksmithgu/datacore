@@ -31,7 +31,7 @@ import { ListView } from "./ui/views/list";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
- * @group Core
+ * @public
  */
 export class DatacoreLocalApi {
     /** @private The cache of all currently loaded scripts in this context. */
