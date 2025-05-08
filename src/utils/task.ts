@@ -155,7 +155,7 @@ export async function completeTask(completed: boolean, task: MarkdownTaskItem, v
 }
 export function getCollectiveLineCount(item: MarkdownListItem | MarkdownTaskItem): number {
 	const lines = item.$lineCount;
-	const reducer = (pv: number, cv: MarkdownListItem | MarkdownTaskItem): number => pv + cv.$elements.reduce(reducer, 0);
+	const reducer = (pv: number, cv: MarkdownListItem | MarkdownTaskItem): number => pv + cv.$elements.reduce(reducer, cv.$lineCount);
 	return lines + item.$elements.reduce(reducer, 0);
 }
 export async function insertListOrTaskItemAt(
@@ -198,7 +198,7 @@ export async function insertListOrTaskItemAt(
     if (previousItem && atEnd) {
         spliceIndex = previousItem.$line + getCollectiveLineCount(previousItem);
     } else if (typeof parent != "number") {
-        spliceIndex = parent.$line + getCollectiveLineCount(parent);
+        spliceIndex = parent.$line + getCollectiveLineCount(parent) - 1;
     } else {
         spliceIndex = parent;
     }
