@@ -362,6 +362,15 @@
   dependencies:
     "@marijn/find-cluster-break" "^1.0.0"
 
+"@codemirror/view@^6.0.0", "@codemirror/view@^6.17.0", "@codemirror/view@^6.27.0", "@codemirror/view@^6.35.0":
+  version "6.36.7"
+  resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.36.7.tgz#f3711d3fea457a3eec1c09a76b8a132f98df17b1"
+  integrity sha512-kCWGW/chWGPgZqfZ36Um9Iz0X2IVpmCjg1P/qY6B6a2ecXtWRRAigmpJ6YgUQ5lTWXMyyVdfmpzhLZmsZQMbtg==
+  dependencies:
+    "@codemirror/state" "^6.5.0"
+    style-mod "^4.1.0"
+    w3c-keyname "^2.2.4"
+
 "@codemirror/view@^6.0.1", "@codemirror/view@^6.23.0":
   version "6.38.0"
   resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.38.0.tgz#4486062b791a4247793e0953e05ae71a9e172217"
@@ -369,15 +378,6 @@
   dependencies:
     "@codemirror/state" "^6.5.0"
     crelt "^1.0.6"
-    style-mod "^4.1.0"
-    w3c-keyname "^2.2.4"
-
-"@codemirror/view@^6.17.0", "@codemirror/view@^6.35.0":
-  version "6.36.7"
-  resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.36.7.tgz#f3711d3fea457a3eec1c09a76b8a132f98df17b1"
-  integrity sha512-kCWGW/chWGPgZqfZ36Um9Iz0X2IVpmCjg1P/qY6B6a2ecXtWRRAigmpJ6YgUQ5lTWXMyyVdfmpzhLZmsZQMbtg==
-  dependencies:
-    "@codemirror/state" "^6.5.0"
     style-mod "^4.1.0"
     w3c-keyname "^2.2.4"
 
