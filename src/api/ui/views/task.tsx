@@ -61,7 +61,7 @@ export function TaskList({
         const nfields = Object.fromEntries(
             rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
         );
-        await insertListOrTaskItemAt(app, at, true, " ", rest.defaultText ?? "...", parentOrRootSibling.$file, nfields);
+        await insertListOrTaskItemAt(app, at, true, " ", rest.defaultCreationText ?? "...", parentOrRootSibling.$file, nfields);
     }, [parent, rest.displayedFields, items, app]);
     const content = useMemo(() => {
         return (
@@ -150,7 +150,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
         const nfields = Object.fromEntries(
             props.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
         );
-        await insertListOrTaskItemAt(app, item, true, " ", props.defaultText ?? "...", item.$file, nfields);
+        await insertListOrTaskItemAt(app, item, true, " ", props.defaultCreationText ?? "...", item.$file, nfields);
     }, [parent, props.displayedFields, item, app]);
     return (
         <li
