@@ -13,7 +13,6 @@ import { MarkdownListItem } from "index/types/markdown";
 import { BaseFieldProps } from "ui/fields/common-props";
 import { ControlledEditable, EditableElement } from "ui/fields/editable";
 import { App } from "obsidian";
-import { collapse } from "index/storage/query-executor";
 
 /** The render type of the list view. */
 export type ListViewType = "ordered" | "unordered" | "block";
