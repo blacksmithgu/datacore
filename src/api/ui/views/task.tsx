@@ -54,15 +54,6 @@ export function TaskList({
     ),
     ...rest
 }: TaskProps) {
-    const app = useContext(APP_CONTEXT);
-    const create = useStableCallback(async () => {
-        const parentOrRootSibling = (parent ? parent : items![items!.length - 1]) as MarkdownListItem | MarkdownTaskItem;
-        const at = (parent ? parent : (parentOrRootSibling.$line + parentOrRootSibling.$lineCount)) as MarkdownListItem | MarkdownTaskItem | number;
-        const nfields = Object.fromEntries(
-            rest.displayedFields?.map((a) => [a.key, a.defaultValue ?? Literals.defaultValue(a.type)]) ?? []
-        );
-        await insertListOrTaskItemAt(app, at, true, " ", rest.defaultCreationText ?? "...", parentOrRootSibling.$file, nfields);
-    }, [parent, rest.displayedFields, items, app]);
     const content = useMemo(() => {
         return (
             <ul className="datacore contains-task-list">
@@ -83,10 +74,7 @@ export function TaskList({
     }, [items, states]);
     return (
         <Fragment>
-            {!!items && content}
-            <button className="dashed-default" style="width: 100%" onClick={create}>
-                Add item
-            </button>
+            {!!items && content} 
         </Fragment>
     );
 }
@@ -181,7 +169,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
             {!collapsed && (
                 <Stack>
                     {hasChildren && <TaskList {...props} rows={item.$elements} />}
-                    <button className="dashed-default" style="width: 100%" onClick={create}>
+                    <button className="dashed-default" id={`add-${item.$id}`} style="width: 100%" onClick={create}>
                         Add item
                     </button>
                 </Stack>
