@@ -153,6 +153,11 @@ export async function completeTask(completed: boolean, task: MarkdownTaskItem, v
         await rewriteTask(vault, core, t, completed ? "x" : " ", newText);
     }
 }
+export function getCollectiveLineCount(item: MarkdownListItem | MarkdownTaskItem): number {
+	const lines = item.$lineCount;
+	const reducer = (pv: number, cv: MarkdownListItem | MarkdownTaskItem): number => pv + cv.$elements.reduce(reducer, 0);
+	return lines + item.$elements.reduce(reducer, 0);
+}
 export async function insertListOrTaskItemAt(
     app: App,
     parent: MarkdownTaskItem | MarkdownListItem | number,
@@ -184,16 +189,16 @@ export async function insertListOrTaskItemAt(
         .slice(1)
         .map((l) => initialSpacing + "\t" + l.trimStart())
         .join(sep);
-    let insertedText = [`${initialSpacing}${symbol} ${statusPart}${desiredParts[0]}`, rest].join(sep);
+    let insertedText = [`${initialSpacing}${symbol} ${statusPart}${desiredParts[0]}`, rest].filter(Boolean).join(sep);
     if (Object.keys(fields).length) insertedText += `${sep}${initialSpacing}\t`;
     for (let field in fields) {
         insertedText = setInlineField(insertedText, field, fields[field]);
     }
     let spliceIndex: number;
     if (previousItem && atEnd) {
-        spliceIndex = previousItem.$line + previousItem.$lineCount - 1;
+        spliceIndex = previousItem.$line + getCollectiveLineCount(previousItem);
     } else if (typeof parent != "number") {
-        spliceIndex = parent.$line + parent.$lineCount - 1;
+        spliceIndex = parent.$line + getCollectiveLineCount(parent);
     } else {
         spliceIndex = parent;
     }
