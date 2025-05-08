@@ -30,7 +30,7 @@
     "@codemirror/language": "https://github.com/lishid/cm-language",
     "@codemirror/search": "^6.5.10",
     "@codemirror/state": "^6.0.1",
-    "@codemirror/view": "^6.0.1",
+    "@codemirror/view": "^6.36.7",
     "@microsoft/api-extractor": "^7.52.7",
     "@types/jest": "^27.0.1",
     "@types/luxon": "^2.3.2",
