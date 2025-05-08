@@ -345,7 +345,7 @@ function CurrentFileSelector({
         <Select
             options={options}
             classNamePrefix="datacore-selectable"
-            defaultValue={defaultOption}
+            defaultValue={defaultOption}	
             onChange={(nv, _am) => onChange(nv?.value)}
             unstyled
             menuPortalTarget={document.body}
