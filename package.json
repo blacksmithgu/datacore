@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "tsc && tsc --project tsconfig.library.json && node esbuild.config.mjs production all",
+    "build": "tsc && tsc --project tsconfig.library.json && api-extractor run --local && node esbuild.config.mjs production all",
     "build-plugin": "tsc && node esbuild.config.mjs production plugin",
     "build-library": "tsc --project tsconfig.library.json && api-extractor run --local --verbose && node esbuild.config.mjs production library",
     "test": "yarn run jest",

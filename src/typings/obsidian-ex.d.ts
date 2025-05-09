@@ -1,8 +1,9 @@
-import type { DatacoreApi } from "api/api";
-import { CanvasMetadataIndex } from "index/types/json/canvas";
+import type { DatacorePlugin } from "main";
+import type { CanvasMetadataIndex } from "index/types/json/canvas";
+
 import "obsidian";
 
-/** @hidden */
+/** Provides extensions used by datacore or provider to other plugins via datacore. */
 declare module "obsidian" {
     interface FileManager {
         linkUpdaters: {
@@ -15,21 +16,23 @@ declare module "obsidian" {
             };
         };
     }
+
     interface App {
         appId?: string;
+
         plugins: {
             enabledPlugins: Set<string>;
             plugins: {
-                datacore?: {
-                    api: DatacoreApi;
-                };
+                datacore?: DatacorePlugin;
             };
         };
+
         embedRegistry: {
             embedByExtension: {
                 [key: string]: unknown;
                 md: MarkdownRenderer;
             };
+
             getEmbedCreator: (arg: TFile) => new (
                 arg2: {
                     app: App;
@@ -47,6 +50,7 @@ declare module "obsidian" {
     }
 }
 
+/** Provides the 'datacore' global for other plugins to use. */
 declare global {
     interface Window {
         datacore?: DatacoreApi;

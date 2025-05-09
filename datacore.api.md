@@ -513,7 +513,9 @@ export class DatacorePlugin extends Plugin_2 {
 // @public
 export type DataObject = Record<string, any>;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "Datastore" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export class Datastore {
     constructor(vault: Vault, metadataCache: MetadataCache, settings: Settings);
     clear(): void;
