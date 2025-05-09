@@ -34,7 +34,11 @@ import { ListView } from "./ui/views/list";
  * @public
  */
 export class DatacoreLocalApi {
-    /** @private The cache of all currently loaded scripts in this context. */
+    /**
+     * The cache of all currently loaded scripts in this context.
+     * @private
+     * @internal
+     */
     private scriptCache: ScriptCache;
 
     public constructor(public api: DatacoreApi, public path: string) {
@@ -399,4 +403,17 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
+
+    ////////////////////////////////////
+    // Stateful / internal components //
+    ////////////////////////////////////
+
+    /**
+     * Updates the path for the local API; usually only called by the top-level script renderer on
+     * path changes (such as renaming a file).
+     * @internal
+     */
+    updatePath(path: string): void {
+        this.path = path;
+    }
 }

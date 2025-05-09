@@ -1,7 +1,7 @@
 ---
 title: List Views (dc.List)
 sidebar_label: List Views
-sidebar_position: 100
+sidebar_position: 200
 ---
 
 List views, available as `dc.List`, generate pageable lists of results. They support grouping, heirarchies, paging, and several view modes. They come in three varieties:

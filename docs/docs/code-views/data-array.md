@@ -1,7 +1,7 @@
 ---
 title: Data Arrays
 sidebar_label: Data Arrays
-sidebar_position: 500
+sidebar_position: 1000
 ---
 
 To make common data manipulation operations simple, datacore provides the `DataArray` abstraction, which is a [proxied](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) wrapper around a regular list with a large set of additional functions.

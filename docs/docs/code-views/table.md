@@ -1,7 +1,7 @@
 ---
 title: Table Views (dc.Table)
 sidebar_label: Table Views
-sidebar_position: 200
+sidebar_position: 300
 ---
 
 Table views, available as `dc.Table`, make two dimensional tables of results. They support grouping,
@@ -81,7 +81,25 @@ or would like to add JSX to the title field, you can overwrite the `title` prope
 
 ### Column Width (`width`)
 
-Columns use the default HTML sizing algorithm by default, which 
+Columns use the default HTML sizing algorithm by default, which assigns more width to columns that have more content in them. This
+tends to be an acceptable default, but you can override it if you want more consistency or customization in your table layout. Column
+width can be configured by overriding the `width` property:
+
+```jsx
+{
+    id: "Genre",
+    width: "50%",
+    value: (row) => row.value("genre"),
+}
+```
+
+Columns have a few configuration options:
+
+- **Fixed Values**: You can give fixed pixel sizes to a column by setting it's width to a number of pixels, such as `500px` or `200px`.
+- **Percentages**: You can allocate a certain percent of the whole table to a column using percentages, such as `50%` or `70%`.
+- **Maximum/Minimum**: You can allocate as much space as possible using `maximum`, and as little space as possible using `minimum`. These options
+    will generally reduce the column to be exactly big enough to store the column and no more; in some cases, it may introduce wrapping in
+    the current column or in other columns.
 
 ## Paging (`paging` / `scrollOnPaging`)
 

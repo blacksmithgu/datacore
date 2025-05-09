@@ -28,7 +28,7 @@ import { Variables } from "expression/evaluator";
 export class DatacoreApi {
     public constructor(public core: Datacore) {}
 
-    /** Get acess to luxon functions. */
+    /** Get access to luxon functions. */
     get luxon(): typeof luxon {
         return luxon;
     }
@@ -235,10 +235,7 @@ export class DatacoreApi {
         return this._renderJavascript(source, container, component, sourcePath, "tsx");
     }
 
-    /**
-     * @private
-     * Shared logic for rendering any JS/TS script.
-     */
+    /** Shared logic for rendering any JS/TS script. */
     private _renderJavascript(
         source: string,
         container: HTMLElement,
