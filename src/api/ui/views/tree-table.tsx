@@ -1,4 +1,3 @@
-import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
 import { GroupingConfig, TableColumn, TableViewProps } from "./table";
 import { useAsElement } from "ui/hooks";
 import { useInterning, useStableCallback } from "ui/hooks";
@@ -11,133 +10,10 @@ import { useEditableDispatch } from "ui/fields/editable";
 import { combineClasses } from "../basics";
 import { Indexable } from "index/types/indexable";
 import { App } from "obsidian";
+import {TreeTableRowData, TreeUtils} from "utils/tree";
+import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
 
-export interface TreeTableRowData<T> {
-    value: T;
-    children: TreeTableRowData<T>[];
-}
 
-export namespace TreeUtils {
-    export function isTreeTableRowData<T>(data: any): data is TreeTableRowData<T> {
-        return (
-            "children" in data &&
-            "value" in data &&
-            !Array.isArray(data) &&
-            Object.keys(data).length == 2 &&
-            Array.isArray(data.children)
-        );
-    }
-    export function countInTreeRow<T>(node: TreeTableRowData<T>, top: boolean = true): number {
-        let result = 0;
-        if (!top) result++;
-        for (let n of node.children) result += countInTreeRow(n, false);
-        return result;
-    }
-    export function ofArray<T>(source: T[], childFn: (el: T) => T[]): TreeTableRowData<T>[] {
-        const mapper = (el: T): TreeTableRowData<T> => {
-            return {
-                value: el,
-                children: childFn(el).map(mapper),
-            } as TreeTableRowData<T>;
-        };
-        return source.map(mapper);
-    }
-    export function ofNode<T>(source: T, childFn: (el: T) => T[]): TreeTableRowData<T> {
-        return {
-            value: source,
-            children: ofArray(childFn(source), childFn),
-        };
-    }
-
-    export function ofGrouping<T>(elements: Grouping<T>, childFn: (el: T) => T[]): Grouping<TreeTableRowData<T>> {
-        const mapper = (l: T | GroupElement<T>): GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> => {
-            if (Groupings.isElementGroup(l))
-                return { key: l.key, rows: l.rows.map(mapper) } as GroupElement<TreeTableRowData<T>>;
-            return {
-                value: l,
-                children: childFn(l).map(mapper),
-            } as TreeTableRowData<T>;
-        };
-        return elements.map(mapper) as Grouping<TreeTableRowData<T>>;
-    }
-
-    export function count<T>(elements: Grouping<TreeTableRowData<T>> | GroupElement<TreeTableRowData<T>>): number {
-        if (Groupings.isElementGroup(elements)) {
-            return count(elements.rows);
-        } else if (Groupings.isGrouping(elements)) {
-            let result = 0;
-            for (let group of elements) result += count(group.rows);
-            return result;
-        } else {
-            return elements.reduce((pv, cv) => pv + countInTreeRow(cv), 0);
-        }
-    }
-
-    export function slice<T>(
-        elements: Grouping<TreeTableRowData<T>>,
-        start: number,
-        end: number
-    ): Grouping<TreeTableRowData<T>> {
-        let initial = [...Groupings.slice(elements, start, end)] as Grouping<TreeTableRowData<T>>;
-        let index = 0,
-            seen = 0;
-
-        for (let element of initial) {
-            if (Groupings.isElementGroup(element)) {
-                let groupSize = Groupings.count(elements);
-                let groupStart = Math.min(seen, start);
-                let groupEnd = Math.min(groupSize, end);
-                (initial[index] as GroupElement<TreeTableRowData<T>>).rows = Groupings.slice(
-                    element.rows,
-                    groupStart,
-                    groupEnd
-                );
-                seen += groupSize;
-            } else {
-                seen += countInTreeRow(element);
-            }
-            index++;
-        }
-        return initial;
-    }
-    /** recursively sort a tree */
-    export function sort<T, V = Literal>(
-        rows: (TreeTableRowData<T> | GroupElement<TreeTableRowData<T>>)[],
-        comparators: {
-            fn: (a: V, b: V, ao: T, ab: T) => number;
-            direction: SortDirection;
-            actualValue: (obj: T) => V;
-        }[]
-    ): (TreeTableRowData<T> | GroupElement<TreeTableRowData<T>>)[] {
-        const realComparator = (
-            a: TreeTableRowData<T> | GroupElement<TreeTableRowData<T>>,
-            b: TreeTableRowData<T> | GroupElement<TreeTableRowData<T>>
-        ): number => {
-            for (let comp of comparators) {
-                const direction = comp.direction.toLocaleLowerCase() === "ascending" ? 1 : -1;
-                let result = 0;
-                if (Groupings.isElementGroup(a) && Groupings.isElementGroup(b)) {
-                    result = 0;
-                } else if (!Groupings.isElementGroup(a) && !Groupings.isElementGroup(b)) {
-                    result =
-                        direction * comp.fn(comp.actualValue(a.value), comp.actualValue(b.value), a.value, b.value);
-                }
-                if (result != 0) return result;
-            }
-            return 0;
-        };
-        const map = (
-            t: TreeTableRowData<T> | GroupElement<TreeTableRowData<T>>
-        ): TreeTableRowData<T> | GroupElement<TreeTableRowData<T>> => {
-            let r;
-            if (Groupings.isElementGroup(t))
-                r = { ...t, rows: sort(t.rows, comparators).map(map) } as GroupElement<TreeTableRowData<T>>;
-            else r = { ...t, children: sort(t.children, comparators).map(map) } as TreeTableRowData<T>;
-            return r;
-        };
-        return rows.map(map).sort(realComparator);
-    }
-}
 
 function useKeyFn<T>(id: TreeTableState<T>["id"], ...deps: any[]) {
     const ret = useCallback(
@@ -385,15 +261,14 @@ function CreateButton({
     level?: number;
     isGroup?: boolean;
 }) {
-		const pad = (level - 1 == 0) ? undefined : `${1.2 * (level - 1)}em`;
+		const mul = 1.12;
+		if(level < 1) level == 1;
+		const paddingLeft = `${mul * (level)}em`
     return (
-        <tr>
-            {!isGroup ? <td colSpan={1}></td> : null}
-            <td
-                colSpan={isGroup ? cols + 1 : cols}
-                className="datacore-table-row"
-                style={{paddingLeft: pad}}
-            >
+        <tr data-level={level} data-is-group={isGroup.toString()}>
+						{/* {isGroup ? null : <td colSpan={1}></td>} */}
+						<td colspan={1}></td>
+            <td colSpan={cols} className="datacore-table-row" style={{ paddingLeft }}>
                 <button className="dashed-default" style="padding: 0.75em; width: 100%" onClick={clickCallback}>
                     Add item
                 </button>
@@ -520,7 +395,7 @@ export function TreeTableRowCell<T>({
 
     return (
         <td
-            style={{ paddingLeft: isFirst ? `${(level - 1) * 1.2}em` : undefined }}
+            style={{ paddingLeft: isFirst ? `${(level - 1) * 1.12}em` : undefined }}
             onDblClick={() => dispatch({ type: "editing-toggled", newValue: !editableState.isEditing })}
             className="datacore-table-cell"
         >
@@ -665,6 +540,7 @@ export function ControlledTreeTableView<T>(
                                     null,
                                     rows.length ? rows[rows.length - 1] : null
                                 )}
+																isGroup={true}
                             />
                         )}
                     </tbody>
