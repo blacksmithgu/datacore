@@ -385,13 +385,14 @@ function CreateButton({
     level?: number;
     isGroup?: boolean;
 }) {
+		const pad = (level - 1 == 0) ? undefined : `${1.2 * (level - 1)}em`;
     return (
         <tr>
             {!isGroup ? <td colSpan={1}></td> : null}
             <td
                 colSpan={isGroup ? cols + 1 : cols}
                 className="datacore-table-row"
-                style={`padding-left: ${1.2 * level}em`}
+                style={{paddingLeft: pad}}
             >
                 <button className="dashed-default" style="padding: 0.75em; width: 100%" onClick={clickCallback}>
                     Add item
