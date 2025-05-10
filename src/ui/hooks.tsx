@@ -221,21 +221,33 @@ export function useAsElement(element: ReactNode | Literal): ReactNode {
  * @group Hooks
  * @param loader a parameterless function that returns a promise
  * @param deps optional deps to pass to useEffect
- * @returns a tuple containing the resolved promise's value
- * and a boolean indicating whether the promise has resolved.
+ * @returns a tuple in the form of [resolvedPromise, hasResolved, hasError]
  */
-export function useAsync<T>(loader: () => Promise<T>, deps: any[] = []): [T, boolean] {
-    const [value, setValue] = useState<T | null>(null);
-    const [done, setDone] = useState<boolean>(false);
+export function useAsync<T>(loader: () => Promise<T>, deps: any[] = []): [T, boolean, boolean] {
+    const [state, set] = useState<{ value: T; done: boolean; error: boolean }>({
+        value: undefined!,
+        done: false,
+        error: false,
+    });
+    const callId = useRef(0);
     useEffect(() => {
-        loader()
-            .then((a) => {
-                setValue(a);
-                setDone(true);
-            })
-            .catch(() => {
-                setDone(true);
-            });
-    }, [...deps, setValue, setDone, loader]);
-    return [value!, done];
+        const cid = ++callId.current;
+        if (state.done) {
+            set((prevState) => ({ ...prevState, done: false }));
+        }
+
+        loader().then(
+            (value) => {
+                cid === callId.current && set({ value, done: true, error: false });
+
+                return value;
+            },
+            (error) => {
+                cid === callId.current && set({ value: undefined!, done: true, error: true });
+
+                return error;
+            }
+        );
+    }, deps);
+    return [state.value, state.done, state.error];
 }
