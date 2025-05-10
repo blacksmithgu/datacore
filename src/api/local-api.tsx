@@ -7,26 +7,31 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown";
+import { MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
-import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
+import { useAsync, useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
-import { CURRENT_FILE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink } from "ui/markdown";
+import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink, SETTINGS_CONTEXT } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
 import { Literal, Literals } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { TableView } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
+import { TaskList } from "./ui/views/task";
+import { Card } from "./ui/views/cards";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
-import { Card } from "./ui/views/cards";
+import { ControlledEditable } from "ui/fields/editable";
+import { setTaskText, useSetField } from "utils/fields";
+import { ControlledEditableTextField, EditableFieldCheckbox, EditableTextField } from "ui/fields/editable-fields";
+import { completeTask } from "utils/task";
 import { ListView } from "./ui/views/list";
 
 /**
@@ -188,6 +193,35 @@ export class DatacoreLocalApi {
     /** Execute a textual or typed index query, returning results plus performance metadata. */
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         return this.api.tryFullQuery(query);
+		}
+    /** Sets the text of a given task programmatically. */
+    public setTaskText(newText: string, task: MarkdownTaskItem): void {
+        setTaskText(this.app, this.core, newText, task);
+    }
+
+    /** Sets the completion status of a given task programmatically. */
+    public setTaskCompletion(completed: boolean, task: MarkdownTaskItem): void {
+        completeTask(completed, task, this.app.vault, this.core);
+    }
+
+    //////////////
+    // Contexts //
+    //////////////
+
+    // export the necessary contexts to enable rendering
+    // datacore components outside the datacore plugin
+    // itself
+    get SETTINGS_CONTEXT(): typeof SETTINGS_CONTEXT {
+        return SETTINGS_CONTEXT;
+    }
+    get COMPONENT_CONTEXT(): typeof COMPONENT_CONTEXT {
+        return COMPONENT_CONTEXT;
+    }
+    get DATACORE_CONTEXT(): typeof DATACORE_CONTEXT {
+        return DATACORE_CONTEXT;
+    }
+    get APP_CONTEXT(): typeof APP_CONTEXT {
+        return APP_CONTEXT;
     }
 
     /////////////
@@ -218,6 +252,8 @@ export class DatacoreLocalApi {
      * React's reference-equality-based caching.
      */
     public useInterning = useInterning;
+    public useAsync = useAsync;
+    public useSetField = useSetField;
 
     /** Memoize the input automatically and process it using a DataArray; returns a vanilla array back. */
     public useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: any[]): U[] {
@@ -267,6 +303,31 @@ export class DatacoreLocalApi {
     public Stack = Stack;
     /** Horizontal flexbox container; good for putting items together in a row. */
     public Group = Group;
+
+    /** A component that only renders its children if `loaded` is true, otherwise defaulting to the `fallback` prop.
+     * Primarily intended to be used with `useAsync`.
+     */
+    public Suspend({
+        loaded: loaded,
+        children,
+        fallback,
+    }: {
+        loaded: boolean;
+        children: preact.ComponentChildren;
+        fallback: preact.ComponentChild;
+    }) {
+        return (
+            <>
+                {loaded ? (
+                    children
+                ) : (
+                    <div className="datacore-loading-boundary">
+                        <div className="datacore-loading-content">{fallback}</div>
+                    </div>
+                )}
+            </>
+        );
+    }
 
     /** Renders a literal value in a pretty way that respects settings. */
     public Literal = (({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) => {
@@ -391,11 +452,13 @@ export class DatacoreLocalApi {
     public List = ListView;
     /** A single card which can be composed into a grid view. */
     public Card = Card;
+    public TaskList = TaskList;
 
     /////////////////////////
     // Interative elements //
     /////////////////////////
 
+    public ControlledEditable = ControlledEditable;
     public Button = Button;
     public Textbox = Textbox;
     public Callout = Callout;
@@ -416,4 +479,10 @@ export class DatacoreLocalApi {
     updatePath(path: string): void {
         this.path = path;
     }
+    /////////////////////////
+    //    field editors    //
+    /////////////////////////
+    public EditableFieldCheckbox = EditableFieldCheckbox;
+    public EditableFieldTextbox = EditableTextField;
+    public TextEditor = ControlledEditableTextField;
 }
