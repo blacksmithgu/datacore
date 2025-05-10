@@ -59,7 +59,7 @@
     "localforage": "1.10.0",
     "luxon": "^2.4.0",
     "parsimmon": "^1.18.0",
-    "preact": "^10.17.1",
+    "preact": "^10.26.6",
     "react-select": "^5.10.1",
     "sorted-btree": "^1.8.1",
     "sucrase": "3.35.0",
