@@ -9,7 +9,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "p
 import { Textbox, VanillaSelect } from "api/ui/basics";
 import { useIndexUpdates } from "./hooks";
 import { DATACORE_CONTEXT, ErrorMessage } from "./markdown";
-import Select from "react-select";
+import {default as Select} from "react-select";
 import "./view-page.css";
 import { history, defaultKeymap, historyKeymap, indentWithTab } from "@codemirror/commands";
 import { foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap } from "@codemirror/language";
@@ -343,7 +343,7 @@ function CurrentFileSelector({
 
     return (
         <Select
-            options={options}
+						options={options}
             classNamePrefix="datacore-selectable"
             defaultValue={defaultOption}	
             onChange={(nv, _am) => onChange(nv?.value)}
