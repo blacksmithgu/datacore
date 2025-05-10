@@ -26,5 +26,5 @@
       "react-dom": ["preact/compat"]
     }
   },
-  "include": ["src/main.ts", "src/index.ts", "src/typings/*.d.ts"],
+  "include": ["src/main.ts", "src/index.ts", "src/typings/*.d.ts", "select.d.ts"],
 }
