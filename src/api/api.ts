@@ -149,8 +149,17 @@ export class DatacoreApi {
         return DataArray.wrap(input);
     }
 
-    /** Evaluate an expression and return it's evaluated value. */
+    /** Evaluate an expression and return it's evaluated value, throwing an exception on failure. */
     public evaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal> | any,
+        sourcePath?: string
+    ): Literal {
+        return this.tryEvaluate(expression, sourcePath, variables).orElseThrow();
+    }
+
+    /** Evaluate an expression and return it's evaluated value. */
+    public tryEvaluate(
         expression: string | Expression,
         variables?: Record<string, Literal> | any,
         sourcePath?: string
@@ -162,15 +171,6 @@ export class DatacoreApi {
         }
 
         return this.core.datastore.evaluator(sourcePath).evaluate(expression, Variables.infer(variables));
-    }
-
-    /** Evaluate an expression and return it's evaluated value, throwing an exception on failure. */
-    public tryEvaluate(
-        expression: string | Expression,
-        variables?: Record<string, Literal> | any,
-        sourcePath?: string
-    ): Literal {
-        return this.evaluate(expression, sourcePath, variables).orElseThrow();
     }
 
     /////////////////////

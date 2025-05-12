@@ -157,7 +157,7 @@ export class DatacoreLocalApi {
         expression: string | Expression,
         variables?: Record<string, Literal> | any,
         sourcePath?: string
-    ): Result<Literal, string> {
+    ): Literal {
         return this.api.evaluate(expression, variables, sourcePath ?? this.path);
     }
 
@@ -166,7 +166,7 @@ export class DatacoreLocalApi {
         expression: string | Expression,
         variables?: Record<string, Literal> | any,
         sourcePath?: string
-    ): Literal {
+    ): Result<Literal, string> {
         return this.api.tryEvaluate(expression, variables, sourcePath ?? this.path);
     }
 

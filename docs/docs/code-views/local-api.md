@@ -23,11 +23,11 @@ return function View() {
 ```
 ~~~
 
-## Fetching Data
+## Query Hooks
 
 Datacore provides several methods for querying for data, including by the full query language and by path explicitly.
 
-#### `dc.useCurrentFile()`
+### `dc.useCurrentFile()`
 
 Loads the metadata for the file that the view is in - this will usually be `MarkdownPage`, but can also be a `CanvasPage`.
 Using this hook will automatically refresh the view whenever the current file changes.
@@ -48,7 +48,7 @@ should update via the `debounce` property.
 const file = dc.useCurrentFile({ debounce: 10000 });
 ```
 
-#### `dc.useCurrentPath()`
+### `dc.useCurrentPath()`
 
 Loads the path of the file that the view is in - this will usually be `MarkdownPage`, but can also be a `CanvasPage`.
 Using this hook will automatically refresh the view whenever the current file changes.
@@ -68,7 +68,7 @@ Like `useCurrentFile`, `dc.useCurrentPath` accepts an optional settings argument
 const path = dc.useCurrentPath({ debounce: 10000 });
 ```
 
-#### `dc.useQuery()`
+### `dc.useQuery()`
 
 Query for a list of results using the [query language](/data/query). This will return a vanilla javascript list containing
 all of the results that match the query, which can be a wide range of different data types. This hook will cause the view
@@ -94,8 +94,7 @@ return function View() {
 }
 ```
 
-
-#### `dc.useFullQuery()`
+### `dc.useFullQuery()`
 
 Variant of `dc.useQuery` which returns a full search result object, which mainly provides a bit of useful extra metadata about how the
 search performed. Specifically, it returns the following data:
@@ -127,7 +126,7 @@ return function View() {
 }
 ```
 
-#### `dc.useIndexUpdates()`
+### `dc.useIndexUpdates()`
 
 A minimal query which just returns the current `revision` of the datacore index. The index `revision` is a monotonically increasing number
 which is incremented every time something in your vault changes. This call is mainly useful if you are making heavy usage of direct
@@ -136,8 +135,306 @@ changes in your vault.
 
 ```jsx
 return function View() {
+    // Revision will update on every index update.
+    const revision = dc.useIndexUpdates();
 
+    // Run some complex query that will be re-run on every revision update.
+    const complexQuery = dc.useMemo(() => {
+        const thing = dc.query(/* ... */);
+        // ...
+    }, [revision]);
 }
 ```
 
-Like the other hooks, `dc.useIndexUpdates` accepts an optional second parameter of configuration.
+Like the other hooks, `dc.useIndexUpdates` accepts an optional settings parameter, which allows you to set a debounce:
+
+```jsx
+// Only update at most once every ten seconds.
+const revision = dc.useIndexUpdates({ debounce: 10000 });
+```
+
+## Common React Hooks
+
+Datacore forwards the most common React hooks through it's API to make them available. The full list, with brief explanations of each, is:
+
+- `dc.useState`: Create a React state variable that can be read and updated.
+- `dc.useReducer`: Create a React reducer which accepts messages to update internal state.
+- `dc.useMemo`: Memoize a value so it only updates when a dependency array changes.
+- `dc.useCallback`: Memoize a function so it only is re-created when a dependency array changes.
+- `dc.useEffect`: Run a specific 'side-effect' whenever a dependency array changes.
+- `dc.createContext`: Create a react context which allows passing state down many layers without prop drilling.
+- `dc.useContext`: Use a previously created context.
+- `dc.useRef`: A state-like variable that allows directly storing a value without causing React re-renders.
+
+Datacore also provides a few other useful hooks for specifically interacting with datacore utilities:
+
+### `dc.useArray()`
+
+Accepts a regular array, wraps it in a data array, executes a function on the data array, and then converts back to a normal array.
+This is primarily useful for when you want to take advantage of [Data Array](data-array) utilities while otherwise using vanilla
+javascript arrays for compatibility with preact/react.
+
+```jsx
+return function View() {
+    const pages = dc.useQuery("@page and #book");
+    const grouped = dc.useArray(pages, array => array.groupBy(book => book.value("genre")));
+
+    return <dc.List rows={grouped} renderer={book => book.$link} />
+}
+```
+
+`dc.useArray` also accepts a dependency array if you depend on state other than the array itself:
+
+```jsx
+const [searchTerm, setSearchTerm] = dc.useState("");
+const pages = dc.useQuery("@page and #book");
+
+const filteredPages = dc.useArray(
+    pages,
+    array => array.filter(book => book.$title.includes(searchTerm)),
+    [searchTerm]);
+```
+
+## Direct Queries
+
+The datacore API also provides several methods for directly querying the index outside of a hook. These can be called from anywhere, but note that,
+because they are not hooks, they will _not_ cause your view to update if the query would update. To have your queries re-run every time the
+index changes, combine it with `dc.useIndexUpdates`, which will trigger a re-render on every vault change:
+
+```jsx
+return function View() {
+    // Revision will update on every index update.
+    const revision = dc.useIndexUpdates();
+
+    // Run some complex query that will be re-run on every revision update.
+    const complexQuery = dc.useMemo(() => {
+        const thing = dc.query(/* ... */);
+        // ...
+    }, [revision]);
+}
+```
+
+### `dc.query()`
+
+Execute a [query](/data/query) against the datacore index, returning a list of all matched [results](/data/index). Will raise an exception
+if the query is malformed.
+
+```jsx
+dc.query("@page") => // list of all pages
+dc.query("@page and #book and rating > 7") => // all pages tagged book with a rating higher than 7.
+```
+
+### `dc.tryQuery()`
+
+Equivalent to `dc.query`, but returns a datacore `Result` instead of raising an exception.
+
+```jsx
+dc.tryQuery("@page") => { successful: true, value: [/* list of pages */] }
+dc.tryQuery("fakefunction(@page)") => { successful: false, error: "malformed query..." }
+```
+
+### `dc.fullquery()`
+
+Equivalent to `dc.query`, but returns several additional pieces of metadata about how long the query took to execute:
+
+```jsx
+dc.fullquery("@page") => {
+    // Parsed query representation.
+    query: { type: "type", type: "page" },
+    // Actual results, like you would get from `dc.query`.
+    results: [/* list of pages */],
+    // Query runtime in seconds, accurate to the millisecond.
+    duration: 0.01,
+    // Index revision the query was executed against.
+    revision: 317,
+}
+```
+
+### `dc.tryFullQuery()`
+
+Equivalent to `dc.fullquery`, but returns a datacore `Result` instead of raising an exception on an invalid query.
+
+```jsx
+dc.tryFullQuery("@page") => {
+    successful: true,
+    value: {
+        // Parsed query representation.
+        query: { type: "type", type: "page" },
+        // Actual results, like you would get from `dc.query`.
+        results: [/* list of pages */],
+        // Query runtime in seconds, accurate to the millisecond.
+        duration: 0.01,
+        // Index revision the query was executed against.
+        revision: 317,
+    }
+}
+
+dc.tryFullQuery("malformed(@page)") => {
+    successful: false,
+    error: "malformed query ...",
+}
+```
+
+## Links
+
+Utilities for creating datacore `Link` types and normalizing paths.
+
+### `dc.resolvePath()`
+
+Resolves a local or absolute path to an absolute path, optionally from a given source path.
+
+```jsx
+// Can resolve by file name.
+dc.resolvePath("Test") = "location/To/Test.md"
+// Can resolve from an alternative source path, in case there are multiple `Test` files.
+dc.resolvePath("Test", "utils/Index.md") = "utils/Test.md"
+// If it cannot find the file, returns the input path unchanged.
+dc.resolvePath("noexist") = "noexist"
+```
+
+### `dc.fileLink()`
+
+Create a datacore `Link` from a path to a file. The path can be local or absolute (though it is generally
+recommended to use absolute paths everywhere to avoid ambigious links). Datacore will render `Link` objects
+automatically as Obsidian links, and some APIs may require `Link` objects.
+
+```jsx
+dc.fileLink("Test.md") = // Link object representing [[Test]].
+```
+
+### `dc.headerLink()`
+
+Create a datacore `Link` pointing to a header in a file.
+
+```jsx
+dc.headerLink("Terraria.md", "Review") = // equivalent to [[Terraria#Review]].
+```
+
+### `dc.blockLink()`
+
+Create a datacore `Link` pointing to a specific block in a file. Note that blocks can only be linked to if
+they have a block ID - generally visible by looking for `^blockId` notation at the end of the block.
+
+```jsx
+dc.blockLink("Daily Thoughts.md", "38ha12d") = // equivalent to [[Daily Thoughts#^38ha12d]]
+```
+
+### `dc.parseLink()`
+
+Parses a full link into a datacore `Link`. Throws an error if the syntax is malformed.
+
+```jsx
+dc.parseLink("[[Test]]") = // link representing [[Test]].
+dc.parseLink("[malformed]") = // throws an exception
+```
+
+### `dc.tryParseLink()`
+
+Returns a datacore `Result` containing the result of trying to parse a string link.
+
+```jsx
+dc.tryParseLink("[[Test]]") = // { successful: true, value: [[Test]] }
+dc.tryParseLink("[malformed]") = // { successful: false, error: "malformed input..." }
+```
+
+## Expressions
+
+Methods for evaluating arbitrary datacore expressions, and returning their results.
+
+### `dc.evaluate()`
+
+Evaluates a datacore [expression](/expressions), returning what it evaluates to. If the expression cannot be parsed
+or is invalid, will raise an exception. `dc.evaluate` accepts one, two, or three arguments:
+
+```jsx
+// Single argument version takes only the expression.
+dc.evaluate("1 + 2") = 3
+
+// Two argument version allows you to provide variables.
+dc.evaluate("x + y", { x: 1, y: 2 }) = 3
+
+// Three argument version allows you to specify a source path to resolve
+// links from, if you don't want to use the current file.
+dc.evaluate("[[Test]].value", {}, "path/to/other/file.md") = // the value of property 'value' in [[Test]]
+```
+
+### `dc.tryEvaluate()`
+
+Equivalent to `dc.evaluate()`, but returns a datacore `Result` type instead of just the value.
+
+```jsx
+dc.tryEvaluate("1 + 2") = { value: 3, successful: true }
+dc.tryEvaluate("fakefunction(3)") = { successful: false, error: "unrecognized function..." }
+```
+
+## Type Coercion / Parsing
+
+Parses
+
+### `dc.coerce.string()`
+
+Converts any other type to a string.
+
+```jsx
+dc.coerce.string(16) = "16"
+dc.coerce.string(true) = "true"
+```
+
+### `dc.coerce.boolean()`
+
+Parses `true` and `false` strings into booleans; returns undefined for most other types.
+
+```jsx
+dc.coerce.boolean(true) = true
+dc.coerce.boolean("true") = true
+dc.coerce.boolean("blah") = undefined
+```
+
+### `dc.coerce.number()`
+
+Parses strings into numbers; returns undefined for most other types.
+
+```jsx
+dc.coerce.number(15) = 15
+dc.coerce.number("49.2") = 49.2
+dc.coerce.number("oof") = undefined
+```
+
+### `dc.coerce.date()`
+
+Parses strings into dates; returns undefined for most other types.
+
+```jsx
+dc.coerce.date("2025-05-10") = // <DateTime representing 2025-05-10>
+dc.coerce.date("2025-05-10T11:12:13") = // <DateTime representing 2025-05-10 at 11:12 (and 13 seconds)>
+dc.coerce.date("random text") = undefined
+```
+
+### `dc.coerce.duration()`
+
+Parses strings into durations; returns undefined for most other types
+
+```jsx
+dc.coerce.duration("14 hours") = // <Duration representing 14 hours>
+dc.coerce.duration("30m") = // <Duration representing 30 minutes>
+dc.coerce.duration("other text") = undefined
+```
+
+### `dc.coerce.link()`
+
+Parses strings into links; returns undefined for most other types.
+
+```jsx
+dc.coerce.link("[[Test]]") = // Link to 'Test'
+dc.coerce.link("![[Embed|Display]]") = // Embedded link to 'Embed' with display 'Display'.
+dc.coerce.link("oof") = undefined
+```
+
+### `dc.coerce.array()`
+
+If the input is an array, returns that array unchanged; otherwise, wraps the value in an array.
+
+```jsx
+dc.coerce.array([1, 2]) = [1, 2]
+dc.coerce.array(1) = [1]
+```
