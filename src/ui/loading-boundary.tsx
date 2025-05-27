@@ -67,7 +67,7 @@ export function ScriptContainer({
         executor()
             .then((result) => setElement(makeRenderableElement(result, sourcePath)))
             .catch((error) => setError(error));
-    }, [executor]);
+    }, [executor, sourcePath]);
 
     // Propogate error upwards.
     if (error) {

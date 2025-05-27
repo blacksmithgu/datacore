@@ -231,13 +231,12 @@ export class DatacoreLocalApi {
 
     /** Use the current path. Automatically updates the view if the path changes (though that would be weird). */
     public useCurrentPath(settings?: { debounce?: number }): string {
-        const meta = this.useCurrentFile(settings);
-        return meta.$path;
+        return this.path;
     }
 
     /** Use the file metadata for a specific file. Automatically updates the view when the file changes. */
     public useFile(path: string, settings?: { debounce?: number }): Indexable | undefined {
-        return useFileMetadata(this.core, path, settings)!;
+        return useFileMetadata(this.core, path, settings);
     }
 
     /** Automatically refresh the view whenever the index updates; returns the latest index revision ID. */
@@ -403,17 +402,4 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
-
-    ////////////////////////////////////
-    // Stateful / internal components //
-    ////////////////////////////////////
-
-    /**
-     * Updates the path for the local API; usually only called by the top-level script renderer on
-     * path changes (such as renaming a file).
-     * @internal
-     */
-    updatePath(path: string): void {
-        this.path = path;
-    }
 }

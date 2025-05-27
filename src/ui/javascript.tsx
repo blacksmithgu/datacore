@@ -6,6 +6,7 @@ import { unmountComponentAtNode } from "preact/compat";
 import { ScriptLanguage, asyncEvalInContext, transpile } from "utils/javascript";
 import { LoadingBoundary, ScriptContainer } from "./loading-boundary";
 import { Datacore } from "index/datacore";
+import { Literal } from "expression/literal";
 
 /**
  * Renders a script by executing it and handing it the appropriate React context to execute
@@ -38,22 +39,16 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
                 });
             };
 
-            render(
-                <DatacoreContextProvider
-                    app={this.api.app}
-                    component={this}
-                    datacore={this.api.core}
-                    settings={this.api.core.settings}
-                >
-                    <CURRENT_FILE_CONTEXT.Provider value={this.path}>
-                        <SimpleErrorBoundary message="The datacore script failed to execute.">
-                            <LoadingBoundary datacore={this.api.core}>
-                                <ScriptContainer executor={renderer} sourcePath={this.path} />
-                            </LoadingBoundary>
-                        </SimpleErrorBoundary>
-                    </CURRENT_FILE_CONTEXT.Provider>
-                </DatacoreContextProvider>,
-                this.container
+            this.renderScript(renderer);
+
+            // If the path ever changes, update the context provider and re-render.
+            this.registerEvent(
+                this.api.core.on("rename", (newPath, oldPath) => {
+                    if (oldPath === this.path) {
+                        this.path = this.api.path = newPath;
+                        this.renderScript(renderer);
+                    }
+                })
             );
         } catch (ex) {
             render(
@@ -61,6 +56,27 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
                 this.container
             );
         }
+    }
+
+    /** Lazily renders a script, catching errors automatically. */
+    private renderScript(renderer: () => Promise<Literal | VNode | Function>) {
+        render(
+            <DatacoreContextProvider
+                app={this.api.app}
+                component={this}
+                datacore={this.api.core}
+                settings={this.api.core.settings}
+            >
+                <CURRENT_FILE_CONTEXT.Provider value={this.path}>
+                    <SimpleErrorBoundary message="The datacore script failed to execute.">
+                        <LoadingBoundary datacore={this.api.core}>
+                            <ScriptContainer executor={renderer} sourcePath={this.path} />
+                        </LoadingBoundary>
+                    </SimpleErrorBoundary>
+                </CURRENT_FILE_CONTEXT.Provider>
+            </DatacoreContextProvider>,
+            this.container
+        );
     }
 
     public onunload(): void {
@@ -82,6 +98,21 @@ export class ReactRenderer extends MarkdownRenderChild {
     }
 
     public onload(): void {
+        this.renderElement();
+
+        // If the path ever changes, update the context provider and re-render.
+        this.registerEvent(
+            this.datacore.on("rename", (newPath, oldPath) => {
+                if (oldPath === this.sourcePath) {
+                    this.sourcePath = newPath;
+                    this.renderElement();
+                }
+            })
+        );
+    }
+
+    /** Render the given element. */
+    private renderElement(): void {
         render(
             <DatacoreContextProvider
                 app={this.app}

@@ -150,10 +150,11 @@ export class Datacore extends Component {
         // This is less optimal than what can probably be done, but paths are used in a bunch of places
         // (for sections, tasks, etc to refer to their parent file) and it requires some finesse to fix.
         this.datastore.delete(oldPath);
-        this.reload(file);
+        this.reload(file).then(() => this.trigger("rename", file.path, oldPath));
 
         // TODO: For correctness, probably have to either fix links in all linked files OR
-        // just stop normalizing links in the store.
+        // just stop normalizing links in the store. We can traverse the links index to do so
+        // but it is fairly painful.
     }
 
     /**
@@ -182,7 +183,7 @@ export class Datacore extends Component {
         const result = await this.importer.import<ImportResult>(file);
 
         if (result.type === "error") {
-            throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
+            throw new Error(`Failed to import file '${file.name}': ${result.$error}`);
         } else if (result.type === "markdown") {
             // Parse the file and normalize metadata from it.
             const parsed = MarkdownPage.from(result.result, (link) => {
@@ -206,8 +207,14 @@ export class Datacore extends Component {
                 if (rpath) return link.withPath(rpath.path);
                 else return link;
             });
+
+            // Store it recursively into the datastore for querying.
             this.storeCanvas(parsed);
+
+            // Write it to the file cache for faster loads in the future.
             this.persister.storeFile(parsed.$path, parsed.json());
+
+            // And finally trigger an update.
             this.trigger("update", this.revision);
             return parsed;
         }
@@ -252,10 +259,15 @@ export class Datacore extends Component {
         });
     }
 
-    // Event propogation.
+    ///////////////////////
+    // Event propogation //
+    ///////////////////////
 
     /** Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
     public on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
+    /** Called whenever datacore records a file rename and has finished reindexing the rename. */
+    public on(evt: "rename", callback: (newPath: string, oldPath: string) => any, context?: any): EventRef;
+    /** Called when datacore has initialized and is querable. */
     public on(evt: "initialized", callback: () => any, context?: any): EventRef;
 
     on(evt: string, callback: (...data: any) => any, context?: any): EventRef {
@@ -274,6 +286,8 @@ export class Datacore extends Component {
 
     /** Trigger an update event. */
     private trigger(evt: "update", revision: number): void;
+    /** Trigger a rename event. */
+    private trigger(evt: "rename", newPath: string, oldPath: string): void;
     /** Trigger an initialization event. */
     private trigger(evt: "initialized"): void;
 
