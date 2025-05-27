@@ -1,9 +1,10 @@
 {
-  "name": "datacore",
+  "name": "@blacksmithgu/datacore",
   "version": "0.1.23",
   "description": "Reactive data engine for Obsidian.md.",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "build/library/index.js",
+  "types": "build/library/index.d.ts",
+  "files": ["build/library"],
   "scripts": {
     "build": "tsc && tsc --project tsconfig.library.json && api-extractor run --local && node esbuild.config.mjs production all",
     "build-plugin": "tsc && node esbuild.config.mjs production plugin",

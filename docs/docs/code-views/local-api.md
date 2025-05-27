@@ -216,7 +216,7 @@ return function View() {
 
 ### `dc.query()`
 
-Execute a [query](/data/query) against the datacore index, returning a list of all matched [results](/data/index). Will raise an exception
+Execute a [query](/data/query) against the datacore index, returning a list of all matched [results](/data). Will raise an exception
 if the query is malformed.
 
 ```jsx
