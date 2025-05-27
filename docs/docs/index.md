@@ -25,6 +25,15 @@ Once Datacore is installed, it's immediately ready to use!
 Datacore is currently in a power-user stage focused on javascript/typescript savvy users - non-javscript views similar to DataviewQL
 will be coming in the future!
 
+### Datacore as an API
+
+The datacore API typings are available via the npm package `@blacksmithgu/datacore`. If you are developing an Obsidian
+plugin that you want to interop with Datacore on, you can simply:
+
+```bash
+yarn install @blacksmithgu/datacore
+```
+
 ### Screenshots
 
 <ImageFigure
