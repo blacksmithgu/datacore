@@ -1,3 +1,10 @@
+# 0.1.23
+
+- Datacore views now properly re-render and update paths when the file they are in is renamed.
+- Some incongruous APIs have been standardized.
+
+---
+
 # 0.1.22 (Beta)
 
 - Several bugfixes thanks to @GamerGirlAndCo.
