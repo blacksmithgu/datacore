@@ -350,7 +350,7 @@ export class Datacore extends Component {
     off(evt: string, callback: (...data: any) => any): void;
     offref(ref: EventRef): void;
     on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
-    // (undocumented)
+    on(evt: "rename", callback: (newPath: string, oldPath: string) => any, context?: any): EventRef;
     on(evt: "initialized", callback: () => any, context?: any): EventRef;
     // Warning: (ae-forgotten-export) The symbol "LocalStorageCache" needs to be exported by the entry point index.d.ts
     //
@@ -382,7 +382,7 @@ export class DatacoreApi {
     coerce: typeof Coerce;
     // (undocumented)
     core: Datacore;
-    evaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Result<Literal, string>;
+    evaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Literal;
     executeJs(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     executeJsx(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     executeTs(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
@@ -398,7 +398,7 @@ export class DatacoreApi {
     get preact(): typeof preact_2;
     query(query: string | IndexQuery): Indexable[];
     resolvePath(path: string | Link, sourcePath?: string): string;
-    tryEvaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Literal;
+    tryEvaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Result<Literal, string>;
     tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string>;
     tryParseLink(linktext: string): Result<Link, string>;
     tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string>;
@@ -426,7 +426,7 @@ export class DatacoreLocalApi {
     currentFile(): MarkdownPage;
     currentPath(): string;
     embed: any;
-    evaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Result<Literal, string>;
+    evaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Literal;
     fileLink(path: string): Link;
     fullquery(query: string | IndexQuery): SearchResult<Indexable>;
     Group: typeof Group;
@@ -458,7 +458,7 @@ export class DatacoreLocalApi {
     Table: typeof TableView;
     // (undocumented)
     Textbox: typeof Textbox;
-    tryEvaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Literal;
+    tryEvaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Result<Literal, string>;
     tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string>;
     tryParseLink(linktext: string): Result<Link, string>;
     tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string>;
