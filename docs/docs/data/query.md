@@ -45,11 +45,11 @@ Type queries are usually combined with other queries to filter to specific types
 
 You can fetch all objects tagged with a given tag using `#tag` - for example, `#game` or `#philosophy/natural`. 
 
-### `linked()`
+### `connected()`
 
 You can fetch objects that link TO or link FROM a given page. To find all pages that link TO a document,
 use `linkedto([[link]])`; to find pages that link FROM a document, use `linkedfrom([[link]])`. If you
-want all links regardless of direction, just use `linked([[link]])`.
+want all links regardless of direction, just use `connected([[link]])`.
 
 ### `path()`
 

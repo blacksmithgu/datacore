@@ -31,7 +31,11 @@ The datacore API typings are available via the npm package `@blacksmithgu/dataco
 plugin that you want to interop with Datacore on, you can simply:
 
 ```bash
-yarn install @blacksmithgu/datacore
+# Yarn:
+yarn add @blacksmithgu/datacore
+
+# npm:
+npm install @blacksmithgu/datacore
 ```
 
 ### Screenshots
