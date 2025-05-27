@@ -1,3 +1,9 @@
+# 0.1.24
+
+- Add official datacore API typings at '@blacksmithgu/datacore'.
+
+---
+
 # 0.1.23
 
 - Datacore views now properly re-render and update paths when the file they are in is renamed.
