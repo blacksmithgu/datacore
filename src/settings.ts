@@ -18,6 +18,9 @@ export interface Settings {
     /** If set, views will scroll to the top of the view on page changes. */
     scrollOnPageChange: boolean;
 
+    /** Vault folders to be used when resolving required/imported scripts in addition to the vault root. */
+    scriptRoots: string[];
+
     /**
      * Maximum depth that objects will be rendered to (i.e., how many levels of subproperties
      * will be rendered by default). This avoids infinite recursion due to self referential objects
@@ -48,6 +51,8 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze<Settings>({
     defaultPagingEnabled: true,
     defaultPageSize: 50,
     scrollOnPageChange: false,
+
+    scriptRoots: [],
 
     maxRecursiveRenderDepth: 5,
 

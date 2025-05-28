@@ -5,6 +5,10 @@ import "obsidian";
 
 /** Provides extensions used by datacore or provider to other plugins via datacore. */
 declare module "obsidian" {
+    interface MetadataCache {
+        isUserIgnored(path: string): boolean;
+    }
+
     interface FileManager {
         linkUpdaters: {
             canvas: {

@@ -7,6 +7,8 @@ import { ErrorMessage, Lit } from "./markdown";
 
 import "./errors.css";
 
+type Renderable = Literal | VNode | Function;
+
 /** Simple view which shows datacore's current loading progress when it is still indexing on startup. */
 function LoadingProgress({ datacore }: { datacore: Datacore }) {
     useIndexUpdates(datacore, { debounce: 250 });
@@ -54,7 +56,7 @@ export function ScriptContainer({
     executor,
     sourcePath,
 }: {
-    executor: () => Promise<Literal | VNode | Function>;
+    executor: () => Promise<Renderable | { default: () => Renderable }>;
     sourcePath: string;
 }) {
     const [element, setElement] = useState<JSX.Element | undefined>(undefined);
@@ -65,7 +67,12 @@ export function ScriptContainer({
         setError(undefined);
 
         executor()
-            .then((result) => setElement(makeRenderableElement(result, sourcePath)))
+            .then((result) => {
+                if (result && result.hasOwnProperty("default")) {
+                    return setElement(makeRenderableElement((result as any).default, sourcePath));
+                }
+                return setElement(makeRenderableElement(result, sourcePath));
+            })
             .catch((error) => setError(error));
     }, [executor, sourcePath]);
 
