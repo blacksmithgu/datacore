@@ -149,7 +149,7 @@ key2: value2
 Datablocks can be directly searched over (using the `@datablock` query or `datablock` type) and all of their data is available as fields.
 
 ```jsx
-// Fetch all datablocks which have a 'rating' field and return the top 5 blocks.
+// Fetch all datablocks which have a 'rating' field.
 const datablocks = dc.query("@datablock and exists(rating)");
 
 // Fetch data specifically from the values in the datablock.
