@@ -108,7 +108,7 @@ export class ScriptCache {
         const { code, language } = maybeSource.value;
         let basic;
         try {
-            basic = transpile(code, language);
+            basic = await transpile(path instanceof Link ? path.path : path, code, language);
         } catch (error) {
             return Result.failure(`Failed to import ${path.toString()} while transpiling from ${language}: ${error}`);
         }
@@ -133,7 +133,24 @@ export class ScriptCache {
         path: string | Link
     ): Promise<Result<{ code: string; language: ScriptLanguage }, string>> {
         const object = this.store.resolveLink(path);
-        if (!object) return Result.failure("Could not find a script at the given path: " + path.toString());
+        if (!object) {
+					// in case the file is located somewhere like the .obsidian directory
+            const stringifiedPath = path instanceof Link ? path.path : path;
+            const exists = this.store.vault.adapter.exists(stringifiedPath);
+            if (!exists) return Result.failure("Could not find a script at the given path: " + path.toString());
+            const extension = stringifiedPath.slice(Math.max(stringifiedPath.lastIndexOf("."), 0)).toLocaleLowerCase().slice(1);
+            if (extension in ScriptCache.FILE_EXTENSIONS || extension == "mjs") {
+                const language = extension == "mjs" ? ScriptCache.SCRIPT_LANGUAGES["js"] : ScriptCache.SCRIPT_LANGUAGES[extension];
+                try {
+                    const code = await this.store.vault.adapter.read(stringifiedPath);
+                    return Result.success({ code, language });
+                } catch (error) {
+                    return Result.failure("Failed to load javascript/typescript source file: " + error);
+                }
+            } else {
+        			return Result.failure(`Cannot import '${stringifiedPath}: not a JS/TS file or codeblock reference.`);
+						}
+        }
 
         const tfile = this.store.vault.getFileByPath(object.$file!);
         if (!tfile) return Result.failure(`File "${object.$file}" not found.`);

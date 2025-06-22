@@ -70,6 +70,9 @@ declare module "obsidian" {
                 "datacore-addon-autocomplete"?: {
                     readonly extensions: Extension[];
                 };
+								"datacore-addon-transform-js"?: {
+									preTransform(srcPath: string, src: string, jsx: boolean, ts: boolean): Promise<string>;
+								}
             };
         };
         internalPlugins: {

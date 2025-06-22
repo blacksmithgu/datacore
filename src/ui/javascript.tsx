@@ -30,7 +30,7 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
 
         // Attempt to parse and evaluate the script to produce either a renderable JSX object or a function.
         try {
-            const primitiveScript = transpile(this.script, this.language);
+            const primitiveScript = await transpile(this.path, this.script, this.language);
             const renderer = async () => {
                 return (await asyncEvalInContext(primitiveScript, {
                     dc: this.api,
