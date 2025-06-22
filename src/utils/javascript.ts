@@ -5,16 +5,21 @@ import { transform } from "sucrase";
 export type ScriptLanguage = "js" | "ts" | "jsx" | "tsx";
 
 /** Converts a raw script in the given language to plain javascript.  */
-export function transpile(script: string, language: ScriptLanguage): string {
+export async function transpile(path: string, script: string, language: ScriptLanguage): Promise<string> {
+	let preTransformed = script;
+	if(window.app.plugins.plugins["datacore-addon-transform-js"]) {
+		preTransformed = await window.app.plugins.plugins["datacore-addon-transform-js"].preTransform(path, script,["jsx", "tsx"].includes(language), language.startsWith("ts"));
+	}
     switch (language) {
         case "js":
-            return script;
+            return preTransformed;
         case "jsx":
-            return transform(script, { transforms: ["jsx"], jsxPragma: "h", jsxFragmentPragma: "Fragment" }).code;
+            return transform(preTransformed, { filePath: path, transforms: ["jsx"], jsxPragma: "h", jsxFragmentPragma: "Fragment" }).code;
         case "ts":
-            return transform(script, { transforms: ["typescript"] }).code;
+            return transform(preTransformed, { filePath: path, transforms: ["typescript"] }).code;
         case "tsx":
-            return transform(script, {
+            return transform(preTransformed, {
+							filePath: path,
                 transforms: ["typescript", "jsx"],
                 jsxPragma: "h",
                 jsxFragmentPragma: "Fragment",
