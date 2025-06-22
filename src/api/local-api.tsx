@@ -13,6 +13,8 @@ import { useAsync, useFileMetadata, useFullQuery, useIndexUpdates, useInterning,
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
+import * as compat from "preact/compat";
+import * as jsxRuntime from "preact/jsx-runtime";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
@@ -71,8 +73,8 @@ export class DatacoreLocalApi {
     }
 
     /** Get access to preact functions. */
-    get preact(): typeof preact {
-        return preact;
+    get preact(): typeof compat {
+        return compat;
     }
 
     /** Central Obsidian app object. */
@@ -83,7 +85,10 @@ export class DatacoreLocalApi {
     /** The internal plugin central datastructure. */
     get core(): Datacore {
         return this.api.core;
-    }
+    }	
+		get jsxRuntime(): typeof jsxRuntime {
+			return jsxRuntime;
+		}
 
     //////////////////////////////
     // Script loading utilities //
