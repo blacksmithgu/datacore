@@ -196,8 +196,8 @@ export class DatacoreLocalApi {
         return this.api.tryFullQuery(query);
 		}
     /** Sets the text of a given task programmatically. */
-    public setTaskText(newText: string, task: MarkdownTaskItem): void {
-        setTaskText(this.app, this.core, newText, task);
+    public setTaskText(newText: string, task: MarkdownTaskItem, newFields: Record<string, Literal> = {}): void {
+        setTaskText(this.app, this.core, newText, task, newFields);
     }
 
     /** Sets the completion status of a given task programmatically. */
