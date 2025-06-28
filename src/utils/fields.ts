@@ -1,5 +1,5 @@
 import { Field } from "expression/field";
-import { Literal } from "expression/literal";
+import { Literal, Literals } from "expression/literal";
 import { setInlineField } from "index/import/inline-field";
 import { MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
@@ -21,10 +21,10 @@ export function useSetField<T extends Literal>(field: Field, onChange?: (newValu
         [field, onChange]
     );
 }
-export async function setTaskText(app: App, core: Datacore, text: string, item: MarkdownTaskItem) {
+export async function setTaskText(app: App, core: Datacore, text: string, item: MarkdownTaskItem, newFields: Record<string, Literal> = {}) {
     let withFields = `${text}${Object.keys(item.$infields).length ? " " : ""}`;
     for (let field in item.$infields) {
-        withFields = setInlineField(withFields, field, item.$infields[field].raw);
+        withFields = setInlineField(withFields, field, Literals.toString(newFields[field]) ?? item.$infields[field].raw);
     }
     await rewriteTask(app.vault, core, item, item.$status, withFields);
 }
