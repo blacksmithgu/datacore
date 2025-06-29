@@ -214,6 +214,21 @@ export function useAsElement(element: ReactNode | Literal): ReactNode {
         }
     }, [element]);
 }
+
+type FulfilledPromise<T> = {
+    status: "success";
+    value: T;
+};
+type PendingPromise<T> = {
+    status: "pending";
+};
+type RejectedPromise<T> = {
+    status: "error";
+    reason: any;
+};
+
+type AsyncResult<T> = FulfilledPromise<T> | PendingPromise<T> | RejectedPromise<T>;
+
 /**
  * a simple hook that leverages `useEffect` and `useState` to
  * return some async data and its fulfillment status.
@@ -223,16 +238,31 @@ export function useAsElement(element: ReactNode | Literal): ReactNode {
  * @param deps optional deps to pass to useEffect
  * @returns a tuple in the form of [resolvedPromise, hasResolved, hasError]
  */
-export function useAsync<T>(loader: () => Promise<T>, deps: any[] = []): [T, boolean, boolean] {
-    const [state, set] = useState<{ value: T; done: boolean; error: boolean }>({
-        value: undefined!,
-        done: false,
-        error: false,
-    });
-    const callId = useRef(0);
-    useEffect(() => {
-        const cid = ++callId.current;
-        if (state.done) {
+export function useAsync<T>(loader: () => Promise<T>, deps: any[] = []): T {
+    const [state, set] = useState<AsyncResult<T>>({
+			status: "pending"
+		}); 
+    useEffect(() => { 
+			set({
+			status: "pending"
+		});
+        let suspender = loader().then(
+            (v) => {
+                set({
+                    status: "success",
+                    value: v,
+                });
+            },
+            (e) => {
+                set({
+                    status: "error",
+                    reason: e,
+                });
+            }
+        );
+				if(state.status == "pending") throw suspender;
+				if(state.status == "error") throw state.reason;
+        /* if (state.done) {
             set((prevState) => ({ ...prevState, done: false }));
         }
 
@@ -247,7 +277,7 @@ export function useAsync<T>(loader: () => Promise<T>, deps: any[] = []): [T, boo
 
                 return error;
             }
-        );
+        ); */
     }, deps);
-    return [state.value, state.done, state.error];
+    return (state as FulfilledPromise<T>).value;
 }
