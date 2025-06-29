@@ -17,7 +17,7 @@ import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
 import { CURRENT_FILE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink } from "ui/markdown";
-import { CSSProperties } from "preact/compat";
+import { CSSProperties, Suspense } from "preact/compat";
 import { Literal, Literals } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { TableView } from "./ui/views/table";
@@ -268,30 +268,7 @@ export class DatacoreLocalApi {
     /** Horizontal flexbox container; good for putting items together in a row. */
     public Group = Group;
 
-    /** A component that only renders its children if `loaded` is true, otherwise defaulting to the `fallback` prop.
-     * Primarily intended to be used with `useAsync`.
-     */
-    public Suspend({
-        loaded: loaded,
-        children,
-        fallback,
-    }: {
-        loaded: boolean;
-        children: preact.ComponentChildren;
-        fallback: preact.ComponentChild;
-    }) {
-        return (
-            <>
-                {loaded ? (
-                    children
-                ) : (
-                    <div className="datacore-loading-boundary">
-                        <div className="datacore-loading-content">{fallback}</div>
-                    </div>
-                )}
-            </>
-        );
-    }
+   public Suspense = Suspense; 
 
     /** Renders a literal value in a pretty way that respects settings. */
     public Literal = (({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) => {
