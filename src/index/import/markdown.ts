@@ -31,7 +31,7 @@ const YAML_DATA_REGEX = /```yaml:data/i;
 /** Matches the start of any codeblock fence. */
 const CODEBLOCK_FENCE_REGEX = /^(?:```|~~~)(.*)$/im;
 /** Matches list items (including inside text blocks). */
-const LIST_ITEM_REGEX = /^[\s>]*(\d+\.|\d+\)|\*|-|\+)\s*(\[.{0,1}\])?\s*(.*)$/mu;
+const LIST_ITEM_REGEX = /^[\s>]*(\d+\.|\d+\)|\*|-|\+)\s*(\[.{0,1}\])?\s*(.*)/msu;
 
 /**
  * Given the raw source and Obsidian metadata for a given markdown file,
@@ -157,7 +157,7 @@ export function markdownSourceImport(
     // All list items in lists. Start with a simple trivial pass.
     const listItems = new BTree<number, ListItemData>(undefined, (a, b) => a - b);
     for (const list of metadata.listItems || []) {
-        const line = lines[list.position.start.line];
+        const line = lines.slice(list.position.start.line, list.position.end.line + 1).join("\n");
 
         // TODO: Implement flag which skips indexing list items.
         const match = line.match(LIST_ITEM_REGEX);
@@ -184,7 +184,7 @@ export function markdownSourceImport(
     // In the second list pass, actually construct the list heirarchy.
     for (const item of listItems.values()) {
         if (item.parentLine < 0) {
-            const listBlock = blocks.get(-item.parentLine);
+            const listBlock = blocks.getPairOrNextHigher(-item.parentLine)![1];
             if (!listBlock || !(listBlock.type === "list")) continue;
 
             (listBlock as ListBlockData).items.push(item);
