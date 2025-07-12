@@ -108,7 +108,7 @@ function RawMarkdown({
     useEffect(() => {
         if (!container.current) return;
 
-        container.current.innerHTML = "";
+        container.current.replaceChildren(...[]);
         MarkdownRenderer.render(app, content, container.current, sourcePath, component).then(() => {
             if (!container.current || !inline) return;
 

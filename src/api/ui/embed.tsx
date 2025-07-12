@@ -47,7 +47,7 @@ export function Embed({
         if (!container.current) return;
         if (!linkedFile) return;
 
-        container.current.innerHTML = "";
+        container.current.replaceChildren(...[]);
 
         const creator = app.embedRegistry.getEmbedCreator(linkedFile);
         let embedComponent = new creator(
