@@ -95,7 +95,7 @@ export class DatacoreLocalApi {
      * return { MyElement };
      * ```
      */
-    public async require(path: string | Link): Promise<any> {
+    public async require(path: string | Link): Promise<unknown> {
         const result = await this.scriptCache.load(path, { dc: this });
         return result.orElseThrow();
     }
@@ -155,7 +155,7 @@ export class DatacoreLocalApi {
     /** Evaluate an expression and return it's evaluated value. */
     public evaluate(
         expression: string | Expression,
-        variables?: Record<string, Literal> | any,
+        variables?: Record<string, Literal>,
         sourcePath?: string
     ): Literal {
         return this.api.evaluate(expression, variables, sourcePath ?? this.path);
@@ -164,7 +164,7 @@ export class DatacoreLocalApi {
     /** Evaluate an expression and return it's evaluated value, throwing an exception on failure. */
     public tryEvaluate(
         expression: string | Expression,
-        variables?: Record<string, Literal> | any,
+        variables?: Record<string, Literal>,
         sourcePath?: string
     ): Result<Literal, string> {
         return this.api.tryEvaluate(expression, variables, sourcePath ?? this.path);
@@ -220,7 +220,11 @@ export class DatacoreLocalApi {
     public useInterning = useInterning;
 
     /** Memoize the input automatically and process it using a DataArray; returns a vanilla array back. */
-    public useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: any[]): U[] {
+    public useArray<T, U>(
+        input: T[] | DataArray<T>,
+        process: (data: DataArray<T>) => DataArray<U>,
+        deps?: unknown[]
+    ): U[] {
         return hooks.useMemo(() => process(DataArray.wrap(input)).array(), [input, ...(deps ?? [])]);
     }
 
@@ -361,7 +365,7 @@ export class DatacoreLocalApi {
         // TODO: We should add embeds as a new tag on indexable types and add an embedding abstraction.
         // For now, it's fairly useful enough to just hardcode some useful things that are embeddable.
         if (element.$types.contains("markdown") && element.$file && "$position" in element) {
-            const { start, end } = element.$position as any;
+            const { start, end } = element.$position as { start: number; end: number };
             if (!Literals.isNumber(start) || !Literals.isNumber(end))
                 return (
                     <ErrorMessage

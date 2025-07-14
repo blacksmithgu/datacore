@@ -107,7 +107,7 @@ export class FunctionBuilder {
                 let vectorizedPositions = this.vectorized[types.length].filter((k) => types[k] == "array");
                 if (vectorizedPositions.length > 0) {
                     let minLength = vectorizedPositions
-                        .map((p) => (args[p] as any[]).length)
+                        .map((p) => (args[p] as unknown[]).length)
                         .reduce((p, c) => Math.min(p, c));
 
                     // Call the subfunction for each element in the longest array.
@@ -118,7 +118,7 @@ export class FunctionBuilder {
                         let subargs = [];
                         for (let index = 0; index < args.length; index++) {
                             if (vectorizedPositions.includes(index)) {
-                                let arr = args[index] as any[];
+                                let arr = args[index] as Literal[];
                                 subargs.push(arr[vpos]);
                             } else {
                                 subargs.push(args[index]);
@@ -260,7 +260,7 @@ export namespace DefaultFunctions {
 
             // Then pull it from the file.
             let resolved = c.linkHandler.resolve(link.path);
-            if (resolved && (resolved as any)?.file?.day) {
+            if (resolved && (resolved as Record<string, Record<string, unknown>>)?.file?.day) {
                 return (resolved as any)?.file?.day;
             }
 

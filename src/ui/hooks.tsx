@@ -182,7 +182,7 @@ export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T 
  * Use a stable callback which hides mutable state behind a stable reference. Reduces react re-renders.
  * @group Hooks
  */
-export function useStableCallback<T>(callback: T, deps: any[]): T {
+export function useStableCallback<T>(callback: T, deps: unknown[]): T {
     const ref = useRef<T>();
 
     useEffect(() => {
@@ -190,14 +190,14 @@ export function useStableCallback<T>(callback: T, deps: any[]): T {
     }, [callback, ...deps]);
 
     return useCallback(
-        (...args: any[]) => {
-            (ref.current as any)(...args);
+        (...args: unknown[]) => {
+            (ref.current as Function)(...args);
         },
         [ref]
     ) as T;
 }
 
-const NO_OP_UPDATE = (x: any) => {};
+const NO_OP_UPDATE = (x: unknown) => {};
 
 /**
  * Use state that will default to an external controlled value if set; otherwise, will track an internal value.
@@ -237,7 +237,7 @@ export function useAsElement(element: ReactNode | Literal): ReactNode {
         if (isValidElement(element)) {
             return element as ReactNode;
         } else {
-            return <Lit sourcePath={sourcePath} inline={true} value={element as any} />;
+            return <Lit sourcePath={sourcePath} inline={true} value={element as Literal} />;
         }
     }, [element]);
 }

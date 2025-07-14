@@ -426,7 +426,7 @@ export class DatacoreLocalApi {
     currentFile(): MarkdownPage;
     currentPath(): string;
     embed: any;
-    evaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Literal;
+    evaluate(expression: string | Expression, variables?: Record<string, Literal>, sourcePath?: string): Literal;
     fileLink(path: string): Link;
     fullquery(query: string | IndexQuery): SearchResult<Indexable>;
     Group: typeof Group;
@@ -447,7 +447,7 @@ export class DatacoreLocalApi {
     path: string;
     get preact(): typeof preact_2;
     query(query: string | IndexQuery): Indexable[];
-    require(path: string | Link): Promise<any>;
+    require(path: string | Link): Promise<unknown>;
     resolvePath(path: string | Link, sourcePath?: string): string;
     // (undocumented)
     Slider: typeof Slider;
@@ -458,12 +458,12 @@ export class DatacoreLocalApi {
     Table: typeof TableView;
     // (undocumented)
     Textbox: typeof Textbox;
-    tryEvaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Result<Literal, string>;
+    tryEvaluate(expression: string | Expression, variables?: Record<string, Literal>, sourcePath?: string): Result<Literal, string>;
     tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string>;
     tryParseLink(linktext: string): Result<Link, string>;
     tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string>;
     tryQuery(query: string | IndexQuery): Result<Indexable[], string>;
-    useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: any[]): U[];
+    useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: unknown[]): U[];
     useCallback: typeof hooks.useCallback;
     useContext: typeof hooks.useContext;
     useCurrentFile(settings?: {

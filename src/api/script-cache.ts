@@ -56,7 +56,7 @@ export class ScriptCache {
     public constructor(private store: Datastore) {}
 
     /** Load the given script at the given path, recursively loading any subscripts as well.  */
-    public async load(path: string | Link, context: Record<string, any>): Promise<Result<any, string>> {
+    public async load(path: string | Link, context: Record<string, unknown>): Promise<Result<unknown, string>> {
         // Always check the cache first.
         const key = this.pathkey(path);
         const currentScript = this.scripts.get(key);
@@ -93,7 +93,10 @@ export class ScriptCache {
     }
 
     /** Load a script, directly bypassing the cache. */
-    private async loadUncached(path: string | Link, context: Record<string, any>): Promise<Result<any, string>> {
+    private async loadUncached(
+        path: string | Link,
+        context: Record<string, unknown>
+    ): Promise<Result<unknown, string>> {
         const maybeSource = await this.resolveSource(path);
         if (!maybeSource.successful) return maybeSource;
 

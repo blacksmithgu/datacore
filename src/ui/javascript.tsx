@@ -32,11 +32,11 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
         try {
             const primitiveScript = transpile(this.script, this.language);
             const renderer = async () => {
-                return await asyncEvalInContext(primitiveScript, {
+                return (await asyncEvalInContext(primitiveScript, {
                     dc: this.api,
                     h: h,
                     Fragment: Fragment,
-                });
+                })) as Promise<Literal | VNode | Function>;
             };
 
             this.renderScript(renderer);

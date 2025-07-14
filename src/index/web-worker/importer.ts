@@ -31,9 +31,9 @@ export class FileImporter extends Component {
     shutdown: boolean;
 
     /** List of files which have been queued for a reload. */
-    queue: Queue<[TFile, Deferred<any>]>;
+    queue: Queue<[TFile, Deferred<unknown>]>;
     /** Outstanding loads indexed by path. */
-    outstanding: Map<string, Promise<any>>;
+    outstanding: Map<string, Promise<unknown>>;
     /** Throttle settings. */
     throttle: () => ImportThrottle;
 
@@ -60,12 +60,12 @@ export class FileImporter extends Component {
     public import<T>(file: TFile): Promise<T> {
         // De-bounce repeated requests for the same file.
         let existing = this.outstanding.get(file.path);
-        if (existing) return existing;
+        if (existing) return existing as Promise<T>;
 
         let promise = deferred<T>();
 
         this.outstanding.set(file.path, promise);
-        this.queue.enqueue([file, promise]);
+        this.queue.enqueue([file, promise as Deferred<unknown>]);
         this.schedule();
         return promise;
     }
@@ -122,7 +122,7 @@ export class FileImporter extends Component {
     }
 
     /** Finish the parsing of a file, potentially queueing a new file. */
-    private finish(worker: PoolWorker, data: any) {
+    private finish(worker: PoolWorker, data: unknown) {
         if (!worker.active) {
             // Stale message - ignoring.
             return;
@@ -131,7 +131,7 @@ export class FileImporter extends Component {
         const [file, promise, start] = worker.active!;
 
         // Resolve promises to let users know this file has finished.
-        if ("$error" in data) promise.reject(data["$error"]);
+        if ("$error" in (data as Record<string, unknown>)) promise.reject((data as Record<string, unknown>)["$error"]);
         else promise.resolve(data);
 
         // Remove file from outstanding.
@@ -218,7 +218,7 @@ interface PoolWorker {
     /** UNIX time indicating the next time this worker is available for execution according to target utilization. */
     availableAt: number;
     /** The active promise this worker is working on, if any. */
-    active?: [TFile, Deferred<any>, number];
+    active?: [TFile, Deferred<unknown>, number];
 }
 
 /** Terminate a pool worker. */

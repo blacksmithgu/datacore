@@ -2,7 +2,7 @@ import { Datacore } from "index/datacore";
 import { PropsWithChildren, useEffect, useState } from "preact/compat";
 import { useIndexUpdates } from "./hooks";
 import { Literal } from "expression/literal";
-import { JSX, VNode, createElement, isValidElement } from "preact";
+import { FunctionComponent, JSX, VNode, createElement, isValidElement } from "preact";
 import { ErrorMessage, Lit } from "./markdown";
 
 import "./errors.css";
@@ -78,9 +78,9 @@ export function ScriptContainer({
 }
 
 /** Make a renderable element from the returned object; if this transformation is not possible, throw an exception. */
-export function makeRenderableElement(object: any, sourcePath: string): JSX.Element {
+export function makeRenderableElement(object: unknown, sourcePath: string): JSX.Element {
     if (typeof object === "function") {
-        return createElement(object, {});
+        return createElement(object as FunctionComponent<unknown>, {});
     } else if (Array.isArray(object)) {
         return createElement(
             "div",
@@ -90,6 +90,6 @@ export function makeRenderableElement(object: any, sourcePath: string): JSX.Elem
     } else if (isValidElement(object)) {
         return object;
     } else {
-        return <Lit value={object} sourcePath={sourcePath} />;
+        return <Lit value={object as Literal | undefined} sourcePath={sourcePath} />;
     }
 }
