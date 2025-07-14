@@ -329,7 +329,7 @@ export function extractTags(metadata: FrontMatterCache): string[] {
 }
 
 /** Split a frontmatter list into separate elements; handles actual lists, comma separated lists, and single elements. */
-export function splitFrontmatterTagOrAlias(data: any, on: RegExp): string[] {
+export function splitFrontmatterTagOrAlias(data: unknown, on: RegExp): string[] {
     if (data == null || data == undefined) return [];
     if (Array.isArray(data)) {
         return data

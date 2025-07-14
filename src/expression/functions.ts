@@ -790,10 +790,7 @@ export namespace DefaultFunctions {
         .add1("array", (a) => {
             return a.flat();
         })
-        .add2("array", "number", (a, n) => {
-            // @ts-ignore
-            return a.flat(n);
-        })
+        .add2("array", "number", (a, n) => a.flat(n as 1))
         .add1("null", () => null)
         .build();
 }

@@ -38,19 +38,17 @@ export async function editInlineField(
     key: string,
     value: Literal
 ): Promise<Result<null, string>> {
-    const content = await app.vault.read(file);
-    if (!content) return Result.failure(`File with path ${file.path} does not exist.`);
+    await app.vault.process(file, (content) => {
+        // Find the extent of the given line (0-indexed), extract it and update.
+        const updated = lineReplace(content, line, line + 1, (line) => {
+            // TODO: This stringif-ication of the value is not correct and will not work
+            // for arrays or objects, but will serve purpose for now...
+            if (value == null) return setInlineField(line, key, undefined);
+            else return setInlineField(line, key, "" + YamlConversion.yaml(value));
+        });
 
-    // Find the extent of the given line (0-indexed), extract it and update.
-    const updated = lineReplace(content, line, line + 1, (line) => {
-        // TODO: This stringif-ication of the value is not correct and will not work
-        // for arrays or objects, but will serve purpose for now...
-        if (value == null) return setInlineField(line, key, undefined);
-        else return setInlineField(line, key, "" + YamlConversion.yaml(value));
+        return updated;
     });
 
-    if (updated == content) return Result.success(null);
-
-    await app.vault.modify(file, updated);
     return Result.success(null);
 }

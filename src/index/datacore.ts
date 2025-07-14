@@ -119,12 +119,6 @@ export class Datacore extends Component {
             this.initializer = undefined;
             this.removeChild(init);
 
-            const durationSecs = (stats.durationMs / 1000.0).toFixed(3);
-            console.log(
-                `Datacore: Imported all files in the vault in ${durationSecs}s ` +
-                    `(${stats.imported} imported, ${stats.cached} cached, ${stats.skipped} skipped).`
-            );
-
             this.datastore.touch();
             this.trigger("update", this.revision);
             this.trigger("initialized");
@@ -133,9 +127,7 @@ export class Datacore extends Component {
             // TODO: I think this may race with other concurrent operations, so
             // this may need to happen at the start of init and not at the end.
             const currentFiles = this.vault.getFiles().map((file) => file.path);
-            this.persister
-                .synchronize(currentFiles)
-                .then((cleared) => console.log(`Datacore: dropped ${cleared.size} out-of-date file metadata blocks.`));
+            this.persister.synchronize(currentFiles);
         });
 
         this.addChild(init);

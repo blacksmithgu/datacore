@@ -51,29 +51,20 @@ export default class DatacorePlugin extends Plugin {
         this.register(this.registerCodeblockHighlighting());
 
         // Initialize as soon as the workspace is ready.
-        if (!this.app.workspace.layoutReady) {
-            this.app.workspace.onLayoutReady(async () => this.core.initialize());
-        } else {
-            this.core.initialize();
-        }
+        this.app.workspace.onLayoutReady(async () => this.core.initialize());
 
         // Make the API globally accessible from any context.
         window.datacore = this.api;
-
-        // bon appetit
-        console.log(`Datacore: version ${this.manifest.version} (requires obsidian ${this.manifest.minAppVersion})`);
-    }
-
-    onunload() {
-        console.log(`Datacore: version ${this.manifest.version} unloaded.`);
     }
 
     /** Register codeblock highlighting and return a closure which unregisters. */
     registerCodeblockHighlighting(): () => void {
         window.CodeMirror.defineMode("datacorejs", (config) => window.CodeMirror.getMode(config, "javascript"));
         window.CodeMirror.defineMode("datacorejsx", (config) => window.CodeMirror.getMode(config, "jsx"));
-        window.CodeMirror.defineMode("datacorets", (config) => window.CodeMirror.getMode(config, "javascript"));
-        window.CodeMirror.defineMode("datacoretsx", (config) => window.CodeMirror.getMode(config, "jsx"));
+        window.CodeMirror.defineMode("datacorets", (config) => window.CodeMirror.getMode(config, "text/typescript"));
+        window.CodeMirror.defineMode("datacoretsx", (config) =>
+            window.CodeMirror.getMode(config, "text/typescript-jsx")
+        );
 
         return () => {
             window.CodeMirror.defineMode("datacorejs", (config) => window.CodeMirror.getMode(config, "null"));
@@ -99,7 +90,7 @@ class GeneralSettingsTab extends PluginSettingTab {
     public display(): void {
         this.containerEl.empty();
 
-        this.containerEl.createEl("h2", { text: "Views" });
+        new Setting(this.containerEl).setName("Views").setHeading();
 
         new Setting(this.containerEl)
             .setName("Pagination")
@@ -116,7 +107,7 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Default Page Size")
+            .setName("Default page size")
             .setDesc("The number of entries to show per page, by default. This can be overriden on a per-view basis.")
             .addDropdown((dropdown) => {
                 const OPTIONS: Record<string, string> = {
@@ -141,7 +132,7 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Scroll on Page Change")
+            .setName("Scroll on page change")
             .setDesc(
                 "If enabled, table that are paged will scroll to the top of the table when the page changes. " +
                     "This can be overriden on a per-view basis."
@@ -152,10 +143,10 @@ class GeneralSettingsTab extends PluginSettingTab {
                 });
             });
 
-        this.containerEl.createEl("h2", { text: "Formatting" });
+        new Setting(this.containerEl).setName("Formatting").setHeading();
 
         new Setting(this.containerEl)
-            .setName("Empty Values")
+            .setName("Empty values")
             .setDesc("What to show for unset/empty properties.")
             .addText((text) => {
                 text.setValue(this.plugin.settings.renderNullAs).onChange(async (value) => {
@@ -164,7 +155,7 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Default Date Format")
+            .setName("Default date format")
             .setDesc(
                 "The default format that dates are rendered in. Uses luxon date formatting (https://github.com/moment/luxon/blob/master/docs/formatting.md#formatting-with-tokens-strings-for-cthulhu)."
             )
@@ -181,7 +172,7 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Default Date-Time format")
+            .setName("Default date/time format")
             .setDesc(
                 "The default format that date-times are rendered in. Uses luxon date formatting (https://github.com/moment/luxon/blob/master/docs/formatting.md#formatting-with-tokens-strings-for-cthulhu)."
             )
@@ -196,10 +187,10 @@ class GeneralSettingsTab extends PluginSettingTab {
                 });
             });
 
-        this.containerEl.createEl("h2", { text: "Performance Tuning" });
+        new Setting(this.containerEl).setName("Performance").setHeading();
 
         new Setting(this.containerEl)
-            .setName("Inline Fields")
+            .setName("Inline fields")
             .setDesc(
                 "If enabled, inline fields will be parsed in all documents. Finding inline fields requires a full text scan through each document, " +
                     "which noticably slows down indexing for large vaults. Disabling this functionality will mean metadata will only come from tags, links, and " +
@@ -214,7 +205,7 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Importer Threads")
+            .setName("Importer threads")
             .setDesc("The number of importer threads to use for parsing metadata.")
             .addText((text) => {
                 text.setValue("" + this.plugin.settings.importerNumThreads).onChange(async (value) => {
@@ -226,7 +217,7 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Importer Utilization")
+            .setName("Importer utilization")
             .setDesc("How much CPU time each importer thread should use, as a fraction (0.1 - 1.0).")
             .addText((text) => {
                 text.setValue(this.plugin.settings.importerUtilization.toFixed(2)).onChange(async (value) => {
@@ -239,7 +230,7 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Maximum Recursive Render Depth")
+            .setName("Maximum recursive render depth")
             .setDesc(
                 "Maximum depth that objects will be rendered to (i.e., how many levels of subproperties " +
                     "will be rendered by default). This avoids infinite recursion due to self-referential objects " +

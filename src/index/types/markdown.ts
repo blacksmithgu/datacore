@@ -360,7 +360,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListBlock.TYPES;
-    $typename: string = "List Block";
+    $typename: string = "List block";
 
     /** The list items inside of this block. */
     $elements: MarkdownListItem[];
@@ -542,7 +542,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListItem.TYPES;
-    $typename: string = "List Item";
+    $typename: string = "List item";
     $id: string;
     $file: string;
 

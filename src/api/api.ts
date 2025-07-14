@@ -152,16 +152,16 @@ export class DatacoreApi {
     /** Evaluate an expression and return it's evaluated value, throwing an exception on failure. */
     public evaluate(
         expression: string | Expression,
-        variables?: Record<string, Literal> | any,
+        variables?: Record<string, Literal>,
         sourcePath?: string
     ): Literal {
-        return this.tryEvaluate(expression, sourcePath, variables).orElseThrow();
+        return this.tryEvaluate(expression, variables, sourcePath).orElseThrow();
     }
 
     /** Evaluate an expression and return it's evaluated value. */
     public tryEvaluate(
         expression: string | Expression,
-        variables?: Record<string, Literal> | any,
+        variables?: Record<string, Literal>,
         sourcePath?: string
     ): Result<Literal, string> {
         if (typeof expression === "string") {

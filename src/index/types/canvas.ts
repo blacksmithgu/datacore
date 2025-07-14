@@ -164,7 +164,7 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
     static TYPES = ["canvas-card", "markdown", "canvas-text-card", TAGGABLE_TYPE, LINKABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = CanvasTextCard.TYPES;
-    $typename: string = "Text Card";
+    $typename: string = "Text card";
     $type: string = "canvas-card";
     $id: string;
 
@@ -233,7 +233,7 @@ export class CanvasFileCard extends BaseCanvasCard implements Indexable {
     static TYPES = ["canvas-card", "markdown", "canvas-file-card", TAGGABLE_TYPE, LINKABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = CanvasTextCard.TYPES;
-    $typename: string = "File Card";
+    $typename: string = "File card";
 
     private constructor(init: Partial<CanvasFileCard>) {
         super(init);
@@ -267,7 +267,7 @@ export class CanvasWebCard extends BaseCanvasCard implements Indexable {
 
     $types: string[] = CanvasTextCard.TYPES;
     readonly $type: string = "web-card";
-    $typename: string = "Web Card";
+    $typename: string = "Web card";
 
     $url: string;
 

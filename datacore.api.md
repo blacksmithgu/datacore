@@ -382,7 +382,7 @@ export class DatacoreApi {
     coerce: typeof Coerce;
     // (undocumented)
     core: Datacore;
-    evaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Literal;
+    evaluate(expression: string | Expression, variables?: Record<string, Literal>, sourcePath?: string): Literal;
     executeJs(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     executeJsx(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     executeTs(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
@@ -398,7 +398,7 @@ export class DatacoreApi {
     get preact(): typeof preact_2;
     query(query: string | IndexQuery): Indexable[];
     resolvePath(path: string | Link, sourcePath?: string): string;
-    tryEvaluate(expression: string | Expression, variables?: Record<string, Literal> | any, sourcePath?: string): Result<Literal, string>;
+    tryEvaluate(expression: string | Expression, variables?: Record<string, Literal>, sourcePath?: string): Result<Literal, string>;
     tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string>;
     tryParseLink(linktext: string): Result<Link, string>;
     tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string>;
@@ -503,8 +503,6 @@ export class DatacorePlugin extends Plugin_2 {
     core: Datacore;
     // (undocumented)
     onload(): Promise<void>;
-    // (undocumented)
-    onunload(): void;
     registerCodeblockHighlighting(): () => void;
     settings: Settings;
     updateSettings(settings: Partial<Settings>): Promise<void>;

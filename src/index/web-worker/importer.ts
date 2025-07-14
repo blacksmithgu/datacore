@@ -114,7 +114,7 @@ export class FileImporter extends Component {
                 }
             }
         } catch (ex) {
-            console.log("Datacore: Background file reloading failed. " + ex);
+            console.error("Datacore: Background file reloading failed. " + ex);
 
             // Message failed, release this worker.
             worker.active = undefined;
@@ -124,7 +124,7 @@ export class FileImporter extends Component {
     /** Finish the parsing of a file, potentially queueing a new file. */
     private finish(worker: PoolWorker, data: any) {
         if (!worker.active) {
-            console.log("Datacore: Received a stale worker message. Ignoring.", data);
+            // Stale message - ignoring.
             return;
         }
 
@@ -158,7 +158,7 @@ export class FileImporter extends Component {
                 // Note: I'm pretty sure this will garauntee that this executes AFTER delay milliseconds,
                 // so this should be fine; if it's not, we'll have to swap to an external timeout loop
                 // which infinitely reschedules itself to the next available execution time.
-                setTimeout(this.schedule.bind(this), delay);
+                window.setTimeout(this.schedule.bind(this), delay);
             }
         }
     }
