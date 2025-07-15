@@ -64,9 +64,15 @@ export function ScriptContainer({
         setElement(undefined);
         setError(undefined);
 
-        executor()
-            .then((result) => setElement(makeRenderableElement(result, sourcePath)))
-            .catch((error) => setError(error));
+        // TODO: Avoid multiple concurrent executions of the same script.
+        (async () => {
+            try {
+                const result = await executor();
+                setElement(makeRenderableElement(result, sourcePath));
+            } catch (error) {
+                setError(error instanceof Error ? error : new Error(String(error)));
+            }
+        })();
     }, [executor, sourcePath]);
 
     // Propogate error upwards.

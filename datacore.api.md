@@ -344,7 +344,7 @@ export class Datacore extends Component {
     //
     // @internal
     importer: FileImporter;
-    index(): void;
+    index(): Promise<void>;
     initialize(): void;
     initialized: boolean;
     // Warning: (ae-forgotten-export) The symbol "DatacoreInitializer" needs to be exported by the entry point index.d.ts

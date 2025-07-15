@@ -110,30 +110,30 @@ export class Datacore extends Component {
         this.index();
     }
 
-    /** Starts the background initializer. */
-    index() {
+    /** Indexes all documents in the vault. Wait on this if you want to wait for the whole index to be ready. */
+    async index() {
         // Asynchronously initialize actual content in the background using a lifecycle-respecting object.
         const init = (this.initializer = new DatacoreInitializer(this));
-        init.finished().then((stats) => {
-            this.initialized = true;
-            this.initializer = undefined;
-            this.removeChild(init);
-
-            this.datastore.touch();
-            this.trigger("update", this.revision);
-            this.trigger("initialized");
-
-            // Clean up any documents which no longer exist in the vault.
-            // TODO: I think this may race with other concurrent operations, so
-            // this may need to happen at the start of init and not at the end.
-            const currentFiles = this.vault.getFiles().map((file) => file.path);
-            this.persister.synchronize(currentFiles);
-        });
-
         this.addChild(init);
+
+        await init.finished();
+
+        this.initialized = true;
+        this.initializer = undefined;
+        this.removeChild(init);
+
+        this.datastore.touch();
+        this.trigger("update", this.revision);
+        this.trigger("initialized");
+
+        // Clean up any documents which no longer exist in the vault.
+        // TODO: I think this may race with other concurrent operations, so
+        // this may need to happen at the start of init and not at the end.
+        const currentFiles = this.vault.getFiles().map((file) => file.path);
+        this.persister.synchronize(currentFiles);
     }
 
-    private rename(file: TAbstractFile, oldPath: string) {
+    private async rename(file: TAbstractFile, oldPath: string) {
         if (!(file instanceof TFile)) {
             return;
         }
@@ -142,7 +142,9 @@ export class Datacore extends Component {
         // This is less optimal than what can probably be done, but paths are used in a bunch of places
         // (for sections, tasks, etc to refer to their parent file) and it requires some finesse to fix.
         this.datastore.delete(oldPath);
-        this.reload(file).then(() => this.trigger("rename", file.path, oldPath));
+        await this.reload(file);
+
+        this.trigger("rename", file.path, oldPath);
 
         // TODO: For correctness, probably have to either fix links in all linked files OR
         // just stop normalizing links in the store. We can traverse the links index to do so
@@ -364,9 +366,16 @@ export class DatacoreInitializer extends Component {
         const next = this.queue.pop();
         if (next) {
             this.current.push(next);
-            this.init(next)
-                .then((result) => this.handleResult(next, result))
-                .catch((result) => this.handleResult(next, result));
+
+            // Run asynchronously to allow for concurrency.
+            (async () => {
+                try {
+                    const result = await this.init(next);
+                    this.handleResult(next, result);
+                } catch (error) {
+                    this.handleResult(next, { status: "skipped" });
+                }
+            })();
 
             this.runNext();
         } else if (!next && this.current.length == 0) {

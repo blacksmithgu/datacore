@@ -44,9 +44,18 @@ export class EmbedQueue extends Component {
             const read = this.vault.cachedRead(file);
             this.active.set(file.path, read);
 
-            read.then((content) => this.finish(file, Result.success(content))).catch((error) =>
-                this.finish(file, Result.failure(error))
-            );
+            // This function is non-blocking and will await on the read promise in the background.
+            this.run(file, read);
+        }
+    }
+
+    /** Wait on the read promise and then finish the load, catching errors. */
+    private async run(file: TFile, data: Promise<string>) {
+        try {
+            const content = await data;
+            this.finish(file, Result.success(content));
+        } catch (error) {
+            this.finish(file, Result.failure(error));
         }
     }
 

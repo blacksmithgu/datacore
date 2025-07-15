@@ -109,7 +109,12 @@ function RawMarkdown({
         if (!container.current) return;
 
         container.current.replaceChildren(...[]);
-        MarkdownRenderer.render(app, content, container.current, sourcePath, component).then(() => {
+
+        (async () => {
+            if (!container.current || !inline) return;
+            await MarkdownRenderer.render(app, content, container.current, sourcePath, component);
+
+            // Have to check twice since the container might disappear during the async call.
             if (!container.current || !inline) return;
 
             // Unwrap any created paragraph elements if we are inline.
@@ -137,7 +142,7 @@ function RawMarkdown({
                 embed.addClass("is-loaded");
                 embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
             }
-        });
+        })();
     }, [content, sourcePath, inline, container.current]);
 
     return (
