@@ -27,4 +27,12 @@
     }
   },
   "include": ["src/main.ts", "src/index.ts", "src/typings/*.d.ts"],
+  "jest": {
+    "extensionsToTreatAsEsm": [".ts", ".tsx"],
+    "globals": {
+      "ts-jest": {
+        "useESM": true,
+      }
+    }
+  }
 }

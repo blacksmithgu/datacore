@@ -15,9 +15,9 @@ import { Events } from 'obsidian';
 import { FileManager } from 'obsidian';
 import * as hooks from 'preact/hooks';
 import { HTMLAttributes } from 'preact/compat';
-import { JSX as JSX_2 } from 'preact/compat';
-import { JSX as JSX_3 } from 'preact/jsx-runtime';
-import { JSX as JSX_4 } from 'preact';
+import { JSX } from 'preact/compat';
+import { JSX as JSX_2 } from 'preact/jsx-runtime';
+import { JSX as JSX_3 } from 'preact';
 import * as luxon_2 from 'luxon';
 import { MarkdownPostProcessorContext } from 'obsidian';
 import { MarkdownRenderChild } from 'obsidian';
@@ -95,7 +95,7 @@ export function Button(props: {
 } & React_2.ComponentProps<"button">): React_2.JSX.Element;
 
 // @public
-export function Callout({ collapsible, open: openProp, initialOpen, onOpenChange, title, icon, children, type, }: PropsWithChildren<CalloutProps>): JSX_4.Element;
+export function Callout({ collapsible, open: openProp, initialOpen, onOpenChange, title, icon, children, type, }: PropsWithChildren<CalloutProps>): JSX_3.Element;
 
 // @public
 export interface CalloutProps {
@@ -237,7 +237,7 @@ export class CanvasWebCard extends BaseCanvasCard implements Indexable {
 }
 
 // @public
-export function Card<T>(props: CardProps<T>): JSX_4.Element;
+export function Card<T>(props: CardProps<T>): JSX_3.Element;
 
 // @public
 export interface CardDimensions {
@@ -283,14 +283,13 @@ export type CompareOp = ">" | ">=" | "<=" | "<" | "=" | "!=";
 // @public
 export interface DataArray<T> {
     [Symbol.iterator](): Iterator<T>;
-    [index: number]: any;
-    [field: string]: any;
+    [index: number]: T;
     array(): T[];
     chain<U>(op: (arr: DataArray<T>) => DataArray<U>): DataArray<U>;
     concat(other: Iterable<T>): DataArray<T>;
     distinct<U>(key?: ArrayFunc<T, U>, comparator?: ArrayComparator<U>): DataArray<T>;
     every(f: ArrayFunc<T, boolean>): boolean;
-    expand(key: string): DataArray<any>;
+    expand(key: string): DataArray<unknown>;
     filter(predicate: ArrayFunc<T, boolean>): DataArray<T>;
     find(pred: ArrayFunc<T, boolean>): T | undefined;
     findIndex(pred: ArrayFunc<T, boolean>, fromIndex?: number): number;
@@ -304,7 +303,7 @@ export interface DataArray<T> {
     groupIn<U>(key: ArrayFunc<LowestKey<T>, U>, comparator?: ArrayComparator<U>): DataArray<Ingrouped<U, T>>;
     includes(element: T): boolean;
     indexOf(element: T, fromIndex?: number): number;
-    into(key: string): DataArray<any>;
+    into(key: string): DataArray<unknown>;
     join(sep?: string): string;
     last(): T | undefined;
     length: number;
@@ -316,14 +315,15 @@ export interface DataArray<T> {
     some(f: ArrayFunc<T, boolean>): boolean;
     sort<U>(key: ArrayFunc<T, U>, direction?: "asc" | "desc", comparator?: ArrayComparator<U>): DataArray<T>;
     sortInPlace<U>(key: (v: T) => U, direction?: "asc" | "desc", comparator?: ArrayComparator<U>): DataArray<T>;
-    to(key: string): DataArray<any>;
+    to(key: string): DataArray<unknown>;
     where(predicate: ArrayFunc<T, boolean>): DataArray<T>;
 }
 
 // @public
 export namespace DataArray {
+    export function defaultComparator(first: unknown, second: unknown): number;
     export function from<T>(raw: Iterable<T>): DataArray<T>;
-    export function isDataArray(obj: any): obj is DataArray<any>;
+    export function isDataArray(obj: unknown): obj is DataArray<unknown>;
     export function wrap<T>(raw: T[] | DataArray<T>): DataArray<T>;
 }
 
@@ -433,8 +433,8 @@ export class DatacoreLocalApi {
     headerLink(path: string, header: string): Link;
     Icon: typeof Icon;
     Link: ({ link, sourcePath: maybeSourcePath }: {
-        link: string | Link;
-        sourcePath?: string | undefined;
+        link: Link | string;
+        sourcePath?: string;
     }) => preact_2.JSX.Element;
     LinkEmbed: any;
     List: typeof ListView;
@@ -700,7 +700,7 @@ export function Group(props: HTMLAttributes<HTMLDivElement> & {
     justify?: string;
     align?: string;
     style?: string;
-}): JSX_2.Element;
+}): JSX.Element;
 
 // @public
 export type GroupElement<T> = {
@@ -882,8 +882,8 @@ export interface IndexValueEquals {
 
 // @public
 export type Ingrouped<U, T> = T extends {
-    key: any;
-    rows: any;
+    key: unknown;
+    rows: unknown[];
 } ? {
     key: T["key"];
     rows: Ingrouped<U, T["rows"][0]>;
@@ -985,7 +985,7 @@ export interface ListExpression {
 }
 
 // @public
-export function ListView<T>(props: ListViewProps<T>): JSX_4.Element;
+export function ListView<T>(props: ListViewProps<T>): JSX_3.Element;
 
 // @public
 export interface ListViewProps<T> {
@@ -1066,8 +1066,8 @@ export type LogicalOp = "index";
 
 // @public
 export type LowestKey<T> = T extends {
-    key: any;
-    rows: any;
+    key: unknown;
+    rows: unknown[];
 } ? LowestKey<T["rows"][0]> : T;
 
 // Warning: (ae-forgotten-export) The symbol "RawMarkdown" needs to be exported by the entry point index.d.ts
@@ -1413,7 +1413,7 @@ export function Stack(props: HTMLAttributes<HTMLDivElement> & {
     justify?: string;
     align?: string;
     style?: string;
-}): JSX_2.Element;
+}): JSX.Element;
 
 // @public
 export class Success<T, E> {
@@ -1457,7 +1457,7 @@ export interface TableColumn<T, V = Literal> {
 }
 
 // @public
-export function TableView<T>(props: TableViewProps<T>): JSX_3.Element;
+export function TableView<T>(props: TableViewProps<T>): JSX_2.Element;
 
 // @public
 export interface TableViewProps<T> {
