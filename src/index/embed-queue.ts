@@ -51,7 +51,7 @@ export class EmbedQueue extends Component {
     }
 
     /** Communicate the result of a loaded file and then schedule more files to be loaded. */
-    private finish(file: TFile, result: Result<string, any>) {
+    private finish(file: TFile, result: Result<string, unknown>) {
         this.active.delete(file.path);
 
         const promises = this.promises.get(file.path) ?? [];

@@ -85,7 +85,7 @@ export function makeRenderableElement(object: unknown, sourcePath: string): JSX.
         return createElement(
             "div",
             {},
-            (object as any[]).map((x) => makeRenderableElement(x, sourcePath))
+            (object as unknown[]).map((x) => makeRenderableElement(x, sourcePath))
         );
     } else if (isValidElement(object)) {
         return object;

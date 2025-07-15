@@ -766,7 +766,7 @@ export function gatherLinks(input: unknown): Link[] {
 
 /** @internal Gather tags from a datablock. */
 export function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
-    function recurse(input: any): string[] {
+    function recurse(input: unknown): string[] {
         if (Literals.isString(input)) return [input.startsWith("#") ? input : "#" + input];
         else if (Literals.isArray(input)) return input.flatMap(recurse);
         else return [];

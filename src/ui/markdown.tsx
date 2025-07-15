@@ -96,7 +96,7 @@ function RawMarkdown({
     inline?: boolean;
     style?: CSSProperties;
     cls?: string;
-    onClick?: (event: MouseEvent) => any;
+    onClick?: (event: MouseEvent) => void;
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);

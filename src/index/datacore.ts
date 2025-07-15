@@ -211,7 +211,7 @@ export class Datacore extends Component {
             return parsed;
         }
 
-        throw new Error("Encountered unrecognized import result type: " + (result as any).type);
+        throw new Error("Encountered unrecognized import result type: " + (result as { type: unknown }).type);
     }
 
     /** Store a canvas document. */
@@ -256,18 +256,18 @@ export class Datacore extends Component {
     ///////////////////////
 
     /** Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
-    public on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
+    public on(evt: "update", callback: (revision: number) => void, context?: any): EventRef;
     /** Called whenever datacore records a file rename and has finished reindexing the rename. */
-    public on(evt: "rename", callback: (newPath: string, oldPath: string) => any, context?: any): EventRef;
+    public on(evt: "rename", callback: (newPath: string, oldPath: string) => void, context?: any): EventRef;
     /** Called when datacore has initialized and is querable. */
-    public on(evt: "initialized", callback: () => any, context?: any): EventRef;
+    public on(evt: "initialized", callback: () => void, context?: any): EventRef;
 
-    on(evt: string, callback: (...data: any) => any, context?: any): EventRef {
+    on(evt: string, callback: (...data: any[]) => void, context?: any): EventRef {
         return this.events.on(evt, callback, context);
     }
 
     /** Unsubscribe from an event using the event and original callback. */
-    off(evt: string, callback: (...data: any) => any) {
+    off(evt: string, callback: (...data: any[]) => void) {
         this.events.off(evt, callback);
     }
 

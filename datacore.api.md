@@ -352,11 +352,11 @@ export class Datacore extends Component {
     // @internal
     initializer?: DatacoreInitializer;
     metadataCache: MetadataCache;
-    off(evt: string, callback: (...data: any) => any): void;
+    off(evt: string, callback: (...data: any[]) => void): void;
     offref(ref: EventRef): void;
-    on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
-    on(evt: "rename", callback: (newPath: string, oldPath: string) => any, context?: any): EventRef;
-    on(evt: "initialized", callback: () => any, context?: any): EventRef;
+    on(evt: "update", callback: (revision: number) => void, context?: any): EventRef;
+    on(evt: "rename", callback: (newPath: string, oldPath: string) => void, context?: any): EventRef;
+    on(evt: "initialized", callback: () => void, context?: any): EventRef;
     // Warning: (ae-forgotten-export) The symbol "LocalStorageCache" needs to be exported by the entry point index.d.ts
     //
     // @internal

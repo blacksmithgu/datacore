@@ -38,6 +38,6 @@ function roundTrip<T extends Literal>(value: T): T {
     return JsonConversion.value(JsonConversion.json(value)) as T;
 }
 
-function checkRoundTrip(value: any) {
+function checkRoundTrip<T>(value: T) {
     expect(roundTrip(value)).toEqual(value);
 }

@@ -12,11 +12,7 @@ import { Fieldbearings } from "./field";
 export type LiteralTypeOrAll = LiteralType | "*";
 
 /** Maps a literal type or the catch-all '*'. */
-export type LiteralReprAll<T extends LiteralTypeOrAll> = T extends "*"
-    ? Literal
-    : T extends LiteralType
-    ? LiteralRepr<T>
-    : any;
+export type LiteralReprAll<T extends LiteralTypeOrAll> = T extends LiteralType ? LiteralRepr<T> : Literal;
 
 /** An implementation for a binary operator. */
 export type BinaryOpImpl<A extends Literal, B extends Literal> = (first: A, second: B, ctx: Evaluator) => Literal;
@@ -31,7 +27,7 @@ export type CompareImpl<T extends Literal> = (first: T, second: T, ctx: Evaluato
 
 /** Provides implementations for binary operators on two types using a registry. */
 export class BinaryOpHandler {
-    private map: Map<string, BinaryOpResultImpl<any, any>>;
+    private map: Map<string, BinaryOpResultImpl<Literal, Literal>>;
     private handleDefaultNulls: boolean;
 
     public static create() {
@@ -49,7 +45,9 @@ export class BinaryOpHandler {
         right: U,
         func: BinaryOpImpl<LiteralReprAll<T>, LiteralReprAll<U>>
     ): BinaryOpHandler {
-        this.map.set(BinaryOpHandler.repr(op, left, right), (a, b, c) => Result.success(func(a, b, c)));
+        this.map.set(BinaryOpHandler.repr(op, left, right), (a, b, c) =>
+            Result.success(func(a as LiteralReprAll<T>, b as LiteralReprAll<U>, c))
+        );
         return this;
     }
 
@@ -59,7 +57,7 @@ export class BinaryOpHandler {
         right: U,
         func: BinaryOpResultImpl<LiteralReprAll<T>, LiteralReprAll<U>>
     ): BinaryOpHandler {
-        this.map.set(BinaryOpHandler.repr(op, left, right), func);
+        this.map.set(BinaryOpHandler.repr(op, left, right), func as BinaryOpResultImpl<Literal, Literal>);
         return this;
     }
 

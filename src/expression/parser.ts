@@ -635,12 +635,14 @@ export const QUERY = P.createLanguage<QueryLanguage>({
 
 /** Return a new parser which executes the underlying parser and returns it's raw string representation. */
 export function captureRaw<T>(base: P.Parser<T>): P.Parser<[T, string]> {
-    return P.custom((_success, _failure) => {
+    return P.custom((success, failure) => {
         return (input, i) => {
-            let result = (base as any)._(input, i);
-            if (!result.status) return result;
+            let result = base._(input, i);
+            if (!result.status) return result as unknown as P.FailureReply;
 
-            return Object.assign({}, result, { value: [result.value, input.substring(i, result.index)] });
+            return Object.assign({}, result, {
+                value: [result.value, input.substring(i, result.index)],
+            }) as unknown as P.SuccessReply<[T, string]>;
         };
     });
 }
@@ -678,17 +680,31 @@ export function createFunction<T>(func: string | P.Parser<string>, args: P.Parse
 export function chainOpt<T>(base: P.Parser<T>, ...funcs: ((r: T) => P.Parser<T>)[]): P.Parser<T> {
     return P.custom((_success, _failure) => {
         return (input, i) => {
-            let result = (base as any)._(input, i);
-            if (!result.status) return result;
+            let result = base._(input, i);
+            if (!result.status) return result as unknown as P.FailureReply;
 
             for (let func of funcs) {
-                let next = (func(result.value as T) as any)._(input, result.index);
-                if (!next.status) return result;
+                // We exit out on failure so this is always a success.
+                const value = (result as P.Success<T>).value as T;
+
+                const next = func(value)._(input, result.index);
+                if (!next.status) return result as unknown as P.FailureReply;
 
                 result = next;
             }
 
-            return result;
+            return result as P.SuccessReply<T>;
         };
     });
+}
+
+// Some type extensions we need to do weird things with Parsimmon.
+declare module "parsimmon" {
+    interface Success<T> {
+        index: number;
+    }
+
+    interface Parser<T> {
+        _(input: string, i: number): P.Result<T>;
+    }
 }

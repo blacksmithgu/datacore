@@ -9,7 +9,8 @@ import { mapObjectValues } from "utils/data";
 import { DateTime } from "luxon";
 
 /** YAML-friendly representation for a literal. */
-export type YamlLiteral = string | number | boolean | null | Record<string, any> | Array<YamlLiteral>;
+export type YamlLiteral = string | number | boolean | null | Record<string, unknown> | Array<YamlLiteral>;
+
 /**
  * @internal
  */
@@ -47,7 +48,7 @@ export namespace YamlConversion {
         } else if (typeof value === "object") {
             if (Array.isArray(value)) {
                 let result = [];
-                for (let child of value as Array<any>) {
+                for (let child of value as YamlLiteral[]) {
                     result.push(literal(child));
                 }
 
@@ -56,7 +57,7 @@ export namespace YamlConversion {
                 let dateParse = DateTime.fromJSDate(value);
                 return dateParse;
             } else {
-                let object = value as Record<string, any>;
+                let object = value as Record<string, YamlLiteral>;
                 let result: Record<string, Literal> = {};
                 for (let key in object) {
                     result[key] = literal(object[key]);

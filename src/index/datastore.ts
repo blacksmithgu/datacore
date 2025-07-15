@@ -538,7 +538,7 @@ export class Datastore {
             const object = this.objects.get(objectId);
             if (!object || !object.$types.contains(FIELDBEARING_TYPE)) continue;
 
-            const field = (object as any as Fieldbearing).field(normkey);
+            const field = (object as unknown as Fieldbearing).field(normkey);
             if (!field) continue;
 
             if (slow(field)) matches.add(objectId);
@@ -651,9 +651,15 @@ export interface SearchSettings {
 }
 
 /** Type guard which checks if object[key] exists and is an iterable. */
-function iterableExists<T extends Record<string, any>, K extends string>(
+function iterableExists<T extends object, K extends string>(
     object: T,
     key: K
-): object is T & Record<K, Iterable<any>> {
-    return key in object && object[key] !== undefined && Symbol.iterator in object[key];
+): object is T & Record<K, Iterable<unknown>> {
+    if (!(key in object)) return false;
+
+    const castObject = object as Record<K, unknown>;
+    if (castObject[key] == null) return false;
+
+    const value = castObject[key];
+    return (Array.isArray(value) || typeof value === "object") && Symbol.iterator in value;
 }

@@ -261,7 +261,7 @@ export namespace DefaultFunctions {
             // Then pull it from the file.
             let resolved = c.linkHandler.resolve(link.path);
             if (resolved && (resolved as Record<string, Record<string, unknown>>)?.file?.day) {
-                return (resolved as any)?.file?.day;
+                return (resolved as Record<string, Record<string, unknown>>)?.file?.day as Literal;
             }
 
             return null;
