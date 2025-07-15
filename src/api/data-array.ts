@@ -174,20 +174,30 @@ class DataArrayImpl<T> implements DataArray<T> {
             else if (typeof prop === "number") return target.values[prop];
             else if (prop === "constructor") return target.values.constructor;
             else if (!isNaN(parseInt(prop))) return target.values[parseInt(prop)];
-            else if (DataArrayImpl.ARRAY_FUNCTIONS.has(prop.toString())) return (target as unknown as Record<string, unknown>)[prop.toString()];
+            else if (DataArrayImpl.ARRAY_FUNCTIONS.has(prop.toString()))
+                return (target as unknown as Record<string, unknown>)[prop.toString()];
 
             return target.to(prop);
         },
     };
 
-    public static wrap<T>(arr: T[], defaultComparator: ArrayComparator<unknown> = DataArray.defaultComparator): DataArray<T> {
-        return new Proxy<DataArrayImpl<T>>(new DataArrayImpl<T>(arr, defaultComparator), DataArrayImpl.ARRAY_PROXY as ProxyHandler<DataArrayImpl<T>>);
+    public static wrap<T>(
+        arr: T[],
+        defaultComparator: ArrayComparator<unknown> = DataArray.defaultComparator
+    ): DataArray<T> {
+        return new Proxy<DataArrayImpl<T>>(
+            new DataArrayImpl<T>(arr, defaultComparator),
+            DataArrayImpl.ARRAY_PROXY as ProxyHandler<DataArrayImpl<T>>
+        );
     }
 
     public length: number;
     [index: number]: T;
 
-    private constructor(public values: T[], public defaultComparator: ArrayComparator<unknown> = DataArray.defaultComparator) {
+    private constructor(
+        public values: T[],
+        public defaultComparator: ArrayComparator<unknown> = DataArray.defaultComparator
+    ) {
         this.length = values.length;
     }
 
@@ -342,7 +352,9 @@ class DataArrayImpl<T> implements DataArray<T> {
             return this.map((v) => {
                 return {
                     key: (v as GroupElement<unknown>).key,
-                    rows: this.lwrap((v as GroupElement<unknown>).rows).groupIn(key as ArrayFunc<unknown, unknown>).array(),
+                    rows: this.lwrap((v as GroupElement<unknown>).rows)
+                        .groupIn(key as ArrayFunc<unknown, unknown>)
+                        .array(),
                 } as Ingrouped<U, T>;
             });
         } else {
