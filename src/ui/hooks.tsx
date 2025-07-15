@@ -5,17 +5,14 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { SearchResult } from "index/datastore";
-import { Literal, Literals } from "expression/literal";
+import { DataObject, Literal, Literals } from "expression/literal";
 import { Result } from "api/result";
 import { CURRENT_FILE_CONTEXT } from "./markdown";
 import { isValidElement } from "preact";
 import { ReactNode } from "preact/compat";
 import { Lit } from "ui/markdown";
 
-/**
- * Hook that updates the view whenever the revision updates, returning the newest revision.
- * @group Hooks
- */
+/** Hook that updates the view whenever the revision updates, returning the newest revision.  */
 export function useIndexUpdates(datacore: Datacore, settings?: { debounce?: number }): number {
     const [revision, setRevision] = useState(datacore.datastore.revision);
     const debouncedRevision = useMemo(() => {
@@ -31,10 +28,7 @@ export function useIndexUpdates(datacore: Datacore, settings?: { debounce?: numb
     return revision;
 }
 
-/**
- * A hook which updates whenever file metadata for a specific file updates.
- * @group Hooks
- */
+/** A hook which updates whenever file metadata for a specific file updates. */
 export function useFileMetadata(
     datacore: Datacore,
     path: string,
@@ -46,10 +40,7 @@ export function useFileMetadata(
     return useMemo(() => datacore.datastore.load(path), [indexRevision, path]);
 }
 
-/**
- * Settings which control how automatic query reloading should work.
- * @group Config
- */
+/** Settings which control how automatic query reloading should work. */
 export interface UseQuerySettings {
     /**
      * If present, debounce repeated query updates so that an update only occurs every \<debounce\> milliseconds. This
@@ -58,10 +49,7 @@ export interface UseQuerySettings {
     debounce?: number;
 }
 
-/**
- * Perform a live, synchronous query which updates its results whenever the backing query would change.
- * @group Hooks
- */
+/** Perform a live, synchronous query which updates its results whenever the backing query would change. */
 export function tryUseFullQuery(
     datacore: Datacore,
     query: IndexQuery,
@@ -71,7 +59,9 @@ export function tryUseFullQuery(
     const indexRevision = useIndexUpdates(datacore, settings);
 
     // We "intern" the query, meaning we reuse the oldest version if it is semantically equal but just a different object.
-    const internedQuery = useInterning(query, Literals.equals);
+    const internedQuery = useInterning(query, (first, second) =>
+        Literals.equals(first as unknown as DataObject, second as unknown as DataObject)
+    );
     // Intern the output as well so react diffing "just works" with the result of useQuery.
     const internedResult = useRef<Result<SearchResult<Indexable>, string> | undefined>(undefined);
 
@@ -111,10 +101,7 @@ export function tryUseFullQuery(
     }, [internedQuery, indexRevision]);
 }
 
-/**
- * Perform a live, synchronous query which updates its results whenever the backing query would change.
- * @group Hooks
- */
+/** Perform a live, synchronous query which updates its results whenever the backing query would change.  */
 export function useFullQuery(
     datacore: Datacore,
     query: IndexQuery,
@@ -123,10 +110,7 @@ export function useFullQuery(
     return tryUseFullQuery(datacore, query, settings).orElseThrow((e) => "Failed to search: " + e);
 }
 
-/**
- * Simplier version of useFullQuery which just directly returns results.
- * @group Hooks
- */
+/** Simpler version of useFullQuery which just directly returns results.  */
 export function tryUseQuery(
     datacore: Datacore,
     query: IndexQuery,
@@ -135,10 +119,7 @@ export function tryUseQuery(
     return tryUseFullQuery(datacore, query, settings).map((result) => result.results);
 }
 
-/**
- * Simplier version of useFullQuery which just directly returns results.
- * @group Hooks
- */
+/** Simpler version of useFullQuery which just directly returns results.  */
 export function useQuery(datacore: Datacore, query: IndexQuery, settings?: UseQuerySettings): Indexable[] {
     return useFullQuery(datacore, query, settings).results;
 }
@@ -165,8 +146,6 @@ function sameObjects(old: Indexable[], incoming: Indexable[]) {
  * "Interns" the incoming value, returning the oldest equal instance. This is a trick to improve React diffing
  *  behavior, as two objects which are equals via equality(a, b) will return the same object reference after being
  *  interned.
- *
- * @group Hooks
  */
 export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T {
     const ref = useRef<T>();
@@ -178,10 +157,7 @@ export function useInterning<T>(value: T, equality: (a: T, b: T) => boolean): T 
     return ref.current;
 }
 
-/**
- * Use a stable callback which hides mutable state behind a stable reference. Reduces react re-renders.
- * @group Hooks
- */
+/** Use a stable callback which hides mutable state behind a stable reference. Reduces react re-renders.  */
 export function useStableCallback<T>(callback: T, deps: unknown[]): T {
     const ref = useRef<T>();
 
@@ -199,10 +175,7 @@ export function useStableCallback<T>(callback: T, deps: unknown[]): T {
 
 const NO_OP_UPDATE = (x: unknown) => {};
 
-/**
- * Use state that will default to an external controlled value if set; otherwise, will track an internal value.
- * @group Hooks
- */
+/** Use state that will default to an external controlled value if set; otherwise, will track an internal value.  */
 export function useControlledState<T>(
     initialState: T,
     override?: T,

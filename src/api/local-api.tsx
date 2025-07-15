@@ -34,11 +34,7 @@ import { ListView } from "./ui/views/list";
  * @public
  */
 export class DatacoreLocalApi {
-    /**
-     * The cache of all currently loaded scripts in this context.
-     * @private
-     * @internal
-     */
+    /** @internal The cache of all currently loaded scripts in this context. */
     private scriptCache: ScriptCache;
 
     public constructor(public api: DatacoreApi, public path: string) {

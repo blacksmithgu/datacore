@@ -5,8 +5,8 @@
 
 import { Literal, Literals } from "expression/literal";
 import { PRIMITIVES } from "expression/parser";
-import { DateTime } from "luxon";
 import { mapObjectValues } from "utils/data";
+import { DateTime } from "luxon";
 
 /** YAML-friendly representation for a literal. */
 export type YamlLiteral = string | number | boolean | null | Record<string, any> | Array<YamlLiteral>;

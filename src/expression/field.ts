@@ -1,7 +1,7 @@
 /**
  * @module api
  */
-import { Literal, Literals } from "expression/literal";
+import { DataObject, Literal, Literals } from "expression/literal";
 import { Indexable } from "../index/types/indexable";
 import { InlineField } from "index/import/inline-field";
 import { FrontmatterEntry } from "index/types/markdown";
@@ -37,14 +37,14 @@ export interface Fieldbearing {
 }
 
 export namespace Fieldbearings {
-    export function isFieldbearing(object: any): object is Fieldbearing {
+    export function isFieldbearing(object: unknown): object is Fieldbearing {
         return (
             object != null && typeof object === "object" && "field" in object && typeof object["field"] == "function"
         );
     }
 
     /** Get a key from a generic map or fieldbearing object. */
-    export function get(object: Fieldbearing | Record<string, Literal>, key: string): Literal | undefined {
+    export function get(object: Fieldbearing | DataObject, key: string): Literal | undefined {
         if (isFieldbearing(object)) return object.field(key)?.value;
         else return object[key];
     }
@@ -63,19 +63,19 @@ export type FieldExtractor<T> = (object: T, key?: string) => Field[];
  */
 export namespace Extractors {
     /** Check if the given property in the object is not excluded and is a plain property (not a function or other special object). */
-    function isValidIntrinsic(object: Record<string, any>, key: string, exclude?: Set<string>): boolean {
+    function isValidIntrinsic(object: Record<string, unknown>, key: string, exclude?: Set<string>): boolean {
         // Don't allow recursion on 'fields' or cached values, and skip any ignored and non-intrinsics.
         if (exclude?.has(key) || !key.startsWith("$")) return false;
 
         // No functions, only use actual values.
-        const value = (object as any)[key];
+        const value = (object as Record<string, unknown>)[key];
         if (Literals.isFunction(value)) return false;
 
         return true;
     }
 
     /** Get all keys of the object, including derived fields from prototypes. */
-    function* prototypeKeys(object: any) {
+    function* prototypeKeys(object: object): Generator<string> {
         for (const key of Object.keys(object)) yield key;
 
         let proto = Object.getPrototypeOf(object);
@@ -87,8 +87,9 @@ export namespace Extractors {
     }
 
     /** Generate a list of fields for the given object, returning them as a list. */
-    export function intrinsics<T extends Record<string, any>>(except?: Set<string>): FieldExtractor<T> {
-        return (object: T, key?: string) => {
+    export function intrinsics<T>(except?: Set<string>): FieldExtractor<T> {
+        return (maybeObject: T, key?: string) => {
+            const object = maybeObject as Record<string, unknown>;
             if (key == null) {
                 const fields: Field[] = [];
 
@@ -97,7 +98,7 @@ export namespace Extractors {
 
                     fields.push({
                         key,
-                        value: (object as any)[key],
+                        value: (object as Record<string, Literal>)[key],
                     });
                 }
 
@@ -108,7 +109,7 @@ export namespace Extractors {
                     return [
                         {
                             key,
-                            value: (object as any)[key],
+                            value: (object as Record<string, Literal>)[key],
                         },
                     ] as Field[];
                 }

@@ -137,6 +137,8 @@ export class Canvas implements Linkable, File_2, Linkbearing, Taggable, Indexabl
     field(key: string): Field | undefined;
     // (undocumented)
     get fields(): Field[];
+    // Warning: (ae-incompatible-release-tags) The symbol "from" is marked as @public, but its signature references "LinkNormalizer" which is marked as @internal
+    //
     // (undocumented)
     static from(raw: JsonCanvas, normalizer?: LinkNormalizer): Canvas;
     // Warning: (ae-forgotten-export) The symbol "JsonCanvas" needs to be exported by the entry point index.d.ts
@@ -274,7 +276,9 @@ export function Checkbox(props: {
     children?: ComponentChildren;
 } & React_2.ComponentProps<"input">): React_2.JSX.Element;
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "combineClasses" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export function combineClasses(fixed: string, ...rest: (string | undefined)[]): string;
 
 // @public
@@ -329,6 +333,7 @@ export namespace DataArray {
 
 // @public
 export class Datacore extends Component {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "Settings" which is marked as @internal
     constructor(app: App, version: string, settings: Settings);
     // (undocumented)
     app: App;
@@ -363,6 +368,8 @@ export class Datacore extends Component {
     reads: EmbedQueue;
     reload(file: TFile): Promise<Indexable>;
     get revision(): number;
+    // Warning: (ae-incompatible-release-tags) The symbol "settings" is marked as @public, but its signature references "Settings" which is marked as @internal
+    //
     // (undocumented)
     settings: Settings;
     storeCanvas(data: Canvas): void;
@@ -497,7 +504,9 @@ export class DatacoreLocalApi {
     VanillaTable: typeof TableView;
 }
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "DatacorePlugin" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export class DatacorePlugin extends Plugin_2 {
     api: DatacoreApi;
     core: Datacore;
@@ -509,7 +518,10 @@ export class DatacorePlugin extends Plugin_2 {
 }
 
 // @public
-export type DataObject = Record<string, any>;
+export interface DataObject {
+    // (undocumented)
+    [key: string]: Literal;
+}
 
 // Warning: (ae-internal-missing-underscore) The name "Datastore" should be prefixed with an underscore because the declaration is marked as @internal
 //
@@ -577,7 +589,7 @@ export namespace Expressions {
 export namespace Extractors {
     export function frontmatter<T extends Indexable>(front: (object: T) => Record<string, FrontmatterEntry> | undefined): FieldExtractor<T>;
     export function inlineFields<T extends Indexable>(inlineMap: (object: T) => Record<string, InlineField> | undefined): FieldExtractor<T>;
-    export function intrinsics<T extends Record<string, any>>(except?: Set<string>): FieldExtractor<T>;
+    export function intrinsics<T>(except?: Set<string>): FieldExtractor<T>;
     export function merge<T extends Fieldbearing>(...extractors: FieldExtractor<T>[]): FieldExtractor<T>;
 }
 
@@ -588,6 +600,8 @@ export class Failure<T, E> {
     bimap<T2, E2>(_succ: (a: T) => T2, fail: (b: E) => E2): Result<T2, E2>;
     // (undocumented)
     cast<U>(): Result<U, E>;
+    // (undocumented)
+    castErr<U>(): Result<T, U>;
     // (undocumented)
     error: E;
     // (undocumented)
@@ -623,9 +637,9 @@ export const FIELDBEARING_TYPE = "fields";
 
 // @public (undocumented)
 export namespace Fieldbearings {
-    export function get(object: Fieldbearing | Record<string, Literal>, key: string): Literal | undefined;
+    export function get(object: Fieldbearing | DataObject, key: string): Literal | undefined;
     // (undocumented)
-    export function isFieldbearing(object: any): object is Fieldbearing;
+    export function isFieldbearing(object: unknown): object is Fieldbearing;
 }
 
 // @public
@@ -662,7 +676,7 @@ export interface FunctionExpression {
 // Warning: (ae-internal-missing-underscore) The name "gatherLinks" should be prefixed with an underscore because the declaration is marked as @internal
 //
 // @internal
-export function gatherLinks(input: Literal): Link[];
+export function gatherLinks(input: unknown): Link[];
 
 // Warning: (ae-internal-missing-underscore) The name "gatherTags" should be prefixed with an underscore because the declaration is marked as @internal
 //
@@ -714,7 +728,7 @@ export type Grouping<T> = T[] | GroupElement<T>[];
 // @public (undocumented)
 export namespace Groupings {
     export function count<T>(elements: Grouping<T> | GroupElement<T>): number;
-    export function isElementGroup<T>(entry: any): entry is GroupElement<T>;
+    export function isElementGroup<T>(entry: unknown): entry is GroupElement<T>;
     export function isGrouping<T>(entry: Grouping<T>): entry is GroupElement<T>[];
     export function isLeaf<T>(entry: Grouping<T>): entry is T[];
     export function slice<T>(elements: Grouping<T>, start: number, end: number): Grouping<T>;
@@ -909,7 +923,9 @@ export interface InlineField {
 // @public
 export type Intent = "error" | "warn" | "info" | "success";
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "INTENT_CLASSES" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export const INTENT_CLASSES: Record<Intent, string>;
 
 // Warning: (ae-forgotten-export) The symbol "JsonFrontmatterEntry" needs to be exported by the entry point index.d.ts
@@ -973,7 +989,9 @@ export interface Linkbearing {
 // @public
 export const LINKBEARING_TYPE = "links";
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "LinkNormalizer" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export type LinkNormalizer = (link: Link) => Link;
 
 // @public
@@ -1004,8 +1022,9 @@ export interface ListViewProps<T> {
 export type ListViewType = "ordered" | "unordered" | "block";
 
 // Warning: (ae-forgotten-export) The symbol "RawLit" needs to be exported by the entry point index.d.ts
+// Warning: (ae-internal-missing-underscore) The name "Lit" should be prefixed with an underscore because the declaration is marked as @internal
 //
-// @public
+// @internal
 export const Lit: typeof RawLit;
 
 // @public
@@ -1020,7 +1039,7 @@ export interface LiteralExpression {
 }
 
 // @public
-export type LiteralRepr<T extends LiteralType> = T extends "boolean" ? boolean : T extends "number" ? number : T extends "string" ? string : T extends "duration" ? Duration : T extends "date" ? DateTime : T extends "null" ? null : T extends "link" ? Link : T extends "array" ? Array<Literal> : T extends "object" ? DataObject : T extends "function" ? Function : any;
+export type LiteralRepr<T extends LiteralType> = T extends "boolean" ? boolean : T extends "number" ? number : T extends "string" ? string : T extends "duration" ? Duration : T extends "date" ? DateTime : T extends "null" ? null : T extends "link" ? Link : T extends "array" ? Array<Literal> : T extends "object" ? DataObject : T extends "function" ? Function : unknown;
 
 // @public
 export namespace Literals {
@@ -1028,26 +1047,26 @@ export namespace Literals {
     const DEFAULT_TO_STRING: ToStringSettings;
     export function deepCopy<T extends Literal>(field: T): T;
     export function equals(first: Literal | undefined, second: Literal | undefined): boolean;
-    export function isArray(val: any): val is any[];
-    export function isBoolean(val: any): val is boolean;
-    export function isDate(val: any): val is DateTime;
-    export function isDuration(val: any): val is Duration;
-    export function isFunction(val: any): val is Function;
-    export function isLink(val: any): val is Link;
-    export function isNull(val: any): val is null | undefined;
-    export function isNumber(val: any): val is number;
-    export function isObject(val: any): val is Record<string, any>;
-    export function isString(val: any): val is string;
+    export function isArray(val: unknown): val is unknown[];
+    export function isBoolean(val: unknown): val is boolean;
+    export function isDate(val: unknown): val is DateTime;
+    export function isDuration(val: unknown): val is Duration;
+    export function isFunction(val: unknown): val is Function;
+    export function isLink(val: unknown): val is Link;
+    export function isNull(val: unknown): val is null | undefined;
+    export function isNumber(val: unknown): val is number;
+    export function isObject(val: unknown): val is DataObject;
+    export function isString(val: unknown): val is string;
     export function isTruthy(field: Literal): boolean;
     export function mapLeaves(val: Literal, func: (t: Literal) => Literal): Literal;
-    export function toString(field: any, setting?: ToStringSettings, recursive?: boolean): string;
+    export function toString(field: unknown, setting?: ToStringSettings, recursive?: boolean): string;
     export interface ToStringSettings {
         dateFormat: string;
         dateTimeFormat: string;
         nullRepresentation: string;
     }
-    export function typeOf(val: any): LiteralType | undefined;
-    export function wrapValue(val: Literal): WrappedLiteral | undefined;
+    export function typeOf(val: unknown): LiteralType | undefined;
+    export function wrapValue(val: unknown): WrappedLiteral | undefined;
 }
 
 // @public
@@ -1071,8 +1090,9 @@ export type LowestKey<T> = T extends {
 } ? LowestKey<T["rows"][0]> : T;
 
 // Warning: (ae-forgotten-export) The symbol "RawMarkdown" needs to be exported by the entry point index.d.ts
+// Warning: (ae-internal-missing-underscore) The name "Markdown" should be prefixed with an underscore because the declaration is marked as @internal
 //
-// @public
+// @internal
 export const Markdown: typeof RawMarkdown;
 
 // @public
@@ -1261,7 +1281,7 @@ export class MarkdownPage implements File_2, Linkbearing, Taggable, Indexable, F
     value(key: string): Literal | undefined;
 }
 
-// @public (undocumented)
+// @public
 export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbearing, Fieldbearing {
     $blocks: MarkdownBlock[];
     // (undocumented)
@@ -1330,13 +1350,15 @@ export interface NegatedExpression {
     type: "negated";
 }
 
-// @public (undocumented)
+// Warning: (ae-internal-missing-underscore) The name "NOOP_NORMALIZER" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export const NOOP_NORMALIZER: LinkNormalizer;
 
 // Warning: (ae-internal-missing-underscore) The name "normalizeLinks" should be prefixed with an underscore because the declaration is marked as @internal
 //
 // @internal
-export function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T;
+export function normalizeLinks<T>(input: T, normalizer: LinkNormalizer): T;
 
 // @public
 export interface ObjectExpression {
@@ -1380,7 +1402,9 @@ export interface SearchResult<O> {
     revision: number;
 }
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "Settings" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export interface Settings {
     defaultDateFormat: string;
     defaultDateTimeFormat: string;
@@ -1422,6 +1446,8 @@ export class Success<T, E> {
     bimap<T2, E2>(succ: (a: T) => T2, _fail: (b: E) => E2): Result<T2, E2>;
     // (undocumented)
     cast<U>(): Result<U, E>;
+    // (undocumented)
+    castErr<U>(): Result<T, U>;
     // (undocumented)
     flatMap<U>(f: (a: T) => Result<U, E>): Result<U, E>;
     // (undocumented)

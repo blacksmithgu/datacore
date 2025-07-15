@@ -77,7 +77,7 @@ export interface DataArray<T> {
 
     /**
      * Return an array where elements are grouped by the given key; the resulting array will have objects of the form
-     * \`{ key: \<key value\>, rows: DataArray }`.
+     * `\{ key: \<key value\>, rows: DataArray \}`.
      */
     groupBy<U>(key: ArrayFunc<T, U>, comparator?: ArrayComparator<U>): DataArray<{ key: U; rows: T[] }>;
 
@@ -364,7 +364,7 @@ class DataArrayImpl<T> implements DataArray<T> {
 
     public distinct<U>(key?: ArrayFunc<T, U>, comparator?: ArrayComparator<U>): DataArray<T> {
         if (this.values.length == 0) return this;
-        let realKey = key ?? ((x) => x as any as U);
+        let realKey = key ?? ((x) => x as unknown as U);
 
         // For similar reasons to groupBy, do a sort and take the first element of each block.
         let intermediate = this.map((x, index) => {

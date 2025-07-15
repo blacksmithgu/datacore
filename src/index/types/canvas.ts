@@ -23,7 +23,7 @@ import {
     normalizeLinks,
     valueFrontmatterEntry,
 } from "./markdown";
-import { InlineField } from "index/import/inline-field";
+import { InlineField, jsonInlineField, valueInlineField } from "index/import/inline-field";
 import { File } from "index/types/indexable";
 import { mapObjectValues } from "utils/data";
 
@@ -83,7 +83,7 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
             $size: this.$size,
             $links: this.$links,
             $path: this.$path,
-            $infields: this.$infields,
+            $infields: mapObjectValues(this.$infields, jsonInlineField),
             $tags: this.$tags,
         };
     }
@@ -102,6 +102,7 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
                 return null;
             })
             .filter((x): x is CanvasTextCard => !!x);
+
         return new Canvas({
             $cards: cards,
             $ctime: DateTime.fromMillis(raw.$ctime),
@@ -110,7 +111,9 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
             $extension: "canvas",
             $path: raw.$path,
             $links: raw.$links.map((l) => normalizer(Link.fromObject(l))),
-            $infields: raw.$infields,
+            $infields: raw.$infields
+                ? mapObjectValues(raw.$infields, (field) => normalizeLinks(valueInlineField(field), normalizer))
+                : {},
             $tags: raw.$tags,
         });
     }
@@ -216,7 +219,9 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
             $frontmatter: raw.$frontmatter
                 ? mapObjectValues(raw.$frontmatter, (fm) => normalizeLinks(valueFrontmatterEntry(fm), normalizer))
                 : undefined,
-            $infields: raw.$infields,
+            $infields: raw.$infields
+                ? mapObjectValues(raw.$infields, (field) => normalizeLinks(valueInlineField(field), normalizer))
+                : {},
             $tags: raw.$tags,
         });
     }

@@ -106,7 +106,7 @@ function RawControlledPager({
                             className={`dc-paging-control-page ${
                                 p === realPage ? " dc-paging-control-page-active" : ""
                             }`}
-                            onClick={(event: any) => setPage(p)}
+                            onClick={() => setPage(p)}
                         >
                             {p + 1}
                         </button>

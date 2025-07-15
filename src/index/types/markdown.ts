@@ -32,7 +32,7 @@ import {
 import { mapObjectValues } from "utils/data";
 import { JsonConversion } from "./json/common";
 
-/** A markdown file in the vault; the source of most metadata. */
+/** @public A markdown file in the vault; the source of most metadata. */
 export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fieldbearing {
     /** All of the types that a markdown file is. */
     static TYPES = [FILE_TYPE, "markdown", "page", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
@@ -50,9 +50,9 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
         return this.$path;
     }
 
-    /** Frontmatter values in the file, if present. Maps lower case frontmatter key -> entry. */
+    /** Frontmatter values in the file, if present. Maps lower case frontmatter key to entry. */
     $frontmatter?: Record<string, FrontmatterEntry>;
-    /** Map of all distinct inline fields in the document. Maps lower case key name -> full metadata. */
+    /** Map of all distinct inline fields in the document. Maps lower case key name to full metadata. */
     $infields: Record<string, InlineField>;
 
     /** The path this file exists at. */
@@ -156,6 +156,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
     );
 }
 
+/** @public A single markdown section inside of a page. */
 export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbearing, Fieldbearing {
     /** All of the types that a markdown section is. */
     static TYPES = ["markdown", "section", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
@@ -180,7 +181,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     $links: Link[];
     /** All of the markdown blocks in this section. */
     $blocks: MarkdownBlock[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
 
     /** @internal Convert raw markdown section data to the appropriate class. */
@@ -260,7 +261,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     }
 }
 
-/** Base class for all markdown blocks. */
+/** @public Base class for all markdown blocks. */
 export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbearing {
     static TYPES = ["markdown", "block", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
@@ -277,7 +278,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     $tags: string[];
     /** All links in the file. */
     $links: Link[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
     /** If present, the distinct block ID for this block. */
     $blockId?: string;
@@ -355,7 +356,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     }
 }
 
-/** Special block for markdown lists (of either plain list entries or tasks). */
+/** @public Special block for markdown lists (of either plain list entries or tasks). */
 export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbearing {
     static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
@@ -399,7 +400,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     }
 }
 
-/** A block containing markdown code. */
+/** @public A block containing markdown code. */
 export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
     static TYPES = ["markdown", "block", "codeblock", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
@@ -468,7 +469,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
     );
 }
 
-/** A data-annotated YAML codeblock. */
+/** @public A data-annotated YAML codeblock. */
 export class MarkdownDatablock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
     static TYPES = ["markdown", "block", "datablock", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
@@ -537,7 +538,7 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
     );
 }
 
-/** A specific list item in a list. */
+/** @public A specific list item in a list. */
 export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Fieldbearing {
     static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
@@ -554,7 +555,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     $type: string;
     /** Exact tags on this list item. */
     $tags: string[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
     /** All links in the file. */
     $links: Link[];
@@ -668,7 +669,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     }
 }
 
-/** A specific task inside of a markdown list. */
+/** @public A specific task inside of a markdown list. */
 export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Linkbearing, Taggable, Fieldbearing {
     static TYPES = ["markdown", "list-item", "task", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
@@ -715,7 +716,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     }
 }
 
-/** An entry in the frontmatter; includes the raw value, parsed value, and raw key (before lower-casing). */
+/** @public An entry in the frontmatter; includes the raw value, parsed value, and raw key (before lower-casing). */
 export interface FrontmatterEntry {
     /** The actual string in frontmatter with exact casing. */
     key: string;
@@ -744,18 +745,18 @@ export function valueFrontmatterEntry(raw: JsonFrontmatterEntry): FrontmatterEnt
 }
 
 /** @internal Normalize links deeply in the object. */
-export function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T {
-    return Literals.mapLeaves(input, (value) => {
+export function normalizeLinks<T>(input: T, normalizer: LinkNormalizer): T {
+    return Literals.mapLeaves(input as Literal, (value) => {
         if (Literals.isLink(value)) return normalizer(value);
         else return value;
     }) as T;
 }
 
 /** @internal Recursively gather links from a literal object. */
-export function gatherLinks(input: Literal): Link[] {
+export function gatherLinks(input: unknown): Link[] {
     const result: Link[] = [];
 
-    Literals.mapLeaves(input, (value) => {
+    Literals.mapLeaves(input as Literal, (value) => {
         if (Literals.isLink(value)) result.push(value);
         return null;
     });
@@ -778,6 +779,7 @@ export function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
     return tags;
 }
 
-/** A link normalizer which takes in a raw link and produces a normalized link. */
+/** @internal A link normalizer which takes in a raw link and produces a normalized link. */
 export type LinkNormalizer = (link: Link) => Link;
+/** @internal A no-op link normalizer which does nothing. */
 export const NOOP_NORMALIZER: LinkNormalizer = (x) => x;

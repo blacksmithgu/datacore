@@ -9,7 +9,10 @@ import { renderMinimalDate, renderMinimalDuration } from "utils/normalizers";
 export { Link };
 
 /** Shorthand for a mapping from keys to values. */
-export type DataObject = Record<string, any>;
+export interface DataObject {
+    [key: string]: Literal;
+}
+
 /** The literal types supported by the query engine. */
 export type LiteralType =
     | "boolean"
@@ -56,7 +59,7 @@ export type LiteralRepr<T extends LiteralType> = T extends "boolean"
     ? DataObject
     : T extends "function"
     ? Function
-    : any;
+    : unknown;
 
 /** A wrapped literal value which can be switched on. */
 export type WrappedLiteral =
@@ -105,11 +108,11 @@ export namespace Literals {
 
     /** Convert an arbitrary value into a reasonable, Markdown-friendly string if possible. */
     export function toString(
-        field: any,
+        field: unknown,
         setting: ToStringSettings = DEFAULT_TO_STRING,
         recursive: boolean = false
     ): string {
-        let wrapped = wrapValue(field);
+        let wrapped = wrapValue(field as Literal);
         if (!wrapped) return setting.nullRepresentation;
 
         switch (wrapped.type) {
@@ -146,14 +149,14 @@ export namespace Literals {
     }
 
     /** Wrap a literal value so you can switch on it easily. */
-    export function wrapValue(val: Literal): WrappedLiteral | undefined {
-        if (isNull(val)) return { type: "null", value: val };
+    export function wrapValue(val: unknown): WrappedLiteral | undefined {
+        if (isNull(val)) return { type: "null", value: null };
         else if (isNumber(val)) return { type: "number", value: val };
         else if (isString(val)) return { type: "string", value: val };
         else if (isBoolean(val)) return { type: "boolean", value: val };
         else if (isDuration(val)) return { type: "duration", value: val };
         else if (isDate(val)) return { type: "date", value: val };
-        else if (isArray(val)) return { type: "array", value: val };
+        else if (isArray(val)) return { type: "array", value: val as Literal[] };
         else if (isLink(val)) return { type: "link", value: val };
         else if (isFunction(val)) return { type: "function", value: val };
         else if (isObject(val)) return { type: "object", value: val };
@@ -164,7 +167,7 @@ export namespace Literals {
     export function mapLeaves(val: Literal, func: (t: Literal) => Literal): Literal {
         if (isObject(val)) {
             let result: DataObject = {};
-            for (let [key, value] of Object.entries(val)) result[key] = mapLeaves(value, func);
+            for (let [key, value] of Object.entries(val)) result[key] = mapLeaves(value as Literal, func);
             return result;
         } else if (isArray(val)) {
             let result: Literal[] = [];
@@ -254,15 +257,15 @@ export namespace Literals {
                     : 1;
             case "array":
                 let f1 = wrap1.value;
-                let f2 = wrap2.value as any[];
+                let f2 = wrap2.value as (Literal | undefined)[];
                 for (let index = 0; index < Math.min(f1.length, f2.length); index++) {
                     let comp = compare(f1[index], f2[index]);
                     if (comp != 0) return comp;
                 }
                 return f1.length - f2.length;
             case "object":
-                let o1 = wrap1.value;
-                let o2 = wrap2.value as Record<string, any>;
+                let o1 = wrap1.value as Record<string, Literal | undefined>;
+                let o2 = wrap2.value as Record<string, Literal | undefined>;
                 let k1 = Array.from(Object.keys(o1));
                 let k2 = Array.from(Object.keys(o2));
                 k1.sort();
@@ -283,7 +286,7 @@ export namespace Literals {
     }
 
     /** Find the corresponding datacore type for an arbitrary value. */
-    export function typeOf(val: any): LiteralType | undefined {
+    export function typeOf(val: unknown): LiteralType | undefined {
         return wrapValue(val)?.type;
     }
 
@@ -324,7 +327,7 @@ export namespace Literals {
             return ([] as Literal[]).concat(field.map((v) => deepCopy(v))) as T;
         } else if (Literals.isObject(field)) {
             let result: Record<string, Literal> = {};
-            for (let [key, value] of Object.entries(field)) result[key] = deepCopy(value);
+            for (let [key, value] of Object.entries(field)) result[key] = deepCopy(value as Literal);
             return result as T;
         } else {
             return field;
@@ -332,47 +335,47 @@ export namespace Literals {
     }
 
     /** Determine if the value is a string. */
-    export function isString(val: any): val is string {
+    export function isString(val: unknown): val is string {
         return typeof val == "string";
     }
 
     /** Determine if the value is a number. */
-    export function isNumber(val: any): val is number {
+    export function isNumber(val: unknown): val is number {
         return typeof val == "number";
     }
 
     /** Determine if the value is a date. */
-    export function isDate(val: any): val is DateTime {
+    export function isDate(val: unknown): val is DateTime {
         return val instanceof DateTime;
     }
 
     /** Determine if the value is a duration. */
-    export function isDuration(val: any): val is Duration {
+    export function isDuration(val: unknown): val is Duration {
         return val instanceof Duration;
     }
 
     /** Determine if the value is null or undefined. */
-    export function isNull(val: any): val is null | undefined {
+    export function isNull(val: unknown): val is null | undefined {
         return val === null || val === undefined;
     }
 
     /** Determine if the value is an array. */
-    export function isArray(val: any): val is any[] {
+    export function isArray(val: unknown): val is unknown[] {
         return Array.isArray(val);
     }
 
     /** Determine if the value is a boolean. */
-    export function isBoolean(val: any): val is boolean {
+    export function isBoolean(val: unknown): val is boolean {
         return typeof val === "boolean";
     }
 
     /** Determine if the value is a link. */
-    export function isLink(val: any): val is Link {
+    export function isLink(val: unknown): val is Link {
         return val instanceof Link;
     }
 
     /** Checks if the given value is an object (and not any other datacore-recognized object-like type). */
-    export function isObject(val: any): val is Record<string, any> {
+    export function isObject(val: unknown): val is DataObject {
         return (
             val !== undefined &&
             typeof val == "object" &&
@@ -385,7 +388,7 @@ export namespace Literals {
     }
 
     /** Determines if the given value is a javascript function. */
-    export function isFunction(val: any): val is Function {
+    export function isFunction(val: unknown): val is Function {
         return typeof val == "function";
     }
 }
@@ -409,7 +412,7 @@ export type Grouping<T> = T[] | GroupElement<T>[];
  */
 export namespace Groupings {
     /** Determines if the given group entry is a standalone value, or a grouping of sub-entries. */
-    export function isElementGroup<T>(entry: any): entry is GroupElement<T> {
+    export function isElementGroup<T>(entry: unknown): entry is GroupElement<T> {
         return Literals.isObject(entry) && Object.keys(entry).length == 2 && "key" in entry && "rows" in entry;
     }
 

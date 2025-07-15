@@ -1,10 +1,4 @@
-/**
- * @module api
- */
-/**
- *  Functional return type for error handling.
- * @hidden
- * */
+/** @public Functional return type for error handling. */
 export class Success<T, E> {
     public successful: true;
 
@@ -21,11 +15,11 @@ export class Success<T, E> {
     }
 
     public mapErr<U>(f: (e: E) => U): Result<T, U> {
-        return this as any as Result<T, U>;
+        return this.castErr();
     }
 
     public bimap<T2, E2>(succ: (a: T) => T2, _fail: (b: E) => E2): Result<T2, E2> {
-        return this.map(succ) as any;
+        return this.map(succ).castErr();
     }
 
     public orElse(_value: T): T {
@@ -33,7 +27,11 @@ export class Success<T, E> {
     }
 
     public cast<U>(): Result<U, E> {
-        return this as any;
+        return this as unknown as Result<U, E>;
+    }
+
+    public castErr<U>(): Result<T, U> {
+        return this as unknown as Result<T, U>;
     }
 
     public orElseThrow(_message?: (e: E) => string): T {
@@ -41,9 +39,7 @@ export class Success<T, E> {
     }
 }
 
-/** Functional return type for error handling.
- * @hidden
- */
+/** @public Functional return type for error handling. */
 export class Failure<T, E> {
     public successful: false;
 
@@ -52,11 +48,11 @@ export class Failure<T, E> {
     }
 
     public map<U>(_f: (a: T) => U): Result<U, E> {
-        return this as any as Failure<U, E>;
+        return this.cast();
     }
 
     public flatMap<U>(_f: (a: T) => Result<U, E>): Result<U, E> {
-        return this as any as Failure<U, E>;
+        return this.cast();
     }
 
     public mapErr<U>(f: (e: E) => U): Result<T, U> {
@@ -64,7 +60,7 @@ export class Failure<T, E> {
     }
 
     public bimap<T2, E2>(_succ: (a: T) => T2, fail: (b: E) => E2): Result<T2, E2> {
-        return this.mapErr(fail) as any;
+        return this.mapErr(fail).cast();
     }
 
     public orElse(value: T): T {
@@ -72,7 +68,11 @@ export class Failure<T, E> {
     }
 
     public cast<U>(): Result<U, E> {
-        return this as any;
+        return this as unknown as Result<U, E>;
+    }
+
+    public castErr<U>(): Result<T, U> {
+        return this as unknown as Result<T, U>;
     }
 
     public orElseThrow(message?: (e: E) => string): T {
@@ -82,15 +82,13 @@ export class Failure<T, E> {
 }
 
 /**
+ * @public
  * A monadic result type which stores either "success" or "failure". An alternative handling exceptional behavior
  * by using the return value instead of an exception.
  */
 export type Result<T, E> = Success<T, E> | Failure<T, E>;
 
-/**
- * @hidden
- * Monadic 'Result' type which encapsulates whether a procedure succeeded or failed, as well as it's return value.
- */
+/** @public Monadic 'Result' type which encapsulates whether a procedure succeeded or failed, as well as it's return value. */
 export namespace Result {
     /** Construct a new success result wrapping the given value. */
     export function success<T, E>(value: T): Result<T, E> {

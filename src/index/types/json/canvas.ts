@@ -12,19 +12,19 @@ export interface CanvasMetadataIndex {
     };
 }
 
-/** Absolute x, y position of a card on the canvas in logical units. */
+/** @public Absolute x, y position of a card on the canvas in logical units. */
 export interface CardPos {
     x: number;
     y: number;
 }
 
-/** 2D dimensions of a canvas card in logical units. */
+/** @public 2D dimensions of a canvas card in logical units. */
 export interface CardDimensions {
     width: number;
     height: number;
 }
 
-/** JSON representation of all canvas metadata. */
+/** @internal JSON representation of all canvas metadata. */
 export interface JsonCanvas {
     /** All of the cards in the canvas. */
     $cards: JsonCanvasCard[];

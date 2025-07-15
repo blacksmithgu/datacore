@@ -1,7 +1,7 @@
 import { Link, JsonLink } from "expression/link";
 import { Literal, Literals } from "expression/literal";
-import { DateTime, Duration } from "luxon";
 import { mapObjectValues } from "utils/data";
+import { DateTime, Duration } from "luxon";
 
 /** JSON-serialized equivalents for literals. */
 export type JsonLiteral =
@@ -12,7 +12,7 @@ export type JsonLiteral =
     | { $_type: "duration"; value: string }
     | { $_type: "link"; value: JsonLink }
     | Array<JsonLiteral>
-    | Record<string, any>
+    | Record<string, unknown>
     | null;
 
 export namespace JsonConversion {
@@ -27,7 +27,7 @@ export namespace JsonConversion {
             case "array":
                 return wrapped.value.map(JsonConversion.json);
             case "object":
-                return mapObjectValues(wrapped.value, JsonConversion.json);
+                return mapObjectValues(wrapped.value as Record<string, Literal>, JsonConversion.json);
             case "date":
                 return { $_type: "date", value: wrapped.value.toISO({ extendedZone: true, includeOffset: true }) };
             case "link":
@@ -56,18 +56,17 @@ export namespace JsonConversion {
             return normalizer(json.map((input) => JsonConversion.value(input, normalizer)));
         } else if (typeof json === "object") {
             if (!("$_type" in json))
-                return mapObjectValues(json, (v) => JsonConversion.value(v as JsonLiteral, normalizer));
+                return mapObjectValues(json, (v: unknown) => JsonConversion.value(v as JsonLiteral, normalizer));
 
-            const type = json["$_type"];
-            switch (type) {
+            switch (json["$_type"]) {
                 case "date":
-                    return normalizer(DateTime.fromISO(json.value, { setZone: true }));
+                    return normalizer(DateTime.fromISO(json.value as string, { setZone: true }));
                 case "duration":
-                    return normalizer(Duration.fromISO(json.value));
+                    return normalizer(Duration.fromISO(json.value as string));
                 case "link":
-                    return normalizer(Link.fromObject(json.value));
+                    return normalizer(Link.fromObject(json.value as JsonLink));
                 default:
-                    throw new Error(`Unrecognized serialized type '${type}'!`);
+                    throw new Error(`Unrecognized serialized type '${json["$_type"]}'!`);
             }
         }
 

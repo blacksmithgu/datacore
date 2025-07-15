@@ -214,11 +214,11 @@ export namespace Variables {
         return new ObjectVariables({});
     }
 
-    export function infer(object: any): Variables {
+    export function infer(object: unknown): Variables {
         if (Fieldbearings.isFieldbearing(object)) {
             return new FieldbearingVariables(object);
         } else {
-            return new ObjectVariables(object);
+            return new ObjectVariables(object as DataObject);
         }
     }
 

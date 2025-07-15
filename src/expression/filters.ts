@@ -19,7 +19,7 @@ export namespace Filters {
     /** Static filter which matches nothing. */
     export const NOTHING: Nothing = { type: "nothing" };
     /** Empty set constant. */
-    export const EMPTY_SET: Set<any> = new Set();
+    export const EMPTY_SET: Set<unknown> = new Set();
 
     /** Construct a new atom filter. */
     export function atom<T>(set: Set<T>): Filter<T> {
@@ -80,7 +80,7 @@ export namespace Filters {
             case "everything":
                 return everything;
             case "nothing":
-                return EMPTY_SET;
+                return EMPTY_SET as Set<T>;
             case "atom":
                 return filter.value;
             case "negated":

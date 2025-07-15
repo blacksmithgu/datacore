@@ -147,7 +147,7 @@ function RawMarkdown({
     );
 }
 
-/** Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
+/** @internal Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export const Markdown = memo(RawMarkdown);
 
 /** Intelligently render an arbitrary literal value. */
@@ -268,7 +268,7 @@ function RawLit({
     return <Fragment>&lt;Unrecognized: {JSON.stringify(value)}&gt;</Fragment>;
 }
 
-/** Intelligently render an arbitrary literal value. */
+/** @internal Intelligently render an arbitrary literal value. */
 export const Lit = memo(RawLit);
 
 /** Render a pretty centered error message in a box. */

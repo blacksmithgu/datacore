@@ -1,8 +1,5 @@
-/**
- * Basic UI components that have simple Obsidian theming.
- * @module ui
- */
-import React, { useCallback } from "preact/compat";
+/** Basic UI components that have simple Obsidian theming. */
+import React, { TargetedEvent, useCallback } from "preact/compat";
 
 import { ComponentChildren } from "preact";
 import { setIcon } from "obsidian";
@@ -10,10 +7,10 @@ import { useControlledState } from "ui/hooks";
 
 import "./basics.css";
 
-/** Various intents for buttons and other interactive elements. */
+/** @public Various intents for buttons and other interactive elements. */
 export type Intent = "error" | "warn" | "info" | "success";
 
-/** CSS classes for each level of intent. */
+/** @internal CSS classes for each level of intent. */
 export const INTENT_CLASSES: Record<Intent, string> = {
     error: "dc-intent-error",
     warn: "dc-intent-warn",
@@ -21,10 +18,7 @@ export const INTENT_CLASSES: Record<Intent, string> = {
     success: "dc-intent-success",
 };
 
-/**
- * Wrapper for a regular HTML button with some default classes.
- * @group Components
- */
+/** @public Wrapper for a regular HTML button with some default classes. */
 export function Button(
     props: { className?: string; intent?: Intent; children: ComponentChildren } & React.ComponentProps<"button">
 ) {
@@ -39,10 +33,7 @@ export function Button(
     );
 }
 
-/**
- * A simple textbox which accepts text.
- * @group Components
- */
+/** @public A simple textbox which accepts text. */
 export function Textbox(props: React.ComponentProps<"input"> & { className?: string }) {
     const { className, children, ...forwardingProps } = props;
     return (
@@ -50,10 +41,7 @@ export function Textbox(props: React.ComponentProps<"input"> & { className?: str
     );
 }
 
-/**
- * A checkbox that can be checked and unchecked.
- * @group Components
- */
+/** @public A checkbox that can be checked and unchecked. */
 export function Checkbox(
     props: {
         className?: string;
@@ -75,7 +63,10 @@ export function Checkbox(
     } = props;
     const [checked, setChecked] = useControlledState(defaultChecked ?? false, isChecked, onCheckChange);
 
-    const onChange = useCallback((event: any) => setChecked(event.currentTarget.checked), [setChecked]);
+    const onChange = useCallback(
+        (event: TargetedEvent<HTMLInputElement>) => setChecked(event.currentTarget.checked),
+        [setChecked]
+    );
 
     return (
         <label className={combineClasses("dc-checkbox", disabled ? "dc-checkbox-disabled" : undefined, className)}>
@@ -92,10 +83,7 @@ export function Checkbox(
     );
 }
 
-/**
- * Wrapper for a slider (range input) with some default classes.
- * @group Components
- */
+/** @public Wrapper for a slider (range input) with some default classes. */
 export function Slider(
     props: {
         className?: string;
@@ -110,7 +98,10 @@ export function Slider(
     const { className, min = 0, max = 10, step = 1, value, defaultValue, onValueChange, ...forwardingProps } = props;
     const [slider, setSlider] = useControlledState(defaultValue ?? 0, value, onValueChange);
 
-    const onChange = useCallback((event: any) => setSlider(event.currentTarget.value), [setSlider]);
+    const onChange = useCallback(
+        (event: TargetedEvent<HTMLInputElement>) => setSlider(parseInt(event.currentTarget.value)),
+        [setSlider]
+    );
 
     return (
         <input
@@ -127,10 +118,7 @@ export function Slider(
     );
 }
 
-/**
- * Wrapper for a switch (toggle) component with some default classes.
- * @group Components
- */
+/** @public Wrapper for a switch (toggle) component with some default classes. */
 export function Switch(
     props: {
         className?: string;
@@ -143,7 +131,10 @@ export function Switch(
     const { className, disabled, defaultChecked, checked, onToggleChange, ...forwardingProps } = props;
     const [toggled, setToggled] = useControlledState(defaultChecked ?? false, checked, onToggleChange);
 
-    const onChange = useCallback((event: any) => setToggled(event.currentTarget.checked), [setToggled]);
+    const onChange = useCallback(
+        (event: TargetedEvent<HTMLInputElement>) => setToggled(event.currentTarget.checked),
+        [setToggled]
+    );
 
     return (
         <label
@@ -167,10 +158,7 @@ export function Switch(
     );
 }
 
-/**
- * Wrapper for a select component with some default classes.
- * @group Components
- */
+/** @public Wrapper for a select component with some default classes. */
 export function VanillaSelect(
     props: {
         className?: string;
@@ -205,10 +193,8 @@ export function VanillaSelect(
         </select>
     );
 }
-/**
- * A component that renders an SVG icon.
- * @group Components
- */
+
+/** @public A component that renders an SVG icon. */
 export function Icon(props: { className?: string; icon: string }) {
     const { className, icon } = props;
     const ref = React.createRef<HTMLSpanElement>();
@@ -222,10 +208,7 @@ export function Icon(props: { className?: string; icon: string }) {
     return <span ref={ref} className={combineClasses("dc-icon", className)} data-icon={icon} />;
 }
 
-/**
- * Appends additional classes to a basic fixed class.
- * @group Utilities
- * */
+/** @internal Appends additional classes to a basic fixed class. */
 export function combineClasses(fixed: string, ...rest: (string | undefined)[]) {
     const nonempty = rest.filter((c) => c !== undefined);
     if (nonempty.length === 0) return fixed;

@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 
-/** Reactive data engine for your Obsidian.md vault. */
+/** @internal Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
     /** Plugin-wide default settings. */
     public settings: Settings;

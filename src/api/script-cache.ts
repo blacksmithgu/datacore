@@ -12,16 +12,20 @@ import { Fragment, h } from "preact";
 export interface LoadingScript {
     type: "loading";
 
+    /** The path that the script was loaded from. */
     path: string;
-    promise: Deferred<Result<any, string>>;
+    /** The promise representing the eventually loaded object. */
+    promise: Deferred<Result<unknown, string>>;
 }
 
 /** A script that has successfully loaded. */
 export interface LoadedScript {
     type: "loaded";
 
+    /** The path that the script was loaded from. */
     path: string;
-    object: any;
+    /** The actual resulting loaded object - usually going to be an object or function. */
+    object: unknown;
 }
 
 export type DatacoreScript = LoadingScript | LoadedScript;
@@ -77,7 +81,7 @@ export class ScriptCache {
         }
 
         // Cache has missed, so add ourselves to the cache and try and load it directly.
-        const deferral = deferred<Result<any, string>>();
+        const deferral = deferred<Result<unknown, string>>();
         this.scripts.set(key, { type: "loading", promise: deferral, path: key });
 
         const result = await this.loadUncached(path, context);

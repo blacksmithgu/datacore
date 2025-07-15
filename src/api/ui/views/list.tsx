@@ -417,16 +417,14 @@ function defaultChildren<T>(element: T): T[] {
     return fetchProps(element, ["$children", "children"]);
 }
 
-/**
- * Given an element and a list of props, extract the elements of those props.
- */
+/** Given an element and a list of props, extract the elements of those props. */
 function fetchProps<T>(element: T, props: string[]): T[] {
     const result: T[] = [];
     for (const prop of props) {
-        const items = (element as any)[prop];
+        const items = (element as Record<string, T>)[prop];
 
         if (!items) continue;
-        if (Literals.isArray(items)) result.push(...items);
+        if (Literals.isArray(items)) result.push(...(items as T[]));
         else result.push(items);
     }
 

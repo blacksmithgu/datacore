@@ -1,4 +1,4 @@
-import { Link, Literal, Literals } from "expression/literal";
+import { DataObject, Link, Literal, Literals } from "expression/literal";
 import { Filter, Filters } from "expression/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
@@ -342,7 +342,9 @@ export class Datastore {
                 exists: (path: string | Link) =>
                     this.resolveLink(typeof path == "string" ? Link.file(path) : path, sourcePath) != null,
                 resolve: (path: string) =>
-                    this.resolveLink(typeof path == "string" ? Link.file(path) : path, sourcePath) ?? null,
+                    (this.resolveLink(typeof path == "string" ? Link.file(path) : path, sourcePath) as
+                        | DataObject
+                        | undefined) ?? null,
                 normalize: (path: string) =>
                     this.metadataCache.getFirstLinkpathDest(path, sourcePath ?? "")?.path ?? path,
             },
@@ -358,7 +360,7 @@ export class Datastore {
 
         // Set `this` on the file if needed.
         const file = sourcePath ? this.objects.get(sourcePath) : undefined;
-        if (file) evaluator.set("this", file);
+        if (file) evaluator.set("this", file as unknown as DataObject);
 
         const resolver: IndexResolver<string> = {
             universe: this.ids,
