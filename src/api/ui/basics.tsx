@@ -169,11 +169,7 @@ export function VanillaSelect(
     } & React.ComponentProps<"select">
 ) {
     const { className, options = [], value, defaultValue, onValueChange, ...forwardingProps } = props;
-    const [selectedValue, setSelectedValue] = React.useState(value ?? defaultValue ?? "");
-
-    React.useEffect(() => {
-        if (typeof value === "string") setSelectedValue(value);
-    }, [value]);
+    const [selectedValue, setSelectedValue] = useControlledState(defaultValue ?? "", value, onValueChange);
 
     return (
         <select
@@ -181,7 +177,6 @@ export function VanillaSelect(
             value={selectedValue}
             onChange={(e) => {
                 setSelectedValue(e.currentTarget.value);
-                onValueChange && onValueChange(e.currentTarget.value);
             }}
             {...forwardingProps}
         >
