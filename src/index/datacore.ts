@@ -258,18 +258,18 @@ export class Datacore extends Component {
     ///////////////////////
 
     /** Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
-    public on(evt: "update", callback: (revision: number) => void, context?: any): EventRef;
+    public on(evt: "update", callback: (revision: number) => void, context?: unknown): EventRef;
     /** Called whenever datacore records a file rename and has finished reindexing the rename. */
-    public on(evt: "rename", callback: (newPath: string, oldPath: string) => void, context?: any): EventRef;
+    public on(evt: "rename", callback: (newPath: string, oldPath: string) => void, context?: unknown): EventRef;
     /** Called when datacore has initialized and is querable. */
-    public on(evt: "initialized", callback: () => void, context?: any): EventRef;
+    public on(evt: "initialized", callback: () => void, context?: unknown): EventRef;
 
-    on(evt: string, callback: (...data: any[]) => void, context?: any): EventRef {
-        return this.events.on(evt, callback, context);
+    on<T extends Function>(evt: string, callback: T, context?: unknown): EventRef {
+        return this.events.on(evt, callback as unknown as (...args: unknown[]) => unknown, context);
     }
 
     /** Unsubscribe from an event using the event and original callback. */
-    off(evt: string, callback: (...data: any[]) => void) {
+    off(evt: string, callback: (...data: unknown[]) => void) {
         this.events.off(evt, callback);
     }
 
@@ -286,7 +286,7 @@ export class Datacore extends Component {
     private trigger(evt: "initialized"): void;
 
     /** Trigger an event. */
-    private trigger(evt: string, ...args: any[]): void {
+    private trigger(evt: string, ...args: unknown[]): void {
         this.events.trigger(evt, ...args);
     }
 }
