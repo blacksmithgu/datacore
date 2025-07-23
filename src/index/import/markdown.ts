@@ -295,7 +295,7 @@ export function* iterateInlineFields(content: string[]): Generator<InlineField> 
 }
 
 /** Top-level function which maps a YAML block - including frontmatter - into frontmatter entries. */
-export function parseFrontmatterBlock(block: Record<string, any>): Record<string, JsonFrontmatterEntry> {
+export function parseFrontmatterBlock(block: Record<string, string>): Record<string, JsonFrontmatterEntry> {
     const result: Record<string, JsonFrontmatterEntry> = {};
     for (const key of Object.keys(block)) {
         const value = block[key];
