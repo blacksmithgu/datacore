@@ -214,3 +214,70 @@ export function useAsElement(element: ReactNode | Literal): ReactNode {
         }
     }, [element]);
 }
+
+type FulfilledPromise<T> = {
+    status: "success";
+    value: T;
+};
+type PendingPromise<T> = {
+    status: "pending";
+};
+type RejectedPromise<T> = {
+    status: "error";
+    reason: any;
+};
+
+type AsyncResult<T> = FulfilledPromise<T> | PendingPromise<T> | RejectedPromise<T>;
+
+/**
+ * a simple hook that leverages `useEffect` and `useState` to
+ * return some async data and its fulfillment status.
+ *
+ * @group Hooks
+ * @param loader a parameterless function that returns a promise
+ * @param deps optional deps to pass to useEffect
+ * @returns a tuple in the form of [resolvedPromise, hasResolved, hasError]
+ */
+export function useAsync<T>(loader: () => Promise<T>, deps: any[] = []): T {
+    const [state, set] = useState<AsyncResult<T>>({
+			status: "pending"
+		}); 
+    useEffect(() => { 
+			set({
+			status: "pending"
+		});
+        let suspender = loader().then(
+            (v) => {
+                set({
+                    status: "success",
+                    value: v,
+                });
+            },
+            (e) => {
+                set({
+                    status: "error",
+                    reason: e,
+                });
+            }
+        );
+				if(state.status == "pending") throw suspender;
+				if(state.status == "error") throw state.reason;
+        /* if (state.done) {
+            set((prevState) => ({ ...prevState, done: false }));
+        }
+
+        loader().then(
+            (value) => {
+                cid === callId.current && set({ value, done: true, error: false });
+
+                return value;
+            },
+            (error) => {
+                cid === callId.current && set({ value: undefined!, done: true, error: true });
+
+                return error;
+            }
+        ); */
+    }, deps);
+    return (state as FulfilledPromise<T>).value;
+}
