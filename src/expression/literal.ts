@@ -391,6 +391,28 @@ export namespace Literals {
     export function isFunction(val: unknown): val is Function {
         return typeof val == "function";
     }
+
+    export function defaultValue(type: LiteralType): any {
+        switch (type) {
+            case "array":
+                return [];
+            case "date":
+						case "duration":
+						case "link":
+						case "null":
+                return null;
+            case "boolean":
+                return false;
+						case "object":
+							return {}
+						case "function":
+							return null;
+						case "string":
+							return ""
+						case "number":
+							return 0
+        }
+    }
 }
 
 /** A grouping on a type which supports recursively-nested groups.
