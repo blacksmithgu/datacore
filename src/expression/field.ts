@@ -10,7 +10,7 @@ import { FrontmatterEntry } from "index/types/markdown";
 export type Provenance =
     | { type: "frontmatter"; file: string; key: string; revision: number }
     | { type: "inline-field"; file: string; line: number; key: string; revision: number }
-    | { type: "intrinsic"; file: string; revision: number; };
+    | { type: "intrinsic"; file: string; revision: number };
 
 /**
  * General definition for a field. Provides the field key, value, as well as information on it's source and how it can be edited.
@@ -100,7 +100,7 @@ export namespace Extractors {
                     fields.push({
                         key,
                         value: (object as Record<string, Literal>)[key],
-                        provenance: { type: "intrinsic", file: object.$file!, revision: object.$revision ?? 0 }
+                        provenance: { type: "intrinsic", file: object.$file!, revision: object.$revision ?? 0 },
                     });
                 }
 
@@ -111,8 +111,8 @@ export namespace Extractors {
                     const entry: Field = {
                         key,
                         value: (object as Record<string, Literal>)[key],
-                        provenance: { type: "intrinsic", file: object.$file!, revision: object.$revision ?? 0 }
-                    }
+                        provenance: { type: "intrinsic", file: object.$file!, revision: object.$revision ?? 0 },
+                    };
 
                     return [entry];
                 }
@@ -140,7 +140,12 @@ export namespace Extractors {
                         key: entry.key.toLowerCase(),
                         value: entry.value,
                         raw: entry.raw,
-                        provenance: { type: "frontmatter", file: object.$file!, key: entry.key, revision: object.$revision ?? 0 },
+                        provenance: {
+                            type: "frontmatter",
+                            file: object.$file!,
+                            key: entry.key,
+                            revision: object.$revision ?? 0,
+                        },
                     });
                 }
 
@@ -180,14 +185,14 @@ export namespace Extractors {
                         file: object.$file!,
                         line: field.position.line,
                         key: field.key,
-                        revision: object.$revision ?? 0
+                        revision: object.$revision ?? 0,
                     };
-                    
+
                     fields.push({
                         key: field.key.toLowerCase(),
                         value: field.value,
                         raw: field.raw,
-                        provenance
+                        provenance,
                     });
                 }
 
@@ -202,7 +207,7 @@ export namespace Extractors {
                     file: object.$file!,
                     line: field.position.line,
                     key: field.key,
-                    revision: object.$revision ?? 0
+                    revision: object.$revision ?? 0,
                 };
                 return [
                     {
