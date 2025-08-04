@@ -221,7 +221,7 @@ export function markdownSourceImport(
     ///////////
 
     for (let linkdef of metadata.links ?? []) {
-        const link = Link.infer(linkdef.link);
+        const link = Link.infer(linkdef.link, false, linkdef.displayText);
         const line = linkdef.position.start.line;
         markdownMetadata.link(link);
 
