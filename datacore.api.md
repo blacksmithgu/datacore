@@ -352,11 +352,11 @@ export class Datacore extends Component {
     // @internal
     initializer?: DatacoreInitializer;
     metadataCache: MetadataCache;
-    off(evt: string, callback: (...data: any[]) => void): void;
+    off(evt: string, callback: (...data: unknown[]) => void): void;
     offref(ref: EventRef): void;
-    on(evt: "update", callback: (revision: number) => void, context?: any): EventRef;
-    on(evt: "rename", callback: (newPath: string, oldPath: string) => void, context?: any): EventRef;
-    on(evt: "initialized", callback: () => void, context?: any): EventRef;
+    on(evt: "update", callback: (revision: number) => void, context?: unknown): EventRef;
+    on(evt: "rename", callback: (newPath: string, oldPath: string) => void, context?: unknown): EventRef;
+    on(evt: "initialized", callback: () => void, context?: unknown): EventRef;
     // Warning: (ae-forgotten-export) The symbol "LocalStorageCache" needs to be exported by the entry point index.d.ts
     //
     // @internal
@@ -589,7 +589,7 @@ export namespace Expressions {
 export namespace Extractors {
     export function frontmatter<T extends Indexable>(front: (object: T) => Record<string, FrontmatterEntry> | undefined): FieldExtractor<T>;
     export function inlineFields<T extends Indexable>(inlineMap: (object: T) => Record<string, InlineField> | undefined): FieldExtractor<T>;
-    export function intrinsics<T>(except?: Set<string>): FieldExtractor<T>;
+    export function intrinsics<T extends Indexable>(except?: Set<string>): FieldExtractor<T>;
     export function merge<T extends Fieldbearing>(...extractors: FieldExtractor<T>[]): FieldExtractor<T>;
 }
 
@@ -621,7 +621,7 @@ export class Failure<T, E> {
 // @public
 export interface Field {
     key: string;
-    provenance?: Provenance;
+    provenance: Provenance;
     raw?: string;
     value: Literal;
 }
@@ -1373,11 +1373,17 @@ export type Provenance = {
     type: "frontmatter";
     file: string;
     key: string;
+    revision: number;
 } | {
     type: "inline-field";
     file: string;
     line: number;
     key: string;
+    revision: number;
+} | {
+    type: "intrinsic";
+    file: string;
+    revision: number;
 };
 
 // @public
