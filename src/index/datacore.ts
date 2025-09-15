@@ -110,6 +110,16 @@ export class Datacore extends Component {
         this.index();
     }
 
+    /** Clears all current state and caches and reindexes the entire vault from scratch. */
+    async reindex() {
+        this.initialized = false;
+        this.datastore.clear();
+
+        await this.persister.recreate();
+
+        await this.index();
+    }
+
     /** Indexes all documents in the vault. Wait on this if you want to wait for the whole index to be ready. */
     async index() {
         // Asynchronously initialize actual content in the background using a lifecycle-respecting object.

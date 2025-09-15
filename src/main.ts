@@ -47,6 +47,17 @@ export default class DatacorePlugin extends Plugin {
             -100
         );
 
+        // Useful debug and non-debug commands.
+        // Drops the current index and reindexes all items.
+        this.addCommand({
+            id: "datacore-reindex-vault",
+            name: "Reindex entire vault",
+            callback: async () => {
+                console.log("Datacore: dropping the datastore and reindexing all items.");
+                await this.core.reindex();
+            },
+        });
+
         // Register JS highlighting for codeblocks.
         this.register(this.registerCodeblockHighlighting());
 

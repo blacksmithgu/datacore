@@ -366,6 +366,7 @@ export class Datacore extends Component {
     //
     // @internal
     reads: EmbedQueue;
+    reindex(): Promise<void>;
     reload(file: TFile): Promise<Indexable>;
     get revision(): number;
     // Warning: (ae-incompatible-release-tags) The symbol "settings" is marked as @public, but its signature references "Settings" which is marked as @internal
