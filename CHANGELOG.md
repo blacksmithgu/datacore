@@ -1,3 +1,9 @@
+# 0.1.26
+
+- Fixes non-inline Markdown blocks and removes the plaintext flickering.
+
+---
+
 # 0.1.25
 
 - Re-added support for emoji-based task metadata from the Tasks plugin.
