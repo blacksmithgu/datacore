@@ -111,18 +111,20 @@ function RawMarkdown({
         container.current.replaceChildren(...[]);
 
         (async () => {
-            if (!container.current || !inline) return;
+            if (!container.current) return;
             await MarkdownRenderer.render(app, content, container.current, sourcePath, component);
 
             // Have to check twice since the container might disappear during the async call.
-            if (!container.current || !inline) return;
+            if (!container.current) return;
 
             // Unwrap any created paragraph elements if we are inline.
-            let paragraph = container.current.querySelector("p");
-            while (paragraph) {
-                let children = paragraph.childNodes;
-                paragraph.replaceWith(...Array.from(children));
-                paragraph = container.current.querySelector("p");
+            if (inline) {
+                let paragraph = container.current.querySelector("p");
+                while (paragraph) {
+                    let children = paragraph.childNodes;
+                    paragraph.replaceWith(...Array.from(children));
+                    paragraph = container.current.querySelector("p");
+                }
             }
 
             // have embeds actually load instead of displaying as plain text.
@@ -145,11 +147,7 @@ function RawMarkdown({
         })();
     }, [content, sourcePath, inline, container.current]);
 
-    return (
-        <span ref={container} style={style} className={cls} onClick={onClick}>
-            {content}
-        </span>
-    );
+    return <span ref={container} style={style} className={cls} onClick={onClick}></span>;
 }
 
 /** @internal Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
