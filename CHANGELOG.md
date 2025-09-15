@@ -1,3 +1,10 @@
+# 0.1.28
+
+- Fixes #134: Properly strip whitespace from codeblock languages to fix some issues with `dc.require`.
+
+
+---
+
 # 0.1.27
 
 - Bugfix release for reverting an accidental capitalization change in $typename for markdown lists.

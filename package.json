@@ -1,6 +1,6 @@
 {
   "name": "@blacksmithgu/datacore",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "Reactive data engine for Obsidian.md.",
   "main": "build/library/index.js",
   "types": "build/library/index.d.ts",
