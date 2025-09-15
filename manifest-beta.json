@@ -1,9 +1,9 @@
 {
   "id": "datacore",
   "name": "Datacore",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "minAppVersion": "1.4.11",
-  "description": "Reactive data engine for Obsidian.md.",
+  "description": "Reactive query engine backed by Javascript or a custom query language.",
   "author": "Michael Brenan",
   "authorUrl": "https://github.com/blacksmithgu",
   "isDesktopOnly": false

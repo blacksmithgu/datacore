@@ -1,3 +1,10 @@
+# 0.1.25
+
+- Re-added support for emoji-based task metadata from the Tasks plugin.
+- Added a debug command, "Datacore: Reindex entire vault", to reload all files in the vault.
+
+---
+
 # 0.1.24
 
 - Add official datacore API typings at '@blacksmithgu/datacore'.
