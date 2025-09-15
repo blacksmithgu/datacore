@@ -1,7 +1,7 @@
 {
   "id": "datacore",
   "name": "Datacore",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "minAppVersion": "1.4.11",
   "description": "Reactive query engine backed by Javascript or a custom query language.",
   "author": "Michael Brenan",

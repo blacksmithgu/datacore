@@ -1,3 +1,9 @@
+# 0.1.27
+
+- Bugfix release for reverting an accidental capitalization change in $typename for markdown lists.
+
+---
+
 # 0.1.26
 
 - Fixes non-inline Markdown blocks and removes the plaintext flickering.
