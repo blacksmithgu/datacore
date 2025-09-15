@@ -135,7 +135,10 @@ export function markdownSourceImport(
                 // This is an indented-style codeblock.
                 blocks.set(start, new CodeblockData(start, end, blockOrdinal++, [], "indent", start, end, block.id));
             } else {
-                const languages = match.length > 1 && match[1] ? match[1].split(",") : [];
+                // Pull out all languages in the block, stripping whitespace and empty blocks.
+                const rawLanguages = match.length > 1 && match[1] ? match[1].split(",") : [];
+                const languages = rawLanguages.map((lang) => lang.trim()).filter((lang) => lang.length > 0);
+
                 blocks.set(
                     start,
                     new CodeblockData(start, end, blockOrdinal++, languages, "fenced", start + 1, end - 1, block.id)
