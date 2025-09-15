@@ -361,7 +361,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListBlock.TYPES;
-    $typename: string = "List block";
+    $typename: string = "List Block";
 
     /** The list items inside of this block. */
     $elements: MarkdownListItem[];
