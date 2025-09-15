@@ -26,7 +26,7 @@
       "react-dom": ["preact/compat"]
     }
   },
-  "include": ["src/main.ts", "src/index.ts", "src/typings/*.d.ts"],
+  "include": ["src/main.ts", "src/index.ts", "src/typings/*.d.ts", "src/test/**/*.ts", "src/test/**/*.tsx"],
   "jest": {
     "extensionsToTreatAsEsm": [".ts", ".tsx"],
     "globals": {

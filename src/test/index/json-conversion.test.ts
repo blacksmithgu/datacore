@@ -38,6 +38,7 @@ function roundTrip<T extends Literal>(value: T): T {
     return JsonConversion.value(JsonConversion.json(value)) as T;
 }
 
-function checkRoundTrip<T>(value: T) {
+/** Asserts that round-tripping a value yields the same value. */
+function checkRoundTrip<T extends Literal>(value: T) {
     expect(roundTrip(value)).toEqual(value);
 }

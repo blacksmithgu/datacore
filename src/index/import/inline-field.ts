@@ -320,7 +320,7 @@ export function setInlineField(source: string, key: string, value?: string): str
 
 /** Updates a task item line with the 'completion' date emoji on being checked. */
 export function setEmojiShorthandCompletionField(source: string, value?: string): string {
-    const existing = extractInlineFields(source);
+    const existing = extractSpecialTaskFields(source);
     const existingKeys = existing.filter((f) => f.key === "completion" && f.wrapping === "emoji-shorthand");
 
     // Don't do anything if there are duplicate keys OR the key already doesn't exist.

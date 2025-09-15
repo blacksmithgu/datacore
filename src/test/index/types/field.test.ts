@@ -3,7 +3,12 @@ import { Extractors } from "expression/field";
 import { Indexable } from "index/types/indexable";
 import { FrontmatterEntry } from "index/types/markdown";
 
-class DummyFields {
+class DummyFields implements Indexable {
+    public $types: string[] = ["a", "b", "c"];
+    public $file: string = "file";
+    public $id: string = "dummy";
+    public $typename: string = "Dummy";
+
     public constructor(public $text: string, public $value: number, public $size: number) {}
 
     public get $valueSize(): number {
@@ -15,11 +20,18 @@ describe("Intrinsic Behavior", () => {
     const intrinsics = Extractors.intrinsics();
     const dummy = new DummyFields("Hello", 10, 20);
 
-    test("Fetch Text", () => expect(intrinsics(dummy, "$text")).toEqual([{ key: "$text", value: "Hello" }]));
-
-    test("Fetch Value", () => expect(intrinsics(dummy, "$value")).toEqual([{ key: "$value", value: 10 }]));
-
-    test("Fetch Derived", () => expect(intrinsics(dummy, "$valueSize")).toEqual([{ key: "$valueSize", value: 30 }]));
+    test("Fetch Text", () =>
+        expect(intrinsics(dummy, "$text")).toEqual([
+            { key: "$text", value: "Hello", provenance: { file: "file", revision: 0, type: "intrinsic" } },
+        ]));
+    test("Fetch Value", () =>
+        expect(intrinsics(dummy, "$value")).toEqual([
+            { key: "$value", value: 10, provenance: { file: "file", revision: 0, type: "intrinsic" } },
+        ]));
+    test("Fetch Derived", () =>
+        expect(intrinsics(dummy, "$valueSize")).toEqual([
+            { key: "$valueSize", value: 30, provenance: { file: "file", revision: 0, type: "intrinsic" } },
+        ]));
 });
 
 class DummyMarkdown implements Indexable {
@@ -48,12 +60,22 @@ describe("Frontmatter Behavior", () => {
 
     test("Fetch A", () =>
         expect(extractor(dummy, "a")).toEqual([
-            { key: "a", value: 10, raw: "10", provenance: { type: "frontmatter", key: "a", file: "file" } },
+            {
+                key: "a",
+                value: 10,
+                raw: "10",
+                provenance: { type: "frontmatter", key: "a", file: "file", revision: 0 },
+            },
         ]));
 
     test("Fetch B Insensitive", () =>
         expect(extractor(dummy, "B")).toEqual([
-            { key: "b", value: "hello", raw: "Hello!", provenance: { type: "frontmatter", key: "b", file: "file" } },
+            {
+                key: "b",
+                value: "hello",
+                raw: "Hello!",
+                provenance: { type: "frontmatter", key: "b", file: "file", revision: 0 },
+            },
         ]));
 
     test("Fetch All", () => {
@@ -100,7 +122,12 @@ describe("Inline Field Behavior", () => {
 
     test("Fetch A", () =>
         expect(extractor(dummy, "a")).toEqual([
-            { key: "a", value: 10, raw: "10", provenance: { type: "inline-field", key: "a", file: "file", line: 1 } },
+            {
+                key: "a",
+                value: 10,
+                raw: "10",
+                provenance: { type: "inline-field", key: "a", file: "file", line: 1, revision: 0 },
+            },
         ]));
 
     test("Fetch B Insensitive", () =>
@@ -109,7 +136,7 @@ describe("Inline Field Behavior", () => {
                 key: "b",
                 value: "hello",
                 raw: "Hello!",
-                provenance: { type: "inline-field", key: "b", file: "file", line: 2 },
+                provenance: { type: "inline-field", key: "b", file: "file", line: 2, revision: 0 },
             },
         ]));
 
