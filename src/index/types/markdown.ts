@@ -615,14 +615,18 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
         return this.$position.end - this.$position.start + 1;
     }
 
-    /** Cleaned text that is garaunteed to be non-null and has indenation and inline fields removed. */
+    /** Cleaned text that is guaranteed to be non-null and has indentation, inline fields, and id removed. */
     get $cleantext() {
         if (!this.$text) return "";
 
         return (
             this.$text
-                // Eliminate [key:: value] annotations.
-                .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1")
+                // Capture three groups:
+                // 1) all characters up until group 2 or 3 is encountered
+                // 2) zero or more inline fields
+                // 3) zero or one id,
+                // and replace it with just group 1
+                .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)*(\^.+){0,1}$/gm, "$1")
                 // Trim whitespace.
                 .trim()
         );
