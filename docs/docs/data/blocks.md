@@ -94,7 +94,7 @@ Datacore tracks all list items and tasks in your vault; they are available as th
 | `$parentLine` | The line number of the parent item of this list item. For top-level list items, this will be a negative number equal to the line number of the start of the list block. | `14` or `-7` |
 | `$symbol` | The list item symbol used for this list item. | `-` or `*` or `+` or `1.` |
 | `$text` | The full text of the list item, not including any list markup. | `TODO: Do something. [key:: value]` |
-| `$cleantext` | "Cleaned up" version of `text` which has indentation and inline fields removed. | `TODO: Do something.` |
+| `$cleantext` | "Cleaned up" version of `text` which has indentation, inline fields, and id removed. | `TODO: Do something.` |
 | `$elements` | A list of all sub items under this list item. | See this type. |
 
 Like most other types, inline field values can be fetched from list items using [field syntax](fields).
