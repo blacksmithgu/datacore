@@ -57,6 +57,7 @@ export class DatacoreApi {
     /////////////////////////
 
     /** Load a markdown file by full path or link. */
+    public page<T extends MarkdownPage = MarkdownPage>(path: string | Link): T | undefined;
     public page(path: string | Link): MarkdownPage | undefined {
         const realPath = path instanceof Link ? path.path : path;
 
@@ -64,21 +65,25 @@ export class DatacoreApi {
     }
 
     /** Execute a textual or typed index query, returning all results. */
+    public query<T extends Indexable = Indexable>(query: string | IndexQuery): T[];
     public query(query: string | IndexQuery): Indexable[] {
         return this.tryQuery(query).orElseThrow();
     }
 
     /** Execute a textual or typed index query, returning all results. */
+    public tryQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<T[], string>;
     public tryQuery(query: string | IndexQuery): Result<Indexable[], string> {
         return this.tryFullQuery(query).map((result) => result.results);
     }
 
     /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public fullquery<T extends Indexable = Indexable>(query: string | IndexQuery): SearchResult<T>;
     public fullquery(query: string | IndexQuery): SearchResult<Indexable> {
         return this.tryFullQuery(query).orElseThrow();
     }
 
     /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         const parsedQuery = typeof query === "string" ? QUERY.query.tryParse(query) : query;
         return this.core.datastore.search(parsedQuery);
