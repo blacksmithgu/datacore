@@ -149,6 +149,17 @@ export class Canvas implements Linkable, File_2, Linkbearing, Taggable, Indexabl
     static TYPES: string[];
 }
 
+// @public (undocumented)
+export namespace Canvas {
+    // Warning: (ae-forgotten-export) The symbol "TypedFieldbearing" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<Canvas, keyof TypedFieldbearing<Fields>>, TypedFieldbearing<Fields> {
+    }
+}
+
 // @public
 export type CanvasCard = CanvasTextCard | CanvasFileCard | CanvasWebCard;
 
@@ -216,6 +227,15 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
     json(): JsonCanvasTextCard;
     // (undocumented)
     static TYPES: string[];
+}
+
+// @public (undocumented)
+export namespace CanvasTextCard {
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<CanvasTextCard, keyof TypedFieldbearing<Fields>>, TypedFieldbearing<Fields> {
+    }
 }
 
 // @public (undocumented)
@@ -396,21 +416,21 @@ export class DatacoreApi {
     executeTs(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     executeTsx(source: string, container: HTMLElement, component: Component | MarkdownPostProcessorContext, sourcePath: string): MarkdownRenderChild;
     fileLink(path: string): Link;
-    fullquery(query: string | IndexQuery): SearchResult<Indexable>;
+    fullquery<T extends Indexable = Indexable>(query: string | IndexQuery): SearchResult<T>;
     headerLink(path: string, header: string): Link;
     local(path: string): DatacoreLocalApi;
     get luxon(): typeof luxon_2;
-    page(path: string | Link): MarkdownPage | undefined;
+    page<T extends MarkdownPage = MarkdownPage>(path: string | Link): T | undefined;
     parseLink(linktext: string): Link;
     parseQuery(query: string | IndexQuery): IndexQuery;
     get preact(): typeof preact_2;
-    query(query: string | IndexQuery): Indexable[];
+    query<T extends Indexable = Indexable>(query: string | IndexQuery): T[];
     resolvePath(path: string | Link, sourcePath?: string): string;
     tryEvaluate(expression: string | Expression, variables?: Record<string, Literal>, sourcePath?: string): Result<Literal, string>;
-    tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string>;
+    tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
     tryParseLink(linktext: string): Result<Link, string>;
     tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string>;
-    tryQuery(query: string | IndexQuery): Result<Indexable[], string>;
+    tryQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<T[], string>;
 }
 
 // @public
@@ -431,12 +451,12 @@ export class DatacoreLocalApi {
     coerce: typeof Coerce;
     get core(): Datacore;
     createContext: typeof preact_2.createContext;
-    currentFile(): MarkdownPage;
+    currentFile<T extends MarkdownPage = MarkdownPage>(): T;
     currentPath(): string;
     embed: any;
     evaluate(expression: string | Expression, variables?: Record<string, Literal>, sourcePath?: string): Literal;
     fileLink(path: string): Link;
-    fullquery(query: string | IndexQuery): SearchResult<Indexable>;
+    fullquery<T extends Indexable = Indexable>(query: string | IndexQuery): SearchResult<T>;
     Group: typeof Group;
     headerLink(path: string, header: string): Link;
     Icon: typeof Icon;
@@ -454,7 +474,7 @@ export class DatacoreLocalApi {
     // (undocumented)
     path: string;
     get preact(): typeof preact_2;
-    query(query: string | IndexQuery): Indexable[];
+    query<T extends Indexable = Indexable>(query: string | IndexQuery): T[];
     require(path: string | Link): Promise<unknown>;
     resolvePath(path: string | Link, sourcePath?: string): string;
     // (undocumented)
@@ -467,35 +487,35 @@ export class DatacoreLocalApi {
     // (undocumented)
     Textbox: typeof Textbox;
     tryEvaluate(expression: string | Expression, variables?: Record<string, Literal>, sourcePath?: string): Result<Literal, string>;
-    tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string>;
+    tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
     tryParseLink(linktext: string): Result<Link, string>;
     tryParseQuery(query: string | IndexQuery): Result<IndexQuery, string>;
-    tryQuery(query: string | IndexQuery): Result<Indexable[], string>;
+    tryQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<T[], string>;
     useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: unknown[]): U[];
     useCallback: typeof hooks.useCallback;
     useContext: typeof hooks.useContext;
-    useCurrentFile(settings?: {
+    useCurrentFile<T extends MarkdownPage = MarkdownPage>(settings?: {
         debounce?: number;
-    }): MarkdownPage;
+    }): T;
     useCurrentPath(settings?: {
         debounce?: number;
     }): string;
     useEffect: typeof hooks.useEffect;
-    useFile(path: string, settings?: {
+    useFile<T extends Indexable = Indexable>(path: string, settings?: {
         debounce?: number;
-    }): Indexable | undefined;
-    useFullQuery(query: string | IndexQuery, settings?: {
+    }): T | undefined;
+    useFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery, settings?: {
         debounce?: number;
-    }): SearchResult<Indexable>;
+    }): SearchResult<T>;
     useIndexUpdates(settings?: {
         debounce?: number;
     }): number;
     // Warning: (ae-forgotten-export) The symbol "useInterning" needs to be exported by the entry point index.d.ts
     useInterning: typeof useInterning;
     useMemo: typeof hooks.useMemo;
-    useQuery(query: string | IndexQuery, settings?: {
+    useQuery<T extends Indexable = Indexable>(query: string | IndexQuery, settings?: {
         debounce?: number;
-    }): Indexable[];
+    }): T[];
     useReducer: typeof hooks.useReducer;
     useRef: typeof hooks.useRef;
     useState: typeof hooks.useState;
@@ -1133,6 +1153,17 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     value(key: string): Literal | undefined;
 }
 
+// @public (undocumented)
+export namespace MarkdownBlock {
+    // Warning: (ae-forgotten-export) The symbol "TypedValuebearing" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<MarkdownBlock, keyof TypedValuebearing<Fields>>, TypedValuebearing<Fields> {
+    }
+}
+
 // @public
 export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
     // (undocumented)
@@ -1164,6 +1195,15 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
     value(key: string): Literal | undefined;
 }
 
+// @public (undocumented)
+export namespace MarkdownCodeblock {
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<MarkdownCodeblock, keyof TypedValuebearing<Fields>>, TypedValuebearing<Fields> {
+    }
+}
+
 // @public
 export class MarkdownDatablock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
     // (undocumented)
@@ -1189,6 +1229,15 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
     value(key: string): Literal | undefined;
 }
 
+// @public (undocumented)
+export namespace MarkdownDatablock {
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<MarkdownDatablock, keyof TypedValuebearing<Fields>>, TypedValuebearing<Fields> {
+    }
+}
+
 // @public
 export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbearing {
     $elements: MarkdownListItem[];
@@ -1205,6 +1254,15 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     json(): JsonMarkdownListBlock;
     // (undocumented)
     static TYPES: string[];
+}
+
+// @public (undocumented)
+export namespace MarkdownListBlock {
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<MarkdownListBlock, keyof TypedValuebearing<Fields>>, TypedValuebearing<Fields> {
+    }
 }
 
 // @public
@@ -1246,6 +1304,15 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     value(key: string): Literal | undefined;
 }
 
+// @public (undocumented)
+export namespace MarkdownListItem {
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<MarkdownListItem, keyof TypedValuebearing<Fields>>, TypedValuebearing<Fields> {
+    }
+}
+
 // @public
 export class MarkdownPage implements File_2, Linkbearing, Taggable, Indexable, Fieldbearing {
     $ctime: DateTime;
@@ -1282,6 +1349,15 @@ export class MarkdownPage implements File_2, Linkbearing, Taggable, Indexable, F
     value(key: string): Literal | undefined;
 }
 
+// @public (undocumented)
+export namespace MarkdownPage {
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<MarkdownPage, keyof TypedValuebearing<Fields>>, TypedValuebearing<Fields> {
+    }
+}
+
 // @public
 export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbearing, Fieldbearing {
     $blocks: MarkdownBlock[];
@@ -1316,6 +1392,15 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     value(key: string): Literal | undefined;
 }
 
+// @public (undocumented)
+export namespace MarkdownSection {
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<MarkdownSection, keyof TypedValuebearing<Fields>>, TypedValuebearing<Fields> {
+    }
+}
+
 // @public
 export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Linkbearing, Taggable, Fieldbearing {
     get $completed(): boolean;
@@ -1333,6 +1418,15 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     json(): JsonMarkdownListItem;
     // (undocumented)
     static TYPES: string[];
+}
+
+// @public (undocumented)
+export namespace MarkdownTaskItem {
+    // (undocumented)
+    export interface Typed<Fields extends {
+        [key in string]?: Literal;
+    }> extends Omit<MarkdownTaskItem, keyof TypedValuebearing<Fields>>, TypedValuebearing<Fields> {
+    }
 }
 
 // @public
