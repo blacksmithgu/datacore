@@ -26,6 +26,8 @@ import {
 import { InlineField, jsonInlineField, valueInlineField } from "index/import/inline-field";
 import { File } from "index/types/indexable";
 import { mapObjectValues } from "utils/data";
+import { Literal } from "expression/literal";
+import { TypedFieldbearing } from "./typed-field";
 
 /** A canvas file, consisting of a set of canvas cards. */
 export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable, Fieldbearing {
@@ -121,6 +123,13 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
         Extractors.inlineFields((f) => f.$infields),
         Extractors.intrinsics()
     );
+}
+
+/** @public */
+export namespace Canvas {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<Canvas, keyof TypedFieldbearing<Fields>>,
+            TypedFieldbearing<Fields> {}
 }
 
 /** All supported canvas card types. */
@@ -231,6 +240,13 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
         Extractors.inlineFields((f) => f.$infields),
         Extractors.frontmatter((f) => f.$frontmatter)
     );
+}
+
+/** @public */
+export namespace CanvasTextCard {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<CanvasTextCard, keyof TypedFieldbearing<Fields>>,
+            TypedFieldbearing<Fields> {}
 }
 
 /** Canvas card that is just a file embedding. */
