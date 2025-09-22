@@ -47,6 +47,7 @@ export class DatacoreLocalApi {
     }
 
     /** The full markdown file metadata for the current file. */
+    public currentFile<T extends MarkdownPage = MarkdownPage>(): T;
     public currentFile(): MarkdownPage {
         return this.api.page(this.path)!;
     }
@@ -167,21 +168,25 @@ export class DatacoreLocalApi {
     }
 
     /** Execute a textual or typed index query, returning all results. */
+    public query<T extends Indexable = Indexable>(query: string | IndexQuery): T[];
     public query(query: string | IndexQuery): Indexable[] {
         return this.api.query(query);
     }
 
     /** Execute a textual or typed index query, returning all results. */
+    public tryQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<T[], string>;
     public tryQuery(query: string | IndexQuery): Result<Indexable[], string> {
         return this.api.tryQuery(query);
     }
 
     /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public fullquery<T extends Indexable = Indexable>(query: string | IndexQuery): SearchResult<T>;
     public fullquery(query: string | IndexQuery): SearchResult<Indexable> {
         return this.api.fullquery(query);
     }
 
     /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         return this.api.tryFullQuery(query);
     }
@@ -225,6 +230,7 @@ export class DatacoreLocalApi {
     }
 
     /** Use the file metadata for the current file. Automatically updates the view when the current file metadata changes. */
+    public useCurrentFile<T extends MarkdownPage = MarkdownPage>(settings?: { debounce?: number }): T;
     public useCurrentFile(settings?: { debounce?: number }): MarkdownPage {
         return useFileMetadata(this.core, this.path, settings) as MarkdownPage;
     }
@@ -235,6 +241,7 @@ export class DatacoreLocalApi {
     }
 
     /** Use the file metadata for a specific file. Automatically updates the view when the file changes. */
+    public useFile<T extends Indexable = Indexable>(path: string, settings?: { debounce?: number }): T | undefined;
     public useFile(path: string, settings?: { debounce?: number }): Indexable | undefined {
         return useFileMetadata(this.core, path, settings);
     }
@@ -248,11 +255,16 @@ export class DatacoreLocalApi {
      * Run a query, automatically re-running it whenever the vault changes. Returns more information about the query
      * execution, such as index revision and total search duration.
      */
+    public useFullQuery<T extends Indexable = Indexable>(
+        query: string | IndexQuery,
+        settings?: { debounce?: number }
+    ): SearchResult<T>;
     public useFullQuery(query: string | IndexQuery, settings?: { debounce?: number }): SearchResult<Indexable> {
         return useFullQuery(this.core, this.parseQuery(query), settings);
     }
 
     /** Run a query, automatically re-running it whenever the vault changes. */
+    public useQuery<T extends Indexable = Indexable>(query: string | IndexQuery, settings?: { debounce?: number }): T[];
     public useQuery(query: string | IndexQuery, settings?: { debounce?: number }): Indexable[] {
         // Hooks need to be called in a consistent order, so we don't nest the `useQuery` call in the DataArray.wrap _just_ in case.
         return useQuery(this.core, this.parseQuery(query), settings);
