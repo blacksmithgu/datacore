@@ -5,8 +5,8 @@
  */
 
 import { h } from 'preact';
-import { DatacoreLocalApi } from './api/local-api';
-import browserVite from './vite/browser-vite-endpoint';
+import { DatacoreLocalApi } from '../api/local-api';
+import browserVite from './browser-vite-endpoint';
 
 // Create the BasicView component to match the JSX example
 export const BasicView = ({ dc, title = "VITE COMPONENT WORKS!" }: { dc?: DatacoreLocalApi; title?: string }) => {
