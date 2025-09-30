@@ -62,6 +62,77 @@ export class DatacoreLocalApi {
         return preact;
     }
 
+    /** Get access to Vite core APIs (createServer, build, etc.) */
+    get vite(): any {
+        // Return a synchronous object with async methods
+        return {
+            // Immediately available methods
+            createServer: async (config: any = {}) => {
+                try {
+                    const module2 = await import('../vite/browser-vite-endpoint');
+                    return await module2.default.createServer(config);
+                } catch (error) {
+                    const fallback = this.createViteFallback();
+                    return await fallback.createServer(config);
+                }
+            },
+            
+            build: async (config: any = {}) => {
+                try {
+                    const module2 = await import('../vite/browser-vite-endpoint');
+                    return await module2.default.build(config);
+                } catch (error) {
+                    const fallback = this.createViteFallback();
+                    return await fallback.build(config);
+                }
+            },
+            
+            // Ready status
+            ready: import('../vite/browser-vite-endpoint').then(() => {
+                return true;
+            }).catch(() => {
+                return false;
+            }),
+            
+            // Utils API for advanced users
+            get utils() {
+                return import('../vite/browser-vite-endpoint').then(module => module.default.utils);
+            }
+        };
+    }
+
+    /** Fallback Vite implementation for development */
+    private createViteFallback() {
+        return {
+            ready: Promise.resolve(true),
+            createServer: async (config: any) => {
+                return {
+                    fs: {
+                        writeFile: async (path: string, content: string) => {
+                        },
+                        readFile: async (path: string) => {
+                            return `// Fallback content for ${path}`;
+                        }
+                    },
+                    transformFile: async (id: string, code?: string) => {
+                        return { code: code || `// Transformed ${id}` };
+                    },
+                    ssrLoadModule: async (id: string) => {
+                        return { default: () => `Module ${id}` };
+                    }
+                };
+            },
+            build: async (config: any) => {
+                return {
+                    output: [{
+                        fileName: config?.build?.lib?.fileName || 'bundle.js',
+                        code: '// Fallback build output - replace with actual Vite build'
+                    }]
+                };
+            }
+        };
+    }
+
     /** Central Obsidian app object. */
     get app(): App {
         return this.core.app;
@@ -414,4 +485,32 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
+
+    ////////////////////
+    // Vite utilities //
+    ////////////////////
+
+    /** Vite-related utilities for loading and managing Vite-built components */
+    public ViteComponents = {
+        /** Load and mount a Vite-built component */
+        mount: async (componentPath: string, container: HTMLElement, props?: any) => {
+            const plugin = (this.api.core as any).plugin;
+            if (!plugin || typeof plugin.loadViteComponent !== 'function') {
+                throw new Error('Vite component loading not available');
+            }
+            
+            const ViteComponent = await plugin.loadViteComponent(componentPath);
+            // Use preact to render the component
+            const { render, h } = this.preact;
+            const componentElement = h(ViteComponent, { ...props, dc: this });
+            render(componentElement, container);
+        },
+        
+        /** Unmount a Vite-built component */
+        unmount: (container: HTMLElement) => {
+            // Import unmountComponentAtNode directly
+            const { unmountComponentAtNode } = require('preact/compat');
+            unmountComponentAtNode(container);
+        }
+    };
 }

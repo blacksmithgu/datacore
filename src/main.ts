@@ -62,7 +62,9 @@ export default class DatacorePlugin extends Plugin {
         this.register(this.registerCodeblockHighlighting());
 
         // Initialize as soon as the workspace is ready.
-        this.app.workspace.onLayoutReady(async () => this.core.initialize());
+        this.app.workspace.onLayoutReady(async () => {
+            await this.core.initialize();
+        });
 
         // Make the API globally accessible from any context.
         window.datacore = this.api;
@@ -76,12 +78,14 @@ export default class DatacorePlugin extends Plugin {
         window.CodeMirror.defineMode("datacoretsx", (config) =>
             window.CodeMirror.getMode(config, "text/typescript-jsx")
         );
+        window.CodeMirror.defineMode("datacorevite", (config) => window.CodeMirror.getMode(config, "javascript"));
 
         return () => {
             window.CodeMirror.defineMode("datacorejs", (config) => window.CodeMirror.getMode(config, "null"));
             window.CodeMirror.defineMode("datacorejsx", (config) => window.CodeMirror.getMode(config, "null"));
             window.CodeMirror.defineMode("datacorets", (config) => window.CodeMirror.getMode(config, "null"));
             window.CodeMirror.defineMode("datacoretsx", (config) => window.CodeMirror.getMode(config, "null"));
+            window.CodeMirror.defineMode("datacorevite", (config) => window.CodeMirror.getMode(config, "null"));
         };
     }
 
