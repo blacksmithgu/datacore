@@ -1,217 +1,218 @@
 /**
- * Browser-compatible Vite implementation for Datacore
- * 
- * This module provides a high-level, browser-friendly API that wraps the lower-level
- * Vite functionality. It's designed to work seamlessly in Obsidian's environment.
+ * Browser-compatible Vite implementation
+ * This creates a Vite development server that runs entirely in the browser
+ * WITHOUT requiring external dependencies like esbuild-wasm
  */
 
-import lowerLevelVite, { PluginContainer } from './lower-level-vite';
+import lowerLevelVite from './lower-level-vite';
 
-/**
- * Browser Vite Server - mimics Vite's development server API
- */
-class BrowserViteServer {
-    private pluginContainer: PluginContainer | null = null;
-    private vfs: Map<string, string> = new Map();
-    private initPromise: Promise<void>;
-
-    constructor(config: any = {}) {
-        this.initPromise = this.initialize(config);
-    }
-
-    private async initialize(config: any) {
-        this.pluginContainer = await lowerLevelVite.createPluginContainer({
-            plugins: config.plugins || []
-        });
-    }
-
-    private async ensureInitialized() {
-        await this.initPromise;
-        if (!this.pluginContainer) {
-            throw new Error('Plugin container not initialized');
+// Simple transformer for basic JavaScript/TypeScript
+class SimpleTransformer {
+    transform(code: string, id: string): { code: string; map?: any } {
+        // Basic TypeScript to JavaScript transformation
+        if (id.endsWith('.ts') || id.endsWith('.tsx')) {
+            // Remove type annotations (very basic)
+            code = code
+                .replace(/:\s*\w+(\[\])?/g, '') // Remove type annotations
+                .replace(/interface\s+\w+\s*\{[^}]*\}/g, '') // Remove interfaces
+                .replace(/type\s+\w+\s*=\s*[^;]+;/g, '') // Remove type aliases
+                .replace(/export\s+type\s+/g, 'export ') // Remove type exports
+                .replace(/import\s+type\s+/g, 'import '); // Remove type imports
         }
-        return this.pluginContainer;
+        
+        // DO NOT handle Svelte files here - let plugins handle them!
+        // This was the bug - built-in transformer was overriding plugins
+        
+        return { code };
     }
+}
 
-    get fs() {
-        return {
-            writeFile: async (path: string, content: string) => {
-                this.vfs.set(path, content);
-            },
-            readFile: async (path: string) => {
-                return this.vfs.get(path) || `// File not found: ${path}`;
+// Virtual filesystem for browser environment
+class VirtualFileSystem {
+    private files = new Map<string, string>();
+    
+    writeFile(path: string, content: string): void {
+        this.files.set(path, content);
+    }
+    
+    readFile(path: string): string | null {
+        const content = this.files.get(path);
+        return content || null;
+    }
+    
+    exists(path: string): boolean {
+        return this.files.has(path);
+    }
+    
+    getAllFiles(): Record<string, string> {
+        return Object.fromEntries(this.files.entries());
+    }
+}
+
+// Plugin container for running Vite plugins
+class PluginContainer {
+    private plugins: any[] = [];
+    private transformer = new SimpleTransformer();
+    
+    constructor(plugins: any[] = []) {
+        this.plugins = plugins;
+    }
+    
+    async transform(code: string, id: string): Promise<{ code: string; map?: any }> {
+        let result: { code: string; map?: any } = { code, map: null };
+        let wasTransformed = false;
+        
+        // Run through plugins FIRST - they get priority
+        for (const plugin of this.plugins) {
+            if (plugin.transform) {
+                try {
+                    const transformed = await plugin.transform(result.code, id);
+                    if (transformed && transformed.code !== result.code) {
+                        result = transformed;
+                        wasTransformed = true;
+                    }
+                } catch (error) {
+                    // Plugin transformation failed, continue
+                }
             }
-        };
-    }
-
-    async transformFile(id: string, code?: string) {
-        const pluginContainer = await this.ensureInitialized();
+        }
         
+        // Only use built-in transformer if NO plugin handled it
+        if (!wasTransformed) {
+            const transformed = this.transformer.transform(result.code, id);
+            if (transformed.code !== code) {
+                result = transformed;
+            }
+        }
+        
+        return result;
+    }
+    
+    async load(id: string): Promise<string | null> {
+        for (const plugin of this.plugins) {
+            if (plugin.load) {
+                try {
+                    const result = await plugin.load(id);
+                    if (result) {
+                        return result;
+                    }
+                } catch (error) {
+                    // Plugin load failed, continue
+                }
+            }
+        }
+        return null;
+    }
+}
+
+// Browser Vite Server implementation
+class BrowserViteServer {
+    public fs: VirtualFileSystem;
+    public pluginContainer: PluginContainer;
+    public config: any;
+    
+    constructor(config: any = {}) {
+        this.config = config;
+        this.fs = new VirtualFileSystem();
+        this.pluginContainer = new PluginContainer(config.plugins || []);
+    }
+    
+    async transformFile(id: string, code?: string): Promise<{ code: string; map?: any }> {
+        // Get code from filesystem if not provided
         if (!code) {
-            code = this.vfs.get(id) || `// Default content for ${id}`;
+            code = this.fs.readFile(id) || undefined;
+            if (!code) {
+                // Try to load via plugins
+                code = (await this.pluginContainer.load(id)) || undefined;
+                if (!code) {
+                    throw new Error(`File not found: ${id}`);
+                }
+            }
         }
         
-        try {
-            const result = await pluginContainer.transform(code, id);
-            return { code: result.code };
-        } catch (error) {
-            return { code: `// Transform error: ${error}` };
-        }
+        // Transform through plugin pipeline
+        return await this.pluginContainer.transform(code, id);
     }
-
-    async ssrLoadModule(id: string) {
-        const pluginContainer = await this.ensureInitialized();
+    
+    async ssrLoadModule(id: string): Promise<any> {
+        const transformed = await this.transformFile(id);
         
+        // Create a simple module loader using Function constructor
         try {
-            const resolved = await pluginContainer.resolveId(id);
-            await pluginContainer.load(resolved.id);
+            // Create module environment
+            const exports = {};
+            const module = { exports };
+            const require = (id: string) => {
+                // Mock require for browser environment
+                return {};
+            };
             
-            // Basic module simulation - in a real implementation this would
-            // evaluate the code in a safe environment
-            return {
-                default: () => `Module ${id}`,
-                __esModule: true
-            };
+            // Execute the transformed code
+            const moduleFactory = new Function('exports', 'module', 'require', transformed.code);
+            moduleFactory(exports, module, require);
+            
+            // Return the exports
+            const moduleExports = module.exports as any;
+            return moduleExports.default || moduleExports;
         } catch (error) {
-            return {
-                default: () => `Error loading ${id}: ${error}`,
-                __esModule: true
-            };
+            throw error;
         }
     }
 }
 
-/**
- * Main Browser Vite API
- */
+// Main browser Vite implementation
 const browserVite = {
     /**
-     * Create a Vite development server
+     * Create a Vite development server that runs in the browser
      */
-    createServer: async (config: any = {}) => {
-        return new BrowserViteServer(config);
+    async createServer(config: any = {}): Promise<BrowserViteServer> {
+        const server = new BrowserViteServer(config);
+        return server;
     },
-
+    
     /**
-     * Build for production
+     * Build using the server instance
      */
-    build: async (config: any = {}) => {
+    async build(config: any): Promise<{ output: Array<{ fileName: string; code: string }> }> {
+        const server = config.server || await browserVite.createServer(config);
+        const entry = config.build?.lib?.entry || config.build?.rollupOptions?.input || '/main.js';
+        
         try {
-            const pluginContainer = await lowerLevelVite.createPluginContainer({
-                plugins: config.plugins || []
-            });
-
-            const vfs = lowerLevelVite.createVirtualFS();
+            // Transform the entry file
+            const result = await server.transformFile(entry);
             
-            // Default entry point
-            const entryFile = config?.build?.lib?.entry || 'main.js';
+            const fileName = config.build?.lib?.fileName || 
+                           (typeof config.build?.lib?.fileName === 'function' 
+                               ? config.build.lib.fileName('es') 
+                               : 'bundle.js');
             
-            // Special handling for Svelte components
-            const isSvelteComponent = entryFile.endsWith('.svelte') || (config.input && config.input.includes('.svelte'));
-            
-            if (isSvelteComponent) {
-                // For Svelte components, we need to produce a component with a mount method
-                return {
-                    output: [{
-                        fileName: config?.build?.lib?.fileName || 'component.js',
-                        code: `
-// Auto-generated Svelte component wrapper
-export default {
-    mount: function(target, props = {}) {
-        // Simple component mount simulation
-        const element = document.createElement('div');
-        element.innerHTML = \`
-            <div class="counter-widget" style="padding: 20px; border: 1px solid #ff3e00; border-radius: 8px; font-family: sans-serif; text-align: center; color: #e0e0e0;">
-                <h2>Self-Contained Component</h2>
-                <div class="count-display" style="font-size: 2.5em; font-weight: bold; margin: 15px; color: #ff3e00;">0</div>
-                <div>
-                    <button class="btn" style="background: #ff3e00; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 16px;">-</button>
-                    <button class="btn" style="background: #ff3e00; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 16px;">+</button>
-                </div>
-            </div>
-        \`;
-        
-        let count = 0;
-        const countDisplay = element.querySelector('.count-display');
-        const incrementBtn = element.querySelectorAll('.btn')[1];
-        const decrementBtn = element.querySelectorAll('.btn')[0];
-        
-        const updateCount = () => {
-            if (countDisplay) countDisplay.textContent = count.toString();
-        };
-        
-        if (incrementBtn) {
-            incrementBtn.addEventListener('click', () => {
-                count++;
-                updateCount();
-            });
-        }
-        
-        if (decrementBtn) {
-            decrementBtn.addEventListener('click', () => {
-                count--;
-                updateCount();
-            });
-        }
-        
-        target.appendChild(element);
-        
-        return {
-            destroy: () => {
-                if (element.parentNode) {
-                    element.parentNode.removeChild(element);
-                }
-            }
-        };
-    }
-};
-                        `
-                    }]
-                };
-            }
-            
-            // Use lower-level API to build for non-Svelte files
-            const result = await lowerLevelVite.manualCompile({
-                pluginContainer,
-                vfs,
-                entryFile,
-                format: config?.build?.lib?.format || 'es'
-            });
-
-            // Convert to expected output format
-            return {
-                output: Object.entries(result).map(([fileName, content]: [string, any]) => ({
-                    fileName,
-                    code: content.code
-                }))
-            };
-        } catch (error) {
             return {
                 output: [{
-                    fileName: 'error.js',
-                    code: `// Build error: ${error}`
+                    fileName,
+                    code: result.code
                 }]
             };
+            
+        } catch (error) {
+            throw error;
         }
     },
-
+    
     /**
-     * Utility functions for advanced usage
+     * UTILS API: Common utilities for Vite operations
      */
     utils: {
-        createPluginContainer: (options: { plugins: any[] }) => {
-            return lowerLevelVite.createPluginContainer(options);
-        },
-        
-        createVFS: () => {
-            return lowerLevelVite.createVirtualFS();
-        },
-        
-        bundler: lowerLevelVite.bundler,
-        
-        // Access to lower-level API
-        lowerLevel: lowerLevelVite
+        createVirtualFS: lowerLevelVite.createVirtualFS,
+        createPluginContainer: lowerLevelVite.createPluginContainer,
+        bundler: lowerLevelVite.bundler
     }
 };
 
+// Export for use as ES module
 export default browserVite;
+export const { createServer, build } = browserVite;
+
+// Also make available globally for CDN usage
+if (typeof window !== 'undefined') {
+    (window as any).BrowserVite = browserVite;
+}
