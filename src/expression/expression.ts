@@ -149,11 +149,11 @@ export namespace Expressions {
         return op == "<=" || op == "<" || op == ">" || op == ">=" || op == "!=" || op == "=";
     }
 
-    /** Returns a set of all unbound variables (i.e., variables not provided by `row`, lambdas, or similar.) */
+    /** Returns a set of all unbound variables (i.e., variables not provided by `$row`, lambdas, or similar.) */
     export function unboundVariables(expr: Expression, bound: Set<string> = new Set([ROW])): Set<string> {
         switch (expr.type) {
             case "binaryop":
-                // Special case `row["...."]`.
+                // Special case `$row["...."]`.
                 if (
                     expr.op === "index" &&
                     expr.left.type == "variable" &&

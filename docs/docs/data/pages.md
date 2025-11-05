@@ -35,7 +35,7 @@ You can reference page fields in queries and expressions directly by case-insens
 
 ```js
 @page and rating >= 7
-@page and row["spaced field"].contains("thing")
+@page and $row["spaced field"].contains("thing")
 ```
 
 ## In Javascript
