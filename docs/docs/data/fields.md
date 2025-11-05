@@ -25,8 +25,8 @@ You can reference fields directly by name in queries and datacore expressions. T
 // You can also reference intrinsic fields (fields prefixed with `$`):
 @block and $tags.contains("#test")
 
-// Use the implicit 'row' in order to handle fields with spaces in their names:
-@section and row["last reviewed"] >= date(now) - dur(7d)
+// Use the implicit '$row' in order to handle fields with spaces in their names:
+@section and $row["last reviewed"] >= date(now) - dur(7d)
 ```
 
 ## In Javascript

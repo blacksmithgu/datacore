@@ -25,7 +25,7 @@ Inline fields on blocks can be loaded using the [field syntax](fields):
 ```js
 // In queries and expressions, you can just reference the field directly:
 @block and genre = "Fantasy"
-@block and row["last reviewed"] > date(now) - dur(7d)
+@block and $row["last reviewed"] > date(now) - dur(7d)
 
 // In javascript, use the field API:
 block.value("last reviewed")
