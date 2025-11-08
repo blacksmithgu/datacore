@@ -2,14 +2,17 @@
  * @module views
  */
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
+import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 
 import { Fragment, VNode, isValidElement } from "preact";
-import { useContext, useMemo, useRef } from "preact/hooks";
+import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
 import { ControlledPager, useDatacorePaging } from "./paging";
 import { useAsElement } from "ui/hooks";
 import { CSSProperties, ReactNode } from "preact/compat";
 import { MarkdownListItem } from "index/types/markdown";
+import { BaseFieldProps } from "ui/fields/common-props";
+import { ControlledEditable, EditableElement } from "ui/fields/editable";
+import { App } from "obsidian";
 
 /** The render type of the list view. */
 export type ListViewType = "ordered" | "unordered" | "block";
@@ -59,6 +62,24 @@ export interface ListViewProps<T> {
      * If null, child extraction is disabled and no children will be fetched. If undefined, uses the default.
      */
     childSource?: null | string | string[] | ((row: T) => T[]);
+    /** fields to display under each item in this task list */
+    displayedFields?: (BaseFieldProps<Literal> & { key: string })[];
+
+    /** whether or not list items can be edited */
+    editable?: boolean;
+    /** rendered when editing the column */
+    editor?: EditableElement<T>;
+    /** props to pass to the editor component (if any) */
+    editorProps: unknown;
+    /** called when the item's value has been updated */
+    onUpdate?: (value: T) => unknown;
+
+    /** Sets the default text when creating a new item */
+    defaultCreationText?: string;
+    /** whether to show the button for creating a new item */
+    showCreateButton?: boolean;
+    /** How creating a new element in this list should be handled. */
+    create?: (prevElement: T | null, parentElement: T | null, app: App) => Promise<unknown>;
 }
 
 /**
@@ -68,6 +89,8 @@ export interface ListViewProps<T> {
 export interface GroupingConfig<T> {
     /** How a grouping with the given key and set of rows should be rendered. */
     render?: (key: Literal, rows: Grouping<T>) => Literal | VNode;
+    /** called to create a new item in this group */
+    create?: (prevGroup: GroupElement<T> | null, currentGroup: GroupElement<T>, app: App) => Promise<unknown>;
 }
 
 /**
@@ -75,6 +98,7 @@ export interface GroupingConfig<T> {
  * @group Components
  */
 export function ListView<T>(props: ListViewProps<T>) {
+    const app = useContext(APP_CONTEXT);
     const type = props.type ?? "unordered";
     const renderer = props.renderer ?? ((x: T) => x as Literal);
 
@@ -105,7 +129,23 @@ export function ListView<T>(props: ListViewProps<T>) {
     // Maximum amount of recursion we'll allow when expanding children.
     const maxChildDepth = useMemo(() => props.maxChildDepth ?? 12, [props.maxChildDepth]);
     const childFunc = useMemo(() => ensureChildrenFunc(props.childSource), [props.childSource]);
-
+    const clickCallbackFactory = useCallback(
+        (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => async () => {
+            if (!props.create && !props.showCreateButton) return;
+            const getLastActualItem = (item: GroupElement<T> | T | null): T | null => {
+                if (item == null) return null;
+                if (!Groupings.isElementGroup(item)) {
+                    return item;
+                } else if (item.rows.length) {
+                    return getLastActualItem(item.rows[item.rows.length - 1]);
+                } else {
+                    return null;
+                }
+            };
+            await props.create?.(getLastActualItem(previousElement), maybeParent, app);
+        },
+        [app, props.create, props.showCreateButton]
+    );
     return (
         <div ref={containerRef} className="datacore-list">
             <ListGroup
@@ -116,6 +156,8 @@ export function ListView<T>(props: ListViewProps<T>) {
                 groupings={groupings}
                 maxChildDepth={maxChildDepth}
                 childFunc={childFunc}
+                showCreateButton={props.showCreateButton ?? false}
+                clickFactory={clickCallbackFactory}
             />
             {paging.enabled && (
                 <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
@@ -133,6 +175,8 @@ function ListGroup<T>({
     groupings,
     maxChildDepth,
     childFunc,
+    showCreateButton,
+    clickFactory,
 }: {
     level: number;
     type: ListViewType;
@@ -141,13 +185,15 @@ function ListGroup<T>({
     groupings?: GroupingConfig<T>[];
     maxChildDepth: number;
     childFunc: (element: T) => T[];
+    showCreateButton: boolean;
+    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
 }) {
     const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
-
+    const app = useContext(APP_CONTEXT);
     if (Groupings.isGrouping(rows)) {
         return (
             <Fragment>
-                {rows.map((group) => (
+                {rows.map((group, i) => (
                     <Fragment>
                         <ListGroupHeader level={level} value={group} config={groupingConfig} />
                         <ListGroup
@@ -158,7 +204,18 @@ function ListGroup<T>({
                             groupings={groupings}
                             maxChildDepth={maxChildDepth}
                             childFunc={childFunc}
+                            showCreateButton={showCreateButton}
+                            clickFactory={clickFactory}
                         />
+
+                        {showCreateButton ? (
+                            <CreateButton
+                                clickCallback={() =>
+                                    groupingConfig?.create?.(i == 0 ? null : rows[i - 1], group, app) ??
+                                    Promise.resolve()
+                                }
+                            />
+                        ) : null}
                     </Fragment>
                 ))}
             </Fragment>
@@ -174,11 +231,24 @@ function ListGroup<T>({
                     maxDepth={maxChildDepth}
                     depth={0}
                     childFunc={childFunc}
+										parent={null}
+										showCreateButton={showCreateButton}
+                    clickFactory={clickFactory}
                 />
             );
         } else {
             // Block is default.
-            return <BlockList<T> rows={rows} renderer={renderer} maxChildDepth={maxChildDepth} childFunc={childFunc} />;
+            return (
+                <BlockList<T>
+                    rows={rows}
+                    renderer={renderer}
+                    maxChildDepth={maxChildDepth}
+                    childFunc={childFunc}
+                    clickFactory={clickFactory}
+										showCreateButton={showCreateButton}
+										parent={null}
+                />
+            );
         }
     }
 }
@@ -216,6 +286,9 @@ function HtmlList<T>({
     maxDepth,
     depth,
     childFunc,
+    clickFactory,
+    parent = null,
+		showCreateButton = false
 }: {
     type: "ordered" | "unordered";
     rows: T[];
@@ -223,6 +296,9 @@ function HtmlList<T>({
     maxDepth: number;
     depth: number;
     childFunc: (element: T) => T[];
+    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
+    parent: T | null;
+		showCreateButton: boolean;
 }) {
     if (type === "ordered") {
         return (
@@ -236,8 +312,11 @@ function HtmlList<T>({
                         maxDepth={maxDepth}
                         depth={depth}
                         childFunc={childFunc}
+                        clickFactory={clickFactory}
                     />
                 ))}
+
+                {showCreateButton ? <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />  : null}
             </ol>
         );
     } else {
@@ -252,8 +331,10 @@ function HtmlList<T>({
                         maxDepth={maxDepth}
                         depth={depth}
                         childFunc={childFunc}
+                        clickFactory={clickFactory}
                     />
                 ))}
+                {showCreateButton ? <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />  : null}
             </ul>
         );
     }
@@ -267,6 +348,8 @@ function HtmlListItem<T>({
     maxDepth,
     depth,
     childFunc,
+    clickFactory,
+		showCreateButton = false
 }: {
     type: "ordered" | "unordered";
     element: T;
@@ -274,6 +357,8 @@ function HtmlListItem<T>({
     maxDepth: number;
     depth: number;
     childFunc: (element: T) => T[];
+    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
+		showCreateButton?: boolean;
 }) {
     const children = useMemo(() => {
         if (depth >= maxDepth) return [];
@@ -291,6 +376,9 @@ function HtmlListItem<T>({
                     depth={depth + 1}
                     renderer={renderer}
                     childFunc={childFunc}
+                    clickFactory={clickFactory}
+										parent={element}
+										showCreateButton={showCreateButton}
                 />
             )}
         </li>
@@ -303,11 +391,17 @@ function BlockList<T>({
     renderer,
     maxChildDepth,
     childFunc,
+    clickFactory,
+		parent,
+		showCreateButton
 }: {
     rows: T[];
     renderer: (row: T) => React.ReactNode | Literal;
     maxChildDepth: number;
     childFunc: (element: T) => T[];
+    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
+		parent: T | null;
+		showCreateButton: boolean;
 }) {
     return (
         <div className="datacore-list datacore-list-block">
@@ -319,8 +413,10 @@ function BlockList<T>({
                     maxDepth={maxChildDepth}
                     depth={0}
                     childFunc={childFunc}
+                    clickFactory={clickFactory}
                 />
             ))}
+            {showCreateButton ? <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />  : null}
         </div>
     );
 }
@@ -332,12 +428,14 @@ function BlockListItem<T>({
     maxDepth,
     depth,
     childFunc,
+    clickFactory,
 }: {
     element: T;
     renderer: (row: T) => React.ReactNode | Literal;
     maxDepth: number;
     depth: number;
     childFunc: (element: T) => T[];
+    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
 }) {
     const children = useMemo(() => {
         if (depth >= maxDepth) return [];
@@ -362,6 +460,7 @@ function BlockListItem<T>({
                     depth={depth + 1}
                     renderer={renderer}
                     childFunc={childFunc}
+                    clickFactory={clickFactory}
                 />
             ))}
         </div>
@@ -429,4 +528,41 @@ function fetchProps<T>(element: T, props: string[]): T[] {
     }
 
     return result;
+}
+/**
+ * Button that creates a new element when clicked.
+ * @hidden
+ */
+function CreateButton({ clickCallback }: { clickCallback: () => Promise<unknown> }) {
+    return (
+        <li className="add-button-row">
+            <button className="dashed-default" style="padding: 0.75em; width: 100%" onClick={clickCallback}>
+                Add item
+            </button>
+        </li>
+    );
+}
+export function EditableListElement<T>({
+    element: item,
+    editor,
+    onUpdate,
+    file,
+    editorProps,
+}: {
+    editor: (value: T) => EditableElement<T>;
+    element: T;
+    file: string;
+    onUpdate: (value: T) => unknown;
+    editorProps: unknown;
+}) {
+    return (
+        <ControlledEditable<T>
+            props={editorProps}
+            sourcePath={file}
+            content={item}
+            editor={editor(item)}
+            onUpdate={onUpdate}
+            defaultRender={<DefaultListElement element={item} />}
+        />
+    );
 }
