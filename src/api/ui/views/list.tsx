@@ -10,6 +10,8 @@ import { ControlledPager, useDatacorePaging } from "./paging";
 import { useAsElement } from "ui/hooks";
 import { CSSProperties, ReactNode } from "preact/compat";
 import { MarkdownListItem } from "index/types/markdown";
+import { BaseFieldProps } from "ui/fields/common-props";
+import { ControlledEditable, EditableElement } from "ui/fields/editable";
 
 /** The render type of the list view. */
 export type ListViewType = "ordered" | "unordered" | "block";
@@ -59,6 +61,8 @@ export interface ListViewProps<T> {
      * If null, child extraction is disabled and no children will be fetched. If undefined, uses the default.
      */
     childSource?: null | string | string[] | ((row: T) => T[]);
+		/** fields to display under each item in this task list */
+		displayedFields?: (BaseFieldProps<Literal> & { key: string })[];
 }
 
 /**
@@ -429,4 +433,28 @@ function fetchProps<T>(element: T, props: string[]): T[] {
     }
 
     return result;
+}
+export function EditableListElement<T>({
+    element: item,
+    editor,
+    onUpdate,
+    file,
+    editorProps,
+}: {
+    editor: (value: T) => EditableElement<T>;
+    element: T;
+    file: string;
+    onUpdate: (value: T) => unknown;
+    editorProps: unknown;
+}) {
+    return (
+        <ControlledEditable<T>
+            props={editorProps}
+            sourcePath={file}
+            content={item}
+            editor={editor(item)}
+            onUpdate={onUpdate}
+            defaultRender={<DefaultListElement element={item} />}
+        />
+    );
 }
