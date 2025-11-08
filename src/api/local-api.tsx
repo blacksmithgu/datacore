@@ -9,15 +9,15 @@ import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown";
 import { App } from "obsidian";
-import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
+import { useAsync, useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
-import { CURRENT_FILE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink } from "ui/markdown";
-import { CSSProperties } from "preact/compat";
+import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink, SETTINGS_CONTEXT } from "ui/markdown";
+import { CSSProperties, Suspense } from "preact/compat";
 import { Literal, Literals } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { TableView } from "./ui/views/table";
@@ -28,6 +28,7 @@ import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
 import { Card } from "./ui/views/cards";
 import { ListView } from "./ui/views/list";
+import { ControlledEditable } from "ui/fields/editable";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -189,6 +190,25 @@ export class DatacoreLocalApi {
     public tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         return this.api.tryFullQuery(query);
+		}
+    //////////////
+    // Contexts //
+    //////////////
+
+    // export the necessary contexts to enable rendering
+    // datacore components outside the datacore plugin
+    // itself
+    get SETTINGS_CONTEXT(): typeof SETTINGS_CONTEXT {
+        return SETTINGS_CONTEXT;
+    }
+    get COMPONENT_CONTEXT(): typeof COMPONENT_CONTEXT {
+        return COMPONENT_CONTEXT;
+    }
+    get DATACORE_CONTEXT(): typeof DATACORE_CONTEXT {
+        return DATACORE_CONTEXT;
+    }
+    get APP_CONTEXT(): typeof APP_CONTEXT {
+        return APP_CONTEXT;
     }
 
     /////////////
@@ -219,6 +239,7 @@ export class DatacoreLocalApi {
      * React's reference-equality-based caching.
      */
     public useInterning = useInterning;
+    public useAsync = useAsync;
 
     /** Memoize the input automatically and process it using a DataArray; returns a vanilla array back. */
     public useArray<T, U>(
@@ -278,6 +299,8 @@ export class DatacoreLocalApi {
     public Stack = Stack;
     /** Horizontal flexbox container; good for putting items together in a row. */
     public Group = Group;
+
+   public Suspense = Suspense; 
 
     /** Renders a literal value in a pretty way that respects settings. */
     public Literal = (({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) => {
@@ -407,6 +430,7 @@ export class DatacoreLocalApi {
     // Interative elements //
     /////////////////////////
 
+    public ControlledEditable = ControlledEditable;
     public Button = Button;
     public Textbox = Textbox;
     public Callout = Callout;
