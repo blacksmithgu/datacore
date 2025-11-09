@@ -36,6 +36,8 @@ export class DatacoreJSRenderer extends MarkdownRenderChild {
                     dc: this.api,
                     h: h,
                     Fragment: Fragment,
+                    __filename: this.path,
+                    __dirname: this.path.split("/").slice(0, -1).join("/"),
                 })) as Promise<Literal | VNode | Function>;
             };
 
