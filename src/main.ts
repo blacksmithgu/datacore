@@ -3,6 +3,7 @@ import { Datacore } from "index/datacore";
 import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { DEFAULT_SETTINGS, Settings } from "settings";
+import { t } from "lang/helpers";
 
 /** @internal Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
@@ -51,7 +52,7 @@ export default class DatacorePlugin extends Plugin {
         // Drops the current index and reindexes all items.
         this.addCommand({
             id: "datacore-reindex-vault",
-            name: "Reindex entire vault",
+            name: t("REINDEX_VAULT"),
             callback: async () => {
                 console.log("Datacore: dropping the datastore and reindexing all items.");
                 await this.core.reindex();
@@ -101,16 +102,11 @@ class GeneralSettingsTab extends PluginSettingTab {
     public display(): void {
         this.containerEl.empty();
 
-        new Setting(this.containerEl).setName("Views").setHeading();
+        new Setting(this.containerEl).setName(t("VIEWS")).setHeading();
 
         new Setting(this.containerEl)
-            .setName("Pagination")
-            .setDesc(
-                "If enabled, splits up views into pages of results which can be traversed " +
-                    "via buttons at the top and bottom of the view. This substantially improves " +
-                    "the performance of large views, and can help with visual clutter. Note that " +
-                    "this setting can also be set on a per-view basis."
-            )
+            .setName(t("PAGINATION"))
+            .setDesc(t("PAGINATION_DESC"))
             .addToggle((toggle) => {
                 toggle.setValue(this.plugin.settings.defaultPagingEnabled).onChange(async (value) => {
                     await this.plugin.updateSettings({ defaultPagingEnabled: value });
@@ -118,8 +114,8 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Default page size")
-            .setDesc("The number of entries to show per page, by default. This can be overriden on a per-view basis.")
+            .setName(t("DEFAULT_PAGE_SIZE"))
+            .setDesc(t("DEFAULT_PAGE_SIZE_DESC"))
             .addDropdown((dropdown) => {
                 const OPTIONS: Record<string, string> = {
                     "25": "25",
@@ -143,22 +139,19 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Scroll on page change")
-            .setDesc(
-                "If enabled, table that are paged will scroll to the top of the table when the page changes. " +
-                    "This can be overriden on a per-view basis."
-            )
+            .setName(t("SCROLL_ON_PAGE_CHANGE"))
+            .setDesc(t("SCROLL_ON_PAGE_CHANGE_DESC"))
             .addToggle((toggle) => {
                 toggle.setValue(this.plugin.settings.scrollOnPageChange).onChange(async (value) => {
                     await this.plugin.updateSettings({ scrollOnPageChange: value });
                 });
             });
 
-        new Setting(this.containerEl).setName("Formatting").setHeading();
+        new Setting(this.containerEl).setName(t("FORMATTING")).setHeading();
 
         new Setting(this.containerEl)
-            .setName("Empty values")
-            .setDesc("What to show for unset/empty properties.")
+            .setName(t("EMPTY_VALUES"))
+            .setDesc(t("EMPTY_VALUES_DESC"))
             .addText((text) => {
                 text.setValue(this.plugin.settings.renderNullAs).onChange(async (value) => {
                     await this.plugin.updateSettings({ renderNullAs: value });
@@ -166,10 +159,8 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Default date format")
-            .setDesc(
-                "The default format that dates are rendered in. Uses luxon date formatting (https://github.com/moment/luxon/blob/master/docs/formatting.md#formatting-with-tokens-strings-for-cthulhu)."
-            )
+            .setName(t("DEFAULT_DATE_FORMAT"))
+            .setDesc(t("DEFAULT_DATE_FORMAT_DESC"))
             .addText((text) => {
                 text.setValue(this.plugin.settings.defaultDateFormat).onChange(async (value) => {
                     // check if date format is valid
@@ -183,10 +174,8 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Default date/time format")
-            .setDesc(
-                "The default format that date-times are rendered in. Uses luxon date formatting (https://github.com/moment/luxon/blob/master/docs/formatting.md#formatting-with-tokens-strings-for-cthulhu)."
-            )
+            .setName(t("DEFAULT_DATETIME_FORMAT"))
+            .setDesc(t("DEFAULT_DATETIME_FORMAT_DESC"))
             .addText((text) => {
                 text.setValue(this.plugin.settings.defaultDateTimeFormat).onChange(async (value) => {
                     try {
@@ -198,15 +187,11 @@ class GeneralSettingsTab extends PluginSettingTab {
                 });
             });
 
-        new Setting(this.containerEl).setName("Performance").setHeading();
+        new Setting(this.containerEl).setName(t("PERFORMANCE")).setHeading();
 
         new Setting(this.containerEl)
-            .setName("Inline fields")
-            .setDesc(
-                "If enabled, inline fields will be parsed in all documents. Finding inline fields requires a full text scan through each document, " +
-                    "which noticably slows down indexing for large vaults. Disabling this functionality will mean metadata will only come from tags, links, and " +
-                    "Properties / frontmatter"
-            )
+            .setName(t("INLINE_FIELDS"))
+            .setDesc(t("INLINE_FIELDS_DESC"))
             .addToggle((toggle) => {
                 toggle.setValue(this.plugin.settings.indexInlineFields).onChange(async (value) => {
                     await this.plugin.updateSettings({ indexInlineFields: value });
@@ -216,8 +201,8 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Importer threads")
-            .setDesc("The number of importer threads to use for parsing metadata.")
+            .setName(t("IMPORTER_THREADS"))
+            .setDesc(t("IMPORTER_THREADS_DESC"))
             .addText((text) => {
                 text.setValue("" + this.plugin.settings.importerNumThreads).onChange(async (value) => {
                     const parsed = parseInt(value);
@@ -228,8 +213,8 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Importer utilization")
-            .setDesc("How much CPU time each importer thread should use, as a fraction (0.1 - 1.0).")
+            .setName(t("IMPORTER_UTILIZATION"))
+            .setDesc(t("IMPORTER_UTILIZATION_DESC"))
             .addText((text) => {
                 text.setValue(this.plugin.settings.importerUtilization.toFixed(2)).onChange(async (value) => {
                     const parsed = parseFloat(value);
@@ -241,12 +226,8 @@ class GeneralSettingsTab extends PluginSettingTab {
             });
 
         new Setting(this.containerEl)
-            .setName("Maximum recursive render depth")
-            .setDesc(
-                "Maximum depth that objects will be rendered to (i.e., how many levels of subproperties " +
-                    "will be rendered by default). This avoids infinite recursion due to self-referential objects " +
-                    "and ensures that rendering objects is acceptably performant."
-            )
+            .setName(t("MAX_RECURSIVE_RENDER_DEPTH"))
+            .setDesc(t("MAX_RECURSIVE_RENDER_DEPTH_DESC"))
             .addText((text) => {
                 text.setValue(this.plugin.settings.maxRecursiveRenderDepth.toString()).onChange(async (value) => {
                     const parsed = parseInt(value);
