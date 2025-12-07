@@ -523,6 +523,11 @@ export class DatacoreLocalApi {
     VanillaSelect: typeof VanillaSelect;
     // @deprecated (undocumented)
     VanillaTable: typeof TableView;
+    get vite(): any;
+    ViteComponents: {
+        mount: (componentPath: string, container: HTMLElement, props?: any) => Promise<void>;
+        unmount: (container: HTMLElement) => void;
+    };
 }
 
 // Warning: (ae-internal-missing-underscore) The name "DatacorePlugin" should be prefixed with an underscore because the declaration is marked as @internal
