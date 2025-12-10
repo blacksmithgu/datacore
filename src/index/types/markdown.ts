@@ -655,7 +655,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
 
     /** The number of lines in this list item. */
     get $lineCount(): number {
-        return this.$position.end - this.$position.start + 1;
+        return this.$position.end - this.$position.start;
     }
 
     /** Cleaned text that is guaranteed to be non-null and has indentation, inline fields, and id removed. */

@@ -7,27 +7,40 @@ import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
-import { MarkdownPage } from "index/types/markdown";
+import { MarkdownListItem, MarkdownPage, MarkdownTaskItem } from "index/types/markdown";
 import { App } from "obsidian";
-import { useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
+import { useAsync, useFileMetadata, useFullQuery, useIndexUpdates, useInterning, useQuery } from "ui/hooks";
 import * as luxon from "luxon";
 import * as preact from "preact";
 import * as hooks from "preact/hooks";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
-import { CURRENT_FILE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink } from "ui/markdown";
-import { CSSProperties } from "preact/compat";
+import { APP_CONTEXT, COMPONENT_CONTEXT, CURRENT_FILE_CONTEXT, DATACORE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink, SETTINGS_CONTEXT } from "ui/markdown";
+import { CSSProperties, Suspense } from "preact/compat";
 import { Literal, Literals } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
 import { TableView } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
+import { TaskList } from "./ui/views/task";
+import { Card } from "./ui/views/cards";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
-import { Card } from "./ui/views/cards";
+import { ControlledEditable } from "ui/fields/editable";
+import { setTaskText, useSetField } from "utils/fields";
+import { completeTask, insertListOrTaskItemAt } from "utils/task";
 import { ListView } from "./ui/views/list";
+import {
+    ControlledEditableTextField,
+    EditableTextField,
+    FieldCheckbox,
+    FieldSelect,
+    FieldSlider,
+    FieldSwitch,
+} from "ui/fields/editable-fields";
+import { TreeTableView } from "./ui/views/tree-table";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -189,6 +202,60 @@ export class DatacoreLocalApi {
     public tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         return this.api.tryFullQuery(query);
+		}
+    /** Sets the text of a given task programmatically. */
+    public setTaskText(newText: string, task: MarkdownTaskItem, newFields: Record<string, Literal> = {}): void {
+        setTaskText(this.app, this.core, newText, task, newFields);
+    }
+
+    /** Sets the completion status of a given task programmatically. */
+    public setTaskCompletion(completed: boolean, task: MarkdownTaskItem): void {
+        completeTask(completed, task, this.app.vault, this.core);
+    }
+
+    /** inserts the provided markdown string at the given position in a file. */
+    public async insertMarkdownAt(line: number, path: string, markdown: string) {
+        const file = this.app.vault.getFileByPath(path);
+        if (file != null) {
+            const content = await this.app.vault.read(file);
+            const lines = content.split(/\r\n|\r|\n/u);
+            if (line < lines.length) {
+                if (line < 0) line = lines.length + line;
+                lines.splice(line, 0, markdown);
+                await this.app.vault.modify(file, lines.join(content.contains("\r") ? "\r\n" : "\n"));
+            }
+        }
+    }
+
+    public async insertListOrTaskItemAt(
+        parent: MarkdownTaskItem | MarkdownListItem | number,
+        atEnd: boolean,
+        status: string,
+        text: string,
+        path?: string,
+        fields: Record<string, any> = {}
+    ) {
+        await insertListOrTaskItemAt(this.app, parent, atEnd, status, text, path, fields);
+    }
+
+    //////////////
+    // Contexts //
+    //////////////
+
+    // export the necessary contexts to enable rendering
+    // datacore components outside the datacore plugin
+    // itself
+    get SETTINGS_CONTEXT(): typeof SETTINGS_CONTEXT {
+        return SETTINGS_CONTEXT;
+    }
+    get COMPONENT_CONTEXT(): typeof COMPONENT_CONTEXT {
+        return COMPONENT_CONTEXT;
+    }
+    get DATACORE_CONTEXT(): typeof DATACORE_CONTEXT {
+        return DATACORE_CONTEXT;
+    }
+    get APP_CONTEXT(): typeof APP_CONTEXT {
+        return APP_CONTEXT;
     }
 
     /////////////
@@ -219,6 +286,8 @@ export class DatacoreLocalApi {
      * React's reference-equality-based caching.
      */
     public useInterning = useInterning;
+    public useAsync = useAsync;
+    public useSetField = useSetField;
 
     /** Memoize the input automatically and process it using a DataArray; returns a vanilla array back. */
     public useArray<T, U>(
@@ -278,6 +347,8 @@ export class DatacoreLocalApi {
     public Stack = Stack;
     /** Horizontal flexbox container; good for putting items together in a row. */
     public Group = Group;
+
+   public Suspense = Suspense; 
 
     /** Renders a literal value in a pretty way that respects settings. */
     public Literal = (({ value, sourcePath, inline }: { value: Literal; sourcePath?: string; inline?: boolean }) => {
@@ -402,11 +473,14 @@ export class DatacoreLocalApi {
     public List = ListView;
     /** A single card which can be composed into a grid view. */
     public Card = Card;
+    public TaskList = TaskList;
+		public TreeTable = TreeTableView;
 
     /////////////////////////
     // Interative elements //
     /////////////////////////
 
+    public ControlledEditable = ControlledEditable;
     public Button = Button;
     public Textbox = Textbox;
     public Callout = Callout;
@@ -414,4 +488,26 @@ export class DatacoreLocalApi {
     public Slider = Slider;
     public Switch = Switch;
     public VanillaSelect = VanillaSelect;
+    public VanillaTextBox = ControlledEditableTextField;
+
+    ////////////////////////////////////
+    // Stateful / internal components //
+    ////////////////////////////////////
+
+    /**
+     * Updates the path for the local API; usually only called by the top-level script renderer on
+     * path changes (such as renaming a file).
+     * @internal
+     */
+    updatePath(path: string): void {
+        this.path = path;
+    }
+    /////////////////////////
+    //    field editors    //
+    /////////////////////////
+    public FieldCheckbox = FieldCheckbox;
+    public FieldSlider = FieldSlider;
+    public FieldSelect = FieldSelect;
+    public FieldSwitch = FieldSwitch;
+    public TextField = EditableTextField;
 }
