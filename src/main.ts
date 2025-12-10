@@ -3,6 +3,7 @@ import { Datacore } from "index/datacore";
 import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { DEFAULT_SETTINGS, Settings } from "settings";
+import { DatacoreQueryView as DatacoreJSView, VIEW_TYPE_DATACOREJS } from "ui/view-page";
 
 /** @internal Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
@@ -55,6 +56,20 @@ export default class DatacorePlugin extends Plugin {
             callback: async () => {
                 console.log("Datacore: dropping the datastore and reindexing all items.");
                 await this.core.reindex();
+						},
+        });
+        // Views: DatacoreJS view.
+        // @ts-ignore be quiet
+        this.registerView(VIEW_TYPE_DATACOREJS, (leaf) => new DatacoreJSView(leaf, this.api));
+
+        // Add a command for creating a new view page.
+        this.addCommand({
+            id: "datacore-add-view-page",
+            name: "Create View Page",
+            callback: () => {
+                const newLeaf = this.app.workspace.getLeaf("tab");
+                newLeaf.setViewState({ type: VIEW_TYPE_DATACOREJS, active: true });
+                this.app.workspace.setActiveLeaf(newLeaf, { focus: true });
             },
         });
 

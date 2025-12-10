@@ -11,6 +11,9 @@ import { ReactNode } from "preact/compat";
 import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
+import { EditableElement, useEditableDispatch } from "ui/fields/editable";
+import { faSortDown, faSortUp, faSort } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * A simple column definition which allows for custom renderers and titles.
@@ -32,7 +35,19 @@ export interface TableColumn<T, V = Literal> {
     value: (object: T) => V;
 
     /** Called to render the given column value. Can depend on both the specific value and the row object. */
-    render?: (value: V, object: T) => Literal | ReactNode;
+		render?: (value: V, object: T) => Literal | ReactNode;
+
+    /** whether this column is editable or not */
+    editable?: boolean;
+
+    /** Rendered when editing the column */
+    editor?: EditableElement<V>;
+
+    /** Props to pass to the editor component (if any) */
+    editorProps: unknown;
+
+    /** Called when the column value updates. */
+    onUpdate?: (value: V, object: T) => unknown;
 }
 
 /**
@@ -231,7 +246,11 @@ export function TableGroupHeader<T>({
  */
 export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: TableColumn<T>[] }) {
     return (
-        <tr className="datacore-table-row" style={level ? `padding-left: ${level * 5}px` : undefined}>
+        <tr
+            className="datacore-table-row"
+            style={level ? `padding-left: ${level * 5}px` : undefined}
+            key={"$id" in (row as any) ? (row as any).$id : undefined}
+        >
             {columns.map((col) => (
                 <TableRowCell row={row} column={col} />
             ))}
@@ -244,12 +263,73 @@ export function TableRow<T>({ level, row, columns }: { level: number; row: T; co
  * @hidden
  */
 export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T> }) {
-    const value = useMemo(() => column.value(row), [row, column.value]);
+    const value = column.value(row);
+    const [editableState, dispatch] = useEditableDispatch<typeof value>({
+        content: value,
+        isEditing: false,
+        updater: (v) => column.onUpdate && column.onUpdate(v, row),
+    });
     const renderable = useMemo(() => {
-        if (column.render) return column.render(value, row);
-        else return value;
-    }, [row, column.render, value]);
+        if (column.render) {
+            let r = column.render(value, row);
+            return r;
+        } else return value;
+    }, [row, column.render, editableState.content, value]);
+
     const rendered = useAsElement(renderable);
 
-    return <td className="datacore-table-cell">{rendered}</td>;
+    const { editor: Editor } = column;
+    return (
+        <td
+            onDblClick={() => dispatch({ type: "editing-toggled", newValue: !editableState.isEditing })}
+            className="datacore-table-cell"
+        >
+            {column.editable && editableState.isEditing && Editor ? (
+                <Editor field={value} dispatch={dispatch} {...(column.editorProps ?? {})} {...editableState} />
+            ) : (
+                rendered
+            )}
+        </td>
+    );
 }
+
+/** Provides a sort button that has a click handler. */
+export function SortButton({
+    direction,
+    onClick,
+    className,
+}: {
+    direction?: SortDirection;
+    onClick?: (evt: MouseEvent) => any;
+    className?: string;
+}) {
+    const icon = useMemo(() => {
+        if (direction == "ascending") return faSortDown;
+        else if (direction == "descending") return faSortUp;
+        return faSort;
+    }, [direction]);
+
+    return (
+        <div onClick={onClick} className={className}>
+            <FontAwesomeIcon icon={icon} />
+        </div>
+    );
+}
+
+/** Default comparator for sorting on a table column. */
+export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
+    Literals.compare(a, b);
+
+/////////////////
+// Table Hooks //
+/////////////////
+
+export type TableAction =
+    | { type: "reset-all" }
+    | { type: "set-page"; page: number }
+    | { type: "sort-column"; column: string; direction?: "ascending" | "descending" };
+
+export type SortDirection = "ascending" | "descending";
+
+/** The ways that the table can be sorted. */
+export type SortOn = { type: "column"; id: string; direction: SortDirection };
