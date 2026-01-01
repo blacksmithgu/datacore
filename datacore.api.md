@@ -117,8 +117,8 @@ export class Canvas implements Linkable, File_2, Linkbearing, Taggable, Indexabl
     get $file(): string;
     // (undocumented)
     get $id(): string;
-    // (undocumented)
     $infields: Record<string, InlineField>;
+    $infieldsMulti: Record<string, InlineFieldList>;
     get $link(): Link;
     // (undocumented)
     $links: Link[];
@@ -193,8 +193,8 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
     $frontmatter?: Record<string, FrontmatterEntry>;
     // (undocumented)
     $id: string;
-    // (undocumented)
     $infields: Record<string, InlineField>;
+    $infieldsMulti: Record<string, InlineFieldList>;
     // (undocumented)
     $links: Link[];
     // (undocumented)
@@ -610,6 +610,7 @@ export namespace Expressions {
 export namespace Extractors {
     export function frontmatter<T extends Indexable>(front: (object: T) => Record<string, FrontmatterEntry> | undefined): FieldExtractor<T>;
     export function inlineFields<T extends Indexable>(inlineMap: (object: T) => Record<string, InlineField> | undefined): FieldExtractor<T>;
+    export function inlineFieldsMulti<T extends Indexable>(inlineMap: (object: T) => Record<string, InlineFieldList> | undefined): FieldExtractor<T>;
     export function intrinsics<T extends Indexable>(except?: Set<string>): FieldExtractor<T>;
     export function merge<T extends Fieldbearing>(...extractors: FieldExtractor<T>[]): FieldExtractor<T>;
 }
@@ -942,6 +943,9 @@ export interface InlineField {
 }
 
 // @public
+export type InlineFieldList = InlineField[];
+
+// @public
 export type Intent = "error" | "warn" | "info" | "success";
 
 // Warning: (ae-internal-missing-underscore) The name "INTENT_CLASSES" should be prefixed with an underscore because the declaration is marked as @internal
@@ -954,6 +958,24 @@ export const INTENT_CLASSES: Record<Intent, string>;
 //
 // @internal
 export function jsonFrontmatterEntry(raw: FrontmatterEntry): JsonFrontmatterEntry;
+
+// @public
+export interface JsonInlineField {
+    key: string;
+    position: {
+        line: number;
+        start: number;
+        startValue: number;
+        end: number;
+    };
+    raw: string;
+    // Warning: (ae-forgotten-export) The symbol "JsonLiteral" needs to be exported by the entry point index.d.ts
+    value: JsonLiteral;
+    wrapping?: string;
+}
+
+// @public
+export type JsonInlineFieldList = JsonInlineField[];
 
 // @public
 export interface LambdaExpression {
@@ -1124,6 +1146,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     // (undocumented)
     $id: string;
     $infields: Record<string, InlineField>;
+    $infieldsMulti: Record<string, InlineFieldList>;
     get $link(): Link | undefined;
     $links: Link[];
     $ordinal: number;
@@ -1275,6 +1298,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     // (undocumented)
     $id: string;
     $infields: Record<string, InlineField>;
+    $infieldsMulti: Record<string, InlineFieldList>;
     get $line(): number;
     get $lineCount(): number;
     $links: Link[];
@@ -1323,6 +1347,7 @@ export class MarkdownPage implements File_2, Linkbearing, Taggable, Indexable, F
     // (undocumented)
     get $id(): string;
     $infields: Record<string, InlineField>;
+    $infieldsMulti: Record<string, InlineFieldList>;
     get $lineCount(): number;
     get $link(): Link;
     $links: Link[];
@@ -1366,6 +1391,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     // (undocumented)
     $id: string;
     $infields: Record<string, InlineField>;
+    $infieldsMulti: Record<string, InlineFieldList>;
     $level: number;
     get $lineCount(): number;
     get $link(): Link;

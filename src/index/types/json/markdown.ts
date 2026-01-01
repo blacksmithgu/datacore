@@ -3,7 +3,7 @@
 // They only reference natively serializable JSON types - lists, maps/records, numbers,
 // and strings.
 
-import { JsonInlineField } from "index/import/inline-field";
+import { JsonInlineField, JsonInlineFieldList } from "index/import/inline-field";
 import { JsonLiteral } from "./common";
 import { JsonLink } from "expression/link";
 
@@ -45,8 +45,10 @@ export interface JsonMarkdownPage {
     $links: JsonLink[];
     /** Frontmatter values in the file, if present. Maps lower case frontmatter key to entry. */
     $frontmatter?: Record<string, JsonFrontmatterEntry>;
-    /** Map of all distinct inline fields in the document. Maps lower case key name to full metadata. */
+    /** Map of all distinct inline fields in the document (original behavior: first occurrence wins). */
     $infields: Record<string, JsonInlineField>;
+    /** Map of all inline fields in the document; values are always lists in appearance order. */
+    $infieldsMulti?: Record<string, JsonInlineFieldList>;
 
     /**
      * All child markdown sections of this markdown file. The initial section before any content is special and is
@@ -73,6 +75,8 @@ export interface JsonMarkdownSection {
     $blocks: JsonMarkdownBlock[];
     /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, JsonInlineField>;
+    /** Map of all inline fields in the section; values are always lists in appearance order. */
+    $infieldsMulti?: Record<string, JsonInlineFieldList>;
 }
 
 export interface JsonMarkdownBlock {
@@ -86,6 +90,8 @@ export interface JsonMarkdownBlock {
     $links: JsonLink[];
     /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, JsonInlineField>;
+    /** Map of all inline fields in the block; values are always lists in appearance order. */
+    $infieldsMulti?: Record<string, JsonInlineFieldList>;
     /** If present, the distinct block ID for this block. */
     $blockId?: string;
     /** The type of block - paragraph, list, and so on. */
@@ -128,6 +134,8 @@ export interface JsonMarkdownListItem {
     $tags: string[];
     /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, JsonInlineField>;
+    /** Map of all inline fields in the list item; values are always lists in appearance order. */
+    $infieldsMulti?: Record<string, JsonInlineFieldList>;
     /** All links in the file. */
     $links: JsonLink[];
     /** The block ID of this list item if present. */
