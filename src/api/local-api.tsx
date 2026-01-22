@@ -16,23 +16,25 @@ import * as hooks from "preact/hooks";
 import { Result } from "./result";
 import { Group, Stack } from "./ui/layout";
 import { Embed, LineSpanEmbed } from "api/ui/embed";
-import { CURRENT_FILE_CONTEXT, Lit, Markdown, ObsidianLink } from "ui/markdown";
+import { CURRENT_FILE_CONTEXT, ErrorMessage, Lit, Markdown, ObsidianLink } from "ui/markdown";
 import { CSSProperties } from "preact/compat";
-import { Literal } from "expression/literal";
+import { Literal, Literals } from "expression/literal";
 import { Button, Checkbox, Icon, Slider, Switch, Textbox, VanillaSelect } from "./ui/basics";
-import { VanillaTable } from "./ui/views/table";
+import { TableView } from "./ui/views/table";
 import { Callout } from "./ui/views/callout";
 import { DataArray } from "./data-array";
 import { Coerce } from "./coerce";
 import { ScriptCache } from "./script-cache";
+import { Expression } from "expression/expression";
+import { Card } from "./ui/views/cards";
+import { ListView } from "./ui/views/list";
 
-/** Local API provided to specific codeblocks when they are executing.
- * @group Core
+/**
+ * Local API provided to specific codeblocks when they are executing.
+ * @public
  */
 export class DatacoreLocalApi {
-    /**
-     * @private
-     */
+    /** @internal The cache of all currently loaded scripts in this context. */
     private scriptCache: ScriptCache;
 
     public constructor(public api: DatacoreApi, public path: string) {
@@ -45,6 +47,7 @@ export class DatacoreLocalApi {
     }
 
     /** The full markdown file metadata for the current file. */
+    public currentFile<T extends MarkdownPage = MarkdownPage>(): T;
     public currentFile(): MarkdownPage {
         return this.api.page(this.path)!;
     }
@@ -89,7 +92,7 @@ export class DatacoreLocalApi {
      * return { MyElement };
      * ```
      */
-    public async require(path: string | Link): Promise<any> {
+    public async require(path: string | Link): Promise<unknown> {
         const result = await this.scriptCache.load(path, { dc: this });
         return result.orElseThrow();
     }
@@ -146,40 +149,101 @@ export class DatacoreLocalApi {
         return DataArray.wrap(input);
     }
 
+    /** Evaluate an expression and return it's evaluated value. */
+    public evaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal>,
+        sourcePath?: string
+    ): Literal {
+        return this.api.evaluate(expression, variables, sourcePath ?? this.path);
+    }
+
+    /** Evaluate an expression and return it's evaluated value, throwing an exception on failure. */
+    public tryEvaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal>,
+        sourcePath?: string
+    ): Result<Literal, string> {
+        return this.api.tryEvaluate(expression, variables, sourcePath ?? this.path);
+    }
+
+    /** Execute a textual or typed index query, returning all results. */
+    public query<T extends Indexable = Indexable>(query: string | IndexQuery): T[];
+    public query(query: string | IndexQuery): Indexable[] {
+        return this.api.query(query);
+    }
+
+    /** Execute a textual or typed index query, returning all results. */
+    public tryQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<T[], string>;
+    public tryQuery(query: string | IndexQuery): Result<Indexable[], string> {
+        return this.api.tryQuery(query);
+    }
+
+    /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public fullquery<T extends Indexable = Indexable>(query: string | IndexQuery): SearchResult<T>;
+    public fullquery(query: string | IndexQuery): SearchResult<Indexable> {
+        return this.api.fullquery(query);
+    }
+
+    /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
+    public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
+        return this.api.tryFullQuery(query);
+    }
+
     /////////////
     //  Hooks  //
     /////////////
 
     // Export the common preact hooks for people to use via `dc.`:
+    /** See the preact or react 'useState' hook. */
     public useState = hooks.useState;
+    /** See the preact or react 'useCallback' hook. */
     public useCallback = hooks.useCallback;
+    /** Se the preact or react 'useReducer' hook. */
     public useReducer = hooks.useReducer;
+    /** See the preact or react 'useMemo' hook. */
     public useMemo = hooks.useMemo;
+    /** See the preact or react 'useEffect' hook. */
     public useEffect = hooks.useEffect;
+    /** See the preact or react 'createContext' function. */
     public createContext = preact.createContext;
+    /** See the preact or react 'useContext' function. */
     public useContext = hooks.useContext;
+    /** See the preact or react 'useRef' function. */
     public useRef = hooks.useRef;
+    /**
+     * Calls a function to obtain a value; returns the same exact _instance_ of that value as long
+     * as calls to the function return an equivalent value. Interning is a useful performance concept
+     * for reducing the total number of unique objects in memory and for making better use of
+     * React's reference-equality-based caching.
+     */
     public useInterning = useInterning;
 
     /** Memoize the input automatically and process it using a DataArray; returns a vanilla array back. */
-    public useArray<T, U>(input: T[] | DataArray<T>, process: (data: DataArray<T>) => DataArray<U>, deps?: any[]): U[] {
+    public useArray<T, U>(
+        input: T[] | DataArray<T>,
+        process: (data: DataArray<T>) => DataArray<U>,
+        deps?: unknown[]
+    ): U[] {
         return hooks.useMemo(() => process(DataArray.wrap(input)).array(), [input, ...(deps ?? [])]);
     }
 
     /** Use the file metadata for the current file. Automatically updates the view when the current file metadata changes. */
+    public useCurrentFile<T extends MarkdownPage = MarkdownPage>(settings?: { debounce?: number }): T;
     public useCurrentFile(settings?: { debounce?: number }): MarkdownPage {
         return useFileMetadata(this.core, this.path, settings) as MarkdownPage;
     }
 
     /** Use the current path. Automatically updates the view if the path changes (though that would be weird). */
     public useCurrentPath(settings?: { debounce?: number }): string {
-        const meta = this.useCurrentFile(settings);
-        return meta.$path;
+        return this.path;
     }
 
     /** Use the file metadata for a specific file. Automatically updates the view when the file changes. */
+    public useFile<T extends Indexable = Indexable>(path: string, settings?: { debounce?: number }): T | undefined;
     public useFile(path: string, settings?: { debounce?: number }): Indexable | undefined {
-        return useFileMetadata(this.core, path, settings)!;
+        return useFileMetadata(this.core, path, settings);
     }
 
     /** Automatically refresh the view whenever the index updates; returns the latest index revision ID. */
@@ -191,11 +255,16 @@ export class DatacoreLocalApi {
      * Run a query, automatically re-running it whenever the vault changes. Returns more information about the query
      * execution, such as index revision and total search duration.
      */
+    public useFullQuery<T extends Indexable = Indexable>(
+        query: string | IndexQuery,
+        settings?: { debounce?: number }
+    ): SearchResult<T>;
     public useFullQuery(query: string | IndexQuery, settings?: { debounce?: number }): SearchResult<Indexable> {
         return useFullQuery(this.core, this.parseQuery(query), settings);
     }
 
     /** Run a query, automatically re-running it whenever the vault changes. */
+    public useQuery<T extends Indexable = Indexable>(query: string | IndexQuery, settings?: { debounce?: number }): T[];
     public useQuery(query: string | IndexQuery, settings?: { debounce?: number }): Indexable[] {
         // Hooks need to be called in a consistent order, so we don't nest the `useQuery` call in the DataArray.wrap _just_ in case.
         return useQuery(this.core, this.parseQuery(query), settings);
@@ -242,7 +311,7 @@ export class DatacoreLocalApi {
         );
     }).bind(this);
 
-    /** Renders an obsidian-style link directly and more effieicntly than rendering markdown. */
+    /** Renders an obsidian-style link directly and more efficiently than rendering markdown. */
     public Link = ObsidianLink;
 
     /** Create a vanilla Obsidian embed for the given link. */
@@ -294,11 +363,45 @@ export class DatacoreLocalApi {
     /** Renders an obsidian lucide icon. */
     public Icon = Icon;
 
+    /**
+     * Generate an embed of the given markdown element. Useful to pass to the 'renderer' prop of various views
+     * to efficiently render embeds of various elements.
+     *
+     * For example, `dc.embed(<file>)` will produce a file embedding, and `dc.embed(<section>)` will produce a section embedding.
+     */
+    public embed = ((element: Indexable) => {
+        // TODO: We should add embeds as a new tag on indexable types and add an embedding abstraction.
+        // For now, it's fairly useful enough to just hardcode some useful things that are embeddable.
+        if (element.$types.contains("markdown") && element.$file && "$position" in element) {
+            const { start, end } = element.$position as { start: number; end: number };
+            if (!Literals.isNumber(start) || !Literals.isNumber(end))
+                return (
+                    <ErrorMessage
+                        message={`Invalid $position field '${JSON.stringify(element.$position)}' for element '${
+                            element.$id
+                        }' from '${element.$file}'`}
+                    />
+                );
+
+            return <this.SpanEmbed path={element.$file} start={start} end={end} />;
+        }
+
+        return <ErrorMessage message={`No valid embedding for element '${element.$id}' from '${element.$file}'`} />;
+    }).bind(this);
+
     ///////////
     // Views //
     ///////////
 
-    public VanillaTable = VanillaTable;
+    /** @deprecated - Use just `Table` instead. */
+    public VanillaTable = TableView;
+    /** A simple and configurable table view that supports rendering paged and grouped data. */
+    public Table = TableView;
+
+    /** A simple and configurable list view that supports rendering paged and grouped data. */
+    public List = ListView;
+    /** A single card which can be composed into a grid view. */
+    public Card = Card;
 
     /////////////////////////
     // Interative elements //

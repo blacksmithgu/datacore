@@ -34,14 +34,13 @@ export class LocalStorageCache {
     }
 
     /** Load file metadata by path. */
-    public async loadFile(path: string): Promise<Cached<Partial<any>> | null | undefined> {
-        return this.persister.getItem(this.fileKey(path)).then((raw) => {
-            return raw as any as Cached<Partial<any>>;
-        });
+    public async loadFile(path: string): Promise<Cached<Partial<unknown>> | null | undefined> {
+        const raw = await this.persister.getItem(this.fileKey(path));
+        return raw as unknown as Cached<Partial<unknown>>;
     }
 
     /** Store file metadata by path. */
-    public async storeFile(path: string, data: Partial<any>): Promise<void> {
+    public async storeFile(path: string, data: Partial<unknown>): Promise<void> {
         await this.persister.setItem(this.fileKey(path), {
             version: this.version,
             time: Date.now(),

@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "baseUrl": "build/declarations",
+    "module": "ESNext",
+    "target": "es2018",
+    "allowJs": false,
+    "declaration": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "skipLibCheck": true,
+    "emitDeclarationOnly": true,
+    "jsx": "react-jsx",
+		"jsxImportSource": "preact",
+    "noImplicitAny": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "lib": ["dom", "es5", "scripthost", "es2018", "DOM.Iterable"],
+		"paths": {
+      "react": ["preact/compat"],
+      "react-dom": ["preact/compat"]
+    },
+    "outDir": "build/declarations"
+  },
+  "include": ["src/index.ts", "src/typings/*.d.ts", "node_modules/localforage/typings/localforage.d.ts"],
+}

@@ -68,4 +68,4 @@ yarn run test
 
 **Discord**: <https://discord.gg/KwZUX4BYba>.
 
-Contributions are welcome; for large contributions, we recommend reaching out via email or discord to make sure what you are trying to implement is reasonable / feasible!
+Contributions are welcome; for any contributions beyond bug fixes, we recommend reaching out via email or discord to make sure what you are trying to implement is reasonable / feasible!

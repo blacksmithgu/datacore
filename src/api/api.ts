@@ -4,7 +4,7 @@
 import { Link } from "expression/link";
 import { Datacore } from "index/datacore";
 import { SearchResult } from "index/datastore";
-import { PRIMITIVES, QUERY } from "expression/parser";
+import { EXPRESSION, PRIMITIVES, QUERY } from "expression/parser";
 import { IndexQuery } from "index/types/index-query";
 import { Indexable } from "index/types/indexable";
 import { MarkdownPage } from "index/types/markdown";
@@ -17,14 +17,18 @@ import { Coerce } from "./coerce";
 import { DataArray } from "./data-array";
 import * as luxon from "luxon";
 import * as preact from "preact";
+import { Expression } from "expression/expression";
+import { Literal } from "expression/literal";
+import { Variables } from "expression/evaluator";
 
-/** Exterally visible API for datacore.
- * @group Core
+/**
+ * Exterally visible API for datacore.
+ * @public
  */
 export class DatacoreApi {
     public constructor(public core: Datacore) {}
 
-    /** Get acess to luxon functions. */
+    /** Get access to luxon functions. */
     get luxon(): typeof luxon {
         return luxon;
     }
@@ -53,6 +57,7 @@ export class DatacoreApi {
     /////////////////////////
 
     /** Load a markdown file by full path or link. */
+    public page<T extends MarkdownPage = MarkdownPage>(path: string | Link): T | undefined;
     public page(path: string | Link): MarkdownPage | undefined {
         const realPath = path instanceof Link ? path.path : path;
 
@@ -60,21 +65,25 @@ export class DatacoreApi {
     }
 
     /** Execute a textual or typed index query, returning all results. */
+    public query<T extends Indexable = Indexable>(query: string | IndexQuery): T[];
     public query(query: string | IndexQuery): Indexable[] {
         return this.tryQuery(query).orElseThrow();
     }
 
     /** Execute a textual or typed index query, returning all results. */
+    public tryQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<T[], string>;
     public tryQuery(query: string | IndexQuery): Result<Indexable[], string> {
         return this.tryFullQuery(query).map((result) => result.results);
     }
 
     /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public fullquery<T extends Indexable = Indexable>(query: string | IndexQuery): SearchResult<T>;
     public fullquery(query: string | IndexQuery): SearchResult<Indexable> {
         return this.tryFullQuery(query).orElseThrow();
     }
 
     /** Execute a textual or typed index query, returning results plus performance metadata. */
+    public tryFullQuery<T extends Indexable = Indexable>(query: string | IndexQuery): Result<SearchResult<T>, string>;
     public tryFullQuery(query: string | IndexQuery): Result<SearchResult<Indexable>, string> {
         const parsedQuery = typeof query === "string" ? QUERY.query.tryParse(query) : query;
         return this.core.datastore.search(parsedQuery);
@@ -145,6 +154,30 @@ export class DatacoreApi {
         return DataArray.wrap(input);
     }
 
+    /** Evaluate an expression and return it's evaluated value, throwing an exception on failure. */
+    public evaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal>,
+        sourcePath?: string
+    ): Literal {
+        return this.tryEvaluate(expression, variables, sourcePath).orElseThrow();
+    }
+
+    /** Evaluate an expression and return it's evaluated value. */
+    public tryEvaluate(
+        expression: string | Expression,
+        variables?: Record<string, Literal>,
+        sourcePath?: string
+    ): Result<Literal, string> {
+        if (typeof expression === "string") {
+            const parsed = EXPRESSION.expression.parse(expression);
+            if (!parsed.status) return Result.failure(Parsimmon.formatError(expression, parsed));
+            expression = parsed.value;
+        }
+
+        return this.core.datastore.evaluator(sourcePath).evaluate(expression, Variables.infer(variables));
+    }
+
     /////////////////////
     // Visual Elements //
     /////////////////////
@@ -207,10 +240,7 @@ export class DatacoreApi {
         return this._renderJavascript(source, container, component, sourcePath, "tsx");
     }
 
-    /**
-     * @private
-     * Shared logic for rendering any JS/TS script.
-     */
+    /** Shared logic for rendering any JS/TS script. */
     private _renderJavascript(
         source: string,
         container: HTMLElement,

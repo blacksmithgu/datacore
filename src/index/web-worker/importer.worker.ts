@@ -25,7 +25,7 @@ onmessage = async (event) => {
             postMessage({ $error: "Unsupported import method." });
         }
     } catch (error) {
-        console.error(`Datacore Indexer failed to index ${event.data.path}: ${error}`);
+        console.error(`Datacore failed to index ${event.data.path}: ${error}`);
         postMessage({ $error: error.message });
     }
 };

@@ -1,15 +1,16 @@
 /**
  * @module api
  */
-import { Literal, Literals } from "expression/literal";
+import { DataObject, Literal, Literals } from "expression/literal";
 import { Indexable } from "../index/types/indexable";
 import { InlineField } from "index/import/inline-field";
 import { FrontmatterEntry } from "index/types/markdown";
 
 /** The source of a field, used when determining what files to overwrite and how. */
 export type Provenance =
-    | { type: "frontmatter"; file: string; key: string }
-    | { type: "inline-field"; file: string; line: number; key: string };
+    | { type: "frontmatter"; file: string; key: string; revision: number }
+    | { type: "inline-field"; file: string; line: number; key: string; revision: number }
+    | { type: "intrinsic"; file: string; revision: number };
 
 /**
  * General definition for a field. Provides the field key, value, as well as information on it's source and how it can be edited.
@@ -23,7 +24,7 @@ export interface Field {
     /** The raw value of the field before parsing, if relevant. */
     raw?: string;
     /** If present, describes where the field came from in precise detail, allowing the field to be edited. */
-    provenance?: Provenance;
+    provenance: Provenance;
 }
 
 /** Metadata for objects which are annotated with fields. */
@@ -37,14 +38,14 @@ export interface Fieldbearing {
 }
 
 export namespace Fieldbearings {
-    export function isFieldbearing(object: any): object is Fieldbearing {
+    export function isFieldbearing(object: unknown): object is Fieldbearing {
         return (
             object != null && typeof object === "object" && "field" in object && typeof object["field"] == "function"
         );
     }
 
     /** Get a key from a generic map or fieldbearing object. */
-    export function get(object: Fieldbearing | Record<string, Literal>, key: string): Literal | undefined {
+    export function get(object: Fieldbearing | DataObject, key: string): Literal | undefined {
         if (isFieldbearing(object)) return object.field(key)?.value;
         else return object[key];
     }
@@ -63,19 +64,19 @@ export type FieldExtractor<T> = (object: T, key?: string) => Field[];
  */
 export namespace Extractors {
     /** Check if the given property in the object is not excluded and is a plain property (not a function or other special object). */
-    function isValidIntrinsic(object: Record<string, any>, key: string, exclude?: Set<string>): boolean {
+    function isValidIntrinsic(object: Record<string, unknown>, key: string, exclude?: Set<string>): boolean {
         // Don't allow recursion on 'fields' or cached values, and skip any ignored and non-intrinsics.
         if (exclude?.has(key) || !key.startsWith("$")) return false;
 
         // No functions, only use actual values.
-        const value = (object as any)[key];
+        const value = (object as Record<string, unknown>)[key];
         if (Literals.isFunction(value)) return false;
 
         return true;
     }
 
     /** Get all keys of the object, including derived fields from prototypes. */
-    function* prototypeKeys(object: any) {
+    function* prototypeKeys(object: object): Generator<string> {
         for (const key of Object.keys(object)) yield key;
 
         let proto = Object.getPrototypeOf(object);
@@ -87,8 +88,9 @@ export namespace Extractors {
     }
 
     /** Generate a list of fields for the given object, returning them as a list. */
-    export function intrinsics<T extends Record<string, any>>(except?: Set<string>): FieldExtractor<T> {
-        return (object: T, key?: string) => {
+    export function intrinsics<T extends Indexable>(except?: Set<string>): FieldExtractor<T> {
+        return (maybeObject: T, key?: string) => {
+            const object = maybeObject as Record<string, unknown> & Indexable;
             if (key == null) {
                 const fields: Field[] = [];
 
@@ -97,7 +99,8 @@ export namespace Extractors {
 
                     fields.push({
                         key,
-                        value: (object as any)[key],
+                        value: (object as Record<string, Literal>)[key],
+                        provenance: { type: "intrinsic", file: object.$file!, revision: object.$revision ?? 0 },
                     });
                 }
 
@@ -105,12 +108,13 @@ export namespace Extractors {
             } else {
                 // If key is directly present in object, just return it.
                 if (key in object && isValidIntrinsic(object, key, except)) {
-                    return [
-                        {
-                            key,
-                            value: (object as any)[key],
-                        },
-                    ] as Field[];
+                    const entry: Field = {
+                        key,
+                        value: (object as Record<string, Literal>)[key],
+                        provenance: { type: "intrinsic", file: object.$file!, revision: object.$revision ?? 0 },
+                    };
+
+                    return [entry];
                 }
 
                 return [];
@@ -136,7 +140,12 @@ export namespace Extractors {
                         key: entry.key.toLowerCase(),
                         value: entry.value,
                         raw: entry.raw,
-                        provenance: { type: "frontmatter", file: object.$file!, key: entry.key },
+                        provenance: {
+                            type: "frontmatter",
+                            file: object.$file!,
+                            key: entry.key,
+                            revision: object.$revision ?? 0,
+                        },
                     });
                 }
 
@@ -152,7 +161,7 @@ export namespace Extractors {
                         key: key,
                         value: entry.value,
                         raw: entry.raw,
-                        provenance: { type: "frontmatter", file: object.$file!, key },
+                        provenance: { type: "frontmatter", file: object.$file!, key, revision: object.$revision ?? 0 },
                     },
                 ];
             }
@@ -171,16 +180,19 @@ export namespace Extractors {
                 const fields = [];
 
                 for (const field of Object.values(map)) {
+                    const provenance: Provenance = {
+                        type: "inline-field",
+                        file: object.$file!,
+                        line: field.position.line,
+                        key: field.key,
+                        revision: object.$revision ?? 0,
+                    };
+
                     fields.push({
                         key: field.key.toLowerCase(),
                         value: field.value,
                         raw: field.raw,
-                        provenance: {
-                            type: "inline-field",
-                            file: object.$file!,
-                            line: field.position.line,
-                            key: field.key,
-                        } as Provenance,
+                        provenance,
                     });
                 }
 
@@ -190,17 +202,19 @@ export namespace Extractors {
                 if (!(key in map)) return [];
 
                 const field = map[key];
+                const provenance: Provenance = {
+                    type: "inline-field",
+                    file: object.$file!,
+                    line: field.position.line,
+                    key: field.key,
+                    revision: object.$revision ?? 0,
+                };
                 return [
                     {
                         key: key,
                         value: field.value,
                         raw: field.raw,
-                        provenance: {
-                            type: "inline-field",
-                            file: object.$file!,
-                            line: field.position.line,
-                            key: field.key,
-                        } as Provenance,
+                        provenance,
                     },
                 ];
             }

@@ -25,7 +25,7 @@ export function transpile(script: string, language: ScriptLanguage): string {
 /**
  * Evaluate a script where 'this' for the script is set to the given context. Allows you to define global variables.
  */
-export function evalInContext(script: string, variables: Record<string, any>): any {
+export function evalInContext(script: string, variables: Record<string, unknown>): unknown {
     const pairs = Object.entries(variables);
     const keys = pairs.map(([key, _]) => key);
     const values = pairs.map(([_, value]) => value);
@@ -36,9 +36,9 @@ export function evalInContext(script: string, variables: Record<string, any>): a
 /**
  * Evaluate a script possibly asynchronously, if the script contains `async/await` blocks.
  */
-export async function asyncEvalInContext(script: string, variables: Record<string, any>): Promise<any> {
+export async function asyncEvalInContext(script: string, variables: Record<string, unknown>): Promise<unknown> {
     if (script.includes("await")) {
-        return evalInContext("return (async () => { " + script + " })()", variables) as Promise<any>;
+        return evalInContext("return (async () => { " + script + " })()", variables) as Promise<unknown>;
     } else {
         return Promise.resolve(evalInContext(script, variables));
     }

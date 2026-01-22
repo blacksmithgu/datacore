@@ -9,6 +9,7 @@ import {
     asInlineField,
     extractFullLineField,
     extractInlineFields,
+    extractSpecialTaskFields,
     jsonInlineField,
 } from "./inline-field";
 import {
@@ -134,7 +135,10 @@ export function markdownSourceImport(
                 // This is an indented-style codeblock.
                 blocks.set(start, new CodeblockData(start, end, blockOrdinal++, [], "indent", start, end, block.id));
             } else {
-                const languages = match.length > 1 && match[1] ? match[1].split(",") : [];
+                // Pull out all languages in the block, stripping whitespace and empty blocks.
+                const rawLanguages = match.length > 1 && match[1] ? match[1].split(",") : [];
+                const languages = rawLanguages.map((lang) => lang.trim()).filter((lang) => lang.length > 0);
+
                 blocks.set(
                     start,
                     new CodeblockData(start, end, blockOrdinal++, languages, "fenced", start + 1, end - 1, block.id)
@@ -184,7 +188,7 @@ export function markdownSourceImport(
     // In the second list pass, actually construct the list heirarchy.
     for (const item of listItems.values()) {
         if (item.parentLine < 0) {
-            const listBlock = blocks.get(-item.parentLine);
+            const listBlock = blocks.getPairOrNextHigher(-item.parentLine - 1)?.[1];
             if (!listBlock || !(listBlock.type === "list")) continue;
 
             (listBlock as ListBlockData).items.push(item);
@@ -221,7 +225,7 @@ export function markdownSourceImport(
     ///////////
 
     for (let linkdef of metadata.links ?? []) {
-        const link = Link.infer(linkdef.link);
+        const link = Link.infer(linkdef.link, false, linkdef.displayText);
         const line = linkdef.position.start.line;
         markdownMetadata.link(link);
 
@@ -243,6 +247,7 @@ export function markdownSourceImport(
     // Inline Fields //
     ///////////////////
 
+    // All generic inline fields.
     for (const field of iterateInlineFields(lines)) {
         const line = field.position.line;
         markdownMetadata.inlineField(field);
@@ -251,6 +256,16 @@ export function markdownSourceImport(
         lookup(line, blocks)?.metadata.inlineField(field);
         lookup(line, listItems)?.metadata.inlineField(field);
     }
+
+    for (const item of listItems.values()) {
+        for (let lineno = item.start; lineno < item.end; lineno++) {
+            const taskInlineFields = extractSpecialTaskFields(lines[lineno]);
+            for (const field of taskInlineFields) {
+                item.metadata.inlineField(asInlineField(field, lineno));
+            }
+        }
+    }
+
     sectionArray.push(...sections.values());
     return {
         lines,
@@ -295,7 +310,7 @@ export function* iterateInlineFields(content: string[]): Generator<InlineField> 
 }
 
 /** Top-level function which maps a YAML block - including frontmatter - into frontmatter entries. */
-export function parseFrontmatterBlock(block: Record<string, any>): Record<string, JsonFrontmatterEntry> {
+export function parseFrontmatterBlock(block: Record<string, string>): Record<string, JsonFrontmatterEntry> {
     const result: Record<string, JsonFrontmatterEntry> = {};
     for (const key of Object.keys(block)) {
         const value = block[key];
@@ -329,7 +344,7 @@ export function extractTags(metadata: FrontMatterCache): string[] {
 }
 
 /** Split a frontmatter list into separate elements; handles actual lists, comma separated lists, and single elements. */
-export function splitFrontmatterTagOrAlias(data: any, on: RegExp): string[] {
+export function splitFrontmatterTagOrAlias(data: unknown, on: RegExp): string[] {
     if (data == null || data == undefined) return [];
     if (Array.isArray(data)) {
         return data

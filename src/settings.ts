@@ -1,4 +1,4 @@
-/** All datacore settings. */
+/** @internal All datacore settings. */
 export interface Settings {
     /** The number of threads the importer will use for importing. */
     importerNumThreads: number;

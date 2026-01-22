@@ -43,9 +43,9 @@ export interface JsonMarkdownPage {
     $tags: string[];
     /** All links in the file. */
     $links: JsonLink[];
-    /** Frontmatter values in the file, if present. Maps lower case frontmatter key -> entry. */
+    /** Frontmatter values in the file, if present. Maps lower case frontmatter key to entry. */
     $frontmatter?: Record<string, JsonFrontmatterEntry>;
-    /** Map of all distinct inline fields in the document. Maps lower case key name -> full metadata. */
+    /** Map of all distinct inline fields in the document. Maps lower case key name to full metadata. */
     $infields: Record<string, JsonInlineField>;
 
     /**
@@ -71,7 +71,7 @@ export interface JsonMarkdownSection {
     $links: JsonLink[];
     /** All of the markdown blocks in this section. */
     $blocks: JsonMarkdownBlock[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, JsonInlineField>;
 }
 
@@ -84,7 +84,7 @@ export interface JsonMarkdownBlock {
     $tags: string[];
     /** All links in the file. */
     $links: JsonLink[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, JsonInlineField>;
     /** If present, the distinct block ID for this block. */
     $blockId?: string;
@@ -126,7 +126,7 @@ export interface JsonMarkdownListItem {
     $type: string;
     /** Exact tags on this list item. */
     $tags: string[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, JsonInlineField>;
     /** All links in the file. */
     $links: JsonLink[];

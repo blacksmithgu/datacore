@@ -2,11 +2,12 @@ import { Datacore } from "index/datacore";
 import { PropsWithChildren, useEffect, useState } from "preact/compat";
 import { useIndexUpdates } from "./hooks";
 import { Literal } from "expression/literal";
-import { VNode, createElement, isValidElement } from "preact";
+import { FunctionComponent, JSX, VNode, createElement, isValidElement } from "preact";
 import { ErrorMessage, Lit } from "./markdown";
 
 import "./errors.css";
 
+/** Simple view which shows datacore's current loading progress when it is still indexing on startup. */
 function LoadingProgress({ datacore }: { datacore: Datacore }) {
     useIndexUpdates(datacore, { debounce: 250 });
 
@@ -46,7 +47,7 @@ export function LoadingBoundary({ children, datacore }: PropsWithChildren<{ data
 }
 
 /**
- * Executes a vanilla javasript function lazily one time. Mainly useful to only run a script
+ * Executes a vanilla javascript function lazily one time. Mainly useful to only run a script
  * once the parent loading boundary is actually ready.
  */
 export function ScriptContainer({
@@ -63,10 +64,16 @@ export function ScriptContainer({
         setElement(undefined);
         setError(undefined);
 
-        executor()
-            .then((result) => setElement(makeRenderableElement(result, sourcePath)))
-            .catch((error) => setError(error));
-    }, [executor]);
+        // TODO: Avoid multiple concurrent executions of the same script.
+        (async () => {
+            try {
+                const result = await executor();
+                setElement(makeRenderableElement(result, sourcePath));
+            } catch (error) {
+                setError(error instanceof Error ? error : new Error(String(error)));
+            }
+        })();
+    }, [executor, sourcePath]);
 
     // Propogate error upwards.
     if (error) {
@@ -77,18 +84,18 @@ export function ScriptContainer({
 }
 
 /** Make a renderable element from the returned object; if this transformation is not possible, throw an exception. */
-export function makeRenderableElement(object: any, sourcePath: string): JSX.Element {
+export function makeRenderableElement(object: unknown, sourcePath: string): JSX.Element {
     if (typeof object === "function") {
-        return createElement(object, {});
+        return createElement(object as FunctionComponent<unknown>, {});
     } else if (Array.isArray(object)) {
         return createElement(
             "div",
             {},
-            (object as any[]).map((x) => makeRenderableElement(x, sourcePath))
+            (object as unknown[]).map((x) => makeRenderableElement(x, sourcePath))
         );
     } else if (isValidElement(object)) {
         return object;
     } else {
-        return <Lit value={object} sourcePath={sourcePath} />;
+        return <Lit value={object as Literal | undefined} sourcePath={sourcePath} />;
     }
 }

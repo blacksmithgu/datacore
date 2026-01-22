@@ -22,15 +22,15 @@ export class Datacore extends Component {
     /** Datacore events, mainly used to update downstream views. This object is shadowed by the Datacore object itself. */
     events: Events;
 
-    /** In-memory index over all stored metadata. */
+    /** @internal In-memory index over all stored metadata. */
     datastore: Datastore;
-    /** Asynchronous multi-threaded file importer with throttling. */
+    /** @internal Asynchronous multi-threaded file importer with throttling. */
     importer: FileImporter;
-    /** Queue of asynchronous read requests; ensures we limit the maximum number of concurrent file loads. */
+    /** @internal Queue of asynchronous read requests; ensures we limit the maximum number of concurrent file loads. */
     reads: EmbedQueue;
-    /** Local-storage backed cache of metadata objects. */
+    /** @internal Local-storage backed cache of metadata objects. */
     persister: LocalStorageCache;
-    /** Only set when datacore is in the midst of initialization; tracks current progress. */
+    /** @internal Only set when datacore is in the midst of initialization; tracks current progress. */
     initializer?: DatacoreInitializer;
     /** If true, datacore is fully hydrated and all files have been indexed. */
     initialized: boolean;
@@ -99,8 +99,10 @@ export class Datacore extends Component {
         // File creation does cause a metadata change, but deletes do not. Clear the caches for this.
         this.registerEvent(
             this.vault.on("delete", (file) => {
-                if (file instanceof TFile) {
-                    this.datastore.delete(file.path);
+                if (!(file instanceof TFile)) return;
+
+                if (this.datastore.delete(file.path)) {
+                    this.trigger("update", this.revision);
                 }
             })
         );
@@ -108,38 +110,40 @@ export class Datacore extends Component {
         this.index();
     }
 
-    /** Starts the background initializer. */
-    index() {
-        // Asynchronously initialize actual content in the background using a lifecycle-respecting object.
-        const init = (this.initializer = new DatacoreInitializer(this));
-        init.finished().then((stats) => {
-            this.initialized = true;
-            this.initializer = undefined;
-            this.removeChild(init);
+    /** Clears all current state and caches and reindexes the entire vault from scratch. */
+    async reindex() {
+        this.initialized = false;
+        this.datastore.clear();
 
-            const durationSecs = (stats.durationMs / 1000.0).toFixed(3);
-            console.log(
-                `Datacore: Imported all files in the vault in ${durationSecs}s ` +
-                    `(${stats.imported} imported, ${stats.cached} cached, ${stats.skipped} skipped).`
-            );
+        await this.persister.recreate();
 
-            this.datastore.touch();
-            this.trigger("update", this.revision);
-            this.trigger("initialized");
-
-            // Clean up any documents which no longer exist in the vault.
-            // TODO: I think this may race with other concurrent operations, so
-            // this may need to happen at the start of init and not at the end.
-            const currentFiles = this.vault.getFiles().map((file) => file.path);
-            this.persister
-                .synchronize(currentFiles)
-                .then((cleared) => console.log(`Datacore: dropped ${cleared.size} out-of-date file metadata blocks.`));
-        });
-
-        this.addChild(init);
+        await this.index();
     }
 
-    private rename(file: TAbstractFile, oldPath: string) {
+    /** Indexes all documents in the vault. Wait on this if you want to wait for the whole index to be ready. */
+    async index() {
+        // Asynchronously initialize actual content in the background using a lifecycle-respecting object.
+        const init = (this.initializer = new DatacoreInitializer(this));
+        this.addChild(init);
+
+        await init.finished();
+
+        this.initialized = true;
+        this.initializer = undefined;
+        this.removeChild(init);
+
+        this.datastore.touch();
+        this.trigger("update", this.revision);
+        this.trigger("initialized");
+
+        // Clean up any documents which no longer exist in the vault.
+        // TODO: I think this may race with other concurrent operations, so
+        // this may need to happen at the start of init and not at the end.
+        const currentFiles = this.vault.getFiles().map((file) => file.path);
+        this.persister.synchronize(currentFiles);
+    }
+
+    private async rename(file: TAbstractFile, oldPath: string) {
         if (!(file instanceof TFile)) {
             return;
         }
@@ -148,10 +152,13 @@ export class Datacore extends Component {
         // This is less optimal than what can probably be done, but paths are used in a bunch of places
         // (for sections, tasks, etc to refer to their parent file) and it requires some finesse to fix.
         this.datastore.delete(oldPath);
-        this.reload(file);
+        await this.reload(file);
+
+        this.trigger("rename", file.path, oldPath);
 
         // TODO: For correctness, probably have to either fix links in all linked files OR
-        // just stop normalizing links in the store.
+        // just stop normalizing links in the store. We can traverse the links index to do so
+        // but it is fairly painful.
     }
 
     /**
@@ -180,7 +187,7 @@ export class Datacore extends Component {
         const result = await this.importer.import<ImportResult>(file);
 
         if (result.type === "error") {
-            throw new Error(`Failed to import file '${file.name}: ${result.$error}`);
+            throw new Error(`Failed to import file '${file.name}': ${result.$error}`);
         } else if (result.type === "markdown") {
             // Parse the file and normalize metadata from it.
             const parsed = MarkdownPage.from(result.result, (link) => {
@@ -204,15 +211,22 @@ export class Datacore extends Component {
                 if (rpath) return link.withPath(rpath.path);
                 else return link;
             });
+
+            // Store it recursively into the datastore for querying.
             this.storeCanvas(parsed);
+
+            // Write it to the file cache for faster loads in the future.
             this.persister.storeFile(parsed.$path, parsed.json());
+
+            // And finally trigger an update.
             this.trigger("update", this.revision);
             return parsed;
         }
 
-        throw new Error("Encountered unrecognized import result type: " + (result as any).type);
+        throw new Error("Encountered unrecognized import result type: " + (result as { type: unknown }).type);
     }
 
+    /** Store a canvas document. */
     public storeCanvas(data: Canvas) {
         this.datastore.store(data, (object, store) => {
             store(object.$cards, (card, store) => {
@@ -249,18 +263,23 @@ export class Datacore extends Component {
         });
     }
 
-    // Event propogation.
+    ///////////////////////
+    // Event propogation //
+    ///////////////////////
 
     /** Called whenever the index updates to a new revision. This is the broadest possible datacore event. */
-    public on(evt: "update", callback: (revision: number) => any, context?: any): EventRef;
-    public on(evt: "initialized", callback: () => any, context?: any): EventRef;
+    public on(evt: "update", callback: (revision: number) => void, context?: unknown): EventRef;
+    /** Called whenever datacore records a file rename and has finished reindexing the rename. */
+    public on(evt: "rename", callback: (newPath: string, oldPath: string) => void, context?: unknown): EventRef;
+    /** Called when datacore has initialized and is querable. */
+    public on(evt: "initialized", callback: () => void, context?: unknown): EventRef;
 
-    on(evt: string, callback: (...data: any) => any, context?: any): EventRef {
-        return this.events.on(evt, callback, context);
+    on<T extends Function>(evt: string, callback: T, context?: unknown): EventRef {
+        return this.events.on(evt, callback as unknown as (...args: unknown[]) => unknown, context);
     }
 
     /** Unsubscribe from an event using the event and original callback. */
-    off(evt: string, callback: (...data: any) => any) {
+    off(evt: string, callback: (...data: unknown[]) => void) {
         this.events.off(evt, callback);
     }
 
@@ -271,11 +290,13 @@ export class Datacore extends Component {
 
     /** Trigger an update event. */
     private trigger(evt: "update", revision: number): void;
+    /** Trigger a rename event. */
+    private trigger(evt: "rename", newPath: string, oldPath: string): void;
     /** Trigger an initialization event. */
     private trigger(evt: "initialized"): void;
 
     /** Trigger an event. */
-    private trigger(evt: string, ...args: any[]): void {
+    private trigger(evt: string, ...args: unknown[]): void {
         this.events.trigger(evt, ...args);
     }
 }
@@ -355,9 +376,16 @@ export class DatacoreInitializer extends Component {
         const next = this.queue.pop();
         if (next) {
             this.current.push(next);
-            this.init(next)
-                .then((result) => this.handleResult(next, result))
-                .catch((result) => this.handleResult(next, result));
+
+            // Run asynchronously to allow for concurrency.
+            (async () => {
+                try {
+                    const result = await this.init(next);
+                    this.handleResult(next, result);
+                } catch (error) {
+                    this.handleResult(next, { status: "skipped" });
+                }
+            })();
 
             this.runNext();
         } else if (!next && this.current.length == 0) {

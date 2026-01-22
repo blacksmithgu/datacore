@@ -1,6 +1,11 @@
 import { PRIMITIVES } from "expression/parser";
 import { Link } from "expression/link";
-import { extractInlineFields, setEmojiShorthandCompletionField, setInlineField } from "index/import/inline-field";
+import {
+    extractInlineFields,
+    extractSpecialTaskFields,
+    setEmojiShorthandCompletionField,
+    setInlineField,
+} from "index/import/inline-field";
 
 // <-- Inline field weird edge cases -->
 
@@ -121,30 +126,30 @@ describe("Inline Inline With HTML", () => {
 
 describe("Inline task emoji shorthands", () => {
     test("Due emoji shorthand", () => {
-        let result = extractInlineFields("- [ ] testTask 🗓️2022-07-14", true);
+        let result = extractSpecialTaskFields("- [ ] testTask 🗓️2022-07-14");
         expect(result[0].key).toEqual("due");
         expect(result[0].value).toEqual("2022-07-14");
 
         // This is a different calendar emoji!
-        result = extractInlineFields("- [ ] testTask 🗓2022-07-14", true);
+        result = extractSpecialTaskFields("- [ ] testTask 🗓2022-07-14");
         expect(result[0].key).toEqual("due");
         expect(result[0].value).toEqual("2022-07-14");
     });
 
     test("Created emoji shorthand", () => {
-        let result = extractInlineFields(" - [ ] testTask \u{2795}2022-07-25", true);
+        let result = extractSpecialTaskFields(" - [ ] testTask \u{2795}2022-07-25");
         expect(result[0].key).toEqual("created");
         expect(result[0].value).toEqual("2022-07-25");
     });
 
     test("Start date emoji shorthand", () => {
-        let result = extractInlineFields(" - [ ] testTask 🛫2022-07-21", true);
+        let result = extractSpecialTaskFields(" - [ ] testTask 🛫2022-07-21");
         expect(result[0].key).toEqual("start");
         expect(result[0].value).toEqual("2022-07-21");
     });
 
     test("Scheduled date emoji shorthand", () => {
-        let result = extractInlineFields(" - [ ] testTask ⏳2022-07-24", true);
+        let result = extractSpecialTaskFields(" - [ ] testTask ⏳2022-07-24");
         expect(result[0].key).toEqual("scheduled");
         expect(result[0].value).toEqual("2022-07-24");
     });
@@ -178,12 +183,12 @@ describe("Set Inline", () => {
         /* Completion date added */
         result = setEmojiShorthandCompletionField(input, "2022-07-26");
         expect(result).toEqual(input + " ✅ 2022-07-26");
-        const extracted = extractInlineFields(result, true);
+        const extracted = extractSpecialTaskFields(result);
         expect(extracted[0].key).toEqual("completion");
         expect(extracted[0].value).toEqual("2022-07-26");
 
         /* Remove the completion field */
-        result = setEmojiShorthandCompletionField(result);
+        result = setEmojiShorthandCompletionField(result, undefined);
         expect(result).toEqual(input);
         const input2 = "- [x] a completed task ✅ 2022-07-26 foo bar";
         result = setEmojiShorthandCompletionField(input2);

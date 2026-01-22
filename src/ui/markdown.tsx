@@ -22,8 +22,8 @@ export const DATACORE_CONTEXT = createContext<Datacore>(undefined!);
 export const SETTINGS_CONTEXT = createContext<Settings>(undefined!);
 export const CURRENT_FILE_CONTEXT = createContext<string>("");
 
-/** More compact provider for all of the datacore react contexts.
- *
+/**
+ * More compact provider for all of the datacore react contexts.
  * @hidden
  */
 export function DatacoreContextProvider({
@@ -49,10 +49,8 @@ export function DatacoreContextProvider({
     );
 }
 
-/**
- * @hidden
- */
-export function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | string; sourcePath?: string }) {
+/** Renders an obsidian-looking link about 10x faster than using the markdown renderer. */
+function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | string; sourcePath?: string }) {
     const workspace = useContext(APP_CONTEXT)?.workspace;
     const currentPath = useContext(CURRENT_FILE_CONTEXT);
     const sourcePath = maybeSourcePath ?? currentPath ?? "";
@@ -82,12 +80,10 @@ export function RawLink({ link, sourcePath: maybeSourcePath }: { link: Link | st
     );
 }
 
-/**
- * Copies how an Obsidian link is rendered but is about an order of magnitude faster to render than via markdown rendering. */
+/** Copies how an Obsidian link is rendered but is about an order of magnitude faster to render than via markdown rendering. */
 export const ObsidianLink = memo(RawLink);
 
-/**@hidden */
-export function RawMarkdown({
+function RawMarkdown({
     content,
     sourcePath: maybeSourcePath,
     inline = true,
@@ -100,7 +96,7 @@ export function RawMarkdown({
     inline?: boolean;
     style?: CSSProperties;
     cls?: string;
-    onClick?: (event: MouseEvent) => any;
+    onClick?: (event: MouseEvent) => void;
 }) {
     const container = useRef<HTMLElement | null>(null);
     const component = useContext(COMPONENT_CONTEXT);
@@ -112,16 +108,23 @@ export function RawMarkdown({
     useEffect(() => {
         if (!container.current) return;
 
-        container.current.innerHTML = "";
-        MarkdownRenderer.render(app, content, container.current, sourcePath, component).then(() => {
-            if (!container.current || !inline) return;
+        container.current.replaceChildren(...[]);
+
+        (async () => {
+            if (!container.current) return;
+            await MarkdownRenderer.render(app, content, container.current, sourcePath, component);
+
+            // Have to check twice since the container might disappear during the async call.
+            if (!container.current) return;
 
             // Unwrap any created paragraph elements if we are inline.
-            let paragraph = container.current.querySelector("p");
-            while (paragraph) {
-                let children = paragraph.childNodes;
-                paragraph.replaceWith(...Array.from(children));
-                paragraph = container.current.querySelector("p");
+            if (inline) {
+                let paragraph = container.current.querySelector("p");
+                while (paragraph) {
+                    let children = paragraph.childNodes;
+                    paragraph.replaceWith(...Array.from(children));
+                    paragraph = container.current.querySelector("p");
+                }
             }
 
             // have embeds actually load instead of displaying as plain text.
@@ -141,20 +144,17 @@ export function RawMarkdown({
                 embed.addClass("is-loaded");
                 embed = container.current.querySelector("span.internal-embed:not(.is-loaded)");
             }
-        });
+        })();
     }, [content, sourcePath, inline, container.current]);
 
     return <span ref={container} style={style} className={cls} onClick={onClick}></span>;
 }
 
-/**
- * Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
+/** @internal Hacky preact component which wraps Obsidian's markdown renderer into a neat component. */
 export const Markdown = memo(RawMarkdown);
 
-/**
- * @hidden
- *  Intelligently render an arbitrary literal value. */
-export function RawLit({
+/** Intelligently render an arbitrary literal value. */
+function RawLit({
     value,
     sourcePath: maybeSourcePath,
     inline = false,
@@ -271,14 +271,10 @@ export function RawLit({
     return <Fragment>&lt;Unrecognized: {JSON.stringify(value)}&gt;</Fragment>;
 }
 
-/**
- * @hidden
- * Intelligently render an arbitrary literal value. */
+/** @internal Intelligently render an arbitrary literal value. */
 export const Lit = memo(RawLit);
 
-/**
- * @hidden
- * Render a pretty centered error message in a box. */
+/** Render a pretty centered error message in a box. */
 export function ErrorMessage({
     title,
     message,
@@ -304,10 +300,7 @@ export function ErrorMessage({
     );
 }
 
-/** A simple error boundary which renders a message on failure.
- *
- * @hidden
- */
+/** simple error boundary which renders a message on failure. */
 export function SimpleErrorBoundary({
     title,
     message,

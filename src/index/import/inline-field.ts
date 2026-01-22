@@ -201,7 +201,7 @@ export function parseInlineValue(value: string): Literal {
  * - Look for any wrappers ('[' and '(') in the line, trying to parse whatever comes after it as an inline key::.
  * - If successful, scan until you find a matching end bracket, and parse whatever remains as an inline value.
  */
-export function extractInlineFields(line: string, includeTaskFields: boolean = false): LocalInlineField[] {
+export function extractInlineFields(line: string): LocalInlineField[] {
     let fields: LocalInlineField[] = [];
     for (let wrapper of Object.keys(INLINE_FIELD_WRAPPERS)) {
         let foundIndex = line.indexOf(wrapper);
@@ -216,8 +216,6 @@ export function extractInlineFields(line: string, includeTaskFields: boolean = f
             foundIndex = line.indexOf(wrapper, parsedField.end);
         }
     }
-
-    if (includeTaskFields) fields = fields.concat(extractSpecialTaskFields(line));
 
     fields.sort((a, b) => a.start - b.start);
 
@@ -267,6 +265,7 @@ export const DONE_DATE_REGEX = /\u{2705}\s*(\d{4}-\d{2}-\d{2})/u;
 export const SCHEDULED_DATE_REGEX = /[\u{23F3}\u{231B}]\s*(\d{4}-\d{2}-\d{2})/u;
 export const START_DATE_REGEX = /\u{1F6EB}\s*(\d{4}-\d{2}-\d{2})/u;
 
+/** All supported emoji metadata fields for a task. */
 export const EMOJI_REGEXES = [
     { regex: CREATED_DATE_REGEX, key: "created" },
     { regex: START_DATE_REGEX, key: "start" },
@@ -276,7 +275,7 @@ export const EMOJI_REGEXES = [
 ];
 
 /** Parse special completed/due/done task fields which are marked via emoji. */
-function extractSpecialTaskFields(line: string): LocalInlineField[] {
+export function extractSpecialTaskFields(line: string): LocalInlineField[] {
     let results: LocalInlineField[] = [];
 
     for (let { regex, key } of EMOJI_REGEXES) {
@@ -319,8 +318,9 @@ export function setInlineField(source: string, key: string, value?: string): str
     return source;
 }
 
+/** Updates a task item line with the 'completion' date emoji on being checked. */
 export function setEmojiShorthandCompletionField(source: string, value?: string): string {
-    const existing = extractInlineFields(source, true);
+    const existing = extractSpecialTaskFields(source);
     const existingKeys = existing.filter((f) => f.key === "completion" && f.wrapping === "emoji-shorthand");
 
     // Don't do anything if there are duplicate keys OR the key already doesn't exist.

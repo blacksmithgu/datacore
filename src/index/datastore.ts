@@ -1,4 +1,4 @@
-import { Link, Literals } from "expression/literal";
+import { DataObject, Link, Literal, Literals } from "expression/literal";
 import { Filter, Filters } from "expression/filters";
 import { FolderIndex } from "index/storage/folder";
 import { InvertedIndex } from "index/storage/inverted";
@@ -15,7 +15,10 @@ import { Result } from "api/result";
 import { Evaluator } from "expression/evaluator";
 import { Settings } from "settings";
 
-/** Central, index storage for datacore values. */
+/**
+ * Central, index storage for datacore values.
+ * @internal
+ */
 export class Datastore {
     /** The current store revision. */
     public revision: number;
@@ -332,25 +335,32 @@ export class Datastore {
         });
     }
 
-    /** Internal search which yields a filter of results. */
-    private _search(query: IndexQuery, settings?: SearchSettings): Result<Filter<string>, string> {
-        const sourcePath = settings?.sourcePath;
-        const file = sourcePath ? this.objects.get(sourcePath) : undefined;
-
-        const evaluator = new Evaluator(
+    /** Create an expression evaluator backed by this datastore. */
+    public evaluator(sourcePath?: string, globals?: Record<string, Literal>): Evaluator {
+        return new Evaluator(
             {
                 exists: (path: string | Link) =>
                     this.resolveLink(typeof path == "string" ? Link.file(path) : path, sourcePath) != null,
                 resolve: (path: string) =>
-                    this.resolveLink(typeof path == "string" ? Link.file(path) : path, sourcePath) ?? null,
+                    (this.resolveLink(typeof path == "string" ? Link.file(path) : path, sourcePath) as
+                        | DataObject
+                        | undefined) ?? null,
                 normalize: (path: string) =>
                     this.metadataCache.getFirstLinkpathDest(path, sourcePath ?? "")?.path ?? path,
             },
-            this.settings
+            this.settings,
+            globals
         );
+    }
+
+    /** Internal search which yields a filter of results. */
+    private _search(query: IndexQuery, settings?: SearchSettings): Result<Filter<string>, string> {
+        const sourcePath = settings?.sourcePath;
+        const evaluator = this.evaluator(sourcePath);
 
         // Set `this` on the file if needed.
-        if (file) evaluator.set("this", file);
+        const file = sourcePath ? this.objects.get(sourcePath) : undefined;
+        if (file) evaluator.set("this", file as unknown as DataObject);
 
         const resolver: IndexResolver<string> = {
             universe: this.ids,
@@ -528,7 +538,7 @@ export class Datastore {
             const object = this.objects.get(objectId);
             if (!object || !object.$types.contains(FIELDBEARING_TYPE)) continue;
 
-            const field = (object as any as Fieldbearing).field(normkey);
+            const field = (object as unknown as Fieldbearing).field(normkey);
             if (!field) continue;
 
             if (slow(field)) matches.add(objectId);
@@ -562,7 +572,7 @@ export class Datastore {
                 if (visited.has(neighbor)) continue;
 
                 visited.add(neighbor);
-                if (dist < distance) queue.push(neighbor, dist + 1);
+                if (dist + 1 < distance) queue.push(neighbor, dist + 1);
             }
         }
 
@@ -641,9 +651,15 @@ export interface SearchSettings {
 }
 
 /** Type guard which checks if object[key] exists and is an iterable. */
-function iterableExists<T extends Record<string, any>, K extends string>(
+function iterableExists<T extends object, K extends string>(
     object: T,
     key: K
-): object is T & Record<K, Iterable<any>> {
-    return key in object && object[key] !== undefined && Symbol.iterator in object[key];
+): object is T & Record<K, Iterable<unknown>> {
+    if (!(key in object)) return false;
+
+    const castObject = object as Record<K, unknown>;
+    if (castObject[key] == null) return false;
+
+    const value = castObject[key];
+    return (Array.isArray(value) || typeof value === "object") && Symbol.iterator in value;
 }

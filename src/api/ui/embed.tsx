@@ -47,7 +47,7 @@ export function Embed({
         if (!container.current) return;
         if (!linkedFile) return;
 
-        container.current.innerHTML = "";
+        container.current.replaceChildren(...[]);
 
         const creator = app.embedRegistry.getEmbedCreator(linkedFile);
         let embedComponent = new creator(
@@ -164,14 +164,14 @@ export function useLineSpan(path: string, start: number, end: number): LineSpanC
         }
 
         // Try to load the file asynchronously.
-        datacore
-            .read(file)
-            .then((content) => {
+        (async () => {
+            try {
+                const content = await datacore.read(file);
                 update({ type: "loaded", content: lineRange(content, start, end) });
-            })
-            .catch((error) => {
-                update({ type: "error", message: error.message });
-            });
+            } catch (error) {
+                update({ type: "error", message: error instanceof Error ? error.message : String(error) });
+            }
+        })();
     }, [path, start, end]);
 
     return state;

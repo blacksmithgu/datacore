@@ -32,6 +32,7 @@ simple-field        (refer to fields with spaces/punctuation in them like "Simpl
 a.b                 (if a is an object, retrieve field named 'b')
 a[expr]             (if a is an object or array, retrieve field with name specified by expression 'expr')
 f(a, b, ...)        (call a function called `f` on arguments a, b, ...)
+a.f(b, c, ...)      (postfix function syntax; equivalent to f(a, b, c, ...))
 
 // Arithmetic
 a + b               (addition)

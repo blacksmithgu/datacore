@@ -31,8 +31,9 @@ import {
 } from "./json/markdown";
 import { mapObjectValues } from "utils/data";
 import { JsonConversion } from "./json/common";
+import { TypedValuebearing } from "./typed-field";
 
-/** A markdown file in the vault; the source of most metadata. */
+/** @public A markdown file in the vault; the source of most metadata. */
 export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fieldbearing {
     /** All of the types that a markdown file is. */
     static TYPES = [FILE_TYPE, "markdown", "page", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
@@ -50,9 +51,9 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
         return this.$path;
     }
 
-    /** Frontmatter values in the file, if present. Maps lower case frontmatter key -> entry. */
+    /** Frontmatter values in the file, if present. Maps lower case frontmatter key to entry. */
     $frontmatter?: Record<string, FrontmatterEntry>;
-    /** Map of all distinct inline fields in the document. Maps lower case key name -> full metadata. */
+    /** Map of all distinct inline fields in the document. Maps lower case key name to full metadata. */
     $infields: Record<string, InlineField>;
 
     /** The path this file exists at. */
@@ -77,7 +78,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
      */
     $sections: MarkdownSection[] = [];
 
-    /** Create a markdown file from the given raw values. */
+    /** @internal Create a markdown file from the given raw values. */
     static from(raw: JsonMarkdownPage, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownPage {
         const sections = raw.$sections.map((sect) => MarkdownSection.from(sect, raw.$path, normalizer));
 
@@ -132,7 +133,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
         return this.field(key)?.value;
     }
 
-    /** Convert this page into it's partial representation for saving. */
+    /** @internal Convert this page into it's partial representation for saving. */
     public json(): JsonMarkdownPage {
         return {
             $path: this.$path,
@@ -156,6 +157,14 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
     );
 }
 
+/** @public */
+export namespace MarkdownPage {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<MarkdownPage, keyof TypedValuebearing<Fields>>,
+            TypedValuebearing<Fields> {}
+}
+
+/** @public A single markdown section inside of a page. */
 export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbearing, Fieldbearing {
     /** All of the types that a markdown section is. */
     static TYPES = ["markdown", "section", TAGGABLE_TYPE, LINKABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
@@ -180,10 +189,10 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     $links: Link[];
     /** All of the markdown blocks in this section. */
     $blocks: MarkdownBlock[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
 
-    /** Convert raw markdown section data to the appropriate class. */
+    /** @internal Convert raw markdown section data to the appropriate class. */
     static from(raw: JsonMarkdownSection, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownSection {
         const blocks = raw.$blocks.map((block) => MarkdownBlock.from(block, file, normalizer));
         return new MarkdownSection({
@@ -233,6 +242,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownSection {
         return {
             $ordinal: this.$ordinal,
@@ -259,7 +269,14 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     }
 }
 
-/** Base class for all markdown blocks. */
+/** @public */
+export namespace MarkdownSection {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<MarkdownSection, keyof TypedValuebearing<Fields>>,
+            TypedValuebearing<Fields> {}
+}
+
+/** @public Base class for all markdown blocks. */
 export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbearing {
     static TYPES = ["markdown", "block", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
@@ -276,13 +293,14 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     $tags: string[];
     /** All links in the file. */
     $links: Link[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
     /** If present, the distinct block ID for this block. */
     $blockId?: string;
     /** The type of block - paragraph, list, and so on. */
     $type: string;
 
+    /** @internal */
     static from(object: JsonMarkdownBlock, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownBlock {
         if (object.$type === "list") {
             return MarkdownListBlock.from(object as JsonMarkdownListBlock, file, normalizer);
@@ -329,6 +347,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownBlock {
         return {
             $ordinal: this.$ordinal,
@@ -352,9 +371,16 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     }
 }
 
-/** Special block for markdown lists (of either plain list entries or tasks). */
+/** @public */
+export namespace MarkdownBlock {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<MarkdownBlock, keyof TypedValuebearing<Fields>>,
+            TypedValuebearing<Fields> {}
+}
+
+/** @public Special block for markdown lists (of either plain list entries or tasks). */
 export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbearing {
-    static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE];
+    static TYPES = ["markdown", "block", "block-list", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListBlock.TYPES;
     $typename: string = "List Block";
@@ -362,7 +388,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     /** The list items inside of this block. */
     $elements: MarkdownListItem[];
 
-    /** Create a list block from a serialized value. */
+    /** @internal Create a list block from a serialized value. */
     static from(
         object: JsonMarkdownListBlock,
         file: string,
@@ -384,6 +410,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
         });
     }
 
+    /** @internal */
     public json(): JsonMarkdownListBlock {
         return Object.assign(super.json(), {
             $elements: this.$elements.map((elem) => elem.json()),
@@ -395,7 +422,14 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
     }
 }
 
-/** A block containing markdown code. */
+/** @public */
+export namespace MarkdownListBlock {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<MarkdownListBlock, keyof TypedValuebearing<Fields>>,
+            TypedValuebearing<Fields> {}
+}
+
+/** @public A block containing markdown code. */
 export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
     static TYPES = ["markdown", "block", "codeblock", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
@@ -408,6 +442,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
         super(init);
     }
 
+    /** @internal */
     static from(
         object: JsonMarkdownCodeblock,
         file: string,
@@ -440,10 +475,12 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
         return MarkdownCodeblock.SUB_FIELD_DEF(this, key)?.[0];
     }
 
+    /** Fetch the value of a specific field. */
     public value(key: string): Literal | undefined {
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownCodeblock {
         return Object.assign(super.json(), {
             $languages: this.$languages,
@@ -461,7 +498,14 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
     );
 }
 
-/** A data-annotated YAML codeblock. */
+/** @public */
+export namespace MarkdownCodeblock {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<MarkdownCodeblock, keyof TypedValuebearing<Fields>>,
+            TypedValuebearing<Fields> {}
+}
+
+/** @public A data-annotated YAML codeblock. */
 export class MarkdownDatablock extends MarkdownBlock implements Indexable, Fieldbearing, Linkbearing {
     static TYPES = ["markdown", "block", "datablock", TAGGABLE_TYPE, LINKBEARING_TYPE, FIELDBEARING_TYPE];
 
@@ -472,6 +516,7 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
         super(init);
     }
 
+    /** @internal */
     static from(
         object: JsonMarkdownDatablock,
         file: string,
@@ -512,6 +557,7 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownDatablock {
         return Object.assign(super.json(), {
             $data: mapObjectValues(this.$data, jsonFrontmatterEntry),
@@ -528,12 +574,19 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
     );
 }
 
-/** A specific list item in a list. */
+/** @public */
+export namespace MarkdownDatablock {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<MarkdownDatablock, keyof TypedValuebearing<Fields>>,
+            TypedValuebearing<Fields> {}
+}
+
+/** @public A specific list item in a list. */
 export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Fieldbearing {
     static TYPES = ["markdown", "list-item", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
     $types: string[] = MarkdownListItem.TYPES;
-    $typename: string = "List Item";
+    $typename: string = "List item";
     $id: string;
     $file: string;
 
@@ -545,7 +598,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     $type: string;
     /** Exact tags on this list item. */
     $tags: string[];
-    /** Map of all distinct inline fields in the document, from key name -> metadata. */
+    /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
     /** All links in the file. */
     $links: Link[];
@@ -566,7 +619,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     /** The text contents of the list item. */
     $text?: string;
 
-    /** Create a list item from a serialized object. */
+    /** @internal Create a list item from a serialized object. */
     static from(
         object: JsonMarkdownListItem,
         file: string,
@@ -605,14 +658,18 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
         return this.$position.end - this.$position.start + 1;
     }
 
-    /** Cleaned text that is garaunteed to be non-null and has indenation and inline fields removed. */
+    /** Cleaned text that is guaranteed to be non-null and has indentation, inline fields, and id removed. */
     get $cleantext() {
         if (!this.$text) return "";
 
         return (
             this.$text
-                // Eliminate [key:: value] annotations.
-                .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)$/gm, "$1")
+                // Capture three groups:
+                // 1) all characters up until group 2 or 3 is encountered
+                // 2) zero or more inline fields
+                // 3) zero or one id,
+                // and replace it with just group 1
+                .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)*(\^.+){0,1}$/gm, "$1")
                 // Trim whitespace.
                 .trim()
         );
@@ -632,6 +689,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
         return this.field(key)?.value;
     }
 
+    /** @internal */
     public json(): JsonMarkdownListItem {
         return {
             $position: this.$position,
@@ -658,7 +716,14 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     }
 }
 
-/** A specific task inside of a markdown list. */
+/** @public */
+export namespace MarkdownListItem {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<MarkdownListItem, keyof TypedValuebearing<Fields>>,
+            TypedValuebearing<Fields> {}
+}
+
+/** @public A specific task inside of a markdown list. */
 export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Linkbearing, Taggable, Fieldbearing {
     static TYPES = ["markdown", "list-item", "task", LINKBEARING_TYPE, TAGGABLE_TYPE, FIELDBEARING_TYPE];
 
@@ -668,6 +733,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     /** The text inside of the task item. */
     $status: string;
 
+    /** @internal */
     public static from(object: JsonMarkdownTaskItem, file: string, normalizer: LinkNormalizer): MarkdownTaskItem {
         const elements = object.$elements.map((elem) => MarkdownListItem.from(elem, file, normalizer));
         return new MarkdownTaskItem({
@@ -691,6 +757,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
         super(init);
     }
 
+    /** @internal */
     public json(): JsonMarkdownListItem {
         return Object.assign(super.json(), {
             $status: this.$status,
@@ -703,7 +770,14 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
     }
 }
 
-/** An entry in the frontmatter; includes the raw value, parsed value, and raw key (before lower-casing). */
+/** @public */
+export namespace MarkdownTaskItem {
+    export interface Typed<Fields extends { [key in string]?: Literal }>
+        extends Omit<MarkdownTaskItem, keyof TypedValuebearing<Fields>>,
+            TypedValuebearing<Fields> {}
+}
+
+/** @public An entry in the frontmatter; includes the raw value, parsed value, and raw key (before lower-casing). */
 export interface FrontmatterEntry {
     /** The actual string in frontmatter with exact casing. */
     key: string;
@@ -713,9 +787,7 @@ export interface FrontmatterEntry {
     raw: string;
 }
 
-/** Convert a regular frontmatter entry into a JSON frontmatter entry.
- * @hidden
- */
+/** @internal Convert a regular frontmatter entry into a JSON frontmatter entry. */
 export function jsonFrontmatterEntry(raw: FrontmatterEntry): JsonFrontmatterEntry {
     return {
         key: raw.key,
@@ -724,9 +796,7 @@ export function jsonFrontmatterEntry(raw: FrontmatterEntry): JsonFrontmatterEntr
     };
 }
 
-/** Convert a json frontmatter entry to a regular frontmatter entry.
- * @hidden
- */
+/** @internal Convert a json frontmatter entry to a regular frontmatter entry. */
 export function valueFrontmatterEntry(raw: JsonFrontmatterEntry): FrontmatterEntry {
     return {
         key: raw.key,
@@ -735,23 +805,19 @@ export function valueFrontmatterEntry(raw: JsonFrontmatterEntry): FrontmatterEnt
     };
 }
 
-/** Normalize links deeply in the object.
- * @hidden
- */
-export function normalizeLinks<T extends Literal>(input: T, normalizer: LinkNormalizer): T {
-    return Literals.mapLeaves(input, (value) => {
+/** @internal Normalize links deeply in the object. */
+export function normalizeLinks<T>(input: T, normalizer: LinkNormalizer): T {
+    return Literals.mapLeaves(input as Literal, (value) => {
         if (Literals.isLink(value)) return normalizer(value);
         else return value;
     }) as T;
 }
 
-/** Recursively gather links from a literal object.
- * @hidden
- */
-export function gatherLinks(input: Literal): Link[] {
+/** @internal Recursively gather links from a literal object. */
+export function gatherLinks(input: unknown): Link[] {
     const result: Link[] = [];
 
-    Literals.mapLeaves(input, (value) => {
+    Literals.mapLeaves(input as Literal, (value) => {
         if (Literals.isLink(value)) result.push(value);
         return null;
     });
@@ -759,11 +825,9 @@ export function gatherLinks(input: Literal): Link[] {
     return result;
 }
 
-/** Gather tags from a datablock.
- * @hidden
- */
+/** @internal Gather tags from a datablock. */
 export function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
-    function recurse(input: any): string[] {
+    function recurse(input: unknown): string[] {
         if (Literals.isString(input)) return [input.startsWith("#") ? input : "#" + input];
         else if (Literals.isArray(input)) return input.flatMap(recurse);
         else return [];
@@ -776,6 +840,7 @@ export function gatherTags(data: Record<string, FrontmatterEntry>): string[] {
     return tags;
 }
 
-/** A link normalizer which takes in a raw link and produces a normalized link. */
+/** @internal A link normalizer which takes in a raw link and produces a normalized link. */
 export type LinkNormalizer = (link: Link) => Link;
+/** @internal A no-op link normalizer which does nothing. */
 export const NOOP_NORMALIZER: LinkNormalizer = (x) => x;

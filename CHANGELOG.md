@@ -1,3 +1,71 @@
+# 0.1.28
+
+- Fixes #134: Properly strip whitespace from codeblock languages to fix some issues with `dc.require`.
+
+
+---
+
+# 0.1.27
+
+- Bugfix release for reverting an accidental capitalization change in $typename for markdown lists.
+
+---
+
+# 0.1.26
+
+- Fixes non-inline Markdown blocks and removes the plaintext flickering.
+
+---
+
+# 0.1.25
+
+- Re-added support for emoji-based task metadata from the Tasks plugin.
+- Added a debug command, "Datacore: Reindex entire vault", to reload all files in the vault.
+
+---
+
+# 0.1.24
+
+- Add official datacore API typings at '@blacksmithgu/datacore'.
+
+---
+
+# 0.1.23
+
+- Datacore views now properly re-render and update paths when the file they are in is renamed.
+- Some incongruous APIs have been standardized.
+
+---
+
+# 0.1.22 (Beta)
+
+- Several bugfixes thanks to @GamerGirlAndCo.
+- Adds a new <dc.List/> view with full documentation.
+- Removes the unnecessary object count widget in the editor view.
+
+---
+
+# 0.1.21 (Beta)
+
+- Adds `dc.evaluate()` and `dc.tryEvaluate()` for evaluating the datacore expression language programmatically.
+- Adds postfix function calls to the datacore syntax. This allows you to chain functions:
+
+```js
+lower("YES") => "YES".lower()
+replace(lower("YES"), "e", a") => "YES".lower().replace("e", a")
+```
+
+Postfix syntax implicitly adds the callee object as the first argument.
+
+---
+
+# 0.1.20
+
+- Fix connected link searches - searching for `linksto([[File]])` will now correctly search around that file, for example.
+- Datacore now provides update events on file deletions; in practice, this means your views will update when files are deleted.
+
+---
+
 # 0.1.19 (Beta)
 
 Adds parsing for list item symbols ($symbol), and task text ($text). In general in datacore I am trying to avoid pulling actual text contents into the index, but the task usecase is sufficiently common that
