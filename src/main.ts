@@ -30,7 +30,7 @@ export default class DatacorePlugin extends Plugin {
                 }
             }
         }
-        this.app.functions = obsidianFreeFunctions;
+        window.obsidian = obsidianFreeFunctions;
 
         this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) ?? {});
         this.addSettingTab(new GeneralSettingsTab(this.app, this));
