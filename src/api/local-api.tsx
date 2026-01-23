@@ -29,6 +29,7 @@ import { Expression } from "expression/expression";
 import { Card } from "./ui/views/cards";
 import { ListView } from "./ui/views/list";
 import { Modal, Modals, SubmittableModal, useModalContext } from "./ui/views/modal";
+import * as obsidian from "obsidian";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -96,6 +97,9 @@ export class DatacoreLocalApi {
      * ```
      */
     public async require(path: string | Link): Promise<unknown> {
+        if (typeof path === "string" && path === "obsidian") {
+            return Result.success(obsidian);
+        }
         const result = await this.scriptCache.load(path, { dc: this });
         return result.orElseThrow();
     }
