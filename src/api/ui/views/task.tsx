@@ -5,7 +5,7 @@
 import { MarkdownListItem, MarkdownTaskItem } from "index/types/markdown";
 import { EditableListElement, ListViewProps } from "api/ui/views/list";
 import { useStableCallback } from "ui/hooks";
-import { Fragment } from "preact";
+import { Fragment, RefObject } from "preact";
 import { APP_CONTEXT, DATACORE_CONTEXT } from "ui/markdown";
 import { JSXInternal } from "preact/src/jsx";
 import { Dispatch, useContext, useMemo, useRef, useState } from "preact/hooks";
@@ -57,12 +57,19 @@ export function TaskList({
             <ul className="datacore contains-task-list">
                 {items?.map((item) =>
                     item instanceof MarkdownTaskItem ? (
-                        <Task key={item.$id} state={{ ...rest, additionalStates: states, rows: item.$elements }} item={item} />
+                        <Task
+                            key={item.$id}
+                            state={{ ...rest, additionalStates: states, rows: item.$elements }}
+                            item={item}
+                        />
                     ) : (
                         <li>
                             {listRenderer(item as MarkdownListItem | MarkdownTaskItem)}
                             <div className="datacore-list-item-fields">
-                                <ListItemFields displayedFields={rest.displayedFields} item={item as MarkdownListItem | MarkdownTaskItem} />
+                                <ListItemFields
+                                    displayedFields={rest.displayedFields}
+                                    item={item as MarkdownListItem | MarkdownTaskItem}
+                                />
                             </div>
                         </li>
                     )
@@ -113,14 +120,15 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
     }, []);
 
     const checked = useMemo(() => status !== " ", [item.$status, item, status]);
+    const updater = useListItemEditing(item, status);
     const eState: EditableState<string> = useMemo(() => {
         return {
-            updater: useListItemEditing(item, status),
+            updater,
             content: item.$cleantext,
             inline: false,
             isEditing: false,
         } as EditableState<string>;
-    }, [item.$cleantext, item.$text]);
+    }, [item.$cleantext, item.$text, updater]);
     const theElement = useMemo(
         () => <TextEditable sourcePath={item.$file} {...eState} />,
         [eState.content, item, props.rows]
@@ -152,7 +160,7 @@ export function Task({ item, state: props }: { item: MarkdownTaskItem; state: Ta
                 <div className="datacore-list-item-content">
                     {theElement}
                     <div className="datacore-list-item-fields">
-                        <ListItemFields displayedFields={props.displayedFields} item={item} />
+                        <ListItemFields completedRef={completedRef} displayedFields={props.displayedFields} item={item} />
                     </div>
                 </div>
             </div>
@@ -201,13 +209,12 @@ function CollapseIndicator({
 export function ListItemFields({
     displayedFields: displayedFieldsProp,
     item,
+    completedRef,
 }: {
     displayedFields?: TaskProps["displayedFields"];
     item: MarkdownTaskItem | MarkdownListItem;
+    completedRef?: RefObject<Dispatch<EditableAction<Literal>> | null>;
 }) {
-    const app = useContext(APP_CONTEXT);
-    const core = useContext(DATACORE_CONTEXT);
-    const { settings } = core;
     const displayedFields = useMemo(() => {
         if (displayedFieldsProp != undefined) return displayedFieldsProp;
         else {
@@ -224,71 +231,81 @@ export function ListItemFields({
     }, [displayedFieldsProp, item.$infields, item]);
     return (
         <>
-            {displayedFields.map((ifield) => {
-                ifield.key = ifield.key.toLocaleLowerCase();
-                let defVal = typeof ifield.defaultValue == "function" ? ifield.defaultValue() : ifield.defaultValue;
-                let defField: Field = {
-                    key: ifield.key,
-                    value: defVal,
-                    raw: Literals.toString(defVal),
-                };
-                const fieldValue = item.$infields[ifield?.key]?.value || defField.value!;
-                let [state2, dispatch] = useEditableDispatch<Literal>(() => ({
-                    content: fieldValue,
-                    isEditing: false,
-                    updater: useStableCallback(
-                        (val: Literal) => {
-                            const dateString = (v: Literal) =>
-                                v instanceof DateTime
-                                    ? v.toFormat(settings.defaultDateFormat)
-                                    : v != null
-                                    ? Literals.toString(v)
-                                    : undefined;
-
-                            let withFields = item.$text;
-                            if (withFields && item.$text) {
-                                if (item.$infields[ifield.key]) item.$infields[ifield.key].value = dateString(val)!;
-                                for (let field in item.$infields) {
-                                    withFields = setInlineField(
-                                        withFields,
-                                        field,
-                                        dateString(item.$infields[field]?.value)
-                                    );
-                                }
-                                withFields = setInlineField(item.$text, ifield.key, dateString(val));
-                                rewriteTask(
-                                    app.vault,
-                                    core,
-                                    item,
-                                    item instanceof MarkdownTaskItem ? item.$status : " ",
-                                    withFields
-                                );
-                            }
-                        },
-                        [item.$infields]
-                    ),
-                }));
-                if (ifield.key == settings.taskCompletionText) {
-                    //@ts-ignore huh?
-                    completedRef.current = dispatch;
-                }
-                state2 = editableReducer<Literal>(state2, { type: "content-changed", newValue: fieldValue });
-                return (
-                    <EditableListField
-                        props={state2}
-                        dispatch={dispatch}
-                        type={ifield.type || Literals.wrapValue(fieldValue)!.type}
-                        file={item.$file}
-                        field={item.$infields[ifield.key] || defField}
-                        config={ifield.config}
-                        parent={item}
-                        updater={state2.updater}
-                        value={fieldValue}
-                        renderAs={ifield.renderAs}
-                    />
-                );
-            })}
+            {displayedFields.map((ifield) => (
+                <ListItemField ifield={ifield} item={item} completedRef={completedRef} />
+            ))}
         </>
+    );
+}
+
+/**
+ * Renders a single field for a list item.
+ * @hidden
+ * @group Components
+ */
+export function ListItemField({
+    ifield,
+    item,
+    completedRef,
+}: {
+    ifield: NonNullable<TaskProps["displayedFields"]>[number];
+    item: MarkdownTaskItem | MarkdownListItem;
+    completedRef?: RefObject<Dispatch<EditableAction<Literal>> | null>;
+}) {
+    const app = useContext(APP_CONTEXT);
+    const core = useContext(DATACORE_CONTEXT);
+    const { settings } = core;
+    ifield.key = ifield.key.toLocaleLowerCase();
+    let defVal = typeof ifield.defaultValue == "function" ? ifield.defaultValue() : ifield.defaultValue;
+    let defField: Field = {
+        key: ifield.key,
+        value: defVal,
+        raw: Literals.toString(defVal),
+    } as any;
+    const fieldValue = item.$infields[ifield?.key]?.value || defField.value!;
+    const updater = useStableCallback(
+        (val: Literal) => {
+            const dateString = (v: Literal) =>
+                v instanceof DateTime
+                    ? v.toFormat(settings.defaultDateFormat)
+                    : v != null
+                    ? Literals.toString(v)
+                    : undefined;
+
+            let withFields = item.$text;
+            if (withFields && item.$text) {
+                if (item.$infields[ifield.key]) item.$infields[ifield.key].value = dateString(val)!;
+                for (let field in item.$infields) {
+                    withFields = setInlineField(withFields, field, dateString(item.$infields[field]?.value));
+                }
+                withFields = setInlineField(item.$text, ifield.key, dateString(val));
+                rewriteTask(app.vault, core, item, item instanceof MarkdownTaskItem ? item.$status : " ", withFields);
+            }
+        },
+        [item.$infields, item.$text, item.$infields, completedRef]
+    );
+    let [state, dispatch] = useEditableDispatch<Literal>(() => ({
+        content: fieldValue,
+        isEditing: false,
+        updater,
+    }));
+    if (ifield.key == settings.taskCompletionText && completedRef) {
+        completedRef.current = dispatch;
+    }
+    state = editableReducer<Literal>(state, { type: "content-changed", newValue: fieldValue });
+    return (
+        <EditableListField
+            props={state}
+            dispatch={dispatch}
+            type={ifield.type || Literals.wrapValue(fieldValue)!.type}
+            file={item.$file}
+            field={item.$infields[ifield.key] || defField}
+            config={ifield.config}
+            parent={item}
+            updater={state.updater}
+            value={fieldValue}
+            renderAs={ifield.renderAs}
+        />
     );
 }
 
