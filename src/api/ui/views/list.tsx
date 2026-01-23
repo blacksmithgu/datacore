@@ -4,11 +4,11 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
 import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 
-import { Fragment, VNode, isValidElement } from "preact";
+import { Fragment, VNode, createContext, isValidElement } from "preact";
 import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
 import { ControlledPager, useDatacorePaging } from "./paging";
 import { useAsElement } from "ui/hooks";
-import { CSSProperties, ReactNode } from "preact/compat";
+import { CSSProperties, PropsWithChildren, ReactNode } from "preact/compat";
 import { MarkdownListItem } from "index/types/markdown";
 import { BaseFieldProps } from "ui/fields/common-props";
 import { ControlledEditable, EditableElement } from "ui/fields/editable";
@@ -147,22 +147,23 @@ export function ListView<T>(props: ListViewProps<T>) {
         [app, props.create, props.showCreateButton]
     );
     return (
-        <div ref={containerRef} className="datacore-list">
-            <ListGroup
-                level={0}
-                type={type}
-                rows={pagedRows}
-                renderer={renderer}
-                groupings={groupings}
-                maxChildDepth={maxChildDepth}
-                childFunc={childFunc}
-                showCreateButton={props.showCreateButton ?? false}
-                clickFactory={clickCallbackFactory}
-            />
-            {paging.enabled && (
-                <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
-            )}
-        </div>
+        <ListContextProvider clickFactory={clickCallbackFactory}>
+            <div ref={containerRef} className="datacore-list">
+                <ListGroup
+                    level={0}
+                    type={type}
+                    rows={pagedRows}
+                    renderer={renderer}
+                    groupings={groupings}
+                    maxChildDepth={maxChildDepth}
+                    childFunc={childFunc}
+                    showCreateButton={props.showCreateButton ?? false}
+                />
+                {paging.enabled && (
+                    <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
+                )}
+            </div>
+        </ListContextProvider>
     );
 }
 
@@ -176,7 +177,6 @@ function ListGroup<T>({
     maxChildDepth,
     childFunc,
     showCreateButton,
-    clickFactory,
 }: {
     level: number;
     type: ListViewType;
@@ -186,7 +186,6 @@ function ListGroup<T>({
     maxChildDepth: number;
     childFunc: (element: T) => T[];
     showCreateButton: boolean;
-    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
 }) {
     const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
     const app = useContext(APP_CONTEXT);
@@ -205,7 +204,6 @@ function ListGroup<T>({
                             maxChildDepth={maxChildDepth}
                             childFunc={childFunc}
                             showCreateButton={showCreateButton}
-                            clickFactory={clickFactory}
                         />
 
                         {showCreateButton ? (
@@ -231,9 +229,8 @@ function ListGroup<T>({
                     maxDepth={maxChildDepth}
                     depth={0}
                     childFunc={childFunc}
-										parent={null}
-										showCreateButton={showCreateButton}
-                    clickFactory={clickFactory}
+                    parent={null}
+                    showCreateButton={showCreateButton}
                 />
             );
         } else {
@@ -244,9 +241,8 @@ function ListGroup<T>({
                     renderer={renderer}
                     maxChildDepth={maxChildDepth}
                     childFunc={childFunc}
-                    clickFactory={clickFactory}
-										showCreateButton={showCreateButton}
-										parent={null}
+                    showCreateButton={showCreateButton}
+                    parent={null}
                 />
             );
         }
@@ -286,9 +282,8 @@ function HtmlList<T>({
     maxDepth,
     depth,
     childFunc,
-    clickFactory,
     parent = null,
-		showCreateButton = false
+    showCreateButton = false,
 }: {
     type: "ordered" | "unordered";
     rows: T[];
@@ -296,10 +291,10 @@ function HtmlList<T>({
     maxDepth: number;
     depth: number;
     childFunc: (element: T) => T[];
-    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
     parent: T | null;
-		showCreateButton: boolean;
+    showCreateButton: boolean;
 }) {
+    const { clickFactory } = useListContext<T>();
     if (type === "ordered") {
         return (
             <ol className={"datacore-list datacore-list-ordered"}>
@@ -312,11 +307,12 @@ function HtmlList<T>({
                         maxDepth={maxDepth}
                         depth={depth}
                         childFunc={childFunc}
-                        clickFactory={clickFactory}
                     />
                 ))}
 
-                {showCreateButton ? <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />  : null}
+                {showCreateButton ? (
+                    <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />
+                ) : null}
             </ol>
         );
     } else {
@@ -331,10 +327,11 @@ function HtmlList<T>({
                         maxDepth={maxDepth}
                         depth={depth}
                         childFunc={childFunc}
-                        clickFactory={clickFactory}
                     />
                 ))}
-                {showCreateButton ? <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />  : null}
+                {showCreateButton ? (
+                    <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />
+                ) : null}
             </ul>
         );
     }
@@ -348,8 +345,7 @@ function HtmlListItem<T>({
     maxDepth,
     depth,
     childFunc,
-    clickFactory,
-		showCreateButton = false
+    showCreateButton = false,
 }: {
     type: "ordered" | "unordered";
     element: T;
@@ -357,8 +353,7 @@ function HtmlListItem<T>({
     maxDepth: number;
     depth: number;
     childFunc: (element: T) => T[];
-    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
-		showCreateButton?: boolean;
+    showCreateButton?: boolean;
 }) {
     const children = useMemo(() => {
         if (depth >= maxDepth) return [];
@@ -376,9 +371,8 @@ function HtmlListItem<T>({
                     depth={depth + 1}
                     renderer={renderer}
                     childFunc={childFunc}
-                    clickFactory={clickFactory}
-										parent={element}
-										showCreateButton={showCreateButton}
+                    parent={element}
+                    showCreateButton={showCreateButton}
                 />
             )}
         </li>
@@ -391,18 +385,17 @@ function BlockList<T>({
     renderer,
     maxChildDepth,
     childFunc,
-    clickFactory,
-		parent,
-		showCreateButton
+    parent,
+    showCreateButton,
 }: {
     rows: T[];
     renderer: (row: T) => React.ReactNode | Literal;
     maxChildDepth: number;
     childFunc: (element: T) => T[];
-    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
-		parent: T | null;
-		showCreateButton: boolean;
+    parent: T | null;
+    showCreateButton: boolean;
 }) {
+    const { clickFactory } = useListContext<T>();
     return (
         <div className="datacore-list datacore-list-block">
             {rows.map((element, index) => (
@@ -413,10 +406,11 @@ function BlockList<T>({
                     maxDepth={maxChildDepth}
                     depth={0}
                     childFunc={childFunc}
-                    clickFactory={clickFactory}
                 />
             ))}
-            {showCreateButton ? <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />  : null}
+            {showCreateButton ? (
+                <CreateButton clickCallback={clickFactory(rows.length ? rows[rows.length - 1] : null, parent)} />
+            ) : null}
         </div>
     );
 }
@@ -428,14 +422,12 @@ function BlockListItem<T>({
     maxDepth,
     depth,
     childFunc,
-    clickFactory,
 }: {
     element: T;
     renderer: (row: T) => React.ReactNode | Literal;
     maxDepth: number;
     depth: number;
     childFunc: (element: T) => T[];
-    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
 }) {
     const children = useMemo(() => {
         if (depth >= maxDepth) return [];
@@ -460,7 +452,6 @@ function BlockListItem<T>({
                     depth={depth + 1}
                     renderer={renderer}
                     childFunc={childFunc}
-                    clickFactory={clickFactory}
                 />
             ))}
         </div>
@@ -565,4 +556,29 @@ export function EditableListElement<T>({
             defaultRender={<DefaultListElement element={item} />}
         />
     );
+}
+
+/**
+ * @internal
+ */
+export interface ListContext<T> {
+    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
+}
+
+export const LIST_CONTEXT = createContext<ListContext<any>>(undefined!);
+
+export function useListContext<T>() {
+    return useContext(LIST_CONTEXT) as ListContext<T>;
+}
+
+/**
+ * @internal
+ */
+export function ListContextProvider<T>({
+    children,
+    clickFactory,
+}: PropsWithChildren<{
+    clickFactory: (previousElement: GroupElement<T> | T | null, maybeParent: T | null) => () => Promise<unknown>;
+}>) {
+    return <LIST_CONTEXT.Provider value={{ clickFactory }}>{children}</LIST_CONTEXT.Provider>;
 }
