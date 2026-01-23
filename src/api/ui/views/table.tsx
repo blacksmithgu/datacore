@@ -325,8 +325,11 @@ export function SortButton({
 /** Default comparator for sorting on a table column. */
 export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
     Literals.compare(a, b);
-
-function TableContextProvider<T>({dispatch, children, ...rest}: PropsWithChildren<TableContext>) {	
+/**
+ * @hidden
+ * @group Components
+ */
+export function TableContextProvider<T>({dispatch, children, ...rest}: PropsWithChildren<TableContext>) {	
 	return <TABLE_CONTEXT.Provider value={{dispatch: dispatch, ...rest}}>
 		{children}
 	</TABLE_CONTEXT.Provider>
