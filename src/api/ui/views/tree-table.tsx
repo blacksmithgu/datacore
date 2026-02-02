@@ -3,7 +3,8 @@ import { useAsElement } from "ui/hooks";
 import { useInterning, useStableCallback } from "ui/hooks";
 import { Dispatch, Reducer, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "preact/hooks";
 import { ControlledPager, useDatacorePaging } from "./paging";
-import { DEFAULT_TABLE_COMPARATOR, SortButton, SortDirection, SortOn } from "./table";
+import { TableAction, type SortDirection, type SortOn } from "./table-dispatch";
+import { DEFAULT_TABLE_COMPARATOR, SortButton } from "./table";
 import { Context, createContext, Fragment, VNode } from "preact";
 import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useEditableDispatch } from "ui/fields/editable";
@@ -60,13 +61,12 @@ export interface TreeTableProps<T> {
 }
 
 export type TreeTableAction<T> =
-    | { type: "sort-column"; column: string; direction: SortDirection | undefined }
     | {
           type: "row-expand";
           row: T;
           newValue: boolean;
       }
-    | { type: "open-map-changed"; newValue: Map<string, boolean> };
+    | { type: "open-map-changed"; newValue: Map<string, boolean> } | TableAction;
 
 export function treeTableReducer<T>(state: TreeTableState<T>, action: TreeTableAction<T>): TreeTableState<T> {
     switch (action.type) {
@@ -105,16 +105,17 @@ export function useTreeTableDispatch<T>(
     return useReducer(treeTableReducer as Reducer<TreeTableState<T>, TreeTableAction<T>>, init);
 }
 
-export type RowExpansionContextType<T> = {
+export type TreeTableContextType<T> = {
     dispatch: Dispatch<TreeTableAction<T>>;
     openMap: Map<string, boolean>;
     id: (obj: T) => string;
+		callbackFactory: (previousElement: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null, parent: TreeTableRowData<T> | null, maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null, groupConfig?: GroupingConfig<TreeTableRowData<T>>) => () => Promise<void>;
 };
 
-export const EXPANDED_CONTEXT = createContext<RowExpansionContextType<unknown> | null>(null);
+export const TREE_TABLE_CONTEXT = createContext<TreeTableContextType<unknown> | null>(null);
 
-export function TypedExpandedContext<T>() {
-    return EXPANDED_CONTEXT as Context<RowExpansionContextType<T>>;
+export function TypedTreeTableContext<T>() {
+    return TREE_TABLE_CONTEXT as Context<TreeTableContextType<T>>;
 }
 
 export function TreeTableHeaderCell<T>({
@@ -126,7 +127,7 @@ export function TreeTableHeaderCell<T>({
     sort?: SortDirection;
     sortable: boolean;
 }) {
-    const { dispatch } = useContext(TypedExpandedContext<T>());
+    const { dispatch } = useContext(TypedTreeTableContext<T>());
     const header: string | VNode = useMemo(() => {
         if (!column.title) return column.id;
         else if (typeof column.title === "function") return column.title();
@@ -149,7 +150,7 @@ export function TreeTableHeaderCell<T>({
     return (
         <th style={{ width: realWidth }} className="datacore-table-header-cell">
             <div className="datacore-table-header-cell-content">
-                {sortable && <SortButton className="datacore-table-sort" direction={sort} onClick={sortClicked} />}
+                {sortable && <SortButton className="datacore-table-sort" columnId={column.id} />}
                 <div onClick={sortClicked} className="datacore-table-header-title">
                     {header}
                 </div>
@@ -195,21 +196,14 @@ export function TreeTableRowGroup<T>({
     element,
     groupings,
     previousElement,
-    clickCallbackFactory,
 }: {
     level: number;
     columns: TreeTableColumn<T>[];
     element: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T>;
-    groupings?: GroupingConfig<TreeTableRowData<T>>[];
-    clickCallbackFactory: (
-        previousElement: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
-        parent: TreeTableRowData<T> | null,
-        maybeGroup: GroupElement<TreeTableRowData<T>> | TreeTableRowData<T> | null,
-        groupConfig?: GroupingConfig<TreeTableRowData<T>>
-    ) => () => Promise<void>;
+    groupings?: GroupingConfig<TreeTableRowData<T>>[]; 
     previousElement: TreeTableRowData<T> | GroupElement<TreeTableRowData<T>> | null;
 }) {
-    const { id } = useContext(TypedExpandedContext<T>());
+    const { id, callbackFactory: clickCallbackFactory } = useContext(TypedTreeTableContext<T>());
     const keyFn = useKeyFn(id);
     const groupIndex = groupings ? Math.min(groupings.length - 1, level) : 0;
     if (Groupings.isElementGroup(element)) {
@@ -223,7 +217,6 @@ export function TreeTableRowGroup<T>({
                         columns={columns}
                         element={row}
                         groupings={groupings}
-                        clickCallbackFactory={clickCallbackFactory}
                         previousElement={i == 0 ? null : arr[i - 1]}
                     />
                 ))}
@@ -278,7 +271,7 @@ function CreateButton({
 }
 
 export function TreeTableRowExpander<T>({ row, level }: { row: T; level: number }) {
-    const { openMap, dispatch, id } = useContext(TypedExpandedContext<T>());
+    const { openMap, dispatch, id } = useContext(TypedTreeTableContext<T>());
     const open = useMemo(() => openMap.get(id(row)) ?? false, [row, openMap, openMap.get(id(row)), dispatch]);
     return (
         <td
@@ -326,7 +319,7 @@ export function TreeTableRow<T>({
         groupConfig?: GroupingConfig<TreeTableRowData<T>>
     ) => () => Promise<void>;
 }) {
-    const { openMap, id } = useContext(TypedExpandedContext<T>());
+    const { openMap, id } = useContext(TypedTreeTableContext<T>());
     const open = useMemo(() => openMap.get(id(row.value)), [openMap, openMap.get(id(row.value)), row, row.value]);
     const hasChildren = useMemo(() => row.children.length > 0, [row, row.children, row.value]);
     return (
@@ -470,7 +463,7 @@ export function ControlledTreeTableView<T>(
     }, [paging.page, paging.pageSize, paging.enabled, props.rows, rows]);
 
     const keyFn = useKeyFn(props.id, pagedRows);
-    const Context = TypedExpandedContext<T>();
+    const Context = TypedTreeTableContext<T>();
     const app = useContext(APP_CONTEXT);
     const clickCallbackFactory = useCallback(
         (
@@ -505,7 +498,7 @@ export function ControlledTreeTableView<T>(
         [app, props.createRow, props.creatable, props.rows].filter((a) => !!a)
     );
     return (
-        <Context.Provider value={{ openMap: props.openMap!, dispatch: props.dispatch, id: props.id }}>
+        <Context.Provider value={{ openMap: props.openMap!, dispatch: props.dispatch, id: props.id, callbackFactory: clickCallbackFactory }}>
             <div ref={tableRef}>
                 <table className="datacore-table">
                     <thead>
@@ -526,7 +519,6 @@ export function ControlledTreeTableView<T>(
                                 element={row}
                                 columns={columns}
                                 level={0}
-                                clickCallbackFactory={clickCallbackFactory}
                                 previousElement={i == 0 ? null : a[i - 1]}
                                 groupings={groupings}
                                 key={keyFn(row)}
