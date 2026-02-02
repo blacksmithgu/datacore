@@ -196,7 +196,7 @@ export function TableView<T>(props: TableViewProps<T>) {
         [app, props.createRow, props.creatable]
     );
     return (
-      <TableContextProvider dispatch={dispatch} sorts={tableState.sorts}>
+      <TableContextProvider clickCallbackFactory={clickCallbackFactory} dispatch={dispatch} sorts={tableState.sorts}>
         <div ref={tableRef}>
             <table className="datacore-table">
                 <thead>
@@ -213,7 +213,6 @@ export function TableView<T>(props: TableViewProps<T>) {
                             groupings={groupings}
                             columns={columns}
                             element={row}
-                            callbackFactory={clickCallbackFactory}
                             creatable={props.creatable ?? false}
                             previousElement={i == 0 ? null : a[i - 1]}
                         />
@@ -293,7 +292,6 @@ export function VanillaRowGroup<T>({
     columns,
     element,
     groupings,
-    callbackFactory,
     creatable = false,
     previousElement,
 }: {
@@ -303,13 +301,9 @@ export function VanillaRowGroup<T>({
     groupings?: GroupingConfig<T>[];
     createRow?: TableViewProps<T>["createRow"];
     creatable: boolean;
-    callbackFactory: (
-        previousElement: GroupElement<T> | T | null,
-        element: GroupElement<T> | T | null,
-        groupConfig?: GroupingConfig<T>
-    ) => () => Promise<void>;
     previousElement: T | GroupElement<T> | null;
 }) {
+	const {clickCallbackFactory: callbackFactory} = useTableContext<T>()!;
     if (Groupings.isElementGroup(element)) {
         const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
 				const onClick = callbackFactory(previousElement, element, groupingConfig);
@@ -323,7 +317,6 @@ export function VanillaRowGroup<T>({
                         element={row}
                         creatable={creatable}
                         previousElement={i == 0 ? null : a[i - 1]}
-                        callbackFactory={callbackFactory}
                     />
                 ))}
 								<CreateButton clickCallback={onClick} cols={columns.length}/>
@@ -421,7 +414,7 @@ export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T
     );
 }
 
-export function SortButton({
+export function SortButton<T>({
 	columnId,
     className,
 	contextGetter = useTableContext,
@@ -455,7 +448,7 @@ export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T)
  * @hidden
  * @group Components
  */
-export function TableContextProvider<T>({dispatch, children, ...rest}: PropsWithChildren<TableContext>) {	
+export function TableContextProvider<T>({dispatch, children, ...rest}: PropsWithChildren<TableContext<T>>) {	
 	return <TABLE_CONTEXT.Provider value={{dispatch: dispatch, ...rest}}>
 		{children}
 	</TABLE_CONTEXT.Provider>

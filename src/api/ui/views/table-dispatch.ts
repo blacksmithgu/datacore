@@ -1,5 +1,7 @@
+import { GroupElement } from "expression/literal";
 import { createContext } from "preact";
 import { Dispatch, useMemo, useReducer, Reducer, useContext } from "preact/hooks";
+import { GroupingConfig } from "./table";
 
 /** The ways that the table can be sorted. */
 export type SortDirection = "ascending" | "descending";
@@ -40,15 +42,16 @@ export type CommonTableContext = TableState & {
 	dispatch: Dispatch<TableAction> 
 }
 
-export type TableContext = CommonTableContext & {
+export type TableContext<T> = CommonTableContext & {
+	clickCallbackFactory: (previousElement: GroupElement<T> | T | null, element: GroupElement<T> | T | null, groupConfig?: GroupingConfig<T>) => () => Promise<void>;
 } 
 
-export const TABLE_CONTEXT = createContext<TableContext | null>(null);
+export const TABLE_CONTEXT = createContext<TableContext<any> | null>(null);
 
 export const COMMON_TABLE_CONTEXT = createContext<CommonTableContext | null>(null);
 
-export function useTableContext() {
-	return useContext(TABLE_CONTEXT);
+export function useTableContext<T>() {
+	return useContext(TABLE_CONTEXT) as TableContext<T> | null;
 }
 
 export function useCommonTableContext() {
