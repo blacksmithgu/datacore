@@ -300,11 +300,13 @@ export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T
 export function SortButton({
 	columnId,
     className,
+	contextGetter = useTableContext,
 }: {
     className?: string;
 		columnId: string;
+		contextGetter?: () => TableContext | null;
 }) {
-		const {dispatch, ...state} = useTableContext()!;
+		const {dispatch, ...state} = contextGetter()!;
 		const direction = state.sorts[columnId];
     const icon = useMemo(() => {
         if (direction == "ascending") return faSortDown;
