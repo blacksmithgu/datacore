@@ -7,7 +7,7 @@ import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useAsElement, useInterning, useStableCallback } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
 import { faSortDown, faSortUp, faSort } from "@fortawesome/free-solid-svg-icons";
-import {useTableDispatch, type SortDirection, type SortOn, TABLE_CONTEXT, TableContext, useTableContext} from "./table-dispatch";
+import {useTableDispatch, type SortDirection, type SortOn, TABLE_CONTEXT, TableContext, useTableContext, CommonTableContext} from "./table-dispatch";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PropsWithChildren, ReactNode } from "preact/compat";
@@ -304,7 +304,7 @@ export function SortButton({
 }: {
     className?: string;
 		columnId: string;
-		contextGetter?: () => TableContext | null;
+		contextGetter?: () => CommonTableContext | null;
 }) {
 		const {dispatch, ...state} = contextGetter()!;
 		const direction = state.sorts[columnId];
