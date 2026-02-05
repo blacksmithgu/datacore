@@ -36,14 +36,21 @@ export function useTableDispatch(initial: TableState | (() => TableState)): [Tab
     return useReducer(tableReducer as Reducer<TableState, TableAction>, init);
 }
 
-export type TableContext = TableState & {
+export type CommonTableContext = TableState & {
 	dispatch: Dispatch<TableAction> 
+}
+
+export type TableContext = CommonTableContext & {
 } 
 
 export const TABLE_CONTEXT = createContext<TableContext | null>(null);
+
+export const COMMON_TABLE_CONTEXT = createContext<CommonTableContext | null>(null);
 
 export function useTableContext() {
 	return useContext(TABLE_CONTEXT);
 }
 
-
+export function useCommonTableContext() {
+	return useContext(COMMON_TABLE_CONTEXT);
+}
