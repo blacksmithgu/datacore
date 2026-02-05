@@ -20,7 +20,7 @@ export default class DatacorePlugin extends Plugin {
         this.addSettingTab(new GeneralSettingsTab(this.app, this));
 
         // Initialize the core API for usage in all views and downstream apps.
-        this.addChild((this.core = new Datacore(this.app, this.manifest.version, this.settings)));
+        this.addChild((this.core = new Datacore(this.app, this.manifest.version, this.settings, this)));
         this.api = new DatacoreApi(this.core);
 
         // Primary visual elements (DatacoreJS and Datacore blocks).
@@ -56,7 +56,7 @@ export default class DatacorePlugin extends Plugin {
             callback: async () => {
                 console.log("Datacore: dropping the datastore and reindexing all items.");
                 await this.core.reindex();
-						},
+            },
         });
         // Views: DatacoreJS view.
         // @ts-ignore be quiet
@@ -104,6 +104,14 @@ export default class DatacorePlugin extends Plugin {
     async updateSettings(settings: Partial<Settings>) {
         Object.assign(this.settings, settings);
         await this.saveData(this.settings);
+    }
+
+    public async saveData(data: any): Promise<void> {
+        await super.saveData(data);
+        await this.core.transformer.saveSettings();
+    }
+    public async transform(srcPath: string, src: string, jsx: boolean, ts: boolean): Promise<string> {
+        return await this.core.transformer.transform(srcPath, src, jsx, ts);
     }
 }
 

@@ -12,6 +12,8 @@ import { DateTime } from "luxon";
 import { EmbedQueue } from "./embed-queue";
 import { JsonMarkdownPage } from "./types/json/markdown";
 import { Canvas, CanvasTextCard } from "./types/canvas";
+import DatacoreJsTransformer from "api/js/transformer";
+import DatacorePlugin from "main";
 
 /** Central API object; handles initialization, events, debouncing, and access to datacore functionality. */
 export class Datacore extends Component {
@@ -35,7 +37,9 @@ export class Datacore extends Component {
     /** If true, datacore is fully hydrated and all files have been indexed. */
     initialized: boolean;
 
-    constructor(public app: App, public version: string, public settings: Settings) {
+		transformer: DatacoreJsTransformer;
+
+    constructor(public app: App, public version: string, public settings: Settings, plugin: DatacorePlugin) {
         super();
 
         this.vault = app.vault;
@@ -45,6 +49,7 @@ export class Datacore extends Component {
 
         this.datastore = new Datastore(app.vault, app.metadataCache, settings);
         this.initialized = false;
+				this.addChild((this.transformer = new DatacoreJsTransformer(plugin, app)));
 
         this.addChild(
             (this.importer = new FileImporter(app.vault, app.fileManager, app.metadataCache, () => {

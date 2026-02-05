@@ -7,8 +7,8 @@ export type ScriptLanguage = "js" | "ts" | "jsx" | "tsx";
 /** Converts a raw script in the given language to plain javascript.  */
 export async function transpile(path: string, script: string, language: ScriptLanguage): Promise<string> {
 	let preTransformed = script;
-	if(window.app.plugins.plugins["datacore-addon-transform-js"]) {
-		preTransformed = await window.app.plugins.plugins["datacore-addon-transform-js"].preTransform(path, script,["jsx", "tsx"].includes(language), language.startsWith("ts"));
+	if(window.app.plugins.plugins.datacore) {
+		preTransformed = await window.app.plugins.plugins.datacore.api.core.transformer.transform(path, script,["jsx", "tsx"].includes(language), language.startsWith("ts"));
 	}
     switch (language) {
         case "js":

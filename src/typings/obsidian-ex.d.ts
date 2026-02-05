@@ -100,6 +100,9 @@ declare module "obsidian" {
             ) => FileView & { loadFile: (file: TFile) => void };
         };
     }
+		interface DataAdapter {
+			getBasePath(): string;
+		}
 }
 
 /** Provides the 'datacore' global for other plugins to use. */
