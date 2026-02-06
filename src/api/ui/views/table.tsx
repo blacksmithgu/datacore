@@ -7,10 +7,10 @@ import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
 import { useAsElement, useInterning, useStableCallback } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
 import { faSortDown, faSortUp, faSort } from "@fortawesome/free-solid-svg-icons";
-import {useTableDispatch, type SortDirection, type SortOn, TABLE_CONTEXT, TableContext, useTableContext, CommonTableContext} from "./table-dispatch";
+import {useTableDispatch} from "./table-dispatch";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PropsWithChildren, ReactNode } from "preact/compat";
+import { ReactNode } from "preact/compat";
 
 import { ControlledPager, useDatacorePaging } from "./paging";
 
@@ -18,6 +18,7 @@ import "./table.css";
 import { EditableElement, useEditableDispatch } from "ui/fields/editable";
 import "./misc.css";
 import { App } from "obsidian";
+import { GenericTableViewProps, TableContextProvider, TableKind, useGenericTableContext } from "../table-types";
 
 
 /**
@@ -76,36 +77,7 @@ export interface GroupingConfig<T> {
  * All available props for a table.
  * @group Props
  */
-export interface TableViewProps<T> {
-    /** The columns to render in the table. */
-    columns: TableColumn<T>[];
-
-    /** The rows to render; may potentially be grouped or just a plain array. */
-    rows: Grouping<T>;
-
-    /** Allows for grouping header columns to be overridden with custom rendering/logic. */
-    groupings?: GroupingConfig<T> | GroupingConfig<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | ReactNode);
-
-    /**
-     * If set to a boolean - enables or disables paging.
-     * If set to a number, paging will be enabled with the given number of rows per page.
-     */
-    paging?: boolean | number;
-
-    /**
-     * Whether the view will scroll to the top automatically on page changes. If true, will always scroll on page changes.
-     * If a number, will scroll only if the number is greater than the current page size.
-     **/
-    scrollOnPaging?: boolean | number;
-		
-    /** The fields to sort the view on, if relevant. */
-    sortOn?: SortOn[];
-
-    /** whether this table allows creation new elements. */
-    creatable?: boolean;
-    /** called to create a new item in a grouping */
-    createRow?: (prevElement: T | null, parentGroup: GroupElement<T> | null, app: App) => Promise<unknown>;
-}
+export interface TableViewProps<T> extends GenericTableViewProps<T, "table"> {}
 
 /**
  * A simple table which supports grouping, sorting, paging, and custom columns.
@@ -132,7 +104,7 @@ export function TableView<T>(props: TableViewProps<T>) {
     });
 		// Cache sorts by value equality and filter to only sortable valid fields.
     const rawSorts = useInterning(props.sortOn, (a, b) => Literals.compare(a, b) == 0);
-		const [tableState, dispatch] = useTableDispatch(() => ({
+		const [tableState, dispatch] = useTableDispatch<T>(() => ({
 			sorts: Object.fromEntries((rawSorts?.filter((sort) => {
             const column = columns.find((col) => col.id == sort.id);
             return column && (column.sortable ?? true);
@@ -196,7 +168,7 @@ export function TableView<T>(props: TableViewProps<T>) {
         [app, props.createRow, props.creatable]
     );
     return (
-      <TableContextProvider clickCallbackFactory={clickCallbackFactory} dispatch={dispatch} sorts={tableState.sorts}>
+      <TableContextProvider<T, "table"> clickCallbackFactory={clickCallbackFactory} dispatch={dispatch} state={tableState}>
         <div ref={tableRef}>
             <table className="datacore-table">
                 <thead>
@@ -303,7 +275,7 @@ export function VanillaRowGroup<T>({
     creatable: boolean;
     previousElement: T | GroupElement<T> | null;
 }) {
-	const {clickCallbackFactory: callbackFactory} = useTableContext<T>()!;
+	const {clickCallbackFactory: callbackFactory} = useGenericTableContext<T, "table">()!;
     if (Groupings.isElementGroup(element)) {
         const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
 				const onClick = callbackFactory(previousElement, element, groupingConfig);
@@ -414,16 +386,14 @@ export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T
     );
 }
 
-export function SortButton<T>({
+export function SortButton<T, K extends TableKind = "table">({
 	columnId,
     className,
-	contextGetter = useTableContext,
 }: {
     className?: string;
 		columnId: string;
-		contextGetter?: () => CommonTableContext | null;
 }) {
-		const {dispatch, ...state} = contextGetter()!;
+		const {dispatch, state} = useGenericTableContext<T, K>()!;
 		const direction = state.sorts[columnId];
     const icon = useMemo(() => {
         if (direction == "ascending") return faSortDown;
@@ -444,13 +414,3 @@ export function SortButton<T>({
 /** Default comparator for sorting on a table column. */
 export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
     Literals.compare(a, b);
-/**
- * @hidden
- * @group Components
- */
-export function TableContextProvider<T>({dispatch, children, ...rest}: PropsWithChildren<TableContext<T>>) {	
-	return <TABLE_CONTEXT.Provider value={{dispatch: dispatch, ...rest}}>
-		{children}
-	</TABLE_CONTEXT.Provider>
-}
-

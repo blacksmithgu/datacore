@@ -1,20 +1,13 @@
-import { GroupElement } from "expression/literal";
-import { createContext } from "preact";
-import { Dispatch, useMemo, useReducer, Reducer, useContext } from "preact/hooks";
-import { GroupingConfig } from "./table";
+import { Dispatch, useMemo, useReducer, Reducer } from "preact/hooks";
+import { GenericTableAction, GenericTableState } from "../table-types";
 
 /** The ways that the table can be sorted. */
 export type SortDirection = "ascending" | "descending";
 export type SortOn = { type: "column"; id: string; direction: SortDirection };
 
-export type TableAction = { type: "sort-column"; column: string; direction: SortDirection | undefined };
+type TableState<T> = GenericTableState<T, "table">;
 
-export interface TableState {
-    /** mapping of column ids to sort directions */
-    sorts: Record<string, SortDirection>;
-}
-
-export function tableReducer(state: TableState, action: TableAction): TableState {
+export function tableReducer<T>(state: TableState<T>, action: GenericTableAction<T, "table">): TableState<T> {
     switch (action.type) {
         case "sort-column": {
 					const newSorts = {...state.sorts};
@@ -29,31 +22,11 @@ export function tableReducer(state: TableState, action: TableAction): TableState
             };
         }
     }
-    console.warn("datacore: Encountered unrecognized operation: " + (action as TableAction).type);
+    console.warn("datacore: Encountered unrecognized operation: " + (action).type);
     return state;
 }
 
-export function useTableDispatch(initial: TableState | (() => TableState)): [TableState, Dispatch<TableAction>] {
+export function useTableDispatch<T>(initial: TableState<T> | (() => TableState<T>)): [TableState<T>, Dispatch<GenericTableAction<T, "table">>] {
     const init = useMemo(() => (typeof initial == "function" ? initial() : initial), []);
-    return useReducer(tableReducer as Reducer<TableState, TableAction>, init);
-}
-
-export type CommonTableContext = TableState & {
-	dispatch: Dispatch<TableAction> 
-}
-
-export type TableContext<T> = CommonTableContext & {
-	clickCallbackFactory: (previousElement: GroupElement<T> | T | null, element: GroupElement<T> | T | null, groupConfig?: GroupingConfig<T>) => () => Promise<void>;
-} 
-
-export const TABLE_CONTEXT = createContext<TableContext<any> | null>(null);
-
-export const COMMON_TABLE_CONTEXT = createContext<CommonTableContext | null>(null);
-
-export function useTableContext<T>() {
-	return useContext(TABLE_CONTEXT) as TableContext<T> | null;
-}
-
-export function useCommonTableContext() {
-	return useContext(COMMON_TABLE_CONTEXT);
+    return useReducer(tableReducer as Reducer<TableState<T>, GenericTableAction<T, "table">>, init);
 }
