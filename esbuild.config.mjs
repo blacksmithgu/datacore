@@ -19,7 +19,7 @@ async function buildPlugin(prod) {
             metafile: true,
             plugins: [
                 inlineWorkerPlugin({
-                    workerName: "Datacore Indexer",
+                    workerName: ({workerPath}) => workerPath.includes("transform.worker") ? "Datacore Transformer" : "Datacore Indexer",
                     buildOptions: {
                         external: [...builtins, "assert", "constants", "os"],
                         sourcemap: prod ? false : 'inline',
@@ -80,7 +80,7 @@ async function buildLibrary(prod) {
 		metafile: true,
 		plugins: [
                 inlineWorkerPlugin({
-                    workerName: "Datacore Indexer",
+                    workerName: ({workerPath}) => workerPath.includes("transform.worker") ? "Datacore Transformer" : "Datacore Indexer",
                     buildOptions: {
                         external: [...builtins, "assert", "constants", "os"],
 												sourcemap: prod ? false : 'inline',
