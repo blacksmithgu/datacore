@@ -3537,7 +3537,7 @@ recast@^0.23.11:
 
 "recast@git+https://github.com/GamerGirlandCo/recast.git#updates":
   version "0.23.11"
-  resolved "git+https://github.com/GamerGirlandCo/recast.git#4a4f3800094abe3cc80e61dff203a66c5dfa6743"
+  resolved "git+https://github.com/GamerGirlandCo/recast.git#aa38d1223a5a3f861a5ce07a96bcd10e9a75c7cd"
   dependencies:
     ast-types "^0.16.1"
     esprima "~4.0.0"

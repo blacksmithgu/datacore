@@ -147,8 +147,7 @@ export function transformImportsAndExports(
                 ) != null
             ) {
                 const nm = b.memberExpression(dc, node.callee as N.Identifier);
-                path.insertAfter(b.callExpression(nm, node.arguments));
-                path.replace();
+                path.replace(b.callExpression(nm, node.arguments));
             } else if (
                 t.Identifier.check(node.callee) &&
                 node.callee.name == "require" &&

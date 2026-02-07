@@ -22,6 +22,7 @@ async function buildPlugin(prod) {
                     workerName: "Datacore Indexer",
                     buildOptions: {
                         external: [...builtins, "assert", "constants", "os"],
+                        sourcemap: prod ? false : 'inline',
                     },
                 }),
             ],
@@ -82,6 +83,7 @@ async function buildLibrary(prod) {
                     workerName: "Datacore Indexer",
                     buildOptions: {
                         external: [...builtins, "assert", "constants", "os"],
+												sourcemap: prod ? false : 'inline',
                     },
                 }),
             ],

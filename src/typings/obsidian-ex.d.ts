@@ -102,6 +102,7 @@ declare module "obsidian" {
     }
 		interface DataAdapter {
 			getBasePath(): string;
+			basePath: string;
 		}
 }
 

@@ -1,9 +1,9 @@
-import { App, Component } from "obsidian";
+import { App, Component, Platform } from "obsidian";
 import pathutils from "@chainner/node-path";
-import {visit, parse} from "recast";
+import { visit, parse } from "recast";
 import type { Visitor } from "ast-types/lib/gen/visitor";
 import { VisitorMethods } from "ast-types/lib/path-visitor";
-import {parse as doParse} from "@babel/parser";
+import { parse as doParse } from "@babel/parser";
 import { stripName, TransformOptions } from "./ast-util";
 import type { WorkerRequest, WorkerResponse } from "./worker/types";
 import TransformWorker from "api/js/worker/transform.worker";
@@ -49,7 +49,7 @@ export default class DatacoreJsTransformer extends Component {
     }
 
     async onload() {
-				await this.loadSettings();
+        await this.loadSettings();
         this.#worker = new TransformWorker();
         this.#worker.onmessage = (evt) => {
             const data = evt.data as WorkerResponse;
@@ -64,6 +64,11 @@ export default class DatacoreJsTransformer extends Component {
             }
             this.#pending.clear();
         };
+        if (Platform.isMobile) {
+            (window as any).process = {
+                env: {},
+            };
+        }
     }
 
     async onunload(): Promise<void> {
@@ -135,7 +140,7 @@ export default class DatacoreJsTransformer extends Component {
             src,
             {
                 outerBaseDir: pathutils.dirname(srcPath),
-                vaultRoot: this.app.vault.adapter.getBasePath(),
+                vaultRoot: this.getBasePath(),
                 vaultFiles: this.app.vault.getFiles().map((a) => a.path),
                 importPaths: { ...this._settings.downloadedNpmLibs },
                 dependencies: Object.entries(realVersions).map(([kk, vv]) => `${kk}@${(vv as any).version}`),
@@ -156,13 +161,13 @@ export default class DatacoreJsTransformer extends Component {
                         allowReturnOutsideFunction: true,
                         allowAwaitOutsideFunction: true,
                         errorRecovery: true,
-												tokens: true
+                        tokens: true,
                     });
                 },
             },
         });
         const p = this;
-				const visitor: Visitor = {
+        const visitor: Visitor = {
             visitImportDeclaration(path) {
                 const node = path.node;
                 const nsrc = node.source.value as string;
@@ -179,9 +184,9 @@ export default class DatacoreJsTransformer extends Component {
                 ) {
                     imports.add(nsrc);
                 }
-								this.traverse(path, visitor as VisitorMethods);
+                this.traverse(path, visitor as VisitorMethods);
             },
-        }
+        };
         visit(parsed, visitor);
         return [...imports];
     }
@@ -200,7 +205,7 @@ export default class DatacoreJsTransformer extends Component {
                 this.#worker.postMessage({
                     id,
                     libDir: this.libDir,
-                    vaultRoot: this.app.vault.adapter.getBasePath(),
+                    vaultRoot: this.getBasePath(),
                     vaultFiles: this.app.vault.getFiles().map((a) => a.path),
                     version: v,
                     package: src,
@@ -251,5 +256,12 @@ export default class DatacoreJsTransformer extends Component {
             dependencies: inter.dependencies,
             version: rv,
         };
+    }
+
+    getBasePath() {
+        if (this.app.vault.adapter.getBasePath) {
+            return this.app.vault.adapter.getBasePath();
+        }
+        return this.app.vault.adapter.basePath;
     }
 }
