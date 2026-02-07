@@ -5,6 +5,6 @@ declare module "index/web-worker/importer.worker" {
 }
 
 declare module "api/js/worker/transform.worker" {
-	const WorkerFactory: new () => Worker;
-	export default WorkerFactory;
+    const WorkerFactory: new () => Worker;
+    export default WorkerFactory;
 }

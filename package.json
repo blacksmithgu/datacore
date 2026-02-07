@@ -27,7 +27,7 @@
   "devDependencies": {
     "@codemirror/autocomplete": "^6.18.6",
     "@codemirror/commands": "^6.8.1",
-    "@codemirror/language": "https://github.com/lishid/cm-language",
+    "@codemirror/language": "git+https://github.com/lishid/cm-language.git",
     "@codemirror/search": "^6.5.10",
     "@codemirror/state": "^6.0.1",
     "@codemirror/view": "^6.36.7",
@@ -36,6 +36,7 @@
     "@types/jscodeshift": "^17.3.0",
     "@types/luxon": "^2.3.2",
     "@types/node": "^16.7.13",
+    "@types/pako": "^2",
     "@types/parsimmon": "^1.10.6",
     "builtin-modules": "3.3.0",
     "esbuild": "^0.16.11",
@@ -46,9 +47,10 @@
     "ts-jest": "^27.0.5",
     "ts-node": "^10.9.2",
     "tslib": "^2.3.1",
-    "typescript": "^5.4.2"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@babel/parser": "^7.29.0",
     "@chainner/node-path": "^0.1.1",
     "@codemirror/lang-javascript": "^6.2.3",
     "@datastructures-js/queue": "^4.2.3",
@@ -57,6 +59,8 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@obsidize/tar-browserify": "^6.3.2",
     "@replit/codemirror-vim": "^6.3.0",
+    "babel-plugin-syntax-jsx": "^6.18.0",
+    "babel-plugin-syntax-typescript": "^7.0.0-alpha.19",
     "emoji-regex": "^10.2.1",
     "flatqueue": "^2.0.3",
     "jscodeshift": "^17.3.0",
@@ -66,6 +70,7 @@
     "parsimmon": "^1.18.0",
     "preact": "^10.26.6",
     "react-select": "^5.10.1",
+    "recast": "git+https://github.com/GamerGirlandCo/recast.git#updates",
     "sorted-btree": "^1.8.1",
     "sucrase": "3.35.0",
     "yaml": "^2.3.3"

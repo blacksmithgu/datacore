@@ -3,7 +3,7 @@ import process from "process";
 import builtins from "builtin-modules";
 import fs from "fs";
 
-import {inlineWorkerPlugin} from "esbuild-plugin-inline-worker";
+import { inlineWorkerPlugin } from "esbuild-plugin-inline-worker";
 
 // Build the primary javascript file.
 async function buildPlugin(prod) {
@@ -100,6 +100,8 @@ async function buildLibrary(prod) {
 			'@lezer/highlight',
 			'@lezer/lr',
 			"pdfjs-dist",
+			"assert",
+			"constants",
 			...builtins],
 			alias: {
 				"react": "preact/compat"

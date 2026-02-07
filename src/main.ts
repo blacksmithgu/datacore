@@ -4,6 +4,7 @@ import { DateTime } from "luxon";
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 import { DEFAULT_SETTINGS, Settings } from "settings";
 import { DatacoreQueryView as DatacoreJSView, VIEW_TYPE_DATACOREJS } from "ui/view-page";
+import DatacoreJsTransformer from "api/js/transformer";
 
 /** @internal Reactive data engine for your Obsidian.md vault. */
 export default class DatacorePlugin extends Plugin {
@@ -14,6 +15,7 @@ export default class DatacorePlugin extends Plugin {
     public core: Datacore;
     /** Externally visible API for querying. */
     public api: DatacoreApi;
+
 
     async onload() {
         this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) ?? {});
@@ -103,6 +105,7 @@ export default class DatacorePlugin extends Plugin {
     /** Update the given settings to new values. */
     async updateSettings(settings: Partial<Settings>) {
         Object.assign(this.settings, settings);
+        await this.core.transformer.saveSettings();
         await this.saveData(this.settings);
     }
 
@@ -110,9 +113,9 @@ export default class DatacorePlugin extends Plugin {
         await super.saveData(data);
         await this.core.transformer.saveSettings();
     }
-    public async transform(srcPath: string, src: string, jsx: boolean, ts: boolean): Promise<string> {
-        return await this.core.transformer.transform(srcPath, src, jsx, ts);
-    }
+		public async transform(srcPath: string, src: string, jsx: boolean, ts: boolean): Promise<string> {
+			return await this.core.transformer.transform(srcPath, src, jsx, ts);
+		}
 }
 
 /** Datacore Settings Tab. */
@@ -277,5 +280,5 @@ class GeneralSettingsTab extends PluginSettingTab {
                     await this.plugin.updateSettings({ maxRecursiveRenderDepth: parsed });
                 });
             });
-    }
+    }	
 }

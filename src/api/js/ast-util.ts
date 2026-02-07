@@ -1,28 +1,33 @@
-import jscodeshift from "jscodeshift";
-import type { ASTPath, JSCodeshift } from "jscodeshift";
-import type { namedTypes as N } from "ast-types";
 import pathutils from "@chainner/node-path";
+import { types } from "recast";
+import { namedTypes as N } from "ast-types";
+import type {NodePath} from "ast-types/lib/node-path";
+import * as K from "ast-types/lib/gen/kinds";
+const b = types.builders;
+const t = types.namedTypes;
+
+export type LVal =
+	| N.Identifier
+	| N.MemberExpression
+	| N.RestElement
+	| N.AssignmentPattern
+	| N.ArrayPattern
+	| N.ObjectPattern
+	| N.TSParameterProperty
+	| N.TSAsExpression
+	| N.TSSatisfiesExpression
+	| N.TSTypeAssertion
+	| N.TSNonNullExpression;
 
 export type ImportArray = (
 	| N.ImportSpecifier
 	| N.ImportDefaultSpecifier
 	| N.ImportNamespaceSpecifier
 )[];
-export type ExportArray = (N.ExportDefaultDeclaration | N.ExportNamedDeclaration)[];
-
-export type TransformContext = {
-	j: JSCodeshift;
-	dc: N.Identifier;
-	dcJsx: N.JSXIdentifier;
-	dcRequire: N.Identifier;
-};
-
-export const createTransformContext = (j: JSCodeshift): TransformContext => ({
-	j,
-	dc: j.identifier("dc"),
-	dcJsx: j.jsxIdentifier("dc"),
-	dcRequire: j.identifier("require"),
-});
+export type ExportArray = (
+	| N.ExportDefaultDeclaration
+	| N.ExportNamedDeclaration
+)[];
 
 export const exts = [
 	".js",
@@ -57,6 +62,10 @@ export interface TransformRequest {
 	possiblePaths: string[];
 }
 
+export const dc = b.identifier("dc");
+export const dcJsx = b.jsxIdentifier("dc");
+export const dcRequire = b.identifier("require");
+
 export const stripName = (k: string) => {
 	const lio = k.lastIndexOf("@");
 	if (lio > 0) {
@@ -65,165 +74,114 @@ export const stripName = (k: string) => {
 	return k;
 };
 
-export const dcMember = (ctx: TransformContext, ident: N.Identifier) =>
-	ctx.j.memberExpression(ctx.dc, ident);
-export const mustIdent = (ctx: TransformContext, item: N.Node): N.Identifier => {
-	const n = ctx.j.types.namedTypes;
-	if (n.StringLiteral.check(item)) {
-		return ctx.j.identifier((item as N.StringLiteral).value);
-	}
-	if (n.Identifier.check(item)) return item as N.Identifier;
-	if (n.JSXIdentifier.check(item))
-		return ctx.j.identifier((item as N.JSXIdentifier).name);
-	return item as unknown as N.Identifier;
+export const dcMember = (ident: N.Identifier) => b.memberExpression(dc, ident);
+export const mustIdent = (
+	item: N.StringLiteral | N.Identifier | N.JSXIdentifier | N.TSTypeParameter
+) => {
+	if (t.StringLiteral.check(item)) return b.identifier(item.value as string);
+	else return item;
 };
 export function replaceWithIdent(
-	ctx: TransformContext,
 	specs: ImportArray | N.ExportSpecifier[],
-	src: N.Expression
+	src: K.ExpressionKind
 ) {
-	const n = ctx.j.types.namedTypes;
-	const specList = specs as Array<ImportArray[number] | N.ExportSpecifier>;
-	const isImportSpecifier = (
-		item: ImportArray[number] | N.ExportSpecifier
-	): item is N.ImportSpecifier => n.ImportSpecifier.check(item as N.Node);
-	const isExportSpecifier = (
-		item: ImportArray[number] | N.ExportSpecifier
-	): item is N.ExportSpecifier => n.ExportSpecifier.check(item as N.Node);
-	let mappedSpecs = specList
+	let filteredSpecs =specs
 		.filter(
 			(s) =>
-				(isImportSpecifier(s) &&
-					mustIdent(ctx, (s as N.ImportSpecifier).imported).name !=
-						"default") ||
-				(isExportSpecifier(s) &&
-					mustIdent(
-						ctx,
-						((s as N.ExportSpecifier).local ?? ctx.j.identifier("default")) as N.Node
-					).name != "default")
-		)
-		.map((s) => {
-			let i: N.Identifier;
-			if (isExportSpecifier(s)) i = mustIdent(ctx, s.exported);
-			else i = mustIdent(ctx, (s as N.ImportSpecifier).imported);
-			const local = (s as N.ImportSpecifier | N.ExportSpecifier).local ?? i;
-			const prop = ctx.j.objectProperty(i, local as N.Identifier);
-			prop.shorthand = i.name == (local as N.Identifier).name;
+				(t.ImportSpecifier.check(s) &&
+					mustIdent(s.imported).name != "default") ||
+				(t.ExportSpecifier.check(s) && mustIdent(s.local!).name != "default")
+		) as (N.ImportSpecifier | N.ExportSpecifier)[];
+	let mappedSpecs = filteredSpecs
+		.map((s: N.ImportSpecifier | N.ExportSpecifier) => {
+			let i: N.Identifier | N.JSXIdentifier | N.TSTypeParameter;
+			if (t.ExportSpecifier.check(s)) i = mustIdent(s.exported);
+			else i = mustIdent(s.imported);
+			const prop = b.objectProperty(i, s.local ?? i);
+			prop.shorthand = i.name == s.local?.name;
 			return prop;
 		});
 
-	let defaults = specList
+	let defaults = specs
 		.filter(
 			(s) =>
-				n.ImportNamespaceSpecifier.check(s as N.Node) ||
-				n.ImportDefaultSpecifier.check(s as N.Node) ||
-				(isExportSpecifier(s) &&
-					mustIdent(ctx, (s as N.ExportSpecifier).exported as N.Node).name ==
-						"default")
+				t.ImportNamespaceSpecifier.check(s) ||
+				t.ImportDefaultSpecifier.check(s) ||
+				(t.ExportSpecifier.check(s) && mustIdent(s.exported).name == "default")
 		)
-		.map(
-			(s) =>
-				(s as
-					| N.ImportSpecifier
-					| N.ImportDefaultSpecifier
-					| N.ImportNamespaceSpecifier
-					| N.ExportSpecifier).local!
-		);
-	let destructuredDefaultImports = specList.filter(
+		.map((s) => s.local!);
+	let destructuredDefaultImports = specs.filter(
 		(s) =>
-			isImportSpecifier(s) &&
-			mustIdent(ctx, (s as N.ImportSpecifier).imported as N.Node).name ==
-				"default"
+			t.ImportSpecifier.check(s) && mustIdent(s.imported!).name == "default"
 	) as N.ImportSpecifier[];
-	let destructuredDefaultExports = specList.filter(
-		(s) =>
-			isExportSpecifier(s) &&
-			mustIdent(
-				ctx,
-				((s as N.ExportSpecifier).local ?? ctx.j.identifier("default")) as N.Node
-			).name == "default"
+	let destructuredDefaultExports = specs.filter(
+		(s) => t.ExportSpecifier.check(s) && mustIdent(s.local!).name == "default"
 	) as N.ExportSpecifier[];
-	let mappedDefaults = defaults.map((m) =>
-		ctx.j.variableDeclarator(m, src as any)
-	);
+	let mappedDefaults = defaults.map((m) => b.variableDeclarator(m, src));
 	let declarators: N.VariableDeclarator[] = [];
 	declarators.push(
 		...destructuredDefaultImports.map((a) =>
-			ctx.j.variableDeclarator(a.local as any, src as any)
+			b.variableDeclarator(a.local ?? a.imported, src)
 		)
 	);
 	declarators.push(
 		...destructuredDefaultExports.map((a) =>
-			ctx.j.variableDeclarator(mustIdent(ctx, a.exported) as any, src as any)
+			b.variableDeclarator(mustIdent(a.exported), src)
 		)
 	);
 	if (mappedSpecs.length)
-		declarators.push(
-			ctx.j.variableDeclarator(ctx.j.objectPattern(mappedSpecs), src as any)
-		);
+		declarators.push(b.variableDeclarator(b.objectPattern(mappedSpecs), src));
 	declarators.push(...mappedDefaults);
 	return declarators.length
-		? ctx.j.variableDeclaration("const", declarators)
-		: ctx.j.expressionStatement(src as any);
+		? b.variableDeclaration("const", declarators)
+		: b.expressionStatement(src);
 }
 
 export function replaceJsxElement(
-	ctx: TransformContext,
-	path: ASTPath<N.JSXOpeningElement | N.JSXClosingElement>,
+	path: NodePath<N.JSXOpeningElement | N.JSXClosingElement>,
 	dcImports: N.ImportSpecifier[]
 ) {
-	const n = ctx.j.types.namedTypes;
 	const node = path.node;
 	const nname = node.name as N.JSXIdentifier;
 	if (
 		dcImports.find(
-			(a) => n.Identifier.check(a.imported) && a.imported.name == nname.name
+			(a) => t.Identifier.check(a.imported) && a.imported.name == nname.name
 		)
 	) {
-		let me = ctx.j.jsxMemberExpression(
-			ctx.dcJsx,
-			ctx.j.jsxIdentifier(nname.name)
-		);
+		let me = b.jsxMemberExpression(dcJsx, b.jsxIdentifier(nname.name));
 		return me;
 	}
 	return null;
 }
-export function convertImportToDcRequire(
-	ctx: TransformContext,
-	src: string | N.StringLiteral
-) {
-	const n = ctx.j.types.namedTypes;
+export function convertImportToDcRequire(src: string | N.StringLiteral) {
 	const finalSource =
-		typeof src != "string" && n.StringLiteral.check(src)
+		typeof src != "string" && t.StringLiteral.check(src)
 			? src
-			: ctx.j.stringLiteral(src as string);
-	return ctx.j.awaitExpression(
-		ctx.j.callExpression(ctx.j.memberExpression(ctx.dc, ctx.dcRequire), [
-			finalSource,
-		])
+			: b.stringLiteral(src);
+	return b.awaitExpression(
+		b.callExpression(b.memberExpression(dc, dcRequire), [finalSource])
 	);
 }
-export function declToObjectProperty(
-	ctx: TransformContext,
-	decl: N.Declaration | null
-): N.ObjectProperty[] {
-	const n = ctx.j.types.namedTypes;
+export function declToObjectProperty(decl: N.Declaration | null): N.ObjectProperty[] {
 	if (decl == null) return [];
-	if (n.VariableDeclaration.check(decl)) {
-		const varDecl = decl as N.VariableDeclaration;
-		return varDecl.declarations.map((a) => {
-			const rid =n.Identifier.check(a) || n.JSXIdentifier.check(a) || n.TSTypeParameter.check(a) ? a :a.id; 
-			const rinit = n.VariableDeclarator.check(a) ? a.init : rid;
-			let prop = ctx.j.objectProperty(
-				rid as N.Identifier,
-				rinit ?? rid
+	if (t.VariableDeclaration.check(decl)) {
+		return decl.declarations.map((a) => {
+			const rid =
+				t.Identifier.check(a) ||
+				t.JSXIdentifier.check(a) ||
+				t.TSTypeParameter.check(a)
+					? a
+					: a.id;
+			const rinit = t.VariableDeclarator.check(a) ? a.init : rid;
+			let prop = b.objectProperty(
+				rid as K.IdentifierKind,
+				rinit as K.ExpressionKind
 			);
 			prop.shorthand = true;
 			return prop;
 		});
-	} else if (n.FunctionDeclaration.check(decl)) {
-		const fnDecl = decl as N.FunctionDeclaration;
-		let prop = ctx.j.objectProperty(fnDecl.id!, fnDecl.id!);
+	} else if (t.FunctionDeclaration.check(decl)) {
+		let prop = b.objectProperty(decl.id!, decl.id!);
 		prop.shorthand = true;
 		return [prop];
 	}
@@ -231,59 +189,47 @@ export function declToObjectProperty(
 }
 
 export function convertExports(
-	ctx: TransformContext,
 	exports: ExportArray,
 	opts: TransformOptions,
 	filename?: string
 ) {
-	const n = ctx.j.types.namedTypes;
-	let singleDefault: N.Expression | null = null;
-	const objEx = ctx.j.objectExpression(
+	let singleDefault: K.ExpressionKind | null = null;
+	const objEx = b.objectExpression(
 		exports
 			.flatMap<N.ObjectProperty | N.SpreadElement | null>((e) => {
-				if (n.ExportNamedDeclaration.check(e)) {
-					const namedDecl = e as N.ExportNamedDeclaration;
-					if (Array.isArray(namedDecl.specifiers) && namedDecl.specifiers?.length) {
+				if (t.ExportNamedDeclaration.check(e)) {
+					if (Array.isArray(e.specifiers) && e.specifiers?.length) {
 						return (
-							namedDecl.specifiers as (
+							e.specifiers as (
 								| N.ExportSpecifier
 								| N.ExportNamespaceSpecifier
 								| N.ExportDefaultSpecifier
 							)[]
 						).map((a) => {
-							if (n.ExportNamespaceSpecifier.check(a)) {
+							if (t.ExportNamespaceSpecifier.check(a)) {
 								const convertedSource = convertRelative(
-									(namedDecl.source as N.StringLiteral).value,
+									(e.source as N.StringLiteral).value,
 									opts,
 									filename
 								);
-								return ctx.j.objectProperty(
+								return b.objectProperty(
 									a.exported,
-									convertImportToDcRequire(
-										ctx,
-										ctx.j.stringLiteral(convertedSource!)
-									)
+									convertImportToDcRequire(b.stringLiteral(convertedSource!))
 								);
-							} else if (n.ExportSpecifier.check(a)) {
-								const exportSpec = a as N.ExportSpecifier;
-								if ((exportSpec.exported as N.Identifier).name == "default") {
-									singleDefault = exportSpec.local as N.Identifier;
+							} else if (t.ExportSpecifier.check(a)) {
+								if ((a.exported as N.Identifier).name == "default") {
+									singleDefault = a.local!;
 									return null;
 								}
-								return ctx.j.objectProperty(
-									exportSpec.exported,
-									exportSpec.local ?? exportSpec.exported
-								);
+								return b.objectProperty(a.exported, a.local ?? a.exported);
 							}
 							return null;
 						});
-					} else if (declToObjectProperty(ctx, namedDecl.declaration!).length) {
-						return declToObjectProperty(ctx, namedDecl.declaration!);
+					} else if (declToObjectProperty(e.declaration!).length) {
+						return declToObjectProperty(e.declaration!);
 					}
 				} else {
-					const defaultDecl = e as N.ExportDefaultDeclaration;
-					if (!singleDefault)
-						singleDefault = defaultDecl.declaration as N.Expression;
+					if (!singleDefault) singleDefault = e.declaration as K.ExpressionKind;
 				}
 				return [];
 			})
@@ -291,10 +237,10 @@ export function convertExports(
 	);
 	const sd = singleDefault as any;
 	if (sd) {
-		if (n.FunctionDeclaration.check(sd) || n.VariableDeclaration.check(sd)) {
-			if (n.FunctionDeclaration.check(sd)) {
-				return ctx.j.returnStatement(
-					ctx.j.functionExpression(
+		if (t.FunctionDeclaration.check(sd) || t.VariableDeclaration.check(sd)) {
+			if (t.FunctionDeclaration.check(sd)) {
+				return b.returnStatement(
+					b.functionExpression(
 						sd.id,
 						sd.params,
 						sd.body,
@@ -303,12 +249,12 @@ export function convertExports(
 					)
 				);
 			}
-			return ctx.j.returnStatement(singleDefault as any);
-		} else if (n.Expression.check(sd)) {
-			return ctx.j.returnStatement(singleDefault as any);
+			return b.returnStatement(singleDefault);
+		} else if (t.Expression.check(sd)) {
+			return b.returnStatement(singleDefault);
 		}
 	}
-	const rs = ctx.j.returnStatement(objEx);
+	const rs = b.returnStatement(objEx);
 	return rs;
 }
 
@@ -319,9 +265,9 @@ export function convertRelative(
 	filename?: string
 ) {
 	const { importPaths, version, dependencies: deps } = opts;
-	let ext = pathutils.extname(filename!)
-	if(ext == ".ts" && filename?.endsWith(".d.ts")) {
-		ext = ".d.ts"
+	let ext = pathutils.extname(filename!);
+	if (ext == ".ts" && filename?.endsWith(".d.ts")) {
+		ext = ".d.ts";
 		// ext = ".js"
 	}
 	if (
@@ -352,8 +298,11 @@ export function convertRelative(
 		if (nk) key = nk;
 		else key = `${base}@${opts.latestVersions[base]}`;
 	}
-	if(!aux && importPaths[key]?.entryPoint) {
-		return pathutils.posix.join(importPaths[key].baseDir,importPaths[key].entryPoint)
+	if (!aux && importPaths[key]?.entryPoint) {
+		return pathutils.posix.join(
+			importPaths[key].baseDir,
+			importPaths[key].entryPoint
+		);
 	}
 
 	let entry: string | undefined = importPaths[key]?.files?.find(
@@ -374,7 +323,11 @@ export function convertRelative(
 		}).reduce((pv, cv) => pv[1] <= cv[1] ? cv : pv, ["", 0])[0]; */
 		const lastSegment = split[split.length - 1];
 		const rest = split.slice(0, -1);
-		entry = importPaths[key]?.files?.find(a => exts.some(b => a.endsWith(lastSegment + b)) && rest.every(b => a.includes(`/${b}/`)))
+		entry = importPaths[key]?.files?.find(
+			(a) =>
+				exts.some((b) => a.endsWith(lastSegment + b)) &&
+				rest.every((b) => a.includes(`/${b}/`))
+		);
 	}
 	if ((src.startsWith("./") || src.startsWith("..")) && filename) {
 		entry = pathutils
@@ -383,9 +336,9 @@ export function convertRelative(
 
 		if (!exts.includes(pathutils.extname(entry))) {
 			const tmp = entry.replace(/\\/g, "/");
-			let splitDir = pathutils.dirname(tmp).split(/\/|\\/);	
+			let splitDir = pathutils.dirname(tmp).split(/\/|\\/);
 			let chopped = splitDir.slice(splitDir.indexOf("libs") + 1);
-			if(!chopped.length) {
+			if (!chopped.length) {
 				chopped = splitDir;
 			}
 
@@ -394,9 +347,7 @@ export function convertRelative(
 			outer: for (let i = 0; i < chopped.length; i++) {
 				for (let j = 1; j <= 2; j++) {
 					const libStart = chopped.slice(0, j).join("/");
-					if (
-						libStart in importPaths
-					) {
+					if (libStart in importPaths) {
 						libName = libStart;
 						break outer;
 					}
@@ -407,8 +358,7 @@ export function convertRelative(
 			}
 
 			entry = importPaths[libName!]?.files?.find(
-				(a) =>
-					 a != filename && a == pathutils.posix.normalize(tmp + ext)
+				(a) => a != filename && a == pathutils.posix.normalize(tmp + ext)
 			);
 
 			if (!entry) {
@@ -446,43 +396,39 @@ export function convertRelative(
 export type ImportConvertResult = {
 	hooks: N.ImportSpecifier[];
 	otherReact: ImportArray;
-	specs: N.Statement[];
+	specs: N.Node[];
 	dcImports: N.ImportSpecifier[];
 	shouldRemove: boolean;
 };
 export function convertRequireCallToImport(
-	ctx: TransformContext,
 	node: N.VariableDeclaration | N.AssignmentExpression
 ): [mod: string, specs: ImportArray][] {
-	const n = ctx.j.types.namedTypes;
 	const ret: [string, ImportArray][] = [];
-	if (n.VariableDeclaration.check(node)) {
-		const varDecl = node as N.VariableDeclaration;
-		for (let d of varDecl.declarations as N.VariableDeclarator[]) {
-			if (!d.init || !n.CallExpression.check(d.init)) continue;
-			const init = d.init as N.CallExpression;
+	if (t.VariableDeclaration.check(node)) {
+		for (let d of node.declarations) {
+			const ad = d as N.VariableDeclarator;
 			if (
-				n.Identifier.check(init.callee) &&
-				(init.callee as N.Identifier).name == "require"
+				t.CallExpression.check(ad.init) &&
+				t.Identifier.check(ad.init.callee) &&
+				ad.init.callee.name == "require"
 			) {
-				let mod = (init.arguments[0] as N.StringLiteral).value;
+				let mod = (ad.init.arguments[0] as N.StringLiteral).value;
 				let specs: ImportArray = [];
-				if (n.ObjectPattern.check(d.id)) {
-					const objPattern = d.id as N.ObjectPattern;
-					for (let p of objPattern.properties) {
-						if (n.RestElement.check(p)) {
+				if (t.ObjectPattern.check(ad.id)) {
+					for (let p of ad.id.properties) {
+						if (t.RestElement.check(p)) {
 						} else {
 							const prop = p as N.ObjectProperty;
 							specs.push(
-								ctx.j.importSpecifier(
-									prop.value as N.Identifier,
-									prop.key as N.Identifier
+								b.importSpecifier(
+									prop.value as K.IdentifierKind,
+									prop.key as K.IdentifierKind
 								)
 							);
 						}
 					}
-				} else if (n.Identifier.check(d.id)) {
-					specs.push(ctx.j.importDefaultSpecifier(d.id as N.Identifier));
+				} else if (t.Identifier.check(ad.id)) {
+					specs.push(b.importDefaultSpecifier(ad.id));
 				}
 				ret.push([mod, specs]);
 			}
@@ -495,17 +441,11 @@ export function convertRequireCallToImport(
 	return ret;
 }
 export function convertImportOrRequire(
-	ctx: TransformContext,
 	src: string,
 	specifiers: ImportArray = [],
 	opts: TransformOptions,
 	filename?: string
 ): ImportConvertResult {
-	const n = ctx.j.types.namedTypes;
-	const isImportSpecifier = (item: any): item is N.ImportSpecifier =>
-		n.ImportSpecifier.check(item as N.Node);
-	const isIdentifier = (item: any): item is N.Identifier =>
-		n.Identifier.check(item as N.Node);
 	let specs: ImportConvertResult = {
 		hooks: [],
 		otherReact: [],
@@ -515,20 +455,24 @@ export function convertImportOrRequire(
 	};
 	if (["react", "preact", "preact/hooks", "preact/compat"].includes(src)) {
 		let hooks = specifiers.filter(
-			(s): s is N.ImportSpecifier =>
-				isImportSpecifier(s) &&
-				isIdentifier(s.imported) &&
+			(s) =>
+				t.ImportSpecifier.check(s) &&
+				t.Identifier.check(s.imported) &&
 				s.imported.name.startsWith("use")
-		);
+		) as N.ImportSpecifier[];
 		let other: ImportArray = specifiers.filter(
 			(
-				s: N.ImportSpecifier | N.ImportDefaultSpecifier | N.ImportNamespaceSpecifier
+				s:
+					| N.ImportSpecifier
+					| N.ImportDefaultSpecifier
+					| N.ImportNamespaceSpecifier
+					| N.ImportSpecifier
 			) =>
-				(isImportSpecifier(s) &&
-					isIdentifier(s.imported) &&
-					!s.imported.name.startsWith("use")) ||
-				n.ImportDefaultSpecifier.check(s) ||
-				n.ImportNamespaceSpecifier.check(s)
+				(t.ImportSpecifier.check(s) &&
+					t.Identifier.check(s.imported) &&
+					!(s.imported.name as string).startsWith("use")) ||
+				t.ImportDefaultSpecifier.check(s) ||
+				t.ImportNamespaceSpecifier.check(s)
 		) as ImportArray;
 		specs.hooks.push(...hooks);
 		/* let hookSpecs = replaceWithIdent(
@@ -536,28 +480,25 @@ export function convertImportOrRequire(
 					dcMember(b.identifier("hooks"))
 				); */
 		let otherSpecs = replaceWithIdent(
-			ctx,
 			specifiers,
-			dcMember(ctx, ctx.j.identifier("preact"))
+			dcMember(b.identifier("preact"))
 		);
-		const finalReplacement: (N.VariableDeclaration | N.ExpressionStatement)[] = [];
+		const finalReplacement = [];
 		// if (hookSpecs.declarations.length) finalReplacement.push(hookSpecs);
 		finalReplacement.push(otherSpecs);
 		specs.specs = finalReplacement;
 	} else if (src == "react-dom") {
 		specs.specs = [
 			replaceWithIdent(
-				ctx,
 				specifiers as ImportArray,
-				dcMember(ctx, ctx.j.identifier("preact"))
+				dcMember(b.identifier("preact"))
 			),
 		];
 	} else if (src.startsWith("react/jsx-")) {
 		specs.specs = [
 			replaceWithIdent(
-				ctx,
 				specifiers as ImportArray,
-				dcMember(ctx, ctx.j.identifier("jsxRuntime"))
+				dcMember(b.identifier("jsxRuntime"))
 			),
 		];
 	} else if (src === "#datacore") {
@@ -568,26 +509,25 @@ export function convertImportOrRequire(
 		src.includes("#") ||
 		src.includes("^")
 	) {
-		const awaiter = ctx.j.awaitExpression(
-			ctx.j.callExpression(ctx.j.memberExpression(ctx.dc, ctx.dcRequire), [
-				ctx.j.stringLiteral(src),
+		const awaiter = b.awaitExpression(
+			b.callExpression(b.memberExpression(dc, dcRequire), [
+				b.stringLiteral(src),
 			])
 		);
-		specs.specs = [replaceWithIdent(ctx, specifiers as ImportArray, awaiter)];
+		specs.specs = [replaceWithIdent(specifiers as ImportArray, awaiter)];
 	} else {
 		let entry = convertRelative(src, opts, filename);
 		if (entry) {
-			const awaiter = ctx.j.awaitExpression(
-				ctx.j.callExpression(ctx.j.memberExpression(ctx.dc, ctx.dcRequire), [
-					ctx.j.stringLiteral(entry!),
+			const awaiter = b.awaitExpression(
+				b.callExpression(b.memberExpression(dc, dcRequire), [
+					b.stringLiteral(entry!),
 				])
 			);
-			specs.specs = [
-				replaceWithIdent(ctx, specifiers as ImportArray, awaiter),
-			];
+			specs.specs = [replaceWithIdent(specifiers as ImportArray, awaiter)];
 		} else {
 			specs.shouldRemove = true;
 		}
 	}
 	return specs;
 }
+

@@ -43,6 +43,7 @@ export class Datacore extends Component {
         super();
 
         this.vault = app.vault;
+        this.addChild((this.transformer = new DatacoreJsTransformer(plugin, this.app)));
         this.metadataCache = app.metadataCache;
         this.persister = new LocalStorageCache("primary", version);
         this.events = new Events();

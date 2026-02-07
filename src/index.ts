@@ -1,5 +1,6 @@
 /** Library entrypoint for datacore. */
 
+
 // User facing API types. Only expose types since people should be
 // calling the API and not using the internals directly.
 export type { DatacoreApi } from "api/api";
@@ -42,3 +43,4 @@ export type { Lit, Markdown } from "ui/markdown";
 // Utilities in the API. These are fine to expose the implementations for.
 export * from "api/data-array";
 export * from "api/result";
+

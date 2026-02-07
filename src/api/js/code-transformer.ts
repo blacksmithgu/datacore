@@ -1,396 +1,353 @@
-import jscodeshift from "jscodeshift";
-import { ASTPath } from "jscodeshift";
-import type { namedTypes as N } from "ast-types";
-import { convertExports, convertImportOrRequire, convertImportToDcRequire, convertRelative, convertRequireCallToImport, createTransformContext, ExportArray, ImportArray, mustIdent, replaceJsxElement, replaceWithIdent, TransformOptions } from "./ast-util";
+import { ParserOptions } from "@babel/parser";
+import { parse, visit, types, print } from "recast";
+import { parse as doParse } from "@babel/parser";
+import * as K from "ast-types/lib/gen/kinds";
+import type { namedTypes as N, Visitor } from "ast-types";
+import {
+    convertExports,
+    convertImportOrRequire,
+    convertImportToDcRequire,
+    convertRelative,
+    convertRequireCallToImport,
+    dc,
+    dcRequire,
+    ExportArray,
+    LVal,
+    mustIdent,
+    replaceJsxElement,
+    replaceWithIdent,
+    TransformOptions,
+} from "./ast-util";
+import { VisitorMethods } from "ast-types/lib/path-visitor";
+const b = types.builders;
+const t = types.namedTypes;
 
 export function transformImportsAndExports(
-	source: string,
-	opts: TransformOptions,
-	filename?: string
-): string {
-	const j = jscodeshift.withParser("tsx");
-	const ctx = createTransformContext(j);
-	const n = j.types.namedTypes;
-	const isIdentifier = (node: any): node is N.Identifier =>
-		n.Identifier.check(node as N.Node);
-	const isStringLiteral = (node: any): node is N.StringLiteral =>
-		n.StringLiteral.check(node as N.Node);
-	const isMemberExpression = (node: any): node is N.MemberExpression =>
-		n.MemberExpression.check(node as N.Node);
-	const isOptionalMemberExpression = (
-		node: any
-	): node is N.OptionalMemberExpression =>
-		n.OptionalMemberExpression.check(node as N.Node);
-	const isObjectProperty = (node: any): node is N.ObjectProperty =>
-		n.ObjectProperty.check(node as N.Node);
-	const root = j(source);
-	let dcImports: N.ImportSpecifier[] = [];
-	let dcHooks: N.ImportSpecifier[] = [];
-	let dcExports: ExportArray = [];
-	let allDecls: N.ExportAllDeclaration[] = [];
-
-	root.find(j.ImportDeclaration).forEach((path: ASTPath<N.ImportDeclaration>) => {
-		const node = path.node;
-		const src = String(node.source.value);
-		const res = convertImportOrRequire(
-			ctx,
-			src,
-			node.specifiers as ImportArray,
-			opts,
-			filename
-		);
-		dcImports.push(...res.dcImports);
-		dcHooks.push(...res.hooks);
-		if (res.shouldRemove) {
-			j(path).remove();
-		} else if (res.specs.length) {
-			path.replace(...res.specs);
-		} else {
-			j(path).remove();
-		}
-	});
-
-	root.find(j.ExpressionStatement).forEach(
-		(path: ASTPath<N.ExpressionStatement>) => {
-		const node = path.node;
-		if (n.CallExpression.check(node.expression)) {
-			const callExpr = node.expression as N.CallExpression;
-			const args = callExpr.arguments;
-			if (
-				n.MemberExpression.check(callExpr.callee) &&
-				args.length == 3 &&
-				isIdentifier(args[0]) &&
-				args[0].name == "exports"
-			) {
-			const ident = mustIdent(
-				ctx,
-				callExpr.arguments[1] as N.StringLiteral
-			);
-			let value: N.ExpressionStatement | null = null;
-			if (ident.name != "__esModule") {
-				const objEx = callExpr.arguments[2] as N.ObjectExpression;
-				const val = objEx.properties.find((prop): prop is N.ObjectProperty => {
-					if (!isObjectProperty(prop)) return false;
-					const key = (prop as N.ObjectProperty).key;
-					if (!isIdentifier(key)) return false;
-					return key.name == "value" || key.name == "get";
-				});
-				if (val) {
-					const key = val.key as N.Identifier;
-					if (key.name == "value") {
-						value = j.expressionStatement(val.value as any);
-					} else if (key.name == "get") {
-						const body = val.value as N.FunctionExpression;
-						value = j.expressionStatement(
-							j.callExpression(
-								j.functionExpression(
-									null,
-									[],
-									body.body,
-									body.generator,
-									body.async
-								),
-								[]
-							)
-						);
-					}
-					dcExports.push(
-						j.exportNamedDeclaration(
-							j.variableDeclaration("const", [
-								j.variableDeclarator(ident, value?.expression),
+    src: string,
+    opts: TransformOptions,
+    srcPath: string,
+    other: ParserOptions = {}
+) {
+    let dcImports: N.ImportSpecifier[] = [];
+    let dcHooks: N.ImportSpecifier[] = [];
+    let dcExports: ExportArray = [];
+    let allDecls: N.ExportAllDeclaration[] = [];
+    const ast = parse(src, {
+        parser: {
+            parse(source: string) {
+                return doParse(source, {
+                    ...other,
+                    plugins: ["jsx", "typescript"],
+                    allowAwaitOutsideFunction: true,
+                    allowReturnOutsideFunction: true,
+                    errorRecovery: true,
+                    sourceType: "module",
+										tokens: true
+                });
+            },
+        },
+    });
+    const visitor: Visitor = {
+        visitImportDeclaration(path) {
+            let node = path.node;
+            let src: string = node.source.value as string;
+            const res = convertImportOrRequire(src, node.specifiers, opts, srcPath);
+            dcImports.push(...res.dcImports);
+            dcHooks.push(...res.hooks);
+            if (res.shouldRemove) {
+                path.replace();
+            } else {
+                path.replace(...res.specs);
+            }
+            /* if (plugin != null && src.split("/").length == 2) */
+            /* else if (resolveRelativeTo != null) {
+					if (src.startsWith("./") || src.startsWith("..")) {
+						let apath = pathutils.join(resolveRelativeTo, src);
+						const awaiter = b.awaitExpression(
+							b.callExpression(b.memberExpression(dc, dcRequire), [
+								b.stringLiteral(apath),
 							])
-						)
-					);
-				}
-				j(path).remove();
-			} else {
-				j(path).remove();
-			}
-			}
-		}
-	});
+						);
+						const specs = replaceWithIdent(
+							node.specifiers as ImportArray,
+							awaiter
+						);
+						path.replaceWith(specs);
+					} else if (plugin != null && src.split("/").length == 2) {
+						otherImports.push(src);
+					}
+				} */
+            //console.log("p", node, dcImports);
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitExpressionStatement(path) {
+            const node = path.node;
+            if (t.CallExpression.check(node.expression)) {
+                if (t.MemberExpression.check(node.expression.callee)) {
+                    if (t.Identifier.check(node.expression.arguments[0])) {
+                        if (node.expression.arguments[0].name == "exports" && node.expression.arguments.length == 3) {
+                            const ident = mustIdent(node.expression.arguments[1] as N.StringLiteral);
+                            let value: N.ExpressionStatement | null = null;
+                            if (ident.name != "__esModule") {
+                                const objEx = node.expression.arguments[2] as N.ObjectExpression;
+                                const val: N.ObjectProperty | undefined = objEx.properties.find(
+                                    (a) =>
+                                        t.ObjectProperty.check(a) &&
+                                        t.Identifier.check(a.key) &&
+                                        (a.key.name == "value" || a.key.name == "get")
+                                ) as N.ObjectProperty;
+                                if (val) {
+                                    const key = val.key as N.Identifier;
+                                    if (key.name == "value") {
+                                        value = b.expressionStatement(val.value as K.ExpressionKind);
+                                    } else if (key.name == "get") {
+                                        const body = val.value as N.FunctionExpression;
+                                        value = b.expressionStatement(
+                                            b.callExpression(
+                                                b.functionExpression(null, [], body.body, body.generator, body.async),
+                                                []
+                                            )
+                                        );
+                                    }
+                                    dcExports.push(
+                                        b.exportNamedDeclaration(
+                                            b.variableDeclaration("const", [
+                                                b.variableDeclarator(ident, value?.expression),
+                                            ])
+                                        )
+                                    );
+                                }
+                                path.replace();
+                            } else {
+                                path.replace();
+                            }
+                        }
+                    }
+                }
+            }
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitVariableDeclaration(path) {
+            const node = path.node;
+            const res = convertRequireCallToImport(node);
+            if (res.length) {
+                path.replace(...res.map(([mod, specs]) => b.importDeclaration(specs, b.stringLiteral(mod))));
+            }
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitCallExpression(path) {
+            const node = path.node;
 
-	root.find(j.VariableDeclaration).forEach(
-		(path: ASTPath<N.VariableDeclaration>) => {
-		const node = path.node;
-		const res = convertRequireCallToImport(ctx, node);
-		if (res.length) {
-			path.replace(
-				...res.map(([mod, specs]) =>
-					j.importDeclaration(specs, j.stringLiteral(mod))
-				)
-			);
-		}
-	});
+            if (
+                dcImports.find(
+                    (a) => t.Identifier.check(a.imported) && a.imported.name == (node.callee as N.Identifier).name
+                ) != null ||
+                dcHooks.find(
+                    (a) => t.Identifier.check(a.imported) && a.imported.name == (node.callee as N.Identifier).name
+                ) != null
+            ) {
+                const nm = b.memberExpression(dc, node.callee as N.Identifier);
+                path.insertAfter(b.callExpression(nm, node.arguments));
+                path.replace();
+            } else if (
+                t.Identifier.check(node.callee) &&
+                node.callee.name == "require" &&
+                t.StringLiteral.check(node.arguments[0])
+            ) {
+                let entry = convertRelative((node.arguments[0] as N.StringLiteral).value, opts, srcPath);
+                if (entry) {
+                    const awaiter = b.awaitExpression(
+                        b.callExpression(b.memberExpression(dc, dcRequire), [b.stringLiteral(entry!)])
+                    );
+                    path.replace(awaiter);
+                } else {
+                }
+            }
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitAssignmentExpression(path) {
+            const node = path.node;
+            const isModuleExports = (node: LVal | N.OptionalMemberExpression): boolean => {
+                if (t.MemberExpression.check(node)) {
+                    if (t.Identifier.check(node.property) && t.Identifier.check(node.object)) {
+                        return node.object.name == "module" && node.property.name == "exports";
+                    } else if (t.MemberExpression.check(node.object)) {
+                        return isModuleExports(node.object);
+                    }
+                }
+                return false;
+            };
+            const isExports = (node: LVal | N.OptionalMemberExpression): boolean => {
+                if (t.MemberExpression.check(node)) {
+                    if (t.Identifier.check(node.property) && t.Identifier.check(node.object)) {
+                        return node.object.name == "exports";
+                    }
+                }
+                return false;
+            };
+            if (isModuleExports(node.left as LVal)) {
+                let me = node.left as N.MemberExpression;
+                if (t.MemberExpression.check(me.object) && t.Identifier.check(me.object.property)) {
+                    const prop = t.Identifier.check(me.property)
+                        ? me.property
+                        : b.identifier((me.property as N.StringLiteral).value);
+                    const vd = b.variableDeclaration("const", [b.variableDeclarator(prop, node.right)]);
+                    const final = b.exportNamedDeclaration(vd);
+                    dcExports.push(final);
+                    path.replace();
+                } else {
+                    const final = b.exportDefaultDeclaration(node.right);
+                    dcExports.push(final);
+                    if (
+                        t.ExpressionStatement.check(path.parent) ||
+                        t.AssignmentExpression.check(path.parent) ||
+                        t.ConditionalExpression.check(path.parent)
+                    ) {
+                        path.parentPath.remove();
+                    } else {
+                        path.replace();
+                    }
+                }
+            } else if (isExports(node.left as LVal)) {
+                let me = node.left as N.MemberExpression;
+                const prop = t.Identifier.check(me.property)
+                    ? me.property
+                    : b.identifier((me.property as N.StringLiteral).value);
+                const vd = b.variableDeclaration("const", [b.variableDeclarator(prop, node.right)]);
+                const final = b.exportNamedDeclaration(vd);
+                dcExports.push(final);
 
-	root.find(j.CallExpression).forEach((path: ASTPath<N.CallExpression>) => {
-		const node = path.node;
-		const calleeIdent = isIdentifier(node.callee) ? node.callee : null;
-		if (
-			calleeIdent &&
-			(dcImports.find(
-				(a) =>
-					n.Identifier.check(a.imported) &&
-					a.imported.name == calleeIdent.name
-			) != null ||
-				dcHooks.find(
-					(a) =>
-						n.Identifier.check(a.imported) &&
-						a.imported.name == calleeIdent.name
-				) != null)
-		) {
-			const nm = j.memberExpression(ctx.dc, calleeIdent);
-			path.replace(j.callExpression(nm, node.arguments));
-		} else if (
-			isIdentifier(node.callee) &&
-			node.callee.name == "require" &&
-			isStringLiteral(node.arguments[0])
-		) {
-			let entry = convertRelative(
-				(node.arguments[0] as N.StringLiteral).value,
-				opts,
-				filename
-			);
-			if (entry) {
-				const awaiter = j.awaitExpression(
-					j.callExpression(j.memberExpression(ctx.dc, ctx.dcRequire), [
-						j.stringLiteral(entry!),
-					])
-				);
-				path.replace(awaiter);
-			}
-		}
-	});
-
-	root.find(j.AssignmentExpression).forEach(
-		(path: ASTPath<N.AssignmentExpression>) => {
-		const node = path.node;
-		const isModuleExports = (
-			target: N.Node | null | undefined
-		): target is N.MemberExpression | N.OptionalMemberExpression => {
-			if (!target) return false;
-			if (isMemberExpression(target)) {
-				if (isIdentifier(target.property) && isIdentifier(target.object)) {
-					return (
-						target.object.name == "module" &&
-						target.property.name == "exports"
-					);
-				} else if (isMemberExpression(target.object)) {
-					return isModuleExports(target.object);
-				}
-			} else if (isOptionalMemberExpression(target)) {
-				if (isIdentifier(target.property) && isIdentifier(target.object)) {
-					return (
-						target.object.name == "module" &&
-						target.property.name == "exports"
-					);
-				} else if (
-					isOptionalMemberExpression(target.object) ||
-					isMemberExpression(target.object)
-				) {
-					return isModuleExports(target.object);
-				}
-			}
-			return false;
-		};
-		const isExports = (
-			target: N.Node | null | undefined
-		): target is N.MemberExpression | N.OptionalMemberExpression => {
-			if (!target) return false;
-			if (isMemberExpression(target)) {
-				if (isIdentifier(target.property) && isIdentifier(target.object)) {
-					return target.object.name == "exports";
-				}
-			} else if (isOptionalMemberExpression(target)) {
-				if (isIdentifier(target.property) && isIdentifier(target.object)) {
-					return target.object.name == "exports";
-				}
-			}
-			return false;
-		};
-		if (isModuleExports(node.left)) {
-			let me = node.left as N.MemberExpression;
-			if (isMemberExpression(me.object) && isIdentifier(me.object.property)) {
-				const prop = isIdentifier(me.property)
-					? me.property
-					: j.identifier((me.property as N.StringLiteral).value);
-				const vd = j.variableDeclaration("const", [
-					j.variableDeclarator(prop, node.right as any),
-				]);
-				const final = j.exportNamedDeclaration(vd);
-				dcExports.push(final);
-				j(path).remove();
-			} else {
-				const final = j.exportDefaultDeclaration(node.right as any);
-				dcExports.push(final);
-				const parent = path.parentPath ?? path.parent;
-				if (
-					parent &&
-					(n.ExpressionStatement.check(parent.node) ||
-						n.AssignmentExpression.check(parent.node) ||
-						n.ConditionalExpression.check(parent.node))
-				) {
-					j(parent).remove();
-				} else {
-					j(path).remove();
-				}
-			}
-		} else if (isExports(node.left)) {
-			let me = node.left as N.MemberExpression;
-			const prop = isIdentifier(me.property)
-				? me.property
-				: j.identifier((me.property as N.StringLiteral).value);
-			const vd = j.variableDeclaration("const", [
-				j.variableDeclarator(prop, node.right as any),
-			]);
-			const final = j.exportNamedDeclaration(vd);
-			dcExports.push(final);
-
-			const parent = path.parentPath ?? path.parent;
-			if (
-				parent &&
-				(n.ExpressionStatement.check(parent.node) ||
-					n.AssignmentExpression.check(parent.node) ||
-					n.ConditionalExpression.check(parent.node) ||
-					n.ObjectProperty.check(parent.node))
-			) {
-				if (n.ObjectProperty.check(parent.node)) {
-					path.replace(j.nullLiteral());
-				} else {
-					parent.replace(j.expressionStatement(j.nullLiteral()));
-				}
-			} else {
-				j(path).remove();
-			}
-		}
-	});
-
-	root.find(j.JSXOpeningElement).forEach(
-		(path: ASTPath<N.JSXOpeningElement>) => {
-		let toReplace = replaceJsxElement(ctx, path, dcImports);
-		if (toReplace)
-			path.replace(
-				j.jsxOpeningElement(toReplace, path.node.attributes, path.node.selfClosing)
-			);
-	});
-
-	root.find(j.JSXClosingElement).forEach(
-		(path: ASTPath<N.JSXClosingElement>) => {
-		let toReplace = replaceJsxElement(ctx, path, dcImports);
-		if (toReplace) path.replace(j.jsxClosingElement(toReplace));
-	});
-
-	root.find(j.ExportNamedDeclaration).forEach(
-		(path: ASTPath<N.ExportNamedDeclaration>) => {
-		const node = path.node;
-		if (node.declaration) {
-			dcExports.push(node);
-			path.replace(node.declaration);
-		} else {
-			const specifiers = node.specifiers ?? [];
-			if (node.source && specifiers.length) {
-				const entry = convertRelative(String(node.source.value), opts, filename);
-				if (entry) {
-				const awaiter = j.awaitExpression(
-					j.callExpression(j.memberExpression(ctx.dc, ctx.dcRequire), [
-						j.stringLiteral(entry!),
-					])
-				);
-				const specs = replaceWithIdent(
-					ctx,
-					specifiers as N.ExportSpecifier[],
-					awaiter
-				);
-				const exportSpecifiers = n.VariableDeclaration.check(specs)
-					? (specs as N.VariableDeclaration).declarations.flatMap(
-							(a) => {
-							const fin: N.ExportSpecifier[] = [];
-
-							if (n.Identifier.check(a)) {
-								fin.push(j.exportSpecifier(a, a));
-							} else if (n.VariableDeclarator.check(a) && n.ObjectPattern.check(a.id)) {
-								const objPattern = a.id as N.ObjectPattern;
-								fin.push(
-									...objPattern.properties.flatMap((b: any) => {
-										if (
-											n.ObjectProperty.check(b as N.Node) &&
-											n.Identifier.check((b as N.ObjectProperty).value) &&
-											(n.Identifier.check((b as N.ObjectProperty).key) ||
-												n.StringLiteral.check((b as N.ObjectProperty).key))
-										) {
-											return [
-												j.exportSpecifier(
-													(b as N.ObjectProperty).value as any,
-													(b as N.ObjectProperty).key as any
-												),
-											];
-										}
-										return [];
-									})
-								);
-							}
-							return fin;
+                /* {
+						let par = path.parentPath;
+						path.remove();
+						while (
+							(t.isExpressionStatement(par.node) ||
+								t.isAssignmentExpression(par.node) ||
+								t.isConditionalExpression(par.node)) 
+						) {
+							if (par.parentPath) par = par.parentPath;
+							else break;
 						}
-						)
-					: [];
-				dcExports.push(j.exportNamedDeclaration(null, exportSpecifiers));
-					path.replace(specs);
-				} else {
-					dcExports.push(node);
-					j(path).remove();
-				}
-			} else {
-				dcExports.push(node);
-				j(path).remove();
-			}
-		}
-	});
+						if(par && !t.isProgram(par.node))
+							try {
+							par.remove();
+						} catch(e) {
+							console.debug(e)
+						}
+					} */
+                if (
+                    t.ExpressionStatement.check(path.parent) ||
+                    t.AssignmentExpression.check(path.parent) ||
+                    t.ConditionalExpression.check(path.parent) ||
+                    t.ObjectProperty.check(path.parent)
+                ) {
+                    if (t.ObjectProperty.check(path.parent)) path.replace(b.nullLiteral());
+                    else path.parentPath.replace(b.expressionStatement(b.nullLiteral()));
+                } else {
+                    path.replace();
+                }
+            }
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitJSXOpeningElement(path) {
+            let toReplace = replaceJsxElement(path, dcImports);
+            if (toReplace) path.replace(b.jsxOpeningElement(toReplace, path.node.attributes, path.node.selfClosing));
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitJSXClosingElement(path) {
+            let toReplace = replaceJsxElement(path, dcImports);
+            if (toReplace) path.replace(b.jsxClosingElement(toReplace));
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitExportNamedDeclaration(path) {
+            const node: N.ExportNamedDeclaration = path.node;
+            if (node.declaration) {
+                dcExports.push(node);
+                path.replace(node.declaration);
+            } else {
+                if (node.source && node.specifiers && node.specifiers.length) {
+                    let entry = convertRelative(node.source.value as string, opts, srcPath);
+                    if (entry) {
+                        const awaiter = b.awaitExpression(
+                            b.callExpression(b.memberExpression(dc, dcRequire), [b.stringLiteral(entry!)])
+                        );
+                        const specs = replaceWithIdent(node.specifiers as N.ExportSpecifier[], awaiter);
+                        dcExports.push(
+                            b.exportNamedDeclaration(
+                                null,
+                                (specs as N.VariableDeclaration).declarations.flatMap((a) => {
+                                    const fin: N.ExportSpecifier[] = [];
+                                    if (t.Identifier.check(a)) {
+                                        fin.push(b.exportSpecifier(a, a));
+                                    } else if (t.VariableDeclarator.check(a) && t.ObjectPattern.check(a.id)) {
+                                        fin.push(
+                                            ...a.id.properties.map((rc) => {
+                                                const c = rc as N.ObjectProperty;
+                                                return b.exportSpecifier(
+                                                    c.value as N.Identifier,
+                                                    c.key as K.IdentifierKind
+                                                );
+                                            })
+                                        );
+                                    }
+                                    return fin;
+                                })
+                            )
+                        );
+                        path.replace(specs);
+                    } else {
+                        dcExports.push(node);
+                        path.replace();
+                    }
+                } else {
+                    dcExports.push(node);
+                    path.replace();
+                }
+            }
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitExportAllDeclaration(path) {
+            allDecls.push(path.node);
+            path.replace();
+						this.traverse(path, visitor as VisitorMethods);
+        },
+        visitExportDefaultDeclaration(path) {
+            const node: N.ExportDefaultDeclaration = path.node;
+            dcExports.push(node);
+            path.replace();
+						this.traverse(path, visitor as VisitorMethods);
+        },
+    };
+    visit(ast, visitor);
+    const originalExports = convertExports(
+        dcExports.filter((a) => !(a as any).source),
+        opts,
+        srcPath
+    );
+    const aggregatedAll = b.objectExpression(
+        allDecls.map((a) => {
+            const convertedSource = convertRelative(a.source.value as string, { ...opts, isSecondPass: true }, srcPath);
+            if (convertedSource) {
+                const spreads = b.spreadElement(convertImportToDcRequire(b.stringLiteral(convertedSource!)));
+                return spreads;
+            } else {
+                return b.spreadElement(b.objectExpression([]));
+            }
+        })
+    );
+    if (t.ObjectExpression.check(originalExports.argument)) {
+        originalExports.argument.properties.push(...aggregatedAll.properties);
+    }
+    // file.ast.program.body.unshift(b.variableDeclaration("let", [b.variableDeclarator(b.identifier("exports"), b.objectExpression([]))]))
+    ast.program.body.push(originalExports);
 
-	root.find(j.ExportAllDeclaration).forEach(
-		(path: ASTPath<N.ExportAllDeclaration>) => {
-		allDecls.push(path.node);
-		j(path).remove();
-	});
+    visit(ast, {
+        visitAssignmentExpression(path) {
+            const orig = visitor.visitAssignmentExpression as Function;
+            orig.call(this, path);
+        },
+    });
 
-	root.find(j.ExportDefaultDeclaration).forEach(
-		(path: ASTPath<N.ExportDefaultDeclaration>) => {
-		const node = path.node;
-		dcExports.push(node);
-		j(path).remove();
-	});
-
-	const originalExports = convertExports(
-		ctx,
-		dcExports.filter((a) => !(a as any).source),
-		opts,
-		filename
-	);
-
-	opts.isSecondPass = true;
-	const aggregatedAll = j.objectExpression(
-		allDecls.map((a) => {
-			const convertedSource = convertRelative(
-				String(a.source.value),
-				opts,
-				filename
-			);
-			if (convertedSource) {
-				const spreads = j.spreadElement(
-					convertImportToDcRequire(ctx, j.stringLiteral(convertedSource!))
-				);
-				return spreads;
-			} else {
-				return j.spreadElement(j.objectExpression([]));
-			}
-		})
-	);
-	if (originalExports.argument && n.ObjectExpression.check(originalExports.argument)) {
-		(originalExports.argument as N.ObjectExpression).properties.push(
-			...aggregatedAll.properties
-		);
-	}
-
-	root.get().node.program.body.push(originalExports);
-	return root.toSource();
+    return print(ast).code;
 }
 
