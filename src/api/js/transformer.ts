@@ -93,6 +93,7 @@ export default class DatacoreJsTransformer extends Component {
         }
     }
     async saveSettings() {
+			console.log("saving settings", this._settings);
         await this.app.vault.adapter.write(this.libDir + "/libraries.json", JSON.stringify(this._settings));
     }
 
@@ -117,6 +118,7 @@ export default class DatacoreJsTransformer extends Component {
         const realVersions = Object.fromEntries(
             await Promise.all(versions.map(async ([k, v]) => [k, await this.addPackage(k, v)]))
         );
+				await this.saveSettings();
         /* const entries = Object.fromEntries(
 			[...resolved.entries()].map(([k, vv]) => {
 				const base = this.libDir + `/${k.replace("latest", vv.version)}`;
