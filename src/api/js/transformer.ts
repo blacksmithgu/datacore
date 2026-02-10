@@ -9,6 +9,7 @@ import type { WorkerRequest, WorkerResponse } from "./worker/types";
 import TransformWorker from "api/js/worker/transform.worker";
 import DatacorePlugin from "main";
 import { transformImportsAndExports } from "./code-transformer";
+import { deferred, Deferred } from "utils/deferred";
 
 interface Settings {
     downloadedNpmLibs: TransformOptions["importPaths"];
@@ -20,18 +21,9 @@ const DEFAULT_SETTINGS: Settings = {
     latestVersionIndex: {},
 };
 
-type PromiseResolver<T> = (value: T | PromiseLike<T>) => void;
-type PromiseRejector = (reason?: any) => void;
-
 export default class DatacoreJsTransformer extends Component {
     private _settings: Settings;
-    #pending: Map<
-        string,
-        {
-            resolve: PromiseResolver<WorkerResponse>;
-            reject: PromiseRejector;
-        }
-    > = new Map();
+    #pending: Map<string, Deferred<WorkerResponse>> = new Map();
     #worker: Worker;
     private app: App;
     static readonly exts = [".js", ".jsx", ".ts", ".tsx", ".mjs"];
@@ -118,7 +110,7 @@ export default class DatacoreJsTransformer extends Component {
         const realVersions = Object.fromEntries(
             await Promise.all(versions.map(async ([k, v]) => [k, await this.addPackage(k, v)]))
         );
-				await this.saveSettings();
+        await this.saveSettings();
         /* const entries = Object.fromEntries(
 			[...resolved.entries()].map(([k, vv]) => {
 				const base = this.libDir + `/${k.replace("latest", vv.version)}`;
@@ -202,18 +194,17 @@ export default class DatacoreJsTransformer extends Component {
                 !this._settings.downloadedNpmLibs[latestKey]?.files?.length)
         ) {
             const id = crypto.randomUUID();
-            const resolved = await new Promise<WorkerResponse>((resolve, reject) => {
-                this.#pending.set(id, { resolve, reject });
-                this.#worker.postMessage({
-                    id,
-                    libDir: this.libDir,
-                    vaultRoot: this.getBasePath(),
-                    vaultFiles: this.app.vault.getFiles().map((a) => a.path),
-                    version: v,
-                    package: src,
-                    lvi: this._settings.latestVersionIndex,
-                } as WorkerRequest);
-            });
+            this.#worker.postMessage({
+							id,
+                libDir: this.libDir,
+                vaultRoot: this.getBasePath(),
+                vaultFiles: this.app.vault.getFiles().map((a) => a.path),
+                version: v,
+                package: src,
+                lvi: this._settings.latestVersionIndex,
+							} as WorkerRequest);
+						this.#pending.set(id, deferred<WorkerResponse>());
+            const resolved = await this.#pending.get(id)!;
             let sn: Awaited<ReturnType<DatacoreJsTransformer["addPackage"]>> = {
                 dependencies: [],
             };
