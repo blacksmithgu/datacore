@@ -1,10 +1,11 @@
 import { Locator, Page } from "@playwright/test";
 import { Indexable } from "index/types/indexable";
 import { LineSpan } from "index/types/json/markdown";
-import { doWithApp } from "obsidian-testing-framework/lib/util.js";
+import { doWithApp, waitForIndexingComplete as waitForBuiltinIndexingComplete } from "obsidian-testing-framework/util";
 import { ScriptLanguage } from "utils/javascript";
 
 export async function waitForIndexingComplete(page: Page) {
+		await waitForBuiltinIndexingComplete(page);
     await enablePlugin(page);
     try {
         await page.evaluate(() => {

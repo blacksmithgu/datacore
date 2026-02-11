@@ -1,9 +1,10 @@
+import { beforeEach, describe } from "vitest";
 import { expect, Locator, Page } from "@playwright/test";
-import { MarkdownTaskItem } from "index/types/markdown";
-import { test } from "obsidian-testing-framework/lib/index.js";
-import { assertLinesMatch } from "obsidian-testing-framework/lib/util.js";
+import { test } from "obsidian-testing-framework";
+import type {ObsidianTestFixtures} from "obsidian-testing-framework/fixture";
+import { assertLinesMatch } from "obsidian-testing-framework/util";
 import {
-    beforeAll,
+	beforeAll,
     blockLang,
     sleep,
     waitForText,
@@ -13,8 +14,9 @@ import {
     rand,
     waitForAnyFile,
 } from "../e2e-common";
-import { beforeEach, describe } from "vitest";
-beforeEach(async ({ page }) => beforeAll(page, "ui/table.md"));
+import { MarkdownTaskItem } from "index/types/markdown";
+
+beforeEach<ObsidianTestFixtures>(async ({ page }) => beforeAll(page, "ui/table.md"));
 
 describe("tables", async () => {
     const rowSelector = `tr.datacore-table-row`;
