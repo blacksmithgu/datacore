@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: Settings = {
 };
 
 export default class DatacoreJsTransformer extends Component {
-    private _settings: Settings;
+    private _settings?: Settings;
     #pending: Map<string, Deferred<WorkerResponse>> = new Map();
     #worker: Worker;
     private app: App;
@@ -85,6 +85,7 @@ export default class DatacoreJsTransformer extends Component {
         }
     }
     async saveSettings() {
+			if(!this._settings) return;
 			console.log("saving settings", this._settings);
         await this.app.vault.adapter.write(this.libDir + "/libraries.json", JSON.stringify(this._settings));
     }
@@ -136,9 +137,9 @@ export default class DatacoreJsTransformer extends Component {
                 outerBaseDir: pathutils.dirname(srcPath),
                 vaultRoot: this.getBasePath(),
                 vaultFiles: this.app.vault.getFiles().map((a) => a.path),
-                importPaths: { ...this._settings.downloadedNpmLibs },
+                importPaths: { ...this._settings?.downloadedNpmLibs },
                 dependencies: Object.entries(realVersions).map(([kk, vv]) => `${kk}@${(vv as any).version}`),
-                latestVersions: this._settings.latestVersionIndex,
+                latestVersions: this._settings?.latestVersionIndex ?? {},
             },
             srcPath
         );
@@ -187,11 +188,11 @@ export default class DatacoreJsTransformer extends Component {
     async addPackage(src: string, v = "latest"): Promise<Pick<TransformOptions, "dependencies" | "version">> {
         console.log(`${src}@${v}`);
         const key = `${src}@${v}`;
-        const latestKey = `${src}@${this._settings.latestVersionIndex[src]}`;
+        const latestKey = `${src}@${this._settings?.latestVersionIndex[src]}`;
         if (
-            (!this._settings.downloadedNpmLibs[key] || !this._settings.downloadedNpmLibs[key]?.files?.length) &&
-            (!this._settings.downloadedNpmLibs[latestKey] ||
-                !this._settings.downloadedNpmLibs[latestKey]?.files?.length)
+            (!this._settings?.downloadedNpmLibs[key] || !this._settings?.downloadedNpmLibs[key]?.files?.length) &&
+            (!this._settings?.downloadedNpmLibs[latestKey] ||
+                !this._settings?.downloadedNpmLibs[latestKey]?.files?.length)
         ) {
             const id = crypto.randomUUID();
             this.#worker.postMessage({
@@ -201,7 +202,7 @@ export default class DatacoreJsTransformer extends Component {
                 vaultFiles: this.app.vault.getFiles().map((a) => a.path),
                 version: v,
                 package: src,
-                lvi: this._settings.latestVersionIndex,
+                lvi: this._settings?.latestVersionIndex ?? {},
 							} as WorkerRequest);
 						this.#pending.set(id, deferred<WorkerResponse>());
             const resolved = await this.#pending.get(id)!;
@@ -216,14 +217,14 @@ export default class DatacoreJsTransformer extends Component {
                         version: resolved.version,
                     };
                 }
-                this._settings.downloadedNpmLibs[k] = {
+                this._settings!.downloadedNpmLibs[k] = {
                     baseDir: cur.baseDir,
                     entryPoint: cur.entryPoint,
                     files: cur.files.map((a) => a.path),
                     latest: cur.latest,
                     dependencies: cur.dependencies,
                 };
-                this._settings.latestVersionIndex[stripName(k)] = cur.latest;
+                this._settings!.latestVersionIndex[stripName(k)] = cur.latest;
                 for (let f of cur.files) {
                     try {
                         try {
