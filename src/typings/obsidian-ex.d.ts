@@ -1,8 +1,9 @@
-import type { DatacorePlugin } from "main";
+import type  DatacorePlugin from "main";
 import type { CanvasMetadataIndex } from "index/types/json/canvas";
 
 import "obsidian";
-import { App } from "obsidian";
+import type { App } from "obsidian";
+import { DatacoreApi } from "api/api";
 
 /** Provides extensions used by datacore or provider to other plugins via datacore. */
 declare module "obsidian" {
