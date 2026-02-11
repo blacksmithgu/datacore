@@ -28,6 +28,7 @@ import { ScriptCache } from "./script-cache";
 import { Expression } from "expression/expression";
 import { Card } from "./ui/views/cards";
 import { ListView } from "./ui/views/list";
+import { Modal, Modals, SubmittableModal, useModalContext } from "./ui/views/modal";
 
 /**
  * Local API provided to specific codeblocks when they are executing.
@@ -36,6 +37,8 @@ import { ListView } from "./ui/views/list";
 export class DatacoreLocalApi {
     /** @internal The cache of all currently loaded scripts in this context. */
     private scriptCache: ScriptCache;
+
+		private modalTypes: Modals = new Modals();
 
     public constructor(public api: DatacoreApi, public path: string) {
         this.scriptCache = new ScriptCache(this.core.datastore);
@@ -388,6 +391,19 @@ export class DatacoreLocalApi {
 
         return <ErrorMessage message={`No valid embedding for element '${element.$id}' from '${element.$file}'`} />;
     }).bind(this);
+
+		/** Accessor for raw modal classes. */
+		public get modals() {
+			return this.modalTypes;
+		}
+
+		/** Wrapper around an obsidian modal. */
+		public Modal = Modal;
+
+		/** Wrapper around an obsidian modal that returns a result when submitted. */
+		public SubmittableModal = SubmittableModal;
+
+		public useModalContext = useModalContext;
 
     ///////////
     // Views //
