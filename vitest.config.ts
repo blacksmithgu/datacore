@@ -5,12 +5,6 @@ export default defineConfig({
 	test: {
 		dir: "src/test/e2e/",
 		pool: "threads",
-		poolOptions: {
-			threads: {
-				maxThreads: 1,
-				minThreads: 1
-			}
-		},
 		provide: {
 			vault: path.resolve(process.cwd(), "..", "public-test-vault")
 		},
