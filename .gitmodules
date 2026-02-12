@@ -1,3 +1,4 @@
 [submodule "test-vault"]
 	path = test-vault
 	url = https://git.tablet.sh/the-btfash-foundation/obsidian-test-vault
+	branch = master

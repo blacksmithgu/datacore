@@ -6,7 +6,7 @@ export default defineConfig({
 		dir: "src/test/e2e/",
 		pool: "threads",
 		provide: {
-			vault: path.resolve(process.cwd(), "..", "public-test-vault")
+			vault: path.resolve(process.cwd(), "test-vault")
 		},
 		hookTimeout: 60000,
 		retry: 5,
