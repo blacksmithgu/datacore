@@ -50,7 +50,7 @@ abstract class AbstractCanvasCardData {
         public path: string,
         public id: string,
         protected nodeJson: CanvasTextData | CanvasLinkData | CanvasFileData
-    ) { }
+    ) {}
 
     public build(): JsonBaseCanvasCard {
         return {
@@ -120,7 +120,7 @@ export class CanvasData {
     public cards: CanvasCardData[] = [];
     public metadata: Metadata = new Metadata();
 
-    public constructor(public path: string, public stats: FileStats) { }
+    public constructor(public path: string, public stats: FileStats) {}
 
     public card(d: CanvasCardData): CanvasCardData {
         this.cards.push(d);
