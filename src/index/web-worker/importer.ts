@@ -108,7 +108,10 @@ export class FileImporter extends Component {
                         path: file.path,
                         contents: contents,
                         stat: file.stat,
-                        index: (this.fileManager as any).linkUpdaters?.canvas?.canvas?.index?.index?.[file.path] ?? { caches: {}, embeds: [], },
+                        index: this.fileManager.linkUpdaters?.canvas?.canvas?.index?.index?.[file.path] ?? {
+                            caches: {},
+                            embeds: [],
+                        },
                     } as CanvasImport);
                     break;
                 }
