@@ -25,6 +25,7 @@ test-vault/.obsidian/plugins/**/*
 playwright-report/
 test-results/**/*
 src/test/e2e/out/
+obsidian-testing-framework-vault-pool-*
 
 # keep folders with .gitkeep
 !/**/.gitkeep

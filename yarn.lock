@@ -1624,6 +1624,11 @@
     "@vitest/pretty-format" "4.0.18"
     tinyrainbow "^3.0.3"
 
+"@zkochan/rimraf@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@zkochan/rimraf/-/rimraf-3.0.2.tgz#df29b65bf3d2fc3e0e37743f1bcfe38559f8d1ba"
+  integrity sha512-GBf4ua7ogWTr7fATnzk/JLowZDBnBJMm8RkMaC/KcvxZ9gxbMWix0/jImd815LmqKyIHZ7h7lADRddGMdGBuCA==
+
 abab@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/abab/-/abab-2.0.6.tgz#41b80f2c871d19686216b82309231cfd3cb3d291"
@@ -1774,6 +1779,13 @@ assertion-error@^2.0.1:
   resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-2.0.1.tgz#f641a196b335690b1070bf00b6e7593fec190bf7"
   integrity sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==
 
+async-mutex@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/async-mutex/-/async-mutex-0.5.0.tgz#353c69a0b9e75250971a64ac203b0ebfddd75482"
+  integrity sha512-1A94B18jkJ3DYq284ohPxoXbfTA5HsQ7/Mf4DEhcyLx3Bz27Rh59iScbB6EPiP+B+joue6YCxcMXSbFC1tZKwA==
+  dependencies:
+    tslib "^2.4.0"
+
 asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
@@ -1860,6 +1872,13 @@ baseline-browser-mapping@^2.9.0:
   version "2.9.19"
   resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.9.19.tgz#3e508c43c46d961eb4d7d2e5b8d1dd0f9ee4f488"
   integrity sha512-ipDqC8FrAl/76p2SSWKSI+H9tFwm7vYqXQrItCuiVPt26Km0jS+NzSsBWAaBusvSbQcfJG+JitdMm+wZAgTYqg==
+
+better-path-resolve@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/better-path-resolve/-/better-path-resolve-1.0.0.tgz#13a35a1104cdd48a7b74bf8758f96a1ee613f99d"
+  integrity sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g==
+  dependencies:
+    is-windows "^1.0.0"
 
 boolean@^3.0.1:
   version "3.2.0"
@@ -2374,9 +2393,9 @@ es6-error@^4.1.1:
   resolved "https://registry.yarnpkg.com/es6-error/-/es6-error-4.1.1.tgz#9e3af407459deed47e9a91f9b885a84eb05c561d"
   integrity sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==
 
-"esbuild-plugin-inline-worker@https://github.com/mitschabaude/esbuild-plugin-inline-worker":
+"esbuild-plugin-inline-worker@git+https://github.com/GamerGirlandCo/esbuild-plugin-inline-worker#postinstall":
   version "0.1.1"
-  resolved "https://github.com/mitschabaude/esbuild-plugin-inline-worker#d35f3a376a128ad5d63babceb2e2d24156687d85"
+  resolved "git+https://github.com/GamerGirlandCo/esbuild-plugin-inline-worker#a1f085263cbdb63fed9c01726895f3714830450a"
   dependencies:
     find-cache-dir "^3.3.1"
 
@@ -2634,6 +2653,15 @@ form-data@^4.0.0:
     es-set-tostringtag "^2.1.0"
     hasown "^2.0.2"
     mime-types "^2.1.12"
+
+fs-extra@11.3.0:
+  version "11.3.0"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.0.tgz#0daced136bbaf65a555a326719af931adc7a314d"
+  integrity sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
 
 fs-extra@^8.1.0:
   version "8.1.0"
@@ -2967,6 +2995,11 @@ is-stream@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/is-stream/-/is-stream-2.0.1.tgz#fac1e3d53b97ad5a9d0ae9cef2389f5810a5c077"
   integrity sha512-hFoiJiTl63nn+kstHGBtewWSKnQLpyb155KHheA1l39uvtO9nWIop1p3udqPcUd/xbF1VLMO4n7OI6p7RbngDg==
+
+is-windows@^1.0.0:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/is-windows/-/is-windows-1.0.2.tgz#d1850eb9791ecd18e6182ce12a30f396634bb19d"
+  integrity sha512-eXK1UInq2bPmjyX6e3VHIzMLobc4J94i4AWn+Hpq3OU5KkrRC96OAcR3PRJ/pGu6m8TRnBHP9dkXQVsT/COVIA==
 
 isexe@^2.0.0:
   version "2.0.0"
@@ -3826,19 +3859,21 @@ object-keys@^1.1.1:
   resolved "https://registry.yarnpkg.com/object-keys/-/object-keys-1.1.1.tgz#1c47f272df277f3b1daf061677d9c82e2322c60e"
   integrity sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==
 
-obsidian-testing-framework@^0.1.9:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/obsidian-testing-framework/-/obsidian-testing-framework-0.1.9.tgz#724e247a3ccd34daaee0315f649b1d8839179c67"
-  integrity sha512-hwSAFl+VmTOmFlt1X6e7oFrsADiIdvbvwB+Mqvx+zqMDbighFOR6Dn96GFO7+H1VT3oQSk7musiMo+X+lKr5ww==
+obsidian-testing-framework@^0.3.5:
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/obsidian-testing-framework/-/obsidian-testing-framework-0.3.5.tgz#419e45f4a5074c875a1ab1a217b74e89b2f194e8"
+  integrity sha512-qK3xAgzY+A2INA48LUmHNiMHdz6/WkTSdhUVcakhC+YJt+pDWBU43UqiVsfXknHPSBA3JcRW791RSCYoa9k3rg==
   dependencies:
     "@codemirror/language" "https://github.com/lishid/cm-language"
     "@codemirror/state" "^6.0.1"
     "@codemirror/view" "^6.0.1"
     "@playwright/test" "^1.58.2"
     asar "^3.2.0"
+    async-mutex "^0.5.0"
     electron "^33.0.2"
     obsidian latest
     playwright "^1.58.2"
+    symlink-dir "^9.0.0"
     tmp "^0.2.3"
     typescript "^5.6.3"
     xvfb-maybe "^0.2.1"
@@ -4152,6 +4187,14 @@ react-transition-group@^4.3.0:
     dom-helpers "^5.0.1"
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
+
+rename-overwrite@^6.0.2:
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/rename-overwrite/-/rename-overwrite-6.0.6.tgz#0e0301c991fa15b69dbf3261c94f5acbf4e00925"
+  integrity sha512-bSbsw/VyMyDez6NJKxqURBCLRCm98uezWBi03UZCeEFccCNIthC6Jk5JazMjexOTdrYd4q/jIxTIwGtgk1k1gA==
+  dependencies:
+    "@zkochan/rimraf" "^3.0.2"
+    fs-extra "11.3.0"
 
 require-directory@^2.1.1:
   version "2.1.1"
@@ -4529,6 +4572,14 @@ symbol-tree@^3.2.4:
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.4.tgz#430637d248ba77e078883951fb9aa0eed7c63fa2"
   integrity sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==
 
+symlink-dir@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/symlink-dir/-/symlink-dir-9.0.0.tgz#b8a5094505fbcd644493fc3280b9fb87b6933bd5"
+  integrity sha512-3i39G70eXo9POjx9RnYAgymfUO3AFrezABaJq0Sh+muMCR3Lx7B9KQR2uWMY+yc1QCwhEelVCGS6N+sR3aKCZg==
+  dependencies:
+    better-path-resolve "^1.0.0"
+    rename-overwrite "^6.0.2"
+
 test-exclude@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/test-exclude/-/test-exclude-6.0.0.tgz#04a8698661d805ea6fa293b6cb9e63ac044ef15e"
@@ -4652,7 +4703,7 @@ ts-node@^10.9.2:
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
 
-tslib@^2.3.1:
+tslib@^2.3.1, tslib@^2.4.0:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
