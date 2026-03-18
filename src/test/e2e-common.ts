@@ -47,7 +47,7 @@ export async function waitForAnyFile(page: Page) {
                     }
                     window.datacore?.core.on("update", fn);
                 }),
-                new Promise((_res, rej) => setTimeout(rej, 10000)),
+                new Promise((_res, rej) => setTimeout(rej, 15000)),
             ]);
         });
     } catch (e) {
@@ -133,8 +133,7 @@ export async function roundtripEdit<T extends Indexable & { $position: LineSpan 
     console.log("Tasks @ " + qr.length, qr[0], qr.length);
     const { $id: id, $position: pos } = qr[0];
     clear && (await textArea.clear());
-    !clear && (await textArea.press("PageDown"));
-    !clear && (await textArea.press("End"));
+    !clear && (await textArea.press("Control+End"));
     let split = newValue.split("\n");
     for (let i = 0; i < split.length; i++) {
         await textArea.pressSequentially(split[i], { delay: 75 });

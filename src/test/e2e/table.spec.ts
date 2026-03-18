@@ -59,7 +59,6 @@ describe("tables", async () => {
 
         let values = await roundtripEdit(page, textColumn, q, `\n${rand(1, 100)} -- some new *value*!`, false);
         const { oldText } = values;
-        await waitForAnyFile(page);
 
         let nrow = (await query<MarkdownTaskItem>(page, q.concat(` and $id = "${values.id}"`)))[0];
         let re = /some new \*value\*!?/i;
@@ -67,7 +66,6 @@ describe("tables", async () => {
         expect(re.test(nrow.$text!)).toEqual(true);
         await assertLinesMatch(page, nrow.$file, nrow.$position.start, nrow.$position.end, re);
         values = await roundtripEdit(page, textColumn, q, oldText);
-        await waitForAnyFile(page);
 
         nrow = (await query<MarkdownTaskItem>(page, q.concat(` and $id = "${values.id}"`)))[0];
         console.log("ntxt2\n", nrow.$text, "\n---\n", oldText);
