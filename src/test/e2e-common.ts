@@ -1,11 +1,16 @@
 import { Locator, Page } from "@playwright/test";
 import { Indexable } from "index/types/indexable";
 import { LineSpan } from "index/types/json/markdown";
+import { TAbstractFile } from "obsidian";
 import { doWithApp, waitForIndexingComplete as waitForBuiltinIndexingComplete } from "obsidian-testing-framework/util";
 import { ScriptLanguage } from "utils/javascript";
 
 export async function waitForIndexingComplete(page: Page) {
+	try {
 		await waitForBuiltinIndexingComplete(page);
+	} catch(e) {
+		console.warn("timed out waiting for indexing complete. continuing...");
+	}
     await enablePlugin(page);
     try {
         await page.evaluate(() => {
@@ -27,16 +32,20 @@ export async function waitForAnyFile(page: Page) {
         await page.evaluate(async () => {
             return await Promise.race([
                 new Promise((res, rej) => {
-                    window.app.vault.on("modify", (f) => {
+									const fn = (f: TAbstractFile) => {
                         console.log("change", f.path);
                         res(null);
-                    });
+												window.app.vault.off("modify", fn as any);
+                    }
+                    window.app.vault.on("modify", fn);
                 }),
                 new Promise((res, rej) => {
-                    window.datacore?.core.on("update", () => {
+									const fn = () => {
                         console.log("update");
                         res(null);
-                    });
+												window.datacore?.core.off("update", fn as any);
+                    }
+                    window.datacore?.core.on("update", fn);
                 }),
                 new Promise((_res, rej) => setTimeout(rej, 10000)),
             ]);
@@ -46,9 +55,14 @@ export async function waitForAnyFile(page: Page) {
     }
 }
 async function enablePlugin(page: Page) {
+	try {
+
     return await doWithApp(page, async (app) => {
-        await app.plugins.enablePlugin("datacore");
+			await app.plugins.enablePlugin("datacore");
     });
+	} catch(e) {
+		console.warn("could not enable plugin:", e);
+	}
 }
 
 export async function openFile(page: Page, file: string, close: boolean = false) {

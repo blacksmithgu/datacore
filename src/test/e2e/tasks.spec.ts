@@ -1,9 +1,8 @@
-import { beforeEach, describe } from "vitest";
+import { describe } from "vitest";
 import { test } from "obsidian-testing-framework";
 import { assertLinesMatch } from "obsidian-testing-framework/util";
-import type { ObsidianTestFixtures } from "obsidian-testing-framework/fixture";
 import { MarkdownTaskItem } from "index/types/markdown";
-import { expect, Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import {
     beforeAll,
     blockLang,
@@ -16,7 +15,7 @@ import {
     query as windowQuery,
 } from "../e2e-common";
 
-beforeEach<ObsidianTestFixtures>(async ({ page }) => beforeAll(page, "ui/task.md"));
+test.beforeEach(async ({ page }) => beforeAll(page, "ui/task.md"));
 describe("tasks", { timeout: 200000 }, async () => {
     const checkboxSelector = "input.datacore.task-list-item-checkbox";
     const subsel = `.datacore-list-item-content > span.has-texteditable`;

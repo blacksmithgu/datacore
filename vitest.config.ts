@@ -5,6 +5,10 @@ export default defineConfig({
 	test: {
 		dir: "src/test/e2e/",
 		pool: "forks",
+		sequence: {
+			hooks: "list",
+			setupFiles: "list",
+		},
 		globalSetup: ["./src/test/e2e/__setup.ts"],
 		provide: {
 			vault: path.resolve(process.cwd(), "test-vault")
@@ -12,7 +16,7 @@ export default defineConfig({
 		hookTimeout: 60000,
 		retry: 5,
 		fileParallelism: true,
-		maxWorkers: 2,
+		maxWorkers: 4,
 		isolate: false,
 
 		exclude: [],
