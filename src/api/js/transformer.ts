@@ -86,8 +86,13 @@ export default class DatacoreJsTransformer extends Component {
     }
     async saveSettings() {
 			if(!this._settings) return;
+			
 			console.log("saving settings", this._settings);
+			try {
         await this.app.vault.adapter.write(this.libDir + "/libraries.json", JSON.stringify(this._settings));
+			} catch(e) {
+				console.warn("could not save settings: ", e)
+			}
     }
 
     async transform(srcPath: string, src: string, jsx: boolean, ts: boolean): Promise<string> {
