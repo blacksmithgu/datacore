@@ -664,12 +664,10 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
 
         return (
             this.$text
-                // Capture three groups:
-                // 1) all characters up until group 2 or 3 is encountered
-                // 2) zero or more inline fields
-                // 3) zero or one id,
-                // and replace it with just group 1
-                .replace(/(.*?)([\[\(][^:(\[]+::\s*.*?[\]\)]\s*)*(\^.+){0,1}$/gm, "$1")
+                // Remove any valid block ID, keeping preceding whitespace.
+                .replace(/(\s)\^[a-zA-Z0-9\-]+$/u, "$1")
+                // Keep everything before the first inline field, or everything if there isn't one.
+                .split(/[\[\(][^:\(\[]+::\s*.*?[\]\)]/u)[0]
                 // Trim whitespace.
                 .trim()
         );
