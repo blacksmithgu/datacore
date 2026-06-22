@@ -68,14 +68,33 @@ export interface JsonInlineField {
     wrapping?: string;
 }
 
+/**
+ * Inline field values may appear multiple times with the same key. When that happens, callers may represent
+ * them as a list of fields in appearance order.
+ */
+export type InlineFieldList = InlineField[];
+
+/** JSON, serializable representation of an inline field list (size >= 1 in normal usage). */
+export type JsonInlineFieldList = JsonInlineField[];
+
 /** Convert an inline field to a JSON format. */
 export function jsonInlineField(field: InlineField): JsonInlineField {
     return Object.assign({}, field, { value: JsonConversion.json(field.value) });
 }
 
+/** Convert an inline field list to a JSON format. */
+export function jsonInlineFieldList(fields: InlineFieldList): JsonInlineFieldList {
+    return fields.map(jsonInlineField);
+}
+
 /** Convert a JSON inline field back to a regular field. */
 export function valueInlineField(field: JsonInlineField): InlineField {
     return Object.assign({}, field, { value: JsonConversion.value(field.value) });
+}
+
+/** Convert a JSON inline field list back to a regular field representation. */
+export function valueInlineFieldList(fields: JsonInlineFieldList): InlineFieldList {
+    return fields.map(valueInlineField);
 }
 
 export function asInlineField(local: LocalInlineField, lineno: number): InlineField;

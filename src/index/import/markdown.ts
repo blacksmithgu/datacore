@@ -6,11 +6,13 @@ import BTree from "sorted-btree";
 import {
     InlineField,
     JsonInlineField,
+    JsonInlineFieldList,
     asInlineField,
     extractFullLineField,
     extractInlineFields,
     extractSpecialTaskFields,
     jsonInlineField,
+    jsonInlineFieldList,
 } from "./inline-field";
 import {
     JsonMarkdownBlock,
@@ -251,17 +253,23 @@ export function markdownSourceImport(
     for (const field of iterateInlineFields(lines)) {
         const line = field.position.line;
         markdownMetadata.inlineField(field);
+        markdownMetadata.inlineFieldMulti(field);
 
         lookup(line, sections)?.metadata.inlineField(field);
+        lookup(line, sections)?.metadata.inlineFieldMulti(field);
         lookup(line, blocks)?.metadata.inlineField(field);
+        lookup(line, blocks)?.metadata.inlineFieldMulti(field);
         lookup(line, listItems)?.metadata.inlineField(field);
+        lookup(line, listItems)?.metadata.inlineFieldMulti(field);
     }
 
     for (const item of listItems.values()) {
         for (let lineno = item.start; lineno < item.end; lineno++) {
             const taskInlineFields = extractSpecialTaskFields(lines[lineno]);
             for (const field of taskInlineFields) {
-                item.metadata.inlineField(asInlineField(field, lineno));
+                const full = asInlineField(field, lineno);
+                item.metadata.inlineField(full);
+                item.metadata.inlineFieldMulti(full);
             }
         }
     }
@@ -369,7 +377,10 @@ export function splitFrontmatterTagOrAlias(data: unknown, on: RegExp): string[] 
 export class Metadata {
     public tags: Set<string> = new Set();
     public links: Link[] = [];
+    /** Map of all distinct inline fields (original behavior: first occurrence wins). */
     public inlineFields: Record<string, InlineField> = {};
+    /** Map of all inline fields; always stores a list in appearance order. */
+    public inlineFieldsMulti: Record<string, InlineField[]> = {};
 
     /** Add a tag to the metadata. */
     public tag(tag: string) {
@@ -385,9 +396,17 @@ export class Metadata {
     /** Add an inline field to the metadata. */
     public inlineField(field: InlineField) {
         const lower = field.key.toLowerCase();
-        if (Object.keys(this.inlineFields).some((key) => key.toLowerCase() == lower)) return;
 
+        if (Object.keys(this.inlineFields).some((key) => key.toLowerCase() == lower)) return;
         this.inlineFields[lower] = field;
+    }
+
+    /** Add an inline field to the multi-value map (always appends). */
+    public inlineFieldMulti(field: InlineField) {
+        const lower = field.key.toLowerCase();
+        const existing = this.inlineFieldsMulti[lower];
+        if (existing) existing.push(field);
+        else this.inlineFieldsMulti[lower] = [field];
     }
 
     /** Return a list of unique added tags. */
@@ -404,6 +423,11 @@ export class Metadata {
     public finishInlineFields(): Record<string, JsonInlineField> {
         return mapObjectValues(this.inlineFields, jsonInlineField);
     }
+
+    /** Return a list of JSON-serialized multi inline fields (always lists). */
+    public finishInlineFieldsMulti(): Record<string, JsonInlineFieldList> {
+        return mapObjectValues(this.inlineFieldsMulti, jsonInlineFieldList);
+    }
 }
 
 /** Convienent utility for constructing page objects. */
@@ -415,7 +439,7 @@ export class PageData {
         public metadata: Metadata,
         public sections: SectionData[],
         public frontmatter?: Record<string, JsonFrontmatterEntry>
-    ) {}
+    ) { }
 
     public build(): JsonMarkdownPage {
         return {
@@ -428,6 +452,7 @@ export class PageData {
             $tags: this.metadata.finishTags(),
             $links: this.metadata.finishLinks(),
             $infields: this.metadata.finishInlineFields(),
+            $infieldsMulti: this.metadata.finishInlineFieldsMulti(),
             $sections: this.sections.map((x) => x.build()),
             $frontmatter: this.frontmatter,
         };
@@ -445,7 +470,7 @@ export class SectionData {
         public title: string,
         public level: number,
         public ordinal: number
-    ) {}
+    ) { }
 
     public block(block: BlockData) {
         this.blocks.push(block);
@@ -458,6 +483,7 @@ export class SectionData {
             $level: this.level,
             $tags: this.metadata.finishTags(),
             $infields: this.metadata.finishInlineFields(),
+            $infieldsMulti: this.metadata.finishInlineFieldsMulti(),
             $links: this.metadata.finishLinks(),
             $position: { start: this.start, end: this.end },
             $blocks: this.blocks.map((block) => block.build()),
@@ -471,13 +497,14 @@ export class ListBlockData {
     public metadata: Metadata = new Metadata();
     public items: ListItemData[] = [];
 
-    public constructor(public start: number, public end: number, public ordinal: number, public blockId?: string) {}
+    public constructor(public start: number, public end: number, public ordinal: number, public blockId?: string) { }
 
     public build(): JsonMarkdownListBlock {
         return {
             $ordinal: this.ordinal,
             $position: { start: this.start, end: this.end },
             $infields: this.metadata.finishInlineFields(),
+            $infieldsMulti: this.metadata.finishInlineFieldsMulti(),
             $tags: this.metadata.finishTags(),
             $links: this.metadata.finishLinks(),
             $type: "list",
@@ -501,7 +528,7 @@ export class CodeblockData {
         public contentStart: number,
         public contentEnd: number,
         public blockId?: string
-    ) {}
+    ) { }
 
     public build(): JsonMarkdownCodeblock {
         return {
@@ -509,6 +536,7 @@ export class CodeblockData {
             $ordinal: this.ordinal,
             $position: { start: this.start, end: this.end },
             $infields: this.metadata.finishInlineFields(),
+            $infieldsMulti: this.metadata.finishInlineFieldsMulti(),
             $tags: this.metadata.finishTags(),
             $links: this.metadata.finishLinks(),
             $blockId: this.blockId,
@@ -530,7 +558,7 @@ export class DatablockData {
         public ordinal: number,
         public data: Record<string, JsonFrontmatterEntry>,
         public blockId?: string
-    ) {}
+    ) { }
 
     public build(): JsonMarkdownDatablock {
         return {
@@ -538,6 +566,7 @@ export class DatablockData {
             $ordinal: this.ordinal,
             $position: { start: this.start, end: this.end },
             $infields: this.metadata.finishInlineFields(),
+            $infieldsMulti: this.metadata.finishInlineFieldsMulti(),
             $tags: this.metadata.finishTags(),
             $links: this.metadata.finishLinks(),
             $blockId: this.blockId,
@@ -556,7 +585,7 @@ export class BaseBlockData {
         public ordinal: number,
         public type: string,
         public blockId?: string
-    ) {}
+    ) { }
 
     public build(): JsonMarkdownBlock {
         return {
@@ -564,6 +593,7 @@ export class BaseBlockData {
             $ordinal: this.ordinal,
             $position: { start: this.start, end: this.end },
             $infields: this.metadata.finishInlineFields(),
+            $infieldsMulti: this.metadata.finishInlineFieldsMulti(),
             $tags: this.metadata.finishTags(),
             $links: this.metadata.finishLinks(),
             $blockId: this.blockId,
@@ -586,7 +616,7 @@ export class ListItemData {
         public blockId?: string,
         public status?: string,
         public text?: string
-    ) {}
+    ) { }
 
     public build(): JsonMarkdownListItem {
         return {
@@ -596,6 +626,7 @@ export class ListItemData {
             $elements: this.elements.map((element) => element.build()),
             $type: this.status ? "task" : "list",
             $infields: this.metadata.finishInlineFields(),
+            $infieldsMulti: this.metadata.finishInlineFieldsMulti(),
             $tags: this.metadata.finishTags(),
             $links: this.metadata.finishLinks(),
             $status: this.status,

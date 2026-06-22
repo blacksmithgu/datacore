@@ -16,7 +16,14 @@ import {
 } from "index/types/indexable";
 import { DateTime } from "luxon";
 import { Extractors, FIELDBEARING_TYPE, Field, FieldExtractor, Fieldbearing } from "../../expression/field";
-import { InlineField, jsonInlineField, valueInlineField } from "index/import/inline-field";
+import {
+    InlineField,
+    InlineFieldList,
+    jsonInlineField,
+    jsonInlineFieldList,
+    valueInlineField,
+    valueInlineFieldList,
+} from "index/import/inline-field";
 import {
     LineSpan,
     JsonMarkdownPage,
@@ -55,6 +62,8 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
     $frontmatter?: Record<string, FrontmatterEntry>;
     /** Map of all distinct inline fields in the document. Maps lower case key name to full metadata. */
     $infields: Record<string, InlineField>;
+    /** Map of all inline fields in the document; values are always lists in appearance order. */
+    $infieldsMulti: Record<string, InlineFieldList>;
 
     /** The path this file exists at. */
     $path: string;
@@ -88,6 +97,9 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
                 ? mapObjectValues(raw.$frontmatter, (fm) => normalizeLinks(valueFrontmatterEntry(fm), normalizer))
                 : undefined,
             $infields: mapObjectValues(raw.$infields, (field) => normalizeLinks(valueInlineField(field), normalizer)),
+            $infieldsMulti: raw.$infieldsMulti
+                ? mapObjectValues(raw.$infieldsMulti, (fields) => normalizeLinks(valueInlineFieldList(fields), normalizer))
+                : {},
             $ctime: DateTime.fromMillis(raw.$ctime),
             $mtime: DateTime.fromMillis(raw.$mtime),
             $extension: raw.$extension,
@@ -139,6 +151,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
             $path: this.$path,
             $frontmatter: this.$frontmatter ? mapObjectValues(this.$frontmatter, jsonFrontmatterEntry) : undefined,
             $infields: mapObjectValues(this.$infields, jsonInlineField),
+            $infieldsMulti: mapObjectValues(this.$infieldsMulti, jsonInlineFieldList),
             $ctime: this.$ctime.toMillis(),
             $mtime: this.$mtime.toMillis(),
             $extension: this.$extension,
@@ -161,7 +174,7 @@ export class MarkdownPage implements File, Linkbearing, Taggable, Indexable, Fie
 export namespace MarkdownPage {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<MarkdownPage, keyof TypedValuebearing<Fields>>,
-            TypedValuebearing<Fields> {}
+        TypedValuebearing<Fields> { }
 }
 
 /** @public A single markdown section inside of a page. */
@@ -191,6 +204,8 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
     $blocks: MarkdownBlock[];
     /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
+    /** Map of all inline fields in the section; values are always lists in appearance order. */
+    $infieldsMulti: Record<string, InlineFieldList>;
 
     /** @internal Convert raw markdown section data to the appropriate class. */
     static from(raw: JsonMarkdownSection, file: string, normalizer: LinkNormalizer = NOOP_NORMALIZER): MarkdownSection {
@@ -206,6 +221,9 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
             $links: raw.$links.map((l) => normalizer(Link.fromObject(l))),
             $blocks: blocks,
             $infields: mapObjectValues(raw.$infields, (i) => normalizeLinks(valueInlineField(i), normalizer)),
+            $infieldsMulti: raw.$infieldsMulti
+                ? mapObjectValues(raw.$infieldsMulti, (fields) => normalizeLinks(valueInlineFieldList(fields), normalizer))
+                : {},
         });
     }
 
@@ -253,6 +271,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
             $links: this.$links.map((link) => link.toObject()),
             $blocks: this.$blocks.map((block) => block.json()),
             $infields: mapObjectValues(this.$infields, jsonInlineField),
+            $infieldsMulti: mapObjectValues(this.$infieldsMulti, jsonInlineFieldList),
         };
     }
 
@@ -273,7 +292,7 @@ export class MarkdownSection implements Indexable, Taggable, Linkable, Linkbeari
 export namespace MarkdownSection {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<MarkdownSection, keyof TypedValuebearing<Fields>>,
-            TypedValuebearing<Fields> {}
+        TypedValuebearing<Fields> { }
 }
 
 /** @public Base class for all markdown blocks. */
@@ -295,6 +314,8 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
     $links: Link[];
     /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
+    /** Map of all inline fields in the block; values are always lists in appearance order. */
+    $infieldsMulti: Record<string, InlineFieldList>;
     /** If present, the distinct block ID for this block. */
     $blockId?: string;
     /** The type of block - paragraph, list, and so on. */
@@ -318,6 +339,9 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
             $tags: object.$tags,
             $links: object.$links.map((l) => normalizer(Link.fromObject(l))),
             $infields: mapObjectValues(object.$infields, (i) => normalizeLinks(valueInlineField(i), normalizer)),
+            $infieldsMulti: object.$infieldsMulti
+                ? mapObjectValues(object.$infieldsMulti, (fields) => normalizeLinks(valueInlineFieldList(fields), normalizer))
+                : {},
             $blockId: object.$blockId,
             $type: object.$type,
         });
@@ -355,6 +379,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
             $tags: this.$tags,
             $links: this.$links.map((l) => l.toObject()),
             $infields: mapObjectValues(this.$infields, jsonInlineField),
+            $infieldsMulti: mapObjectValues(this.$infieldsMulti, jsonInlineFieldList),
             $blockId: this.$blockId,
             $type: this.$type,
         };
@@ -375,7 +400,7 @@ export class MarkdownBlock implements Indexable, Linkbearing, Taggable, Fieldbea
 export namespace MarkdownBlock {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<MarkdownBlock, keyof TypedValuebearing<Fields>>,
-            TypedValuebearing<Fields> {}
+        TypedValuebearing<Fields> { }
 }
 
 /** @public Special block for markdown lists (of either plain list entries or tasks). */
@@ -404,6 +429,9 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
             $tags: object.$tags,
             $links: object.$links.map((l) => normalizer(Link.fromObject(l))),
             $infields: mapObjectValues(object.$infields, (i) => normalizeLinks(valueInlineField(i), normalizer)),
+            $infieldsMulti: object.$infieldsMulti
+                ? mapObjectValues(object.$infieldsMulti, (fields) => normalizeLinks(valueInlineFieldList(fields), normalizer))
+                : {},
             $blockId: object.$blockId,
             $elements: elements,
             $type: "list",
@@ -426,7 +454,7 @@ export class MarkdownListBlock extends MarkdownBlock implements Taggable, Linkbe
 export namespace MarkdownListBlock {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<MarkdownListBlock, keyof TypedValuebearing<Fields>>,
-            TypedValuebearing<Fields> {}
+        TypedValuebearing<Fields> { }
 }
 
 /** @public A block containing markdown code. */
@@ -459,7 +487,10 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
             $languages: object.$languages,
             $links: object.$links.map((link) => normalizer(Link.fromObject(link))),
             $tags: object.$tags,
-            $infields: mapObjectValues(object.$infields, valueInlineField),
+            $infields: mapObjectValues(object.$infields, (i) => normalizeLinks(valueInlineField(i), normalizer)),
+            $infieldsMulti: object.$infieldsMulti
+                ? mapObjectValues(object.$infieldsMulti, (fields) => normalizeLinks(valueInlineFieldList(fields), normalizer))
+                : {},
             $contentPosition: object.$contentPosition,
             $style: object.$style,
         });
@@ -502,7 +533,7 @@ export class MarkdownCodeblock extends MarkdownBlock implements Indexable, Field
 export namespace MarkdownCodeblock {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<MarkdownCodeblock, keyof TypedValuebearing<Fields>>,
-            TypedValuebearing<Fields> {}
+        TypedValuebearing<Fields> { }
 }
 
 /** @public A data-annotated YAML codeblock. */
@@ -578,7 +609,7 @@ export class MarkdownDatablock extends MarkdownBlock implements Indexable, Field
 export namespace MarkdownDatablock {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<MarkdownDatablock, keyof TypedValuebearing<Fields>>,
-            TypedValuebearing<Fields> {}
+        TypedValuebearing<Fields> { }
 }
 
 /** @public A specific list item in a list. */
@@ -600,6 +631,8 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
     $tags: string[];
     /** Map of all distinct inline fields in the document, from key name to metadata. */
     $infields: Record<string, InlineField>;
+    /** Map of all inline fields in the list item; values are always lists in appearance order. */
+    $infieldsMulti: Record<string, InlineFieldList>;
     /** All links in the file. */
     $links: Link[];
     /** The block ID of this list item if present. */
@@ -636,6 +669,9 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $type: object.$type,
             $tags: object.$tags,
             $infields: mapObjectValues(object.$infields, (i) => normalizeLinks(valueInlineField(i), normalizer)),
+            $infieldsMulti: object.$infieldsMulti
+                ? mapObjectValues(object.$infieldsMulti, (fields) => normalizeLinks(valueInlineFieldList(fields), normalizer))
+                : {},
             $links: object.$links.map((l) => normalizer(Link.fromObject(l))),
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
@@ -695,6 +731,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
             $type: this.$type,
             $tags: this.$tags,
             $infields: mapObjectValues(this.$infields, jsonInlineField),
+            $infieldsMulti: mapObjectValues(this.$infieldsMulti, jsonInlineFieldList),
             $links: this.$links,
             $blockId: this.$blockId,
             $parentLine: this.$parentLine,
@@ -718,7 +755,7 @@ export class MarkdownListItem implements Indexable, Linkbearing, Taggable, Field
 export namespace MarkdownListItem {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<MarkdownListItem, keyof TypedValuebearing<Fields>>,
-            TypedValuebearing<Fields> {}
+        TypedValuebearing<Fields> { }
 }
 
 /** @public A specific task inside of a markdown list. */
@@ -742,6 +779,9 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
             $type: object.$type,
             $tags: object.$tags,
             $infields: mapObjectValues(object.$infields, (i) => normalizeLinks(valueInlineField(i), normalizer)),
+            $infieldsMulti: object.$infieldsMulti
+                ? mapObjectValues(object.$infieldsMulti, (fields) => normalizeLinks(valueInlineFieldList(fields), normalizer))
+                : {},
             $links: object.$links.map((l) => normalizer(Link.fromObject(l))),
             $blockId: object.$blockId,
             $parentLine: object.$parentLine,
@@ -772,7 +812,7 @@ export class MarkdownTaskItem extends MarkdownListItem implements Indexable, Lin
 export namespace MarkdownTaskItem {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<MarkdownTaskItem, keyof TypedValuebearing<Fields>>,
-            TypedValuebearing<Fields> {}
+        TypedValuebearing<Fields> { }
 }
 
 /** @public An entry in the frontmatter; includes the raw value, parsed value, and raw key (before lower-casing). */
