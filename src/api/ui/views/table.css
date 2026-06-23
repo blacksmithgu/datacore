@@ -31,7 +31,7 @@
     max-width: 100%;
 }
 
-.datacore-table ul,
+.datacore-table ul:not(.contains-task-list),
 .datacore-table ol {
     margin-block-start: 0.2em !important;
     margin-block-end: 0.2em !important;
