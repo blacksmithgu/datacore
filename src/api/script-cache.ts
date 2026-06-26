@@ -105,7 +105,7 @@ export class ScriptCache {
         if (!maybeSource.successful) return maybeSource;
 
         // Transpile to vanilla javascript first...
-        const { code, language } = maybeSource.value;
+        const { code, language, filepath } = maybeSource.value;
         let basic;
         try {
             basic = transpile(code, language);
@@ -114,7 +114,15 @@ export class ScriptCache {
         }
 
         // Then finally execute the script to 'load' it.
-        const finalContext = Object.assign({ h: h, Fragment: Fragment }, context);
+        const finalContext = Object.assign(
+            {
+                h: h,
+                Fragment: Fragment,
+                __filename: filepath,
+                __dirname: filepath.split("/").slice(0, -1).join("/"),
+            },
+            context
+        );
         try {
             return Result.success(await asyncEvalInContext(basic, finalContext));
         } catch (error) {
@@ -129,14 +137,23 @@ export class ScriptCache {
     }
 
     /** Attempts to resolve the source to load given a path or link to a markdown section. */
-    private async resolveSource(
-        path: string | Link
-    ): Promise<Result<{ code: string; language: ScriptLanguage }, string>> {
+    private async resolveSource(path: string | Link): Promise<
+        Result<
+            {
+                code: string;
+                language: ScriptLanguage;
+                filepath: string;
+            },
+            string
+        >
+    > {
         const object = this.store.resolveLink(path);
         if (!object) return Result.failure("Could not find a script at the given path: " + path.toString());
 
         const tfile = this.store.vault.getFileByPath(object.$file!);
         if (!tfile) return Result.failure(`File "${object.$file}" not found.`);
+
+        const filepath = object.$file!;
 
         // Check if this is a JS file we should load directly.
         if (tfile.extension.toLocaleLowerCase() in ScriptCache.FILE_EXTENSIONS) {
@@ -144,7 +161,7 @@ export class ScriptCache {
 
             try {
                 const code = await this.store.vault.cachedRead(tfile);
-                return Result.success({ code, language });
+                return Result.success({ code, language, filepath });
             } catch (error) {
                 return Result.failure("Failed to load javascript/typescript source file: " + error);
             }
@@ -165,7 +182,7 @@ export class ScriptCache {
                 ScriptCache.SCRIPT_LANGUAGES[
                     maybeBlock.$languages.find((lang) => lang.toLocaleLowerCase() in ScriptCache.SCRIPT_LANGUAGES)!
                 ];
-            return (await this.readCodeblock(tfile, maybeBlock)).map((code) => ({ code, language }));
+            return (await this.readCodeblock(tfile, maybeBlock)).map((code) => ({ code, language, filepath }));
         } else if (object instanceof MarkdownCodeblock) {
             const maybeLanguage = object.$languages.find(
                 (lang) => lang.toLocaleLowerCase() in ScriptCache.SCRIPT_LANGUAGES
@@ -174,7 +191,7 @@ export class ScriptCache {
                 return Result.failure(`The codeblock referenced by '${path}' is not a JS/TS codeblock.`);
 
             const language = ScriptCache.SCRIPT_LANGUAGES[maybeLanguage];
-            return (await this.readCodeblock(tfile, object)).map((code) => ({ code, language }));
+            return (await this.readCodeblock(tfile, object)).map((code) => ({ code, language, filepath }));
         }
 
         return Result.failure(`Cannot import '${path.toString()}: not a JS/TS file or codeblock reference.`);
