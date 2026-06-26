@@ -308,6 +308,8 @@ export function SimpleErrorBoundary({
 }: PropsWithChildren<{ title?: string; message?: string }>) {
     const [error, reset] = useErrorBoundary();
 
+    console.error(error);
+
     if (error) {
         return <ErrorMessage title={title} message={message} error={error.stack} reset={reset} />;
     } else {
