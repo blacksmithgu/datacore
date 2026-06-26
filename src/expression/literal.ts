@@ -411,6 +411,37 @@ export type Grouping<T> = T[] | GroupElement<T>[];
  * @hidden
  */
 export namespace Groupings {
+	/**
+	 * recursively sort a grouping
+	 */
+		export function sort<T>(rows: Grouping<T>, comparators: {
+			fn: (first: T, second: T) => number;
+			direction: "ascending" | "descending";
+		}[]): Grouping<T> {
+			const cmp = <E extends GroupElement<T> | T>(a: E, b: E): number => {
+				for(let comparator of comparators) {
+					let result: number = 0;
+          const direction = comparator.direction === "ascending" ? 1 : -1;
+					if(isElementGroup(a) && isElementGroup(b)) {
+						result = 0;
+					}	else if(!Groupings.isElementGroup(a) && !Groupings.isElementGroup(b)) {
+						result = direction * comparator.fn(a as T, b as T);
+					}
+					if(result != 0) return result;
+				}
+				return 0;
+			}
+			if(isLeaf(rows)) {	
+				return ([] as T[]).concat(rows).sort(cmp);
+			}	
+			const sortMapper = (item: GroupElement<T> | T): (GroupElement<T> | T) => {
+				if(isElementGroup(item)) {
+					return {key: item.key, rows: ([] as any).concat(item.rows).sort(cmp).map(sortMapper)}
+				}
+				return item
+			}
+			return ([] as GroupElement<T>[]).concat(rows).sort(cmp).map(sortMapper) as any;
+		}
     /** Determines if the given group entry is a standalone value, or a grouping of sub-entries. */
     export function isElementGroup<T>(entry: unknown): entry is GroupElement<T> {
         return Literals.isObject(entry) && Object.keys(entry).length == 2 && "key" in entry && "rows" in entry;
