@@ -4,13 +4,18 @@
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
 import { useContext, useMemo, useRef } from "preact/hooks";
 import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
-import { useAsElement, useInterning } from "ui/hooks";
+import { useAsElement, useInterning, useStableCallback } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
-import { ReactNode } from "preact/compat";
+import { faSortDown, faSortUp, faSort } from "@fortawesome/free-solid-svg-icons";
+import {useTableDispatch, type SortDirection, type SortOn, TABLE_CONTEXT, TableContext, useTableContext, CommonTableContext} from "./table-dispatch";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { PropsWithChildren, ReactNode } from "preact/compat";
 
 import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
+
 
 /**
  * A simple column definition which allows for custom renderers and titles.
@@ -33,6 +38,12 @@ export interface TableColumn<T, V = Literal> {
 
     /** Called to render the given column value. Can depend on both the specific value and the row object. */
     render?: (value: V, object: T) => Literal | ReactNode;
+
+		/** whether or not this column can be sorted on. */
+		sortable?: boolean;
+
+		/** comparator used when sorting this column. */
+		comparator?: (first: V, second: V, firstObject: T, secondObject: T) => number;
 }
 
 /**
@@ -69,6 +80,9 @@ export interface TableViewProps<T> {
      * If a number, will scroll only if the number is greater than the current page size.
      **/
     scrollOnPaging?: boolean | number;
+		
+    /** The fields to sort the view on, if relevant. */
+    sortOn?: SortOn[];
 }
 
 /**
@@ -94,12 +108,36 @@ export function TableView<T>(props: TableViewProps<T>) {
         elements: totalElements,
         container: tableRef,
     });
+		// Cache sorts by value equality and filter to only sortable valid fields.
+    const rawSorts = useInterning(props.sortOn, (a, b) => Literals.compare(a, b) == 0);
+		const [tableState, dispatch] = useTableDispatch(() => ({
+			sorts: Object.fromEntries((rawSorts?.filter((sort) => {
+            const column = columns.find((col) => col.id == sort.id);
+            return column && (column.sortable ?? true);
+        }) ?? []).map(a => [a.id, a.direction]))
+		}))
+		const idsToColumns = useMemo(() => {
+			return Object.fromEntries(columns.map(col => [col.id, col]));
+		}, [columns]);
+		const sortedRows = useMemo(() => {
+        if (tableState.sorts == undefined || Object.keys(tableState.sorts).length == 0) return props.rows;
+
+        const comparators = Object.entries(tableState.sorts).map(([id, direction]) => {
+            const col = idsToColumns[id];
+            const comp = col.comparator ? ((a: T, b: T) => col.comparator!(col?.value(a), col?.value(b), a, b)) : (a: T, b: T) => DEFAULT_TABLE_COMPARATOR(col.value(a), col.value(b), a, b);
+            return {
+                fn: comp,
+                direction: direction,
+            };
+        });
+        return Groupings.sort<T>(props.rows, comparators);
+    }, [props.rows, tableState.sorts, columns]);
 
     const pagedRows = useMemo(() => {
         if (paging.enabled)
-            return Groupings.slice(props.rows, paging.page * paging.pageSize, (paging.page + 1) * paging.pageSize);
-        else return props.rows;
-    }, [paging.page, paging.pageSize, paging.enabled, props.rows]);
+            return Groupings.slice(sortedRows, paging.page * paging.pageSize, (paging.page + 1) * paging.pageSize);
+        else return sortedRows;
+    }, [paging.page, paging.pageSize, paging.enabled, sortedRows]);
 
     const groupings = useMemo(() => {
         if (!props.groupings) return undefined;
@@ -110,6 +148,7 @@ export function TableView<T>(props: TableViewProps<T>) {
     }, [props.groupings]);
 
     return (
+      <TableContextProvider dispatch={dispatch} sorts={tableState.sorts}>
         <div ref={tableRef}>
             <table className="datacore-table">
                 <thead>
@@ -129,6 +168,7 @@ export function TableView<T>(props: TableViewProps<T>) {
                 <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
             )}
         </div>
+      </TableContextProvider>
     );
 }
 
@@ -155,7 +195,10 @@ export function TableViewHeaderCell<T>({ column }: { column: TableColumn<T> }) {
     // We use an internal div to avoid flex messing with the table layout.
     return (
         <th style={{ width: realWidth }} className="datacore-table-header-cell">
-            <div className="datacore-table-header-title">{header}</div>
+						<div className="datacore-table-header-cell-content">
+							{column.sortable && <SortButton columnId={column.id} />}
+							<div className="datacore-table-header-title">{header}</div>
+						</div>
         </th>
     );
 }
@@ -253,3 +296,44 @@ export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T
 
     return <td className="datacore-table-cell">{rendered}</td>;
 }
+
+export function SortButton({
+	columnId,
+    className,
+	contextGetter = useTableContext,
+}: {
+    className?: string;
+		columnId: string;
+		contextGetter?: () => CommonTableContext | null;
+}) {
+		const {dispatch, ...state} = contextGetter()!;
+		const direction = state.sorts[columnId];
+    const icon = useMemo(() => {
+        if (direction == "ascending") return faSortDown;
+        else if (direction == "descending") return faSortUp;
+        return faSort;
+    }, [direction]);
+		const onClick = useStableCallback(() => {
+			dispatch({type: "sort-column", column: columnId, direction: direction == "ascending" ? "descending" : "ascending"});
+		}, [columnId, dispatch, state.sorts]);
+
+    return (
+        <div onClick={onClick} className={className}>
+            <FontAwesomeIcon icon={icon} />
+        </div>
+    );
+}
+
+/** Default comparator for sorting on a table column. */
+export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
+    Literals.compare(a, b);
+/**
+ * @hidden
+ * @group Components
+ */
+export function TableContextProvider<T>({dispatch, children, ...rest}: PropsWithChildren<TableContext>) {	
+	return <TABLE_CONTEXT.Provider value={{dispatch: dispatch, ...rest}}>
+		{children}
+	</TABLE_CONTEXT.Provider>
+}
+
