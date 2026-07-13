@@ -126,19 +126,24 @@ export class Datacore extends Component {
         const init = (this.initializer = new DatacoreInitializer(this));
         this.addChild(init);
 
-        await init.finished();
+        // Wait only for the cache phase to complete, then signal ready immediately.
+        await init.cacheReady();
 
         this.initialized = true;
+        this.datastore.touch();
+        this.trigger("update", this.revision);
+        this.trigger("initialized");
+
+        // Continue waiting for background imports of stale/missing files.
+        await init.finished();
+
         this.initializer = undefined;
         this.removeChild(init);
 
         this.datastore.touch();
         this.trigger("update", this.revision);
-        this.trigger("initialized");
 
         // Clean up any documents which no longer exist in the vault.
-        // TODO: I think this may race with other concurrent operations, so
-        // this may need to happen at the start of init and not at the end.
         const currentFiles = this.vault.getFiles().map((file) => file.path);
         this.persister.synchronize(currentFiles);
     }
@@ -315,6 +320,12 @@ export class DatacoreInitializer extends Component {
     current: TFile[];
     /** Deferred promise which resolves when importing is done. */
     done: Deferred<InitializationStats>;
+    /**
+     * Deferred promise which resolves as soon as all cached files have been loaded into the
+     * datastore. Files that are stale or missing from the cache continue importing in the
+     * background after this resolves.
+     */
+    cacheReadyDeferred: Deferred<void>;
 
     /** The total number of target files to import. */
     targetTotal: number;
@@ -331,6 +342,9 @@ export class DatacoreInitializer extends Component {
     /** Total number of cached files. */
     cached: number;
 
+    /** Files that need a full background import (stale or not in cache). */
+    private backgroundQueue: TFile[];
+
     constructor(public core: Datacore) {
         super();
 
@@ -341,18 +355,32 @@ export class DatacoreInitializer extends Component {
         this.start = Date.now();
         this.current = [];
         this.done = deferred();
+        this.cacheReadyDeferred = deferred();
+
+        this.backgroundQueue = [];
 
         this.initialized = this.imported = this.skipped = this.cached = 0;
     }
 
     async onload() {
-        // Queue BATCH_SIZE elements from the queue to import.
         this.active = true;
 
-        this.runNext();
+        // Phase 1: load everything available from the IndexedDB cache.
+        await this.loadFromCache();
+
+        // Signal that the index is usable — cached data is now in the datastore.
+        this.cacheReadyDeferred.resolve();
+
+        // Phase 2: import files that were stale or missing from the cache in the background.
+        this.runNextBackground();
     }
 
-    /** Promise which resolves when the initialization completes. */
+    /** Promise that resolves once all cached files have been loaded (plugin is usable). */
+    cacheReady(): Promise<void> {
+        return this.cacheReadyDeferred;
+    }
+
+    /** Promise which resolves when the full initialization (including background imports) completes. */
     finished(): Promise<InitializationStats> {
         return this.done;
     }
@@ -361,37 +389,70 @@ export class DatacoreInitializer extends Component {
     onunload() {
         if (this.active) {
             this.active = false;
+            this.cacheReadyDeferred.resolve(); // unblock callers waiting on cache
             this.done.reject("Initialization was cancelled before completing.");
         }
     }
 
-    /** Poll for another task to execute from the queue. */
-    private runNext() {
-        // Do nothing if max number of concurrent operations already running.
+    /** Phase 1: iterate all vault files and load valid cache entries synchronously (in batches). */
+    private async loadFromCache() {
+        const allFiles = this.queue.slice(); // snapshot
+        this.queue = [];
+
+        // Process in parallel batches to keep it fast without hammering IndexedDB.
+        const CACHE_BATCH = 32;
+        for (let i = 0; i < allFiles.length; i += CACHE_BATCH) {
+            if (!this.active) break;
+
+            const batch = allFiles.slice(i, i + CACHE_BATCH);
+            await Promise.all(
+                batch.map(async (file) => {
+                    try {
+                        const cached = await this.core.persister.loadFile(file.path);
+                        if (cached && cached.time >= file.stat.mtime && cached.version === this.core.version) {
+                            if (file.extension === "md") {
+                                const data = MarkdownPage.from(cached.data as JsonMarkdownPage, (link) => link);
+                                this.core.storeMarkdown(data);
+                                this.cached++;
+                                this.initialized++;
+                                return;
+                            }
+                        }
+                        // Cache miss or stale — queue for background import.
+                        this.backgroundQueue.push(file);
+                    } catch {
+                        this.backgroundQueue.push(file);
+                    }
+                })
+            );
+        }
+    }
+
+    /** Phase 2: import files that weren't in the cache, respecting BATCH_SIZE concurrency. */
+    private runNextBackground() {
         if (!this.active || this.current.length >= DatacoreInitializer.BATCH_SIZE) {
             return;
         }
 
-        // There is space available to execute another.
-        const next = this.queue.pop();
+        const next = this.backgroundQueue.pop();
         if (next) {
             this.current.push(next);
 
-            // Run asynchronously to allow for concurrency.
             (async () => {
                 try {
-                    const result = await this.init(next);
-                    this.handleResult(next, result);
-                } catch (error) {
-                    this.handleResult(next, { status: "skipped" });
+                    await this.core.reload(next);
+                    this.imported++;
+                } catch {
+                    this.skipped++;
                 }
+                this.initialized++;
+                this.current.remove(next);
+                this.runNextBackground();
             })();
 
-            this.runNext();
-        } else if (!next && this.current.length == 0) {
+            this.runNextBackground();
+        } else if (this.current.length === 0) {
             this.active = false;
-
-            // All work is done, resolve.
             this.done.resolve({
                 durationMs: Date.now() - this.start,
                 files: this.files,
@@ -399,41 +460,6 @@ export class DatacoreInitializer extends Component {
                 skipped: this.skipped,
                 cached: this.cached,
             });
-        }
-    }
-
-    /** Process the result of an initialization and queue more runs. */
-    private handleResult(file: TFile, result: InitializationResult) {
-        this.current.remove(file);
-        this.initialized++;
-
-        if (result.status === "skipped") this.skipped++;
-        else if (result.status === "imported") this.imported++;
-        else if (result.status === "cached") this.cached++;
-
-        // Queue more jobs for processing.
-        this.runNext();
-    }
-
-    /** Initialize a specific file. */
-    private async init(file: TFile): Promise<InitializationResult> {
-        try {
-            // Handle loading markdown files from cache.
-            const cached = await this.core.persister.loadFile(file.path);
-            if (cached && cached.time >= file.stat.mtime && cached.version == this.core.version) {
-                if (file.extension === "md") {
-                    const data = MarkdownPage.from(cached.data as JsonMarkdownPage, (link) => link);
-                    this.core.storeMarkdown(data);
-                    return { status: "cached" };
-                }
-            }
-
-            // Does not match an existing import type, just reload normally.
-            await this.core.reload(file);
-            return { status: "imported" };
-        } catch (ex) {
-            console.log("Datacore: Failed to import file: ", ex);
-            return { status: "skipped" };
         }
     }
 }
@@ -453,6 +479,4 @@ export interface InitializationStats {
 }
 
 /** The result of initializing a file. */
-interface InitializationResult {
-    status: "skipped" | "imported" | "cached";
-}
+// Kept for potential future use.

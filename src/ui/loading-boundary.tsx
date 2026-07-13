@@ -4,6 +4,7 @@ import { useIndexUpdates } from "./hooks";
 import { Literal } from "expression/literal";
 import { FunctionComponent, JSX, VNode, createElement, isValidElement } from "preact";
 import { ErrorMessage, Lit } from "./markdown";
+import { t } from "lang/helpers";
 
 import "./errors.css";
 
@@ -37,7 +38,7 @@ export function LoadingBoundary({ children, datacore }: PropsWithChildren<{ data
     } else {
         return (
             <div className="datacore-loading-boundary">
-                <h4 className="datacore-loading-title">Datacore is getting ready...</h4>
+                <h4 className="datacore-loading-title">{t("LOADING_TITLE")}</h4>
                 <div className="datacore-loading-content">
                     <LoadingProgress datacore={datacore} />
                 </div>
@@ -80,7 +81,8 @@ export function ScriptContainer({
         throw error;
     }
 
-    return <>{element ?? <ErrorMessage message="< View is rendering >" />}</>;
+    
+    return <>{element ?? <ErrorMessage message={t("VIEW_RENDERING")} />}</>;
 }
 
 /** Make a renderable element from the returned object; if this transformation is not possible, throw an exception. */
