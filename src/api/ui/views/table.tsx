@@ -2,15 +2,24 @@
  * @module views
  */
 import { GroupElement, Grouping, Groupings, Literal, Literals } from "expression/literal";
-import { useContext, useMemo, useRef } from "preact/hooks";
-import { CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
-import { useAsElement, useInterning } from "ui/hooks";
+import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
+import { APP_CONTEXT, CURRENT_FILE_CONTEXT, Lit } from "ui/markdown";
+import { useAsElement, useInterning, useStableCallback } from "ui/hooks";
 import { Fragment } from "preact/jsx-runtime";
+import { faSortDown, faSortUp, faSort } from "@fortawesome/free-solid-svg-icons";
+import {useTableDispatch} from "./table-dispatch";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ReactNode } from "preact/compat";
 
 import { ControlledPager, useDatacorePaging } from "./paging";
 
 import "./table.css";
+import { EditableElement, useEditableDispatch } from "ui/fields/editable";
+import "./misc.css";
+import { App } from "obsidian";
+import { GenericTableViewProps, TableContextProvider, TableKind, useGenericTableContext } from "../table-types";
+
 
 /**
  * A simple column definition which allows for custom renderers and titles.
@@ -32,7 +41,25 @@ export interface TableColumn<T, V = Literal> {
     value: (object: T) => V;
 
     /** Called to render the given column value. Can depend on both the specific value and the row object. */
-    render?: (value: V, object: T) => Literal | ReactNode;
+		render?: (value: V, object: T) => Literal | ReactNode;
+		
+		/** whether or not this column can be sorted on. */
+		sortable?: boolean;
+
+		/** comparator used when sorting this column. */
+		comparator?: (first: V, second: V, firstObject: T, secondObject: T) => number;
+
+    /** whether this column is editable or not */
+    editable?: boolean;
+
+    /** Rendered when editing the column */
+    editor?: EditableElement<V>;
+
+    /** Props to pass to the editor component (if any) */
+    editorProps: unknown;
+
+    /** Called when the column value updates. */
+    onUpdate?: (value: V, object: T) => unknown;
 }
 
 /**
@@ -42,34 +69,15 @@ export interface TableColumn<T, V = Literal> {
 export interface GroupingConfig<T> {
     /** How a grouping with the given key and set of rows should be handled. */
     render?: (key: Literal, rows: Grouping<T>) => Literal | ReactNode;
+    /** How creating a new element in this group should be handled. */
+    create?: (prevGroup: GroupElement<T> | null, currentGroup: GroupElement<T>, app: App) => Promise<unknown>;
 }
 
 /**
  * All available props for a table.
  * @group Props
  */
-export interface TableViewProps<T> {
-    /** The columns to render in the table. */
-    columns: TableColumn<T>[];
-
-    /** The rows to render; may potentially be grouped or just a plain array. */
-    rows: Grouping<T>;
-
-    /** Allows for grouping header columns to be overridden with custom rendering/logic. */
-    groupings?: GroupingConfig<T> | GroupingConfig<T>[] | ((key: Literal, rows: Grouping<T>) => Literal | ReactNode);
-
-    /**
-     * If set to a boolean - enables or disables paging.
-     * If set to a number, paging will be enabled with the given number of rows per page.
-     */
-    paging?: boolean | number;
-
-    /**
-     * Whether the view will scroll to the top automatically on page changes. If true, will always scroll on page changes.
-     * If a number, will scroll only if the number is greater than the current page size.
-     **/
-    scrollOnPaging?: boolean | number;
-}
+export interface TableViewProps<T> extends GenericTableViewProps<T, "table"> {}
 
 /**
  * A simple table which supports grouping, sorting, paging, and custom columns.
@@ -94,12 +102,36 @@ export function TableView<T>(props: TableViewProps<T>) {
         elements: totalElements,
         container: tableRef,
     });
+		// Cache sorts by value equality and filter to only sortable valid fields.
+    const rawSorts = useInterning(props.sortOn, (a, b) => Literals.compare(a, b) == 0);
+		const [tableState, dispatch] = useTableDispatch<T>(() => ({
+			sorts: Object.fromEntries((rawSorts?.filter((sort) => {
+            const column = columns.find((col) => col.id == sort.id);
+            return column && (column.sortable ?? true);
+        }) ?? []).map(a => [a.id, a.direction]))
+		}))
+		const idsToColumns = useMemo(() => {
+			return Object.fromEntries(columns.map(col => [col.id, col]));
+		}, [columns]);
+		const sortedRows = useMemo(() => {
+        if (tableState.sorts == undefined || Object.keys(tableState.sorts).length == 0) return props.rows;
+
+        const comparators = Object.entries(tableState.sorts).map(([id, direction]) => {
+            const col = idsToColumns[id];
+            const comp = col.comparator ? ((a: T, b: T) => col.comparator!(col?.value(a), col?.value(b), a, b)) : (a: T, b: T) => DEFAULT_TABLE_COMPARATOR(col.value(a), col.value(b), a, b);
+            return {
+                fn: comp,
+                direction: direction,
+            };
+        });
+        return Groupings.sort<T>(props.rows, comparators);
+    }, [props.rows, tableState.sorts, columns]);
 
     const pagedRows = useMemo(() => {
         if (paging.enabled)
-            return Groupings.slice(props.rows, paging.page * paging.pageSize, (paging.page + 1) * paging.pageSize);
-        else return props.rows;
-    }, [paging.page, paging.pageSize, paging.enabled, props.rows]);
+            return Groupings.slice(sortedRows, paging.page * paging.pageSize, (paging.page + 1) * paging.pageSize);
+        else return sortedRows;
+    }, [paging.page, paging.pageSize, paging.enabled, sortedRows]);
 
     const groupings = useMemo(() => {
         if (!props.groupings) return undefined;
@@ -108,8 +140,35 @@ export function TableView<T>(props: TableViewProps<T>) {
         if (Literals.isFunction(props.groupings)) return [{ render: props.groupings }];
         else return [props.groupings];
     }, [props.groupings]);
-
+    const app = useContext(APP_CONTEXT);
+    const clickCallbackFactory = useCallback(
+        (
+                previousElement: GroupElement<T> | T | null,
+                maybeParent: GroupElement<T> | T | null,
+                groupConfig?: GroupingConfig<T>
+            ) =>
+            async () => {
+                if (!props.createRow && !props.creatable) return;
+                const group = Groupings.isElementGroup(maybeParent) ? maybeParent : null;
+                const getLastActualItem = (item: GroupElement<T> | T | null): T | null => {
+                    if (item == null) return null;
+                    if (!Groupings.isElementGroup(item)) {
+                        return item;
+                    } else if (item.rows.length) {
+                        return getLastActualItem(item.rows[item.rows.length - 1]);
+                    } else {
+                        return null;
+                    }
+                };
+                if (groupConfig) {
+                    const prevGroup = Groupings.isElementGroup(previousElement) ? previousElement : null;
+                    await groupConfig.create?.(prevGroup, group!, app);
+                } else await props.createRow?.(getLastActualItem(previousElement), group, app);
+            },
+        [app, props.createRow, props.creatable]
+    );
     return (
+      <TableContextProvider<T, "table"> clickCallbackFactory={clickCallbackFactory} dispatch={dispatch} state={tableState}>
         <div ref={tableRef}>
             <table className="datacore-table">
                 <thead>
@@ -120,15 +179,48 @@ export function TableView<T>(props: TableViewProps<T>) {
                     </tr>
                 </thead>
                 <tbody>
-                    {pagedRows.map((row) => (
-                        <VanillaRowGroup level={0} groupings={groupings} columns={columns} element={row} />
+                    {pagedRows.map((row, i, a) => (
+                        <VanillaRowGroup<T>
+                            level={0}
+                            groupings={groupings}
+                            columns={columns}
+                            element={row}
+                            creatable={props.creatable ?? false}
+                            previousElement={i == 0 ? null : a[i - 1]}
+                        />
                     ))}
+                    {props.creatable && (
+                        <CreateButton
+                            cols={columns.length}
+                            clickCallback={clickCallbackFactory(
+                                props.rows.length ? props.rows[props.rows.length - 1] : null,
+                                null,
+                                undefined
+                            )}
+                        />
+                    )}
                 </tbody>
             </table>
             {paging.enabled && (
                 <ControlledPager page={paging.page} totalPages={paging.totalPages} setPage={paging.setPage} />
             )}
         </div>
+      </TableContextProvider>
+    );
+}
+/**
+ * Button that creates a new element when clicked.
+ * @hidden
+ */
+function CreateButton({ clickCallback, cols }: { clickCallback: () => Promise<unknown>; cols: number }) {
+    return (
+        <tr>
+            <td colSpan={cols}>
+                <button className="dashed-default" style="padding: 0.75em; width: 100%" onClick={clickCallback}>
+                    Add item
+                </button>
+            </td>
+        </tr>
     );
 }
 
@@ -155,7 +247,10 @@ export function TableViewHeaderCell<T>({ column }: { column: TableColumn<T> }) {
     // We use an internal div to avoid flex messing with the table layout.
     return (
         <th style={{ width: realWidth }} className="datacore-table-header-cell">
-            <div className="datacore-table-header-title">{header}</div>
+						<div className="datacore-table-header-cell-content">
+							{column.sortable && <SortButton columnId={column.id} />}
+							<div className="datacore-table-header-title">{header}</div>
+						</div>
         </th>
     );
 }
@@ -169,21 +264,34 @@ export function VanillaRowGroup<T>({
     columns,
     element,
     groupings,
+    creatable = false,
+    previousElement,
 }: {
     level: number;
     columns: TableColumn<T>[];
     element: T | GroupElement<T>;
     groupings?: GroupingConfig<T>[];
+    createRow?: TableViewProps<T>["createRow"];
+    creatable: boolean;
+    previousElement: T | GroupElement<T> | null;
 }) {
+	const {clickCallbackFactory: callbackFactory} = useGenericTableContext<T, "table">()!;
     if (Groupings.isElementGroup(element)) {
         const groupingConfig = groupings?.[Math.min(groupings.length - 1, level)];
-
+				const onClick = callbackFactory(previousElement, element, groupingConfig);
         return (
             <Fragment>
                 <TableGroupHeader level={level} value={element} width={columns.length} config={groupingConfig} />
-                {element.rows.map((row) => (
-                    <VanillaRowGroup level={level + 1} columns={columns} element={row} />
+                {element.rows.map((row, i, a) => (
+                    <VanillaRowGroup
+                        level={level + 1}
+                        columns={columns}
+                        element={row}
+                        creatable={creatable}
+                        previousElement={i == 0 ? null : a[i - 1]}
+                    />
                 ))}
+								<CreateButton clickCallback={onClick} cols={columns.length}/>
             </Fragment>
         );
     } else {
@@ -231,7 +339,11 @@ export function TableGroupHeader<T>({
  */
 export function TableRow<T>({ level, row, columns }: { level: number; row: T; columns: TableColumn<T>[] }) {
     return (
-        <tr className="datacore-table-row" style={level ? `padding-left: ${level * 5}px` : undefined}>
+        <tr
+            className="datacore-table-row"
+            style={level ? `padding-left: ${level * 5}px` : undefined}
+            key={"$id" in (row as any) ? (row as any).$id : undefined}
+        >
             {columns.map((col) => (
                 <TableRowCell row={row} column={col} />
             ))}
@@ -244,12 +356,61 @@ export function TableRow<T>({ level, row, columns }: { level: number; row: T; co
  * @hidden
  */
 export function TableRowCell<T>({ row, column }: { row: T; column: TableColumn<T> }) {
-    const value = useMemo(() => column.value(row), [row, column.value]);
+    const value = column.value(row);
+    const [editableState, dispatch] = useEditableDispatch<typeof value>({
+        content: value,
+        isEditing: false,
+        updater: (v) => column.onUpdate && column.onUpdate(v, row),
+    });
     const renderable = useMemo(() => {
-        if (column.render) return column.render(value, row);
-        else return value;
-    }, [row, column.render, value]);
+        if (column.render) {
+            let r = column.render(value, row);
+            return r;
+        } else return value;
+    }, [row, column.render, editableState.content, value]);
+
     const rendered = useAsElement(renderable);
 
-    return <td className="datacore-table-cell">{rendered}</td>;
+    const { editor: Editor } = column;
+    return (
+        <td
+            onDblClick={() => dispatch({ type: "editing-toggled", newValue: !editableState.isEditing })}
+            className="datacore-table-cell"
+        >
+            {column.editable && editableState.isEditing && Editor ? (
+                <Editor field={value} dispatch={dispatch} {...(column.editorProps ?? {})} {...editableState} />
+            ) : (
+                rendered
+            )}
+        </td>
+    );
 }
+
+export function SortButton<T, K extends TableKind = "table">({
+	columnId,
+    className,
+}: {
+    className?: string;
+		columnId: string;
+}) {
+		const {dispatch, state} = useGenericTableContext<T, K>()!;
+		const direction = state.sorts[columnId];
+    const icon = useMemo(() => {
+        if (direction == "ascending") return faSortDown;
+        else if (direction == "descending") return faSortUp;
+        return faSort;
+    }, [direction]);
+		const onClick = useStableCallback(() => {
+			dispatch({type: "sort-column", column: columnId, direction: direction == "ascending" ? "descending" : "ascending"});
+		}, [columnId, dispatch, state.sorts]);
+
+    return (
+        <div onClick={onClick} className={className}>
+            <FontAwesomeIcon icon={icon} />
+        </div>
+    );
+}
+
+/** Default comparator for sorting on a table column. */
+export const DEFAULT_TABLE_COMPARATOR: <T>(a: Literal, b: Literal, ao: T, bo: T) => number = (a, b, _ao, _bo) =>
+    Literals.compare(a, b);
