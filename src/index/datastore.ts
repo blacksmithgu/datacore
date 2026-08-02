@@ -116,7 +116,7 @@ export class Datastore {
      * added to the object.
      */
     public store<T extends Indexable>(object: T | T[], substorer?: Substorer<T>) {
-        this._recursiveStore(object, this.revision++, substorer, undefined);
+        this._recursiveStore(object, ++this.revision, substorer, undefined);
     }
 
     /** Recursively store objects using a potential subindexer. */
