@@ -93,6 +93,9 @@ export class DatacoreLocalApi {
      * ```
      */
     public async require(path: string | Link): Promise<unknown> {
+        if (typeof path === "string" && !/.*[tj]sx?$/.test(path)) {
+            return require(path);
+        }
         const result = await this.scriptCache.load(path, { dc: this });
         return result.orElseThrow();
     }
