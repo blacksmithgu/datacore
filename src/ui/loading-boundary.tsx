@@ -11,11 +11,10 @@ import "./errors.css";
 function LoadingProgress({ datacore }: { datacore: Datacore }) {
     useIndexUpdates(datacore, { debounce: 250 });
 
-    return (
-        <p>
-            {datacore.initializer?.initialized ?? 0} / {datacore.initializer?.targetTotal ?? 0}
-        </p>
-    );
+    const initialized = datacore.initializer?.initialized ?? 0;
+    const targetTotal = datacore.initializer?.targetTotal ?? 0;
+
+    return <p>{`${initialized} / ${targetTotal}`}</p>;
 }
 
 /** Loading boundary which shows a loading screen while Datacore is initializing. */
