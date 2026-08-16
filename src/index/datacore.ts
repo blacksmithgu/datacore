@@ -305,6 +305,10 @@ export class Datacore extends Component {
 export class DatacoreInitializer extends Component {
     /** Number of concurrent operations the initializer will perform. */
     static BATCH_SIZE: number = 8;
+    /** Number of completed files between yields to the renderer. */
+    static YIELD_INTERVAL: number = 32;
+    /** Time yielded to the renderer between initialization batches. */
+    static YIELD_DELAY_MS: number = 16;
 
     /** Whether the initializer should continue to run. */
     active: boolean;
@@ -313,6 +317,8 @@ export class DatacoreInitializer extends Component {
     queue: TFile[];
     /** The files actively being imported. */
     current: TFile[];
+    /** Whether the initializer is currently yielding to the renderer. */
+    yielding: boolean;
     /** Deferred promise which resolves when importing is done. */
     done: Deferred<InitializationStats>;
 
@@ -340,6 +346,7 @@ export class DatacoreInitializer extends Component {
         this.files = this.queue.length;
         this.start = Date.now();
         this.current = [];
+        this.yielding = false;
         this.done = deferred();
 
         this.initialized = this.imported = this.skipped = this.cached = 0;
@@ -411,8 +418,18 @@ export class DatacoreInitializer extends Component {
         else if (result.status === "imported") this.imported++;
         else if (result.status === "cached") this.cached++;
 
-        // Queue more jobs for processing.
-        this.runNext();
+        // Yield periodically so loading progress and the rest of Obsidian can repaint.
+        if (this.initialized % DatacoreInitializer.YIELD_INTERVAL == 0 && !this.yielding) {
+            this.core.events.trigger("index-progress");
+            this.yielding = true;
+            window.setTimeout(() => {
+                this.yielding = false;
+                this.runNext();
+            }, DatacoreInitializer.YIELD_DELAY_MS);
+        } else if (!this.yielding) {
+            if (this.initialized == this.targetTotal) this.core.events.trigger("index-progress");
+            this.runNext();
+        }
     }
 
     /** Initialize a specific file. */

@@ -1,6 +1,6 @@
 import { Datacore } from "index/datacore";
-import { PropsWithChildren, useEffect, useState } from "preact/compat";
-import { useIndexUpdates } from "./hooks";
+import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "preact/compat";
+import { EventRef } from "obsidian";
 import { Literal } from "expression/literal";
 import { FunctionComponent, JSX, VNode, createElement, isValidElement } from "preact";
 import { ErrorMessage, Lit } from "./markdown";
@@ -9,12 +9,27 @@ import "./errors.css";
 
 /** Simple view which shows datacore's current loading progress when it is still indexing on startup. */
 function LoadingProgress({ datacore }: { datacore: Datacore }) {
-    useIndexUpdates(datacore, { debounce: 250 });
+    const eventRef = useRef<EventRef>();
+    const attach = useCallback(
+        (element: HTMLParagraphElement | null) => {
+            if (eventRef.current) datacore.events.offref(eventRef.current);
+            eventRef.current = undefined;
 
-    const initialized = datacore.initializer?.initialized ?? 0;
-    const targetTotal = datacore.initializer?.targetTotal ?? 0;
+            if (!element) return;
 
-    return <p>{`${initialized} / ${targetTotal}`}</p>;
+            const update = () => {
+                const initialized = datacore.initializer?.initialized ?? 0;
+                const targetTotal = datacore.initializer?.targetTotal ?? 0;
+                element.textContent = `${initialized} / ${targetTotal}`;
+            };
+
+            update();
+            eventRef.current = datacore.events.on("index-progress", update);
+        },
+        [datacore]
+    );
+
+    return <p ref={attach} />;
 }
 
 /** Loading boundary which shows a loading screen while Datacore is initializing. */
