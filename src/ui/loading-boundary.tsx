@@ -12,7 +12,7 @@ function LoadingProgress({ datacore }: { datacore: Datacore }) {
     const eventRef = useRef<EventRef>();
     const attach = useCallback(
         (element: HTMLParagraphElement | null) => {
-            if (eventRef.current) datacore.events.offref(eventRef.current);
+            if (eventRef.current) datacore.offref(eventRef.current);
             eventRef.current = undefined;
 
             if (!element) return;

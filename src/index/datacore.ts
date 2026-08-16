@@ -418,8 +418,11 @@ export class DatacoreInitializer extends Component {
         else if (result.status === "imported") this.imported++;
         else if (result.status === "cached") this.cached++;
 
-        // Yield periodically so loading progress and the rest of Obsidian can repaint.
-        if (this.initialized % DatacoreInitializer.YIELD_INTERVAL == 0 && !this.yielding) {
+        // Always publish the terminal state, even if the final import completes during a yield.
+        if (this.initialized == this.targetTotal) {
+            this.core.events.trigger("index-progress");
+            this.runNext();
+        } else if (this.initialized % DatacoreInitializer.YIELD_INTERVAL == 0 && !this.yielding) {
             this.core.events.trigger("index-progress");
             this.yielding = true;
             window.setTimeout(() => {
@@ -427,7 +430,6 @@ export class DatacoreInitializer extends Component {
                 this.runNext();
             }, DatacoreInitializer.YIELD_DELAY_MS);
         } else if (!this.yielding) {
-            if (this.initialized == this.targetTotal) this.core.events.trigger("index-progress");
             this.runNext();
         }
     }
