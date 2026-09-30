@@ -1,4 +1,4 @@
-import { InlineField } from "index/import/inline-field";
+import { InlineField, InlineFieldList } from "index/import/inline-field";
 import { Extractors } from "expression/field";
 import { Indexable } from "index/types/indexable";
 import { FrontmatterEntry } from "index/types/markdown";
@@ -9,7 +9,7 @@ class DummyFields implements Indexable {
     public $id: string = "dummy";
     public $typename: string = "Dummy";
 
-    public constructor(public $text: string, public $value: number, public $size: number) {}
+    public constructor(public $text: string, public $value: number, public $size: number) { }
 
     public get $valueSize(): number {
         return this.$value + this.$size;
@@ -40,7 +40,7 @@ class DummyMarkdown implements Indexable {
     public $id: string = "dummy";
     public $typename: string = "Dummy";
 
-    public constructor(public frontmatter: Record<string, FrontmatterEntry>) {}
+    public constructor(public frontmatter: Record<string, FrontmatterEntry>) { }
 }
 
 describe("Frontmatter Behavior", () => {
@@ -90,7 +90,7 @@ class DummyInlineFields implements Indexable {
     public $id: string = "dummy";
     public $typename: string = "Dummy";
 
-    public constructor(public fields: Record<string, InlineField>) {}
+    public constructor(public fields: Record<string, InlineField>) { }
 }
 
 describe("Inline Field Behavior", () => {
@@ -143,5 +143,46 @@ describe("Inline Field Behavior", () => {
     test("Fetch All", () => {
         const elements = new Set(extractor(dummy)?.map((elem) => elem.key));
         expect(elements).toEqual(new Set(["a", "b"]));
+    });
+});
+
+class DummyInlineFieldsMulti implements Indexable {
+    public $types: string[] = ["a", "b", "c"];
+    public $file: string = "file";
+    public $id: string = "dummy";
+    public $typename: string = "Dummy";
+
+    public constructor(public fields: Record<string, InlineFieldList>) { }
+}
+
+describe("Inline Field Multi Behavior", () => {
+    const extractor = Extractors.inlineFieldsMulti<DummyInlineFieldsMulti>((x) => x.fields);
+
+    test("Duplicate Keys Become Lists", () => {
+        const dup = new DummyInlineFieldsMulti({
+            a: [
+                {
+                    key: "a",
+                    value: 10,
+                    raw: "10",
+                    position: { line: 1, start: 1, startValue: 1, end: 2 },
+                },
+                {
+                    key: "a",
+                    value: 20,
+                    raw: "20",
+                    position: { line: 5, start: 1, startValue: 1, end: 2 },
+                },
+            ],
+        });
+
+        expect(extractor(dup, "a")).toEqual([
+            {
+                key: "a",
+                value: [10, 20],
+                raw: "10, 20",
+                provenance: { type: "inline-field", key: "a", file: "file", line: 1, revision: 0 },
+            },
+        ]);
     });
 });

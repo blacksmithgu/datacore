@@ -22,7 +22,7 @@ export type * from "index/types/index-query";
 export type * from "index/types/files";
 export type * from "index/types/canvas";
 
-export { InlineField } from "index/import/inline-field";
+export type { InlineField, InlineFieldList, JsonInlineField, JsonInlineFieldList } from "index/import/inline-field";
 export { SearchResult } from "index/datastore";
 
 export { CardPos, CardDimensions } from "index/types/json/canvas";

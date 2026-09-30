@@ -3,7 +3,7 @@
  */
 import { DataObject, Literal, Literals } from "expression/literal";
 import { Indexable } from "../index/types/indexable";
-import { InlineField } from "index/import/inline-field";
+import { InlineField, InlineFieldList } from "index/import/inline-field";
 import { FrontmatterEntry } from "index/types/markdown";
 
 /** The source of a field, used when determining what files to overwrite and how. */
@@ -215,6 +215,70 @@ export namespace Extractors {
                         value: field.value,
                         raw: field.raw,
                         provenance,
+                    },
+                ];
+            }
+        };
+    }
+
+    /** Field extractor which shows all inline fields from a multi-value inline-field map.
+     * Values are always lists in appearance order.
+     */
+    export function inlineFieldsMulti<T extends Indexable>(
+        inlineMap: (object: T) => Record<string, InlineFieldList> | undefined
+    ): FieldExtractor<T> {
+        return (object: T, key?: string) => {
+            const map = inlineMap(object);
+            if (!map) return [];
+
+            function aggregate(fields: InlineFieldList): { key: string; value: Literal; raw?: string; line: number } {
+                if (fields.length == 0) return { key: "", value: [], raw: "", line: 0 };
+                const first = fields[0];
+                return {
+                    key: first.key,
+                    value: fields.map((f) => f.value),
+                    raw: fields.map((f) => f.raw).join(", "),
+                    line: first.position.line,
+                };
+            }
+
+            if (key == null) {
+                const out: Field[] = [];
+                for (const fields of Object.values(map)) {
+                    const agg = aggregate(fields);
+                    if (!agg.key) continue;
+
+                    out.push({
+                        key: agg.key.toLowerCase(),
+                        value: agg.value,
+                        raw: agg.raw,
+                        provenance: {
+                            type: "inline-field",
+                            file: object.$file!,
+                            line: agg.line,
+                            key: agg.key,
+                            revision: object.$revision ?? 0,
+                        },
+                    });
+                }
+                return out;
+            } else {
+                key = key.toLowerCase();
+                if (!(key in map)) return [];
+
+                const agg = aggregate(map[key]);
+                return [
+                    {
+                        key,
+                        value: agg.value,
+                        raw: agg.raw,
+                        provenance: {
+                            type: "inline-field",
+                            file: object.$file!,
+                            line: agg.line,
+                            key: agg.key,
+                            revision: object.$revision ?? 0,
+                        },
                     },
                 ];
             }

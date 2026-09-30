@@ -1,5 +1,5 @@
 import { JsonLink } from "expression/link";
-import { JsonInlineField } from "index/import/inline-field";
+import { JsonInlineField, JsonInlineFieldList } from "index/import/inline-field";
 import { JsonFrontmatterEntry, JsonMarkdownSection } from "./markdown";
 import { CachedMetadata, EmbedCache } from "obsidian";
 
@@ -42,6 +42,7 @@ export interface JsonCanvas {
     $links: JsonLink[];
     /** All inline fields in the canvas. */
     $infields: Record<string, JsonInlineField>;
+    $infieldsMulti?: Record<string, JsonInlineFieldList>;
 }
 
 /** Common metadata for all canvas cards. */
@@ -67,6 +68,7 @@ export interface JsonCanvasTextCard extends JsonBaseCanvasCard {
 
     $links: JsonLink[];
     $infields: Record<string, JsonInlineField>;
+    $infieldsMulti?: Record<string, JsonInlineFieldList>;
     $sections: JsonMarkdownSection[];
     $frontmatter?: Record<string, JsonFrontmatterEntry>;
 }

@@ -23,7 +23,14 @@ import {
     normalizeLinks,
     valueFrontmatterEntry,
 } from "./markdown";
-import { InlineField, jsonInlineField, valueInlineField } from "index/import/inline-field";
+import {
+    InlineField,
+    InlineFieldList,
+    jsonInlineField,
+    jsonInlineFieldList,
+    valueInlineField,
+    valueInlineFieldList,
+} from "index/import/inline-field";
 import { File } from "index/types/indexable";
 import { mapObjectValues } from "utils/data";
 import { Literal } from "expression/literal";
@@ -63,7 +70,10 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
     $size: number = 0;
     $tags: string[];
     $links: Link[];
+    /** Map of distinct inline fields (original behavior: first occurrence wins). */
     $infields: Record<string, InlineField>;
+    /** Map of all inline fields; values are always lists in appearance order. */
+    $infieldsMulti: Record<string, InlineFieldList>;
 
     private constructor(init: Partial<Canvas>) {
         Object.assign(this, init);
@@ -86,6 +96,7 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
             $links: this.$links,
             $path: this.$path,
             $infields: mapObjectValues(this.$infields, jsonInlineField),
+            $infieldsMulti: mapObjectValues(this.$infieldsMulti, jsonInlineFieldList),
             $tags: this.$tags,
         };
     }
@@ -116,6 +127,11 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
             $infields: raw.$infields
                 ? mapObjectValues(raw.$infields, (field) => normalizeLinks(valueInlineField(field), normalizer))
                 : {},
+            $infieldsMulti: raw.$infieldsMulti
+                ? mapObjectValues(raw.$infieldsMulti, (fields) =>
+                    normalizeLinks(valueInlineFieldList(fields), normalizer)
+                )
+                : {},
             $tags: raw.$tags,
         });
     }
@@ -129,7 +145,7 @@ export class Canvas implements Linkable, File, Linkbearing, Taggable, Indexable,
 export namespace Canvas {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<Canvas, keyof TypedFieldbearing<Fields>>,
-            TypedFieldbearing<Fields> {}
+        TypedFieldbearing<Fields> { }
 }
 
 /** All supported canvas card types. */
@@ -186,7 +202,10 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
     $title: string;
     $parent?: Indexable;
     $revision?: number;
+    /** Map of distinct inline fields (original behavior: first occurrence wins). */
     $infields: Record<string, InlineField>;
+    /** Map of all inline fields; values are always lists in appearance order. */
+    $infieldsMulti: Record<string, InlineFieldList>;
     $frontmatter?: Record<string, FrontmatterEntry>;
 
     $dimensions: CardDimensions;
@@ -207,7 +226,8 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
     /** @internal */
     public json(): JsonCanvasTextCard {
         return Object.assign(super.json(), {
-            $infields: this.$infields,
+            $infields: mapObjectValues(this.$infields, jsonInlineField),
+            $infieldsMulti: mapObjectValues(this.$infieldsMulti, jsonInlineFieldList),
             $links: this.$links,
             $tags: this.$tags,
             $type: "text-card",
@@ -231,6 +251,11 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
             $infields: raw.$infields
                 ? mapObjectValues(raw.$infields, (field) => normalizeLinks(valueInlineField(field), normalizer))
                 : {},
+            $infieldsMulti: raw.$infieldsMulti
+                ? mapObjectValues(raw.$infieldsMulti, (fields) =>
+                    normalizeLinks(valueInlineFieldList(fields), normalizer)
+                )
+                : {},
             $tags: raw.$tags,
         });
     }
@@ -246,7 +271,7 @@ export class CanvasTextCard extends BaseCanvasCard implements Linkbearing, Tagga
 export namespace CanvasTextCard {
     export interface Typed<Fields extends { [key in string]?: Literal }>
         extends Omit<CanvasTextCard, keyof TypedFieldbearing<Fields>>,
-            TypedFieldbearing<Fields> {}
+        TypedFieldbearing<Fields> { }
 }
 
 /** Canvas card that is just a file embedding. */
